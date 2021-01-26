@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.2x", "src2x\Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.SqlServer.2x", "src2x\ShardingCore.SqlServer.2x\ShardingCore.SqlServer.2x.csproj", "{73B802A7-3DDE-4B02-9E3D-D6B9EE42DE5D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CC2C88C0-65F2-445D-BE78-973B840FE281}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test50", "test\ShardingCore.Test50\ShardingCore.Test50.csproj", "{7EE133B6-5A02-41B7-9D89-41D9EA14184E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +34,7 @@ Global
 		{37E11FFD-14D7-41B4-B04C-2950206C64DB} = {62AAE0FE-4099-4A48-AA3C-F76F14C62655}
 		{FB92A4BE-A43E-4755-8132-EC38E9650B80} = {679E6084-0C45-4807-BFEE-D2FDA44B2188}
 		{73B802A7-3DDE-4B02-9E3D-D6B9EE42DE5D} = {679E6084-0C45-4807-BFEE-D2FDA44B2188}
+		{7EE133B6-5A02-41B7-9D89-41D9EA14184E} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3CAF09A6-6ABD-41D9-BA57-9A822B8095F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -56,5 +61,9 @@ Global
 		{73B802A7-3DDE-4B02-9E3D-D6B9EE42DE5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73B802A7-3DDE-4B02-9E3D-D6B9EE42DE5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73B802A7-3DDE-4B02-9E3D-D6B9EE42DE5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EE133B6-5A02-41B7-9D89-41D9EA14184E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EE133B6-5A02-41B7-9D89-41D9EA14184E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EE133B6-5A02-41B7-9D89-41D9EA14184E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EE133B6-5A02-41B7-9D89-41D9EA14184E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
