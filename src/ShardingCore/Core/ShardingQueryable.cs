@@ -358,12 +358,9 @@ namespace ShardingCore.Core
         {
             var extraEntry = _source.GetExtraEntry();
             //去除分页,获取前Take+Skip数量
-            int? take = extraEntry.Take;
-            int skip = extraEntry.Skip.GetValueOrDefault();
-
             var noPageSource = _source.RemoveTake().RemoveSkip();
-            if (take.HasValue)
-                noPageSource = noPageSource.Take(take.Value + skip);
+            if (extraEntry.Take.HasValue)
+                noPageSource = noPageSource.Take(extraEntry.Take.Value + extraEntry.Skip.GetValueOrDefault());
             //从各个分表获取数据
             var multiRouteEntry = _endRoutes.FirstOrDefault(o => o.Value.Count() > 1);
             List<DbContext> parallelDbContexts = new List<DbContext>(multiRouteEntry.Value.Count);
