@@ -8,18 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
-using ShardingCore.SqlServer;
-using ShardingCore.Test50.Domain.Entities;
-using ShardingCore.Test50.Shardings;
+using ShardingCore.Test50.MySql.Domain.Entities;
 
-#if EFCORE5SQLSERVER
-using ShardingCore.SqlServer;
-#endif
-#if EFCORE5MYSQL
 using ShardingCore.MySql;
-#endif
+using ShardingCore.Test50.MySql.Shardings;
 
-namespace ShardingCore.Test50
+namespace ShardingCore.Test50.MySql
 {
 /*
 * @Author: xjm
@@ -44,10 +38,11 @@ namespace ShardingCore.Test50
         // ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
-        { 
-            services.AddShardingSqlServer(o =>
+        {
+            services.AddShardingMySql(o =>
             {
-                o.ConnectionString = hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"];
+                o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
+                o.ServerVersion = new MySqlServerVersion(new Version());
                 o.AddSharding<SysUserModVirtualRoute>();
                 o.AddSharding<SysUserRangeVirtualRoute>();
                 o.CreateIfNotExists((provider, config) =>

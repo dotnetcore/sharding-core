@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
       <LangVersion>9.0</LangVersion>
-        <DefineConstants>TRACE;DEBUG;EFCORE5SQLSERVER;</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

@@ -2,11 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <DefineConstants>TRACE;DEBUG;EFCORE5MYSQL;</DefineConstants>
-        <AssemblyName>ShardingCore.Test50</AssemblyName>
-        <RootNamespace>ShardingCore.Test50</RootNamespace>
-        <PackageId>ShardingCore.Test50</PackageId>
-        <Product>ShardingCore.Test50</Product>
+        <PackageId>ShardingCore.Test50.MySql</PackageId>
+        <Product>ShardingCore.Test50.MySql</Product>
         <LangVersion>9.0</LangVersion>
     </PropertyGroup>
     <ItemGroup>
@@ -22,12 +19,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\ShardingCore.MySql\ShardingCore.MySql.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Include="..\..\test\ShardingCore.Test50\**\*.cs" />
-        <Compile Remove="..\..\test\ShardingCore.Test50\obj\**" />
-        <Compile Remove="..\..\test\ShardingCore.Test50\bin\**" />
     </ItemGroup>
 
     <ItemGroup>
