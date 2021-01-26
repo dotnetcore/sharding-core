@@ -23,7 +23,7 @@ namespace ShardingCore.Test50
         }
 
         [Fact]
-        public async Task ToList1()
+        public async Task ToList_All_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().ToShardingListAsync();
             Assert.Equal(100,mods.Count);
@@ -31,7 +31,7 @@ namespace ShardingCore.Test50
             Assert.Equal(1000,ranges.Count);
         }
         [Fact]
-        public async Task ToList1_OrderBy()
+        public async Task ToList1_OrderBy_Test()
         {
             var modascs=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingListAsync();
             Assert.Equal(100,modascs.Count);
@@ -41,7 +41,7 @@ namespace ShardingCore.Test50
             Assert.Equal(1,moddescs.Last().Age);
         }
         [Fact]
-        public async Task ToList2()
+        public async Task ToList_Id_In_Test()
         {
             var ids = new[] {"1", "2", "3", "4"};
             var sysUserMods=await _virtualDbContext.Set<SysUserMod>().Where(o=>ids.Contains(o.Id)).ToShardingListAsync();
@@ -53,7 +53,7 @@ namespace ShardingCore.Test50
             }
         }
         [Fact]
-        public async Task ToList3()
+        public async Task ToList_Id_Eq_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="3").ToShardingListAsync();
             Assert.Single(mods);
@@ -63,7 +63,7 @@ namespace ShardingCore.Test50
             Assert.Equal("3",ranges[0].Id);
         }
         [Fact]
-        public async Task ToList4()
+        public async Task ToList_Id_Not_Eq_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id!="3").ToShardingListAsync();
             Assert.Equal(99,mods.Count);
@@ -73,7 +73,7 @@ namespace ShardingCore.Test50
             Assert.DoesNotContain(ranges,o=>o.Id=="3");
         }
         [Fact]
-        public async Task ToList5()
+        public async Task ToList_Name_Eq_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name=="name_3").ToShardingListAsync();
             Assert.Single(mods);
@@ -83,7 +83,7 @@ namespace ShardingCore.Test50
             Assert.Equal("3",ranges[0].Id);
         }
         [Fact]
-        public async Task ToList6()
+        public async Task ToList_Id_Eq_Not_In_Db_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="1001").ToShardingListAsync();
             Assert.Empty(mods);
@@ -91,7 +91,7 @@ namespace ShardingCore.Test50
             Assert.Empty(ranges);
         }
         [Fact]
-        public async Task ToList7()
+        public async Task ToList_Name_Eq_Not_In_Db_Test()
         {
             var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name=="name_1001").ToShardingListAsync();
             Assert.Empty(mods);
@@ -99,7 +99,7 @@ namespace ShardingCore.Test50
             Assert.Empty(ranges);
         }
         [Fact]
-        public async Task FirstOrDefault1()
+        public async Task FirstOrDefault_Order_By_Id_Test()
         {
             var sysUserMod=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Id).ShardingFirstOrDefaultAsync();
             Assert.True(sysUserMod!=null&&sysUserMod.Id=="1");

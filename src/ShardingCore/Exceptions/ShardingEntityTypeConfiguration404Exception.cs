@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public ShardingEntityTypeConfiguration404Exception(string? message) : base(message)
+        public ShardingEntityTypeConfiguration404Exception(string message) : base(message)
         {
         }
 
-        public ShardingEntityTypeConfiguration404Exception(string? message, Exception? innerException) : base(message, innerException)
+        public ShardingEntityTypeConfiguration404Exception(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

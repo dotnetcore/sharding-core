@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public ShardingTransactionException(string? message) : base(message)
+        public ShardingTransactionException(string message) : base(message)
         {
         }
 
-        public ShardingTransactionException(string? message, Exception? innerException) : base(message, innerException)
+        public ShardingTransactionException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

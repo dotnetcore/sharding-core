@@ -44,25 +44,20 @@ namespace ShardingCore.Core.VirtualRoutes.Abstractions
                     _logger.LogWarning($"没有找到对应的匹配需要进行多表扫描:ShardingOperator:[{shardingOperator}]");
                     return tail => true;
                     //throw new NotSupportedException(xxxx);
-                    break;
                 case ShardingOperatorEnum.GreaterThan:
                 case ShardingOperatorEnum.GreaterThanOrEqual:
                     //yyyyMMdd
                     return tail =>String.Compare(tail, GetWeekTableTail(shardingKey), StringComparison.Ordinal) >= 0;
-                    break;
                 case ShardingOperatorEnum.LessThan:
                 case ShardingOperatorEnum.LessThanOrEqual:
                     //yyyyMMdd
                     return tail =>String.Compare(tail, GetWeekTableTail(shardingKey), StringComparison.Ordinal) <= 0;
-                    break;
                 case ShardingOperatorEnum.Equal:
                     //yyyyMMdd
                     return tail =>tail == GetWeekTableTail(shardingKey);
-                    break;
                 case ShardingOperatorEnum.NotEqual:
                     //yyyyMMdd
                     return tail =>tail != GetWeekTableTail(shardingKey);
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shardingOperator), shardingOperator, null);
             }

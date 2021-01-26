@@ -38,27 +38,22 @@ namespace ShardingCore.Core.VirtualRoutes.Abstractions
                     _logger.LogWarning($"没有找到对应的匹配需要进行多表扫描:ShardingOperator:[{shardingOperator}]");
                     return tail => true;
                     //throw new NotSupportedException(xxxx);
-                    break;
                 case ShardingOperatorEnum.GreaterThan:
                     return tail =>int.Parse(tail) > int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
                 case ShardingOperatorEnum.GreaterThanOrEqual:
                     //yyyyMMdd
                     return tail =>int.Parse(tail) >= int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
-                    break;
                 case ShardingOperatorEnum.LessThan:
                     return tail =>int.Parse(tail) < int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
                 case ShardingOperatorEnum.LessThanOrEqual:
                     //yyyyMMdd
                     return tail =>int.Parse(tail) <= int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
-                    break;
                 case ShardingOperatorEnum.Equal:
                     //yyyyMMdd
                     return tail =>int.Parse(tail) == int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
-                    break;
                 case ShardingOperatorEnum.NotEqual:
                     //yyyyMMdd
                     return tail =>int.Parse(tail) != int.Parse(shardingKey.ConvertLongToTime().ToString("yyyyMMdd"));
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shardingOperator), shardingOperator, null);
             }

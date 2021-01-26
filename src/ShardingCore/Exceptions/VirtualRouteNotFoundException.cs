@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public VirtualRouteNotFoundException(string? message) : base(message)
+        public VirtualRouteNotFoundException(string message) : base(message)
         {
         }
 
-        public VirtualRouteNotFoundException(string? message, Exception? innerException) : base(message, innerException)
+        public VirtualRouteNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

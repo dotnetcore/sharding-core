@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public ShardingKeyRouteNotMatchException(string? message) : base(message)
+        public ShardingKeyRouteNotMatchException(string message) : base(message)
         {
         }
 
-        public ShardingKeyRouteNotMatchException(string? message, Exception? innerException) : base(message, innerException)
+        public ShardingKeyRouteNotMatchException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

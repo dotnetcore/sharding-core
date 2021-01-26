@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public CreateSqlVirtualTableNotFoundException(string? message) : base(message)
+        public CreateSqlVirtualTableNotFoundException(string message) : base(message)
         {
         }
 
-        public CreateSqlVirtualTableNotFoundException(string? message, Exception? innerException) : base(message, innerException)
+        public CreateSqlVirtualTableNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

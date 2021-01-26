@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public QueryableRouteNotMatchException(string? message) : base(message)
+        public QueryableRouteNotMatchException(string message) : base(message)
         {
         }
 
-        public QueryableRouteNotMatchException(string? message, Exception? innerException) : base(message, innerException)
+        public QueryableRouteNotMatchException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

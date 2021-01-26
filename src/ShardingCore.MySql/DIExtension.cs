@@ -28,7 +28,7 @@ namespace ShardingCore.MySql
     */
     public static class DIExtension
     {
-        public static IServiceCollection AddShardingSqlServer(this IServiceCollection services, Action<MySqlOptions> configure)
+        public static IServiceCollection AddShardingMySql(this IServiceCollection services, Action<MySqlOptions> configure)
         {
             if (configure == null)
                 throw new ArgumentNullException($"AddScfSqlServerProvider :{nameof(configure)}");

@@ -19,11 +19,11 @@ namespace ShardingCore.Exceptions
         {
         }
 
-        public ShardingOwnerNotFoundException(string? message) : base(message)
+        public ShardingOwnerNotFoundException(string message) : base(message)
         {
         }
 
-        public ShardingOwnerNotFoundException(string? message, Exception? innerException) : base(message, innerException)
+        public ShardingOwnerNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

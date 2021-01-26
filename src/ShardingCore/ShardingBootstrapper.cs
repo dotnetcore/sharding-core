@@ -85,7 +85,7 @@ namespace ShardingCore
                     {
                         _tableCreator.CreateTable(virtualTable.EntityType, tail);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         _logger.LogWarning($"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created");
                     }
