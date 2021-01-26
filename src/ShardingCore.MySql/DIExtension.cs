@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes;
@@ -9,14 +8,17 @@ using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
-using ShardingCore.SqlServer.EFCores;
+using ShardingCore.MySql.EFCores;
 using ShardingCore.TableCreator;
-
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Query.Sql;
 #endif
+#if !EFCORE2
+using Microsoft.EntityFrameworkCore.Query;
+#endif
 
-namespace ShardingCore.SqlServer
+
+namespace ShardingCore.MySql
 {
     /*
     * @Author: xjm
@@ -26,12 +28,12 @@ namespace ShardingCore.SqlServer
     */
     public static class DIExtension
     {
-        public static IServiceCollection AddShardingSqlServer(this IServiceCollection services, Action<SqlServerOptions> configure)
+        public static IServiceCollection AddShardingSqlServer(this IServiceCollection services, Action<MySqlOptions> configure)
         {
             if (configure == null)
-                throw new ArgumentNullException($"AddScfSqlServerProvider 参数不能为空:{nameof(configure)}");
+                throw new ArgumentNullException($"AddScfSqlServerProvider :{nameof(configure)}");
            
-            var options = new SqlServerOptions();
+            var options = new MySqlOptions();
             configure(options);
             services.AddSingleton(options);
 
@@ -43,7 +45,7 @@ namespace ShardingCore.SqlServer
             services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
-            services.AddSingleton<IShardingParallelDbContextFactory, ShardingSqlServerParallelDbContextFactory>();
+            services.AddSingleton<IShardingParallelDbContextFactory, ShardingMySqlParallelDbContextFactory>();
             if (options.HasSharding)
             {
                 foreach (var shardingRoute in options.ShardingRoutes)
@@ -72,7 +74,7 @@ namespace ShardingCore.SqlServer
 
         public static DbContextOptionsBuilder UseShardingSqlServerQuerySqlGenerator(this DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory>();
+            optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingMySqlQuerySqlGeneratorFactory>();
             return optionsBuilder;
         }
     }

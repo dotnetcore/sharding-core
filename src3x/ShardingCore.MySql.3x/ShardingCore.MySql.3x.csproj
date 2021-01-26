@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <Version>$(EFCORE3)</Version>
@@ -11,19 +10,21 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <DocumentationFile>bin\Release\ShardingCore.3x.xml</DocumentationFile>
+        <DocumentationFile>bin\Release\ShardingCore.MySql.3x.xml</DocumentationFile>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Compile Include="..\..\src\ShardingCore.MySql\**\*.cs" />
+        <Compile Remove="..\..\src\ShardingCore.MySql\obj\**" />
+        <Compile Remove="..\..\src\ShardingCore.MySql\bin\**" />
+    </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\..\src\ShardingCore\**\*.cs" />
-        <Compile Remove="..\..\src\ShardingCore\obj\**" />
-        <Compile Remove="..\..\src\ShardingCore\bin\**" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.2.4" />
     </ItemGroup>
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.10" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.10" />
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
+        <ProjectReference Include="..\ShardingCore.3x\ShardingCore.3x.csproj" />
     </ItemGroup>
 
 </Project>

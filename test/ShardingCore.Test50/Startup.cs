@@ -42,14 +42,17 @@ namespace ShardingCore.Test50
                 o.ConnectionString = hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"];
                 o.AddSharding<SysUserModVirtualRoute>();
                 o.AddSharding<SysUserRangeVirtualRoute>();
-                o.EnsureCreated = true;
+                o.CreateIfNotExists((provider, config) =>
+                {
+                    config.EnsureCreated = true;
+                });
             });
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
         public void Configure(IServiceProvider serviceProvider)
         {
-            var shardingBootstrapper = serviceProvider.GetService<ShardingBootstrapper>();
+            var shardingBootstrapper = serviceProvider.GetService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
             // 有一些测试数据要初始化可以放在这里
            InitData(serviceProvider).GetAwaiter().GetResult();

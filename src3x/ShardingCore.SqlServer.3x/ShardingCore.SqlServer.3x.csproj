@@ -11,6 +11,7 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.SqlServer.3x.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

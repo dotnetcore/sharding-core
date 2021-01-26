@@ -10,6 +10,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <Version>$(EFCORE2)</Version>
@@ -11,22 +10,22 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <DocumentationFile>bin\Release\ShardingCore.SqlServer.2x.xml</DocumentationFile>
+        <DocumentationFile>bin\Release\ShardingCore.MySql.2x.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="..\..\src\ShardingCore.SqlServer\**\*.cs" />
-        <Compile Remove="..\..\src\ShardingCore.SqlServer\obj\**" />
-        <Compile Remove="..\..\src\ShardingCore.SqlServer\bin\**" />
+        <Compile Include="..\..\src\ShardingCore.MySql\**\*.cs" />
+        <Compile Remove="..\..\src\ShardingCore.MySql\obj\**" />
+        <Compile Remove="..\..\src\ShardingCore.MySql\bin\**" />
     </ItemGroup>
-
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.6" />
     </ItemGroup>
-
 
     <ItemGroup>
         <ProjectReference Include="..\ShardingCore.2x\ShardingCore.2x.csproj" />
     </ItemGroup>
+
+
 </Project>

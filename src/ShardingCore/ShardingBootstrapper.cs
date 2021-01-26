@@ -19,7 +19,7 @@ namespace ShardingCore
 * @Date: Monday, 21 December 2020 09:10:07
 * @Email: 326308290@qq.com
 */
-    public class ShardingBootstrapper 
+    public class ShardingBootstrapper:IShardingBootstrapper
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IVirtualTableManager _virtualTableManager;
@@ -63,7 +63,7 @@ namespace ShardingCore
             }
         }
 
-        public void EnsureCreated()
+        private void EnsureCreated()
         {
             if (_shardingCoreConfig.EnsureCreated)
             {
