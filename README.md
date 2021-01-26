@@ -120,17 +120,6 @@ Server为例
         }
     }
     
-        private readonly IVirtualDbContext _virtualDbContext;
-
-        public ctor(IVirtualDbContext virtualDbContext)
-        {
-            _virtualDbContext = virtualDbContext;
-        }
-
-        public async Task ToList_All()
-        {
-            var ranges=await _virtualDbContext.Set<SysUserRange>().ToShardingListAsync();
-        }
 ```
 创建virtual
 route
