@@ -31,7 +31,7 @@ namespace ShardingCore.Test50
             Assert.Equal(1000,ranges.Count);
         }
         [Fact]
-        public async Task ToList1_OrderBy_Test()
+        public async Task ToList_OrderBy_Asc_Desc_Test()
         {
             var modascs=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingListAsync();
             Assert.Equal(100,modascs.Count);
