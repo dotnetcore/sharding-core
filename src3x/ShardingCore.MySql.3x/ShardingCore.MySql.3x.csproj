@@ -6,6 +6,7 @@
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE3;</DefineConstants>
         <LangVersion>8.0</LangVersion>
+        <AssemblyName>ShardingCore.MySql</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

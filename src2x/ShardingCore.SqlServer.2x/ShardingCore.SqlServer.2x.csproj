@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 
     <PropertyGroup>
@@ -7,6 +7,8 @@
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE2;</DefineConstants>
         <LangVersion>8.0</LangVersion>
+        <AssemblyName>ShardingCore.SqlServer</AssemblyName>
+        <RootNamespace>ShardingCore.SqlServer</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
