@@ -2,14 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
-using ShardingCore.SqlServer;
 using ShardingCore.Test50.Domain.Entities;
 using ShardingCore.Test50.Shardings;
+
+#if EFCORE5SQLSERVER
+using ShardingCore.SqlServer;
+#endif
+#if EFCORE5MYSQL
+using ShardingCore.MySql;
+#endif
 
 namespace ShardingCore.Test50
 {
@@ -21,7 +28,7 @@ namespace ShardingCore.Test50
 */
     public class Startup
     {
-        // 自定义 host 构建
+        // // 自定义 host 构建
         public void ConfigureHost(IHostBuilder hostBuilder)
         {
             hostBuilder
@@ -37,6 +44,7 @@ namespace ShardingCore.Test50
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
+#if EFCORE5SQLSERVER
             services.AddShardingSqlServer(o =>
             {
                 o.ConnectionString = hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"];
@@ -47,6 +55,20 @@ namespace ShardingCore.Test50
                     config.EnsureCreated = true;
                 });
             });
+#endif
+#if EFCORE5MYSQL
+            services.AddShardingMySql(o =>
+            {
+                o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
+                o.ServerVersion = new MySqlServerVersion(new Version());
+                o.AddSharding<SysUserModVirtualRoute>();
+                o.AddSharding<SysUserRangeVirtualRoute>();
+                o.CreateIfNotExists((provider, config) =>
+                {
+                    config.EnsureCreated = true;
+                });
+            });
+#endif
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法

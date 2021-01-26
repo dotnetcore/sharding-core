@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.MySql.3x", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.MySql.2x", "src2x\ShardingCore.MySql.2x\ShardingCore.MySql.2x.csproj", "{0CF88F0B-6CCB-49B5-B41D-CDC193B51581}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test50.MySql", "test\ShardingCore.Test50.MySql\ShardingCore.Test50.MySql.csproj", "{C8FAB96F-F13E-4094-883C-2D38D39EE4A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,7 @@ Global
 		{10308339-FF5C-43AB-9208-627B6E2FBBDB} = {490FAE47-4476-4508-B216-505FC850447F}
 		{954C4CA2-9CF4-4C2C-8DE6-180DD8202E38} = {62AAE0FE-4099-4A48-AA3C-F76F14C62655}
 		{0CF88F0B-6CCB-49B5-B41D-CDC193B51581} = {679E6084-0C45-4807-BFEE-D2FDA44B2188}
+		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3CAF09A6-6ABD-41D9-BA57-9A822B8095F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -95,5 +98,9 @@ Global
 		{0CF88F0B-6CCB-49B5-B41D-CDC193B51581}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CF88F0B-6CCB-49B5-B41D-CDC193B51581}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CF88F0B-6CCB-49B5-B41D-CDC193B51581}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
