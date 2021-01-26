@@ -65,7 +65,7 @@ Server为例
 - [Tail]
   尾巴、后缀虚拟表和物理表的后缀
 - [TailPrefix]
-  尾巴、后缀虚拟表和物理表的后缀中间的字符
+  尾巴前缀虚拟表和物理表的后缀中间的字符
 - [物理表]
   顾名思义就是数据库对应的实际表信息,表名(
   tablename
@@ -86,6 +86,52 @@ Server为例
 
 ## 配置
 
+配置entity 推荐 fluent api 可以实现自动建表功能
+`IShardingEntity`数据库对象必须继承该接口
+`ShardingKey`分表字段需要使用该特性
+
+```c#
+
+    public class SysUserRange:IShardingEntity
+    {
+        /// <summary>
+        /// 分表分库range切分
+        /// </summary>
+        [ShardingKey(TailPrefix = "_",AutoCreateTableOnStart = true)]
+        public string Id { get; set; }
+        /// <summary>
+        /// 姓名
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// 年龄
+        /// </summary>
+        public int Age { get; set; }
+    }
+    
+    public class SysUserRangeMap:IEntityTypeConfiguration<SysUserRange>
+    {
+        public void Configure(EntityTypeBuilder<SysUserRange> builder)
+        {
+            builder.HasKey(o => o.Id);
+            builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
+            builder.Property(o => o.Name).HasMaxLength(128);
+            builder.ToTable(nameof(SysUserRange));
+        }
+    }
+    
+        private readonly IVirtualDbContext _virtualDbContext;
+
+        public ctor(IVirtualDbContext virtualDbContext)
+        {
+            _virtualDbContext = virtualDbContext;
+        }
+
+        public async Task ToList_All()
+        {
+            var ranges=await _virtualDbContext.Set<SysUserRange>().ToShardingListAsync();
+        }
+```
 创建virtual
 route
 实现 `AbstractShardingOperatorVirtualRoute<T, TKey>`
@@ -136,49 +182,6 @@ route
 
             var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
-```
-配置entity 推荐 fluent api 可以实现自动建表功能
-```c#
-
-    public class SysUserRange:IShardingEntity
-    {
-        /// <summary>
-        /// 分表分库range切分
-        /// </summary>
-        [ShardingKey(TailPrefix = "_",AutoCreateTableOnStart = true)]
-        public string Id { get; set; }
-        /// <summary>
-        /// 姓名
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// 年龄
-        /// </summary>
-        public int Age { get; set; }
-    }
-    
-    public class SysUserRangeMap:IEntityTypeConfiguration<SysUserRange>
-    {
-        public void Configure(EntityTypeBuilder<SysUserRange> builder)
-        {
-            builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
-            builder.Property(o => o.Name).HasMaxLength(128);
-            builder.ToTable(nameof(SysUserRange));
-        }
-    }
-    
-        private readonly IVirtualDbContext _virtualDbContext;
-
-        public ctor(IVirtualDbContext virtualDbContext)
-        {
-            _virtualDbContext = virtualDbContext;
-        }
-
-        public async Task ToList_All()
-        {
-            var ranges=await _virtualDbContext.Set<SysUserRange>().ToShardingListAsync();
-        }
 ```
 
 ## 使用
