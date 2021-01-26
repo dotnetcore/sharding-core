@@ -42,6 +42,7 @@ expression
 
 - [开始](#开始)
     - [概念](#概念)
+    - [安装](#安装)
     - [配置](#配置)
     - [使用](#使用)
     - [Api](#Api)
@@ -76,6 +77,11 @@ Server为例
 - [虚拟路由]
   虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/IVirtualRoute.cs)
   ,由于基本上所有的路由都是和业务逻辑相关的所以虚拟路由由用户自己实现,该框架提供一个高级抽象
+
+## 安装
+```xml
+<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.1" />
+```
 
 ## 配置
 
