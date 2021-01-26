@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Version>$(EFCORE3)</Version>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <DefineConstants>TRACE;DEBUG;EFCORE3;</DefineConstants>
+        <LangVersion>8.0</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\src\ShardingCore.SqlServer\**\*.cs" />
+        <Compile Remove="..\..\src\ShardingCore.SqlServer\obj\**" />
+        <Compile Remove="..\..\src\ShardingCore.SqlServer\bin\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ShardingCore.3x\ShardingCore.3x.csproj" />
+    </ItemGroup>
+
+</Project>
