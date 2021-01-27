@@ -210,16 +210,16 @@ route
 
 抽象abstract  | 路由规则 | tail | 索引
 --- |--- |--- |--- 
-AbstractSimpleShardingModKeyIntVirtualRoute |默认int类型取模路由 |0,1,2... | `=`
-AbstractSimpleShardingModKeyStringVirtualRoute |默认string类型取模路由 |0,1,2... | `=`
-AbstractSimpleShardingDayKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMMdd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingDayKeyLongVirtualRoute |默认long类型取模路由 |yyyyMMdd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingWeekKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingWeekKeyLongVirtualRoute |默认long类型取模路由 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingMonthKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMM | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingMonthKeyLongVirtualRoute |默认long类型取模路由 |yyyyMM | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingYearKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyy | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingYearKeyLongVirtualRoute |默认long类型取模路由 |yyyy | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingModKeyIntVirtualRoute |取模 |0,1,2... | `=`
+AbstractSimpleShardingModKeyStringVirtualRoute |取模 |0,1,2... | `=`
+AbstractSimpleShardingDayKeyDateTimeVirtualRoute |按时间 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingDayKeyLongVirtualRoute |按时间戳 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyDateTimeVirtualRoute |按时间 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyLongVirtualRoute |按时间戳 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyDateTimeVirtualRoute |按时间 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyLongVirtualRoute |按时间戳 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyDateTimeVirtualRoute |按时间 |yyyy | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyLongVirtualRoute |按时间戳 |yyyy | `>,>=,<,<=,=,contains`
 
 注:`contains`表示为`o=>ids.contains(o.shardingkey)`
 
