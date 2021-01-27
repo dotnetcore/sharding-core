@@ -39,13 +39,14 @@ expression
 取模 |Sharding Mod | Yes | Any ClrType
 大数取模范围 |Sharding Range | Yes | Any ClrType
 按天/周/月/年... |Sharding By Day/Week/Month/Year... | Yes | Any ClrType
-按任意方式分表 |Sharding By Customer | Yes | Any ClrType
+其他 |Sharding By Other | Yes | Any ClrType
 
 - [开始](#开始)
     - [概念](#概念)
     - [安装](#安装)
     - [配置](#配置)
     - [使用](#使用)
+    - [默认路由](#默认路由)
     - [Api](#Api)
 - [高级配置](#高级配置)
     - [手动路由](#手动路由)
@@ -54,7 +55,7 @@ expression
     - [批量操作](#批量操作)
 - [注意事项](#注意事项)
 - [计划(Future)](#计划)
-- [总结](#总结)
+- [最后](#最后)
 
 # 开始
 
@@ -66,7 +67,7 @@ Server为例
 本库的几个简单的核心概念:
 
 - [Tail]
-  尾巴、后缀虚拟表和物理表的后缀
+  尾巴、后缀物理表的后缀
 - [TailPrefix]
   尾巴前缀虚拟表和物理表的后缀中间的字符
 - [物理表]
@@ -89,7 +90,7 @@ Server为例
 
 ## 配置
 
-配置entity 推荐 fluent api 可以实现自动建表功能
+配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 可以实现自动建表功能
 `IShardingEntity`数据库对象必须继承该接口
 `ShardingKey`分表字段需要使用该特性
 
@@ -127,8 +128,8 @@ Server为例
 创建virtual
 route
 实现 `AbstractShardingOperatorVirtualRoute<T, TKey>`
-接口
-框架默认有提供几个简单的路由 `AbstractSimpleShardingModVirtualRoute<T,TKey>`
+抽象
+框架默认有提供几个简单的路由 [默认路由](#默认路由)
 
 ```c#
 
@@ -194,13 +195,39 @@ route
 
 ## Api
 
-方法  |Method  
---- |---
-获取集合 |ToShardingListAsync
-第一条 |ShardingFirstOrDefaultAsync 
-最大 |ShardingMaxAsync 
-最小 |ShardingMinAsync
-是否存在 |ShardingAnyAsync
-分页 |ToShardingPageResultAsync
-数目 |ShardingCountAsync
-求和 |ShardingSumAsync
+方法  | Method | SqlServer Unit Test | MySql Unit Test
+--- |--- |--- |---
+获取集合 |ToShardingListAsync |8 |8
+第一条 |ShardingFirstOrDefaultAsync |5 |5
+最大 |ShardingMaxAsync |0 |0
+最小 |ShardingMinAsync |0 |0
+是否存在 |ShardingAnyAsync |0 |0
+分页 |ToShardingPageResultAsync |0 |0
+数目 |ShardingCountAsync |0 |0
+求和 |ShardingSumAsync |0 |0
+
+## 默认路由
+
+抽象abstract  | 路由规则 | tail | 索引
+--- |--- |--- |--- 
+AbstractSimpleShardingModKeyIntVirtualRoute |默认int类型取模路由 |0,1,2... | `=`
+AbstractSimpleShardingModKeyStringVirtualRoute |默认string类型取模路由 |0,1,2... | `=`
+AbstractSimpleShardingDayKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingDayKeyLongVirtualRoute |默认long类型取模路由 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyLongVirtualRoute |默认long类型取模路由 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyLongVirtualRoute |默认long类型取模路由 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyDateTimeVirtualRoute |默认DateTime类型取模路由 |yyyy | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyLongVirtualRoute |默认long类型取模路由 |yyyy | `>,>=,<,<=,=,contains`
+
+注:`contains`表示为`o=>ids.contains(o.shardingkey)`
+
+# 最后
+凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)
+
+QQ群:771630778
+
+个人QQ:326308290(欢迎技术支持提供您宝贵的意见)
+
+个人邮箱:326308290@qq.com

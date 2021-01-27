@@ -18,7 +18,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         private readonly StreamMergeContext _mergeContext;
         private readonly List<IAsyncEnumerator<T>> _sources;
         private readonly PriorityQueue<OrderMergeItem<T>> _queue;
-        private bool isFirst;
+        private bool skipFirst;
         private IAsyncEnumerator<T> _currentEnumerator;
 
         public OrderAsyncEnumerator(StreamMergeContext mergeContext,List<IAsyncEnumerator<T>> sources)
@@ -26,7 +26,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
             _mergeContext = mergeContext;
             _sources = sources;
             _queue = new PriorityQueue<OrderMergeItem<T>>(sources.Count);
-            isFirst = true;
+            skipFirst = true;
             SetOrderEnumerator();
         }
 
@@ -45,9 +45,9 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         {
             if (_queue.IsEmpty())
                 return false;
-            if (isFirst)
+            if (skipFirst)
             {
-                isFirst = false;
+                skipFirst = false;
                 return true;
             }
 
@@ -84,7 +84,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         private readonly StreamMergeContext _mergeContext;
         private readonly List<IAsyncEnumerator<T>> _sources;
         private readonly PriorityQueue<OrderMergeItem<T>> _queue;
-        private bool isFirst;
+        private bool skipFirst;
         private IAsyncEnumerator<T> _currentEnumerator;
 
         public OrderAsyncEnumerator(StreamMergeContext mergeContext, List<IAsyncEnumerator<T>> sources)
@@ -92,7 +92,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
             _mergeContext = mergeContext;
             _sources = sources;
             _queue = new PriorityQueue<OrderMergeItem<T>>(sources.Count);
-            isFirst = true;
+            skipFirst = true;
             SetOrderEnumerator();
         }
 
@@ -112,9 +112,9 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         {
             if (_queue.IsEmpty())
                 return false;
-            if (isFirst)
+            if (skipFirst)
             {
-                isFirst = false;
+                skipFirst = false;
                 return true;
             }
 

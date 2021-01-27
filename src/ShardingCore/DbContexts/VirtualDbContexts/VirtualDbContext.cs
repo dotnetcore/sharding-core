@@ -273,74 +273,56 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             return new ShardingBatchInsertEntry<T>(groups);
         }
 
-        public ShardingBatchUpdateEntry<T> BulkUpdate<T>(Expression<Func<T, bool>> @where, Expression<Func<T, T>> updateExp) where T : class
+        public ShardingBatchUpdateEntry<T> BulkUpdate<T>(Expression<Func<T, bool>> where, Expression<Func<T, T>> updateExp) where T : class
         {
             List<DbContext> dbContexts = null;
             if (typeof(T).IsShardingEntity())
             {
-                var shardingDbContexts = CreateShardingDbContext<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
+                var shardingDbContexts = CreateShardingDbContexts<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
                 dbContexts = shardingDbContexts.Select(o => (DbContext) o).ToList();
             }
             else
             {
-                var dbContext = CreateNoShardingDbContext();
                 dbContexts = new List<DbContext>(1)
                 {
-                    dbContext
+                    GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID)
                 };
             }
 
-            return new ShardingBatchUpdateEntry<T>(@where,updateExp,dbContexts);
+            return new ShardingBatchUpdateEntry<T>(where,updateExp,dbContexts);
         }
 
-        public ShardingBatchDeleteEntry<T> BulkDelete<T>(Expression<Func<T, bool>> @where) where T : class
+        public ShardingBatchDeleteEntry<T> BulkDelete<T>(Expression<Func<T, bool>> where) where T : class
         {
             List<DbContext> dbContexts = null;
             if (typeof(T).IsShardingEntity())
             {
-                var shardingDbContexts = CreateShardingDbContext<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
+                var shardingDbContexts = CreateShardingDbContexts<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
                 dbContexts = shardingDbContexts.Select(o => (DbContext) o).ToList();
             }
             else
             {
-                var dbContext = CreateNoShardingDbContext();
                 dbContexts = new List<DbContext>(1)
                 {
-                    dbContext
+                    GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID)
                 };
             }
 
-            return new ShardingBatchDeleteEntry<T>(@where,dbContexts);
+            return new ShardingBatchDeleteEntry<T>(where,dbContexts);
         }
 
         private ShardingDbContext CreateGenericDbContext<T>(T entity) where T : class
         {
+            var tail = EMPTY_SHARDING_TAIL_ID;
             if (entity.IsShardingEntity())
             {
-                return CreateShardingDbContext(entity as IShardingEntity);
+                var physicTable = _virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new RouteConfig(null, entity as IShardingEntity, null))[0];
+                tail = physicTable.Tail;
             }
-            else
-            {
-                return CreateNoShardingDbContext();
-            }
+           return GetOrCreateShardingDbContext(tail);
         }
 
-        private ShardingDbContext CreateNoShardingDbContext()
-        {
-            var shardingDbContext = GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID);
-
-            return shardingDbContext;
-        }
-
-        private ShardingDbContext CreateShardingDbContext<T>(T entity) where T : class, IShardingEntity
-        {
-            var physicTable = _virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new RouteConfig(null, entity, null))[0];
-            var shardingDbContext = GetOrCreateShardingDbContext(physicTable.Tail);
-
-            return shardingDbContext;
-        }
-
-        private List<ShardingDbContext> CreateShardingDbContext<T>(IQueryable queryable) where T : class, IShardingEntity
+        private List<ShardingDbContext> CreateShardingDbContexts<T>(IQueryable queryable) where T : class, IShardingEntity
         {
             var physicTables = _virtualTableManager.GetVirtualTable(typeof(T)).RouteTo(new RouteConfig(queryable, null, null));
             if (physicTables.Any())
