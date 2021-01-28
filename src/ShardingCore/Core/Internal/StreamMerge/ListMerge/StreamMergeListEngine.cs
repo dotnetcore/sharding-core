@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
 {
@@ -12,10 +15,10 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
     internal class StreamMergeListEngine<T>
     {
         private const int defaultCapacity = 0x10;//默认容量为16
-        private readonly StreamMergeContext _mergeContext;
+        private readonly StreamMergeContext<T> _mergeContext;
         private readonly List<IAsyncEnumerator<T>> _sources;
 
-        public StreamMergeListEngine(StreamMergeContext mergeContext,List<IAsyncEnumerator<T>> sources)
+        public StreamMergeListEngine(StreamMergeContext<T> mergeContext,List<IAsyncEnumerator<T>> sources)
         {
             _mergeContext = mergeContext;
             _sources = sources;

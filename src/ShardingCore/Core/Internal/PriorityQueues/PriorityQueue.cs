@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ShardingCore.Core.Internal.PriorityQueues {
     /// <summary>
-    /// 泛型优先队列 https://www.cnblogs.com/skyivben/archive/2009/04/18/1438731.html
+    /// 泛型优先队列 https://www.cnblogs.com/skyivben/archive/2009/04/18/1438731.html 优化T类型不需要实现IComparable
     /// </summary>
     /// <typeparam name="T">实现IComparable&lt;T&gt;的类型</typeparam>
     internal class PriorityQueue<T> {

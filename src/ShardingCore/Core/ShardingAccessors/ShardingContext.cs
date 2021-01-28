@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 
@@ -12,8 +13,12 @@ namespace ShardingCore.Core.ShardingAccessors
 */
     public class ShardingContext
     {
-        private ShardingContext()
+        private ShardingContext(RouteResult routeResult)
         {
+            foreach (var physicTable in routeResult.ReplaceTables)
+            {
+                _shardingTables.Add(physicTable.VirtualTable, new List<string>(1){physicTable.Tail});
+            }
         }
 
         /// <summary>
@@ -36,9 +41,9 @@ namespace ShardingCore.Core.ShardingAccessors
         /// 创建一个分表上下文
         /// </summary>
         /// <returns></returns>
-        public static ShardingContext Create()
+        public static ShardingContext Create(RouteResult routeResult)
         {
-            return new ShardingContext();
+            return new ShardingContext(routeResult);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.PhysicTables
 {
@@ -13,17 +14,18 @@ namespace ShardingCore.Core.PhysicTables
 /// </summary>
     public class DefaultPhysicTable:IPhysicTable
     {
-        public DefaultPhysicTable(string originalName, string tailPrefix, string tail, Type virtualType)
+
+        public DefaultPhysicTable(string originalName, IVirtualTable virtualTable, string tail)
         {
+            VirtualTable = virtualTable;
             OriginalName = originalName;
-            TailPrefix = tailPrefix;
             Tail = tail;
-            VirtualType = virtualType;
         }
         public string FullName => $"{OriginalName}{TailPrefix}{Tail}";
         public string OriginalName { get; }
-        public string TailPrefix { get; }
+        public string TailPrefix =>VirtualTable.ShardingConfig.TailPrefix;
         public string Tail { get;  }
-        public Type VirtualType { get;  }
+        public Type VirtualType => VirtualTable.EntityType;
+        public IVirtualTable VirtualTable { get; }
     }
 }

@@ -55,6 +55,12 @@ namespace ShardingCore.Core.VirtualTables
             return virtualTable;
         }
 
+        public IVirtualTable<T> GetVirtualTable<T>() where T : class, IShardingEntity
+        {
+            var shardingEntityType = typeof(T);
+            return (IVirtualTable<T>)GetVirtualTable(shardingEntityType);
+        }
+
         public IVirtualTable GetVirtualTable(string originalTableName)
         {
             return _virtualTables.Values.FirstOrDefault(o => o.GetOriginalTableName() == originalTableName) ?? throw new CreateSqlVirtualTableNotFoundException(originalTableName);

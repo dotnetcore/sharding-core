@@ -1,4 +1,5 @@
 using System;
+using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.PhysicTables
 {
@@ -30,6 +31,7 @@ namespace ShardingCore.Core.PhysicTables
         /// 映射类类型
         /// </summary>
         Type VirtualType { get; }
+        IVirtualTable VirtualTable { get; }
 
     }
 }

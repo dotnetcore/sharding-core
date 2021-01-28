@@ -19,12 +19,12 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         /// <summary>
         /// 合并数据上下文
         /// </summary>
-        private readonly StreamMergeContext _mergeContext;
+        private readonly StreamMergeContext<T> _mergeContext;
 
         private readonly IAsyncEnumerator<T> _source;
         private List<IComparable> _orderValues;
 
-        public OrderMergeItem(StreamMergeContext mergeContext, IAsyncEnumerator<T> source)
+        public OrderMergeItem(StreamMergeContext<T> mergeContext, IAsyncEnumerator<T> source)
         {
             _mergeContext = mergeContext;
             _source = source;
@@ -87,12 +87,12 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
         /// <summary>
         /// 合并数据上下文
         /// </summary>
-        private readonly StreamMergeContext _mergeContext;
+        private readonly StreamMergeContext<T> _mergeContext;
 
         private readonly IAsyncEnumerator<T> _source;
         private List<IComparable> _orderValues;
 
-        public OrderMergeItem(StreamMergeContext mergeContext, IAsyncEnumerator<T> source)
+        public OrderMergeItem(StreamMergeContext<T> mergeContext, IAsyncEnumerator<T> source)
         {
             _mergeContext = mergeContext;
             _source = source;

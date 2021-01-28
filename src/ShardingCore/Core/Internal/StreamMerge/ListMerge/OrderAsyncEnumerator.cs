@@ -15,13 +15,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
 #if !EFCORE2
     internal class OrderAsyncEnumerator<T> : IAsyncEnumerator<T>
     {
-        private readonly StreamMergeContext _mergeContext;
+        private readonly StreamMergeContext<T> _mergeContext;
         private readonly List<IAsyncEnumerator<T>> _sources;
         private readonly PriorityQueue<OrderMergeItem<T>> _queue;
         private bool skipFirst;
         private IAsyncEnumerator<T> _currentEnumerator;
 
-        public OrderAsyncEnumerator(StreamMergeContext mergeContext,List<IAsyncEnumerator<T>> sources)
+        public OrderAsyncEnumerator(StreamMergeContext<T> mergeContext,List<IAsyncEnumerator<T>> sources)
         {
             _mergeContext = mergeContext;
             _sources = sources;
@@ -81,13 +81,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
 
     internal class OrderAsyncEnumerator<T> : IAsyncEnumerator<T>
     {
-        private readonly StreamMergeContext _mergeContext;
+        private readonly StreamMergeContext<T> _mergeContext;
         private readonly List<IAsyncEnumerator<T>> _sources;
         private readonly PriorityQueue<OrderMergeItem<T>> _queue;
         private bool skipFirst;
         private IAsyncEnumerator<T> _currentEnumerator;
 
-        public OrderAsyncEnumerator(StreamMergeContext mergeContext, List<IAsyncEnumerator<T>> sources)
+        public OrderAsyncEnumerator(StreamMergeContext<T> mergeContext, List<IAsyncEnumerator<T>> sources)
         {
             _mergeContext = mergeContext;
             _sources = sources;

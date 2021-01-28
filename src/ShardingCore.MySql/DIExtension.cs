@@ -36,6 +36,7 @@ namespace ShardingCore.MySql
             var options = new MySqlOptions();
             configure(options);
             services.AddSingleton(options);
+            services.AddShardingCore();
 
             services.AddScoped<IVirtualDbContext, VirtualDbContext>();
             services.AddScoped<IDbContextOptionsProvider, SqlServerDbContextOptionsProvider>();
