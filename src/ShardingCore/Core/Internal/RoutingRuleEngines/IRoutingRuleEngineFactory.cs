@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ShardingCore.Core.Internal.RoutingRuleEngines
 {
@@ -11,5 +13,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
     public interface IRoutingRuleEngineFactory
     {
         IRouteRuleEngine CreateEngine();
+        RouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable);
+        IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable);
     }
 }

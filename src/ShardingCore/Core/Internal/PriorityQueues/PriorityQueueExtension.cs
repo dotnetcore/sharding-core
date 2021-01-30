@@ -16,7 +16,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues
         /// <param name="queue"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T Peek<T>(this PriorityQueue<T> queue) where T: IComparable<T>
+        public static T Peek<T>(this PriorityQueue<T> queue)
         {
             if (queue.IsEmpty())
                 return default(T);
@@ -28,7 +28,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues
         /// <param name="queue"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T Poll<T>(this PriorityQueue<T> queue) where T: IComparable<T>
+        public static T Poll<T>(this PriorityQueue<T> queue)
         {
             if (queue.IsEmpty())
                 return default(T);
@@ -44,7 +44,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
 
-        public static bool Offer<T>(this PriorityQueue<T> queue, T element) where T : IComparable<T>
+        public static bool Offer<T>(this PriorityQueue<T> queue, T element)
         {
             if (queue.IsFull())
                 return false;

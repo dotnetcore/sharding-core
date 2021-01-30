@@ -1,32 +1,30 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.Internal.StreamMerge.Abstractions;
 using ShardingCore.Core.Internal.StreamMerge.Enumerators;
-using ShardingCore.Extensions;
 
-namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
+namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 {
 /*
 * @Author: xjm
 * @Description:
-* @Date: Monday, 25 January 2021 07:57:59
+* @Date: Friday, 29 January 2021 17:55:29
 * @Email: 326308290@qq.com
 */
-    internal class StreamMergeListEngine<T>
+    internal class ListStreamMergeProxyEngine<T>:IDisposable
     {
-        private const int defaultCapacity = 0x10;//默认容量为16
         private readonly StreamMergeContext<T> _mergeContext;
-        private readonly IStreamMergeAsyncEnumerator<T> _streamMergeAsyncEnumerator;
+        private IStreamMergeEngine<T> _streamMergeEngine;
+        private const int defaultCapacity = 0x10;//默认容量为16
 
-        public StreamMergeListEngine(StreamMergeContext<T> mergeContext,IEnumerable<IStreamMergeAsyncEnumerator<T>> sources)
+
+        public ListStreamMergeProxyEngine(StreamMergeContext<T> mergeContext)
         {
             _mergeContext = mergeContext;
-            _streamMergeAsyncEnumerator = new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext,sources);
+            _streamMergeEngine = GenericStreamMergeEngine<T>.Create(mergeContext);
         }
 
-        public async Task<List<T>> Execute()
+        public async Task<List<T>> ToListAsync()
         {
             //如果合并数据的时候不需要跳过也没有take多少那么就是直接next
             var skip = _mergeContext.Skip;
@@ -34,8 +32,9 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
             var list = new List<T>(skip.GetValueOrDefault() + take ?? defaultCapacity);
             var realSkip = 0;
             var realTake = 0;
+            var enumerator = new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext, await _streamMergeEngine.GetStreamEnumerator());
 #if !EFCORE2
-            while (await _streamMergeAsyncEnumerator.MoveNextAsync())
+            while (await enumerator.MoveNextAsync())
 #endif
 #if EFCORE2
             while (await enumerator.MoveNextAsync())
@@ -50,7 +49,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
                         continue;
                     }
                 }
-                list.Add(_streamMergeAsyncEnumerator.Current);
+                list.Add(enumerator.Current);
                 if (take.HasValue)
                 {
                     realTake++;
@@ -60,7 +59,11 @@ namespace ShardingCore.Core.Internal.StreamMerge.ListMerge
             }
 
             return list;
+            
         }
-        
+        public void Dispose()
+        {
+            _streamMergeEngine.Dispose();
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
                     {
                         var shardingDbContext = _mergeContext.CreateDbContext();
                         parallelDbContexts.Add(shardingDbContext);
-                        var newQueryable = (IQueryable<T>) _mergeContext.Source.ReplaceDbContextQueryable(shardingDbContext);
+                        var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable().ReplaceDbContextQueryable(shardingDbContext);
                         
                         return await EFCoreExecute(newQueryable,routeResult,efQuery);
                     });

@@ -17,15 +17,21 @@ namespace ShardingCore.Core.Internal.StreamMerge
     {
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         private readonly IShardingScopeFactory _shardingScopeFactory;
+        private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public StreamMergeContextFactory(IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
+        public StreamMergeContextFactory(IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory,IRoutingRuleEngineFactory routingRuleEngineFactory)
         {
             _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
             _shardingScopeFactory = shardingScopeFactory;
+            _routingRuleEngineFactory = routingRuleEngineFactory;
         }
         public StreamMergeContext<T> Create<T>(IQueryable<T> queryable, IEnumerable<RouteResult> routeResults)
         {
             return new StreamMergeContext<T>(queryable, routeResults, _shardingParallelDbContextFactory, _shardingScopeFactory);
+        }
+        public StreamMergeContext<T> Create<T>(IQueryable<T> queryable)
+        {
+            return new StreamMergeContext<T>(queryable, _routingRuleEngineFactory.Route(queryable), _shardingParallelDbContextFactory, _shardingScopeFactory);
         }
     }
 }

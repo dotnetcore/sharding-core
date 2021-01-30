@@ -35,10 +35,22 @@ namespace ShardingCore.Test50.MySql
         {
             var modascs=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingListAsync();
             Assert.Equal(100,modascs.Count);
-            Assert.Equal(100,modascs.Last().Age);
+            var i = 1;
+            foreach (var age in modascs)
+            {
+                Assert.Equal(i,age.Age);
+                i++;
+
+            }
             var moddescs=await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o=>o.Age).ToShardingListAsync();
             Assert.Equal(100,moddescs.Count);
-            Assert.Equal(1,moddescs.Last().Age);
+            var j = 100;
+            foreach (var age in moddescs)
+            {
+                Assert.Equal(j,age.Age);
+                j--;
+
+            }
         }
         [Fact]
         public async Task ToList_Id_In_Test()
@@ -101,8 +113,15 @@ namespace ShardingCore.Test50.MySql
         [Fact]
         public async Task FirstOrDefault_Order_By_Id_Test()
         {
+            var sysUserModAge=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ShardingFirstOrDefaultAsync();
+            Assert.True(sysUserModAge!=null&&sysUserModAge.Id=="1");
+            var sysUserModAgeDesc=await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o=>o.Age).ShardingFirstOrDefaultAsync();
+            Assert.True(sysUserModAgeDesc!=null&&sysUserModAgeDesc.Id=="100");
             var sysUserMod=await _virtualDbContext.Set<SysUserMod>().OrderBy(o=>o.Id).ShardingFirstOrDefaultAsync();
             Assert.True(sysUserMod!=null&&sysUserMod.Id=="1");
+            
+            var sysUserModDesc=await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o=>o.Id).ShardingFirstOrDefaultAsync();
+            Assert.True(sysUserModDesc!=null&&sysUserModDesc.Id=="99");
             var sysUserRange=await _virtualDbContext.Set<SysUserRange>().OrderBy(o=>o.Id).ShardingFirstOrDefaultAsync();
             Assert.True(sysUserRange!=null&&sysUserRange.Id=="1");
         }

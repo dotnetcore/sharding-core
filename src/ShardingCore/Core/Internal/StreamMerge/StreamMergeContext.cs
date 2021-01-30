@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
+using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.DbContexts;
@@ -19,7 +20,8 @@ namespace ShardingCore.Core.Internal.StreamMerge
     {
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         private readonly IShardingScopeFactory _shardingScopeFactory;
-        public IQueryable<T> Source { get; }
+        private readonly IQueryable<T> _source;
+        private readonly IQueryable<T> _reWriteSource;
         public IEnumerable<RouteResult> RouteResults { get; }
         public int? Skip { get; private set; }
         public int? Take { get; private set; }
@@ -30,12 +32,13 @@ namespace ShardingCore.Core.Internal.StreamMerge
         {
             _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
             _shardingScopeFactory = shardingScopeFactory;
-            Source = source;
+            _source = source;
             RouteResults = routeResults;
-            var extraEntry = source.GetExtraEntry();
-            Skip = extraEntry.Skip;
-            Take = extraEntry.Take;
-            Orders = extraEntry.Orders ?? Enumerable.Empty<PropertyOrder>();
+            var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
+            Skip = reWriteResult.Skip;
+            Take = reWriteResult.Take;
+            Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
+            _reWriteSource = reWriteResult.ReWriteQueryable;
         }
 
         public DbContext CreateDbContext()
@@ -46,6 +49,15 @@ namespace ShardingCore.Core.Internal.StreamMerge
         public ShardingScope CreateScope()
         {
             return _shardingScopeFactory.CreateScope();
+        }
+
+        public IQueryable<T> GetReWriteQueryable()
+        {
+            return _reWriteSource;
+        }
+        public IQueryable<T> GetOriginalQueryable()
+        {
+            return _source;
         }
 
     }

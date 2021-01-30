@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.Internal.RoutingRuleEngines
@@ -12,15 +14,29 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
     public class RoutingRuleEngineFactory : IRoutingRuleEngineFactory
     {
         private readonly IRouteRuleEngine _routeRuleEngine;
+        private readonly IVirtualTableManager _virtualTableManager;
 
-        public RoutingRuleEngineFactory(IRouteRuleEngine routeRuleEngine)
+        public RoutingRuleEngineFactory(IRouteRuleEngine routeRuleEngine,IVirtualTableManager virtualTableManager)
         {
             _routeRuleEngine = routeRuleEngine;
+            _virtualTableManager = virtualTableManager;
         }
 
         public IRouteRuleEngine CreateEngine()
         {
             return _routeRuleEngine;
+        }
+
+        public RouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
+        {
+            return new RouteRuleContext<T>(queryable, _virtualTableManager);
+        }
+
+        public IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable)
+        {
+            var engine = CreateEngine();
+            var routeRuleContext = CreateContext<T>(queryable);
+            return engine.Route(routeRuleContext);
         }
     }
 }

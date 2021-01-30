@@ -35,21 +35,17 @@ namespace ShardingCore.Core
     {
         private IQueryable<T> _source;
         private bool _autoParseRoute = true;
-        private readonly IVirtualTableManager _virtualTableManager;
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
         private Dictionary<Type, Expression> _routes = new Dictionary<Type, Expression>();
         private readonly Dictionary<IVirtualTable, List<string>> _endRoutes = new Dictionary<IVirtualTable, List<string>>();
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
-        private readonly RouteRuleContext<T> _routeRuleContext;
 
 
         public ShardingQueryable(IQueryable<T> source)
         {
             _source = source;
-            _virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
             _streamMergeContextFactory = ShardingContainer.Services.GetService<IStreamMergeContextFactory>();
             _routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
-            _routeRuleContext=new RouteRuleContext<T>(source,_virtualTableManager);
         }
 
 
@@ -104,9 +100,7 @@ namespace ShardingCore.Core
 
         private StreamMergeContext<T> GetContext()
         {
-            var routeRuleEngine = _routingRuleEngineFactory.CreateEngine();
-            var routeResults = routeRuleEngine.Route(_routeRuleContext);
-            return _streamMergeContextFactory.Create(_source, routeResults);
+            return _streamMergeContextFactory.Create(_source);
         }
         private async Task<List<TResult>> GetGenericMergeEngine<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {
@@ -128,20 +122,21 @@ namespace ShardingCore.Core
 
         public async Task<List<T>> ToListAsync()
         {
-            return await new StreamMergeListSourceEngine<T>(GetContext()).Execute();
+            var context = GetContext();
+            using (var engine =  GenericStreamMergeProxyEngine<T>.Create(context))
+            {
+                return await engine.ToListAsync();
+            }
         }
 
 
         public async Task<T> FirstOrDefaultAsync()
         {
-            var result = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((IQueryable<T>) queryable));
-
-            var q = result.Where(o => o != null).AsQueryable();
-            var extraEntry = _source.GetExtraEntry();
-            if (extraEntry.Orders.Any())
-                q = q.OrderWithExpression(extraEntry.Orders);
-
-            return q.FirstOrDefault();
+            var context = GetContext();
+            using (var engine =  GenericStreamMergeProxyEngine<T>.Create(context))
+            {
+                return await engine.FirstOrDefaultAsync();
+            }
         }
 
         public async Task<bool> AnyAsync()
