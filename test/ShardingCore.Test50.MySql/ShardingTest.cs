@@ -63,6 +63,8 @@ namespace ShardingCore.Test50.MySql
                 Assert.Contains(sysUserMods, o =>o.Id==id);
                 Assert.Contains(sysUserRanges, o =>o.Id==id);
             }
+            Assert.DoesNotContain(sysUserMods,o=>o.Age>4);
+            Assert.DoesNotContain(sysUserRanges,o=>o.Age>4);
         }
         [Fact]
         public async Task ToList_Id_Eq_Test()
@@ -83,6 +85,21 @@ namespace ShardingCore.Test50.MySql
             var ranges=await _virtualDbContext.Set<SysUserRange>().Where(o=>o.Id!="3").ToShardingListAsync();
             Assert.Equal(999,ranges.Count);
             Assert.DoesNotContain(ranges,o=>o.Id=="3");
+        }
+        [Fact]
+        public async Task ToList_Id_Not_Eq_Skip_Test()
+        {
+            var mods=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id!="3").OrderBy(o=>o.Age).Skip(2).ToShardingListAsync();
+            Assert.Equal(97,mods.Count);
+            Assert.DoesNotContain(mods,o=>o.Id=="3");
+            Assert.Equal(4,mods[0].Age);
+            Assert.Equal(5,mods[1].Age);
+            
+            var modsDesc=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id!="3").OrderByDescending(o=>o.Age).Skip(13).ToShardingListAsync();
+            Assert.Equal(86,modsDesc.Count);
+            Assert.DoesNotContain(mods,o=>o.Id=="3");
+            Assert.Equal(87,modsDesc[0].Age);
+            Assert.Equal(86,modsDesc[1].Age);
         }
         [Fact]
         public async Task ToList_Name_Eq_Test()

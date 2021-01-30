@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge.Abstractions;
 using ShardingCore.Core.Internal.StreamMerge.Enumerators;
-using ShardingCore.Core.Internal.StreamMerge.ListMerge;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Extensions;
+
+#if EFCORE2
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+#endif
 
 namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 {
@@ -18,7 +21,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 * @Date: Friday, 29 January 2021 15:40:15
 * @Email: 326308290@qq.com
 */
-    internal class GenericStreamMergeEngine<T> :IStreamMergeEngine<T>
+    internal class GenericStreamMergeEngine<T> : IStreamMergeEngine<T>
     {
         private readonly StreamMergeContext<T> _mergeContext;
         private readonly List<DbContext> _parallelDbContexts;
@@ -33,6 +36,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
         {
             return new GenericStreamMergeEngine<T>(mergeContext);
         }
+
         private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable, RouteResult routeResult)
         {
             using (var scope = _mergeContext.CreateScope())
@@ -50,7 +54,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
             }
         }
 
-        public async Task<IEnumerable<IStreamMergeAsyncEnumerator<T>>> GetStreamEnumerator()
+        public async Task<IStreamMergeAsyncEnumerator<T>> GetStreamEnumerator()
         {
             var enumeratorTasks = _mergeContext.RouteResults.Select(routeResult =>
             {
@@ -61,10 +65,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
                     var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable().ReplaceDbContextQueryable(shardingDbContext);
 
                     var asyncEnumerator = await GetAsyncEnumerator(newQueryable, routeResult);
-                    return new StreamMergeAsyncEnumerator<T>( asyncEnumerator);
+                    return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
                 });
             }).ToArray();
-            return (await Task.WhenAll(enumeratorTasks)).ToList();
+            var streamEnumerators = await Task.WhenAll(enumeratorTasks);
+            if (_mergeContext.Skip.HasValue || _mergeContext.Take.HasValue)
+                return new NoPaginationStreamMergeEnumerator<T>(_mergeContext,streamEnumerators );
+            return new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
         }
 
 

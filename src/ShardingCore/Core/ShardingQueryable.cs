@@ -8,12 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges;
-using ShardingCore.Core.Internal.StreamMerge.ListMerge;
-using ShardingCore.Core.Internal.StreamMerge.ListSourceMerges;
-using ShardingCore.Core.ShardingAccessors;
-using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts;
 using ShardingCore.Extensions;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -31,6 +26,7 @@ namespace ShardingCore.Core
     /// 分表查询构造器
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    
     public class ShardingQueryable<T> : IShardingQueryable<T>
     {
         private IQueryable<T> _source;
@@ -41,11 +37,16 @@ namespace ShardingCore.Core
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
 
-        public ShardingQueryable(IQueryable<T> source)
+        private ShardingQueryable(IQueryable<T> source)
         {
             _source = source;
             _streamMergeContextFactory = ShardingContainer.Services.GetService<IStreamMergeContextFactory>();
             _routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
+        }
+
+        public static ShardingQueryable<TSource> Create<TSource>(IQueryable<TSource> source)
+        {
+            return new ShardingQueryable<TSource>(source);
         }
 
 
@@ -104,7 +105,7 @@ namespace ShardingCore.Core
         }
         private async Task<List<TResult>> GetGenericMergeEngine<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {
-            return await new GenericMergeEngine<T>(GetContext()).Execute(efQuery);
+            return await GenericInMemoryMergeEngine<T>.Create(GetContext()).ExecuteAsync(efQuery);
         }
 
         public async Task<int> CountAsync()
@@ -120,12 +121,12 @@ namespace ShardingCore.Core
         }
 
 
-        public async Task<List<T>> ToListAsync()
+        public async Task<List<T>> ToListAsync(int capacity=20)
         {
             var context = GetContext();
             using (var engine =  GenericStreamMergeProxyEngine<T>.Create(context))
             {
-                return await engine.ToListAsync();
+                return await engine.ToListAsync(capacity);
             }
         }
 
@@ -133,10 +134,13 @@ namespace ShardingCore.Core
         public async Task<T> FirstOrDefaultAsync()
         {
             var context = GetContext();
-            using (var engine =  GenericStreamMergeProxyEngine<T>.Create(context))
-            {
-                return await engine.FirstOrDefaultAsync();
-            }
+            var result= await GenericInMemoryMergeEngine<T>.Create(context).ExecuteAsync(async queryable => await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((IQueryable<T>) queryable));
+            var q = result.Where(o => o != null).AsQueryable();
+            if (context.Orders.Any())
+                return  q.OrderWithExpression(context.Orders).FirstOrDefault();
+
+            return q.FirstOrDefault();
+            
         }
 
         public async Task<bool> AnyAsync()
@@ -144,6 +148,7 @@ namespace ShardingCore.Core
             return (await GetGenericMergeEngine(x => EntityFrameworkQueryableExtensions.AnyAsync((IQueryable<T>) x)))
                 .Any(o => o);
         }
+
 
         public async Task<T> MaxAsync()
         {
@@ -197,6 +202,28 @@ namespace ShardingCore.Core
             return results.Sum();
         }
 
+        public async Task<decimal> DecimalAverageAsync()
+        {
+            if (typeof(T) != typeof(decimal))
+                throw new InvalidOperationException($"{typeof(T)} cast to decimal failed");
+            var results = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.AverageAsync((IQueryable<decimal>) queryable));
+            return results.Sum()/results.Count();
+        }
 
+        public async Task<double> DoubleAverageAsync()
+        {
+            if (typeof(T) != typeof(double))
+                throw new InvalidOperationException($"{typeof(T)} cast to double failed");
+            var results = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.AverageAsync((IQueryable<double>) queryable));
+            return results.Sum()/results.Count();
+        }
+
+        public async  Task<float> FloatAverageAsync()
+        {
+            if (typeof(T) != typeof(float))
+                throw new InvalidOperationException($"{typeof(T)} cast to float failed");
+            var results = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.AverageAsync((IQueryable<float>) queryable));
+            return results.Sum()/results.Count();
+        }
     }
 }

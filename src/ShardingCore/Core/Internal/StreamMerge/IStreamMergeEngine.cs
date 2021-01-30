@@ -13,6 +13,6 @@ namespace ShardingCore.Core.Internal.StreamMerge
 */
     internal interface  IStreamMergeEngine<T>:IDisposable
     {
-        Task<IEnumerable<IStreamMergeAsyncEnumerator<T>>> GetStreamEnumerator();
+        Task<IStreamMergeAsyncEnumerator<T>> GetStreamEnumerator();
     }
 }

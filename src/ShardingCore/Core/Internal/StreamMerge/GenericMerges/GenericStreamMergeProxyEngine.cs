@@ -31,13 +31,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 
         public async Task<List<T>> ToListAsync(int capacity=20)
         {
-            var enumerator = new NoPaginationStreamMergeEngine<T>(_mergeContext, await _streamMergeEngine.GetStreamEnumerator());
+            var enumerator = await _streamMergeEngine.GetStreamEnumerator();
             var list = new List<T>(capacity);
 #if !EFCORE2
             while (await enumerator.MoveNextAsync())
 #endif
 #if EFCORE2
-            while (await enumerator.MoveNextAsync())
+            while (await enumerator.MoveNext())
 #endif
             {
                 list.Add(enumerator.Current);
@@ -45,60 +45,6 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 
             return list;
         }
-
-        public async Task<T> FirstOrDefaultAsync()
-        {
-            var enumerator = new NoPaginationStreamMergeEngine<T>(_mergeContext, await _streamMergeEngine.GetStreamEnumerator());
-
-#if !EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-#if EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-            {
-                return enumerator.Current;
-            }
-
-            return default;
-        }
-
-        public async Task<bool> AnyAsync()
-        {
-            var enumerator = (IStreamMergeAsyncEnumerator<bool>)new NoPaginationStreamMergeEngine<T>(_mergeContext, await _streamMergeEngine.GetStreamEnumerator());
-
-#if !EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-#if EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-            {
-                if (!enumerator.Current)
-                    return false;
-            }
-
-            return true;
-        }
-        
-
-        public async Task<int> CountAsync()
-        {
-            var enumerator = (IStreamMergeAsyncEnumerator<int>)new NoPaginationStreamMergeEngine<T>(_mergeContext, await _streamMergeEngine.GetStreamEnumerator());
-            var result = 0;
-#if !EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-#if EFCORE2
-            while (await enumerator.MoveNextAsync())
-#endif
-            {
-                result += enumerator.Current;
-            }
-
-            return result;
-        }
-
         public void Dispose()
         {
             _streamMergeEngine.Dispose();

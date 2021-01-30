@@ -13,7 +13,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues {
         public PriorityQueue()
             : this(defaultCapacity) {
         }
-        public PriorityQueue(int initCapacity,bool ascending = false,IComparer<T> comparer=null) {
+        public PriorityQueue(int initCapacity,bool ascending = true,IComparer<T> comparer=null) {
             buffer = new T[initCapacity];
             heapLength = 0;
             descending = ascending;

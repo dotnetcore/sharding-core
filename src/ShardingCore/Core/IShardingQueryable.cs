@@ -55,7 +55,7 @@ namespace ShardingCore.Core
         /// 异步获取列表
         /// </summary>
         /// <returns></returns>
-        Task<List<T>> ToListAsync();
+        Task<List<T>> ToListAsync(int capacity=20);
 
 
         /// <summary>
@@ -111,6 +111,21 @@ namespace ShardingCore.Core
         /// </summary>
         /// <returns></returns>
         Task<float> FloatSumAsync();
+        /// <summary>
+        /// 平均数
+        /// </summary>
+        /// <returns></returns>
+        Task<decimal> DecimalAverageAsync();
+        /// <summary>
+        /// 平均数
+        /// </summary>
+        /// <returns></returns>
+        Task<double> DoubleAverageAsync();
+        /// <summary>
+        /// 平均数
+        /// </summary>
+        /// <returns></returns>
+        Task<float> FloatAverageAsync();
 
     }
 }

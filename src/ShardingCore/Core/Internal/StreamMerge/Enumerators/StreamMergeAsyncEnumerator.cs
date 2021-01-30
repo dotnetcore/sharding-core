@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.StreamMerge.Abstractions;
 
@@ -24,6 +25,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
         }
 
 
+#if !EFCORE2
         public async ValueTask<bool> MoveNextAsync()
         {
             if (skip)
@@ -32,6 +34,25 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
                 return null!=_source.Current;
             }
             return await _source.MoveNextAsync();
+        }
+
+#endif
+#if EFCORE2
+        public async Task<bool> MoveNext()
+        {
+            if (skip)
+            {
+                skip = false;
+                return null!=_source.Current;
+            }
+            return await _source.MoveNext();
+        }
+
+#endif
+
+        public Task<bool> MoveNext(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         public T Current => skip?default:_source.Current;
@@ -52,10 +73,19 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
         }
 
         public T ReallyCurrent => _source.Current;
+#if !EFCORE2
 
         public async ValueTask DisposeAsync()
         {
             await _source.DisposeAsync();
         }
+#endif
+
+#if EFCORE2
+        public void Dispose()
+        {
+            _source.Dispose();
+        }
+#endif
     }
 }

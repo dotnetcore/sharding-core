@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
-using ShardingCore.Core.Internal.StreamMerge.ListMerge;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Extensions;
 
@@ -16,13 +15,17 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 * @Date: Thursday, 28 January 2021 17:04:29
 * @Email: 326308290@qq.com
 */
-    internal class GenericMergeEngine<T>
+    internal class GenericInMemoryMergeEngine<T>
     {
         private readonly StreamMergeContext<T> _mergeContext;
 
-        public GenericMergeEngine(StreamMergeContext<T> mergeContext)
+        private GenericInMemoryMergeEngine(StreamMergeContext<T> mergeContext)
         {
             _mergeContext = mergeContext;
+        }
+        public static GenericInMemoryMergeEngine<T> Create<T>(StreamMergeContext<T> mergeContext)
+        {
+            return new GenericInMemoryMergeEngine<T>(mergeContext);
         }
         
         private async Task<TResult> EFCoreExecute<TResult>(IQueryable<T> newQueryable,RouteResult routeResult,Func<IQueryable, Task<TResult>> efQuery)
@@ -33,7 +36,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
                 return await efQuery(newQueryable);
             }
         }
-        public async Task<List<TResult>> Execute<TResult>(Func<IQueryable, Task<TResult>> efQuery)
+        public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {
             //从各个分表获取数据
             List<DbContext> parallelDbContexts = new List<DbContext>(_mergeContext.RouteResults.Count());

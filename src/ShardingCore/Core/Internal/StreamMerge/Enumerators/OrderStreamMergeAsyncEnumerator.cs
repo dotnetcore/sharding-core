@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.StreamMerge.Abstractions;
 using ShardingCore.Extensions;
@@ -20,13 +21,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
         /// </summary>
         private readonly StreamMergeContext<T> _mergeContext;
 
-        private readonly IStreamMergeAsyncEnumerator<T> _source;
+        private readonly IStreamMergeAsyncEnumerator<T> _enumerator;
         private List<IComparable> _orderValues;
 
-        public OrderStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IStreamMergeAsyncEnumerator<T> source)
+        public OrderStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IStreamMergeAsyncEnumerator<T> enumerator)
         {
             _mergeContext = mergeContext;
-            _source = source;
+            _enumerator = enumerator;
             SetOrderValues();
         }
 
@@ -34,26 +35,40 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
         {
             _orderValues = HasElement() ? GetCurrentOrderValues() : new List<IComparable>(0);
         }
+        
+#if !EFCORE2
+
         public async ValueTask<bool> MoveNextAsync()
         {
-            var has = await _source.MoveNextAsync();
+            var has = await _enumerator.MoveNextAsync();
             SetOrderValues();
             return has;
         }
+#endif
+        
+#if EFCORE2
 
-        public T Current =>_source.Current;
+        public async Task<bool> MoveNext(CancellationToken cancellationToken)
+        {
+            var has = await _enumerator.MoveNext(cancellationToken);
+            SetOrderValues();
+            return has;
+        }
+#endif
+
+        public T Current =>_enumerator.Current;
 
         public bool SkipFirst()
         {
-            return _source.SkipFirst();
+            return _enumerator.SkipFirst();
         }
 
         public bool HasElement()
         {
-            return _source.HasElement();
+            return _enumerator.HasElement();
         }
 
-        public T ReallyCurrent => _source.ReallyCurrent;
+        public T ReallyCurrent => _enumerator.ReallyCurrent;
 
         private List<IComparable> GetCurrentOrderValues()
         {
@@ -62,7 +77,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
             var list = new List<IComparable>(_mergeContext.Orders.Count());
             foreach (var order in _mergeContext.Orders)
             {
-                var value = _source.ReallyCurrent.GetValueByExpression(order.PropertyExpression);
+                var value = _enumerator.ReallyCurrent.GetValueByExpression(order.PropertyExpression);
                 if (value is IComparable comparable)
                     list.Add(comparable);
                 else
@@ -89,10 +104,19 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
         {
             return _orderValues ?? new List<IComparable>(0);
         }
+#if !EFCORE2
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return _source.DisposeAsync();
+            await _enumerator.DisposeAsync();
         }
+#endif
+
+#if EFCORE2
+        public void Dispose()
+        {
+            _enumerator.Dispose();
+        }
+#endif
     }
 }

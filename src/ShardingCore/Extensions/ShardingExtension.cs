@@ -23,11 +23,11 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static IShardingQueryable<T> AsSharding<T>(this IQueryable<T> source)
         {
-            return new ShardingQueryable<T>(source);
+            return ShardingQueryable<T>.Create(source);
         }
         public static async Task<bool> ShardingAnyAsync<T>(this IQueryable<T> source, Expression<Func<T, bool>> predicate)
         {
-            return await new ShardingQueryable<T>(source.Where(predicate)).AnyAsync();
+            return await ShardingQueryable<T>.Create(source.Where(predicate)).AnyAsync();
         }
         /// <summary>
         /// 分页
@@ -37,7 +37,7 @@ namespace ShardingCore.Extensions
         /// <param name="pageSize"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static async Task<ShardingPagedResult<T>> ToShardingPageResultAsync<T>(this IQueryable<T> source, int pageIndex, int pageSize)
+        public static async Task<ShardingPagedResult<T>> ShardingPageResultAsync<T>(this IQueryable<T> source, int pageIndex, int pageSize)
         {
             //设置每次获取多少页
             var take = pageSize <= 0 ? 1 : pageSize;
@@ -46,7 +46,7 @@ namespace ShardingCore.Extensions
             //需要跳过多少页
             var skip = (index - 1) * take;
             //获取每次总记录数
-            var count = await new ShardingQueryable<T>(source).CountAsync();
+            var count = await ShardingQueryable<T>.Create(source).CountAsync();
             
             //当数据库数量小于要跳过的条数就说明没数据直接返回不在查询list
             if (count <= skip)
@@ -55,7 +55,7 @@ namespace ShardingCore.Extensions
             int remainingCount = count - skip;
             //当剩余条数小于take数就取remainingCount
             var realTake = remainingCount < take ? remainingCount : take;
-            var data = await new ShardingQueryable<T>(source.Skip(skip).Take(realTake)).ToListAsync();
+            var data = await ShardingQueryable<T>.Create(source.Skip(skip).Take(realTake)).ToListAsync(realTake);
             return new ShardingPagedResult<T>(data, count);
         }
         /// <summary>
@@ -66,7 +66,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static List<T> ToShardingList<T>(this IQueryable<T> source)
         {
-            return  new ShardingQueryable<T>(source).ToList();
+            return  ShardingQueryable<T>.Create(source).ToList();
         }
         /// <summary>
         /// 分页
@@ -76,7 +76,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static async Task<List<T>> ToShardingListAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).ToListAsync();
+            return await ShardingQueryable<T>.Create(source).ToListAsync();
         }
         /// <summary>
         /// 第一条
@@ -86,7 +86,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static T ShardingFirstOrDefault<T>(this IQueryable<T> source)
         {
-            return  new ShardingQueryable<T>(source).FirstOrDefault();
+            return  ShardingQueryable<T>.Create(source).FirstOrDefault();
         }
         /// <summary>
         /// 第一条
@@ -96,7 +96,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static async Task<T> ShardingFirstOrDefaultAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).FirstOrDefaultAsync();
+            return await ShardingQueryable<T>.Create(source).FirstOrDefaultAsync();
         }
         /// <summary>
         /// 最大
@@ -106,7 +106,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static T ShardingMax<T>(this IQueryable<T> source)
         {
-            return  new ShardingQueryable<T>(source).Max();
+            return  ShardingQueryable<T>.Create(source).Max();
         }
         /// <summary>
         /// 最大
@@ -116,7 +116,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static async Task<T> ShardingMaxAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).MaxAsync();
+            return await ShardingQueryable<T>.Create(source).MaxAsync();
         }
         /// <summary>
         /// 最大
@@ -144,11 +144,11 @@ namespace ShardingCore.Extensions
         }
         public static T ShardingMin<T>(this IQueryable<T> source)
         {
-            return  new ShardingQueryable<T>(source).Min();
+            return  ShardingQueryable<T>.Create(source).Min();
         }
         public static async Task<T> ShardingMinAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).MinAsync();
+            return await ShardingQueryable<T>.Create(source).MinAsync();
         }
         /// <summary>
         /// 最小
@@ -176,27 +176,27 @@ namespace ShardingCore.Extensions
         }
         public static int ShardingCount<T>(this IQueryable<T> source)
         {
-            return new ShardingQueryable<T>(source).Count();
+            return ShardingQueryable<T>.Create(source).Count();
         }
         public static async Task<int> ShardingCountAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).CountAsync();
+            return await ShardingQueryable<T>.Create(source).CountAsync();
         }
         public static long ShardingLongCount<T>(this IQueryable<T> source)
         {
-            return  new ShardingQueryable<T>(source).LongCount();
+            return  ShardingQueryable<T>.Create(source).LongCount();
         }
         public static async Task<long> ShardingLongCountAsync<T>(this IQueryable<T> source)
         {
-            return await new ShardingQueryable<T>(source).LongCountAsync();
+            return await ShardingQueryable<T>.Create(source).LongCountAsync();
         }
         public static int ShardingSum(this IQueryable<int> source)
         {
-            return  new ShardingQueryable<int>(source).Sum();
+            return  ShardingQueryable<int>.Create(source).Sum();
         }
         public static async Task<int> ShardingSumAsync(this IQueryable<int> source)
         {
-            return await new ShardingQueryable<int>(source).SumAsync();
+            return await ShardingQueryable<int>.Create(source).SumAsync();
         }
         public static int ShardingSum<T>(this IQueryable<T> source,Expression<Func<T,int>> keySelector)
         {
@@ -208,11 +208,11 @@ namespace ShardingCore.Extensions
         }
         public static long ShardingSum(this IQueryable<long> source)
         {
-            return  new ShardingQueryable<long>(source).LongSum();
+            return  ShardingQueryable<long>.Create(source).LongSum();
         }
         public static async Task<long> ShardingSumAsync(this IQueryable<long> source)
         {
-            return await new ShardingQueryable<long>(source).LongSumAsync();
+            return await ShardingQueryable<long>.Create(source).LongSumAsync();
         }
         public static long ShardingSum<T>(this IQueryable<T> source,Expression<Func<T,long>> keySelector)
         {
@@ -224,11 +224,11 @@ namespace ShardingCore.Extensions
         }
         public static double ShardingSum(this IQueryable<double> source)
         {
-            return  new ShardingQueryable<double>(source).DoubleSum();
+            return ShardingQueryable<double>.Create(source).DoubleSum();
         }
         public static async Task<double> ShardingSumAsync(this IQueryable<double> source)
         {
-            return await new ShardingQueryable<double>(source).DoubleSumAsync();
+            return await ShardingQueryable<double>.Create(source).DoubleSumAsync();
         }
         public static double ShardingSum<T>(this IQueryable<T> source,Expression<Func<T,double>> keySelector)
         {
@@ -240,11 +240,11 @@ namespace ShardingCore.Extensions
         }
         public static decimal ShardingSum(this IQueryable<decimal> source)
         {
-            return  new ShardingQueryable<decimal>(source).DecimalSum();
+            return  ShardingQueryable<decimal>.Create(source).DecimalSum();
         }
         public static async Task<decimal> ShardingSumAsync(this IQueryable<decimal> source)
         {
-            return await new ShardingQueryable<decimal>(source).DecimalSumAsync();
+            return await ShardingQueryable<decimal>.Create(source).DecimalSumAsync();
         }
         public static decimal ShardingSum<T>(this IQueryable<T> source,Expression<Func<T,decimal>> keySelector)
         {
@@ -256,11 +256,11 @@ namespace ShardingCore.Extensions
         }
         public static float ShardingSum(this IQueryable<float> source)
         {
-            return  new ShardingQueryable<float>(source).FloatSum();
+            return  ShardingQueryable<float>.Create(source).FloatSum();
         }
         public static async Task<float> ShardingSumAsync(this IQueryable<float> source)
         {
-            return await new ShardingQueryable<float>(source).FloatSumAsync();
+            return await ShardingQueryable<float>.Create(source).FloatSumAsync();
         }
         public static float ShardingSum<T>(this IQueryable<T> source,Expression<Func<T,float>> keySelector)
         {
