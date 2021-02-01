@@ -7,9 +7,9 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFrameworkCore.MySql
 --- | --- | --- | --- | --- | --- 
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.1) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.1) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.1) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.2) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.2) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.2) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
 
 ### Support Sharding Method 支持的分表方式
 
@@ -203,7 +203,7 @@ route
 最小 |ShardingMinAsync |0 |0
 是否存在 |ShardingAnyAsync |0 |0
 分页 |ToShardingPageResultAsync |0 |0
-数目 |ShardingCountAsync |0 |0
+数目 |ShardingCountAsync |1 |1
 求和 |ShardingSumAsync |0 |0
 
 ## 默认路由
