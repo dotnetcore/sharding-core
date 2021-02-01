@@ -223,6 +223,29 @@ AbstractSimpleShardingYearKeyLongVirtualRoute |按时间戳 |yyyy | `>,>=,<,<=,=
 
 注:`contains`表示为`o=>ids.contains(o.shardingkey)`
 
+#高级
+
+##批量操作
+
+批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如zzz进行批量操作或者batchextension
+```c#
+ virtualDbContext.BulkInsert<SysUserMod>(new List<SysUserMod>())
+.BatchGroups.ForEach(pair =>
+{
+    ///zzz or other
+    pair.Key.BlukInsert(pair.Value);
+});
+var shardingBatchUpdateEntry = virtualDbContext.BulkUpdate<SysUserMod>(o => o.Id == "1", o => new SysUserMod()
+{
+Name = "name_01"
+});
+shardingBatchUpdateEntry.DbContexts.ForEach(context =>
+{
+//zzz or other
+context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.UpdateExp);
+});
+```
+
 # 最后
 凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)
 

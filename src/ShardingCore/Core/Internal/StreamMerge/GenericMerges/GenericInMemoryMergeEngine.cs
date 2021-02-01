@@ -38,6 +38,8 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
         }
         public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {
+            if (_mergeContext.Skip.HasValue || _mergeContext.Take.HasValue)
+                throw new InvalidOperationException("aggregate not  support skip take");
             //从各个分表获取数据
             List<DbContext> parallelDbContexts = new List<DbContext>(_mergeContext.RouteResults.Count());
             try

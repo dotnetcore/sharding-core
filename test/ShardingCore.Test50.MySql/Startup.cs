@@ -44,7 +44,7 @@ namespace ShardingCore.Test50.MySql
                 o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
                 o.ServerVersion = new MySqlServerVersion(new Version());
                 o.AddSharding<SysUserModVirtualRoute>();
-                o.AddSharding<SysUserRangeVirtualRoute>();
+                o.AddSharding<SysUserSalaryVirtualRoute>();
                 o.CreateIfNotExists((provider, config) =>
                 {
                     config.EnsureCreated = true;
@@ -73,34 +73,41 @@ namespace ShardingCore.Test50.MySql
                 var virtualDbContext = scope.ServiceProvider.GetService<IVirtualDbContext>();
                 if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
                 {
-                    var ids = Enumerable.Range(1, 100);
+                    var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();
+                    var userSalaries = new List<SysUserSalary>();
+                    var beginTime = new DateTime(2020, 1, 1);
+                    var endTime = new DateTime(2021, 12, 1);
                     foreach (var id in ids)
                     {
                         userMods.Add(new SysUserMod()
                         {
                             Id = id.ToString(),
                             Age = id,
-                            Name = $"name_{id}"
+                            Name = $"name_{id}",
+                            AgeGroup=Math.Abs(id%10)
                         });
+                        var tempTime = beginTime;
+                        var i = 0;
+                        while (tempTime<=endTime)
+                        {
+                            var dateOfMonth = $@"{tempTime:yyyyMM}";
+                            userSalaries.Add(new SysUserSalary()
+                            {
+                                Id = $@"{id}{dateOfMonth}",
+                                UserId = id.ToString(),
+                                DateOfMonth = int.Parse(dateOfMonth),
+                                Salary = 700000+id*100*i
+                            });
+                            tempTime=tempTime.AddMonths(1);
+                            i++;
+                        }
                     }
 
                     await virtualDbContext.InsertRangeAsync(userMods);
+                    await virtualDbContext.InsertRangeAsync(userSalaries);
                     
-                    
-                    var idRanges = Enumerable.Range(1, 1000);
-                    var userRanges = new List<SysUserRange>();
-                    foreach (var id in idRanges)
-                    {
-                        userRanges.Add(new SysUserRange()
-                        {
-                            Id = id.ToString(),
-                            Age = id,
-                            Name = $"name_range_{id}"
-                        });
-                    }
 
-                    await virtualDbContext.InsertRangeAsync(userRanges);
                     await virtualDbContext.SaveChangesAsync();
                 }
             }
