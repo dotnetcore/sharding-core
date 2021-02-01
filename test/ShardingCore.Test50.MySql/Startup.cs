@@ -87,6 +87,7 @@ namespace ShardingCore.Test50.MySql
                             Name = $"name_{id}",
                             AgeGroup=Math.Abs(id%10)
                         });
+                        
                         var tempTime = beginTime;
                         var i = 0;
                         while (tempTime<=endTime)
