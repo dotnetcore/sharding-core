@@ -197,14 +197,14 @@ route
 
 方法  | Method | [SqlServer Unit Test](https://github.com/xuejmnet/sharding-core/blob/main/test/ShardingCore.Test50/ShardingTest.cs) | [MySql Unit Test](https://github.com/xuejmnet/sharding-core/blob/main/test/ShardingCore.Test50.MySql/ShardingTest.cs)
 --- |--- |--- |---
-获取集合 |ToShardingListAsync |8 |8
-第一条 |ShardingFirstOrDefaultAsync |5 |5
-最大 |ShardingMaxAsync |0 |0
-最小 |ShardingMinAsync |0 |0
-是否存在 |ShardingAnyAsync |0 |0
-分页 |ToShardingPageResultAsync |0 |0
-数目 |ShardingCountAsync |1 |1
-求和 |ShardingSumAsync |0 |0
+获取集合 |ToShardingListAsync |yes |yes
+第一条 |ShardingFirstOrDefaultAsync |yes |yes
+最大 |ShardingMaxAsync |yes |yes
+最小 |ShardingMinAsync |yes |yes
+是否存在 |ShardingAnyAsync |yes |yes
+分页 |ToShardingPageResultAsync |yes |yes
+数目 |ShardingCountAsync |yes |yes
+求和 |ShardingSumAsync |yes |yes
 
 ## 默认路由
 
