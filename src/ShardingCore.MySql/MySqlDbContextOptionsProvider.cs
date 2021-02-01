@@ -20,12 +20,12 @@ namespace ShardingCore.MySql
 * @Date: Thursday, 24 December 2020 10:33:51
 * @Email: 326308290@qq.com
 */
-    public class SqlServerDbContextOptionsProvider:IDbContextOptionsProvider
+    public class MySqlDbContextOptionsProvider:IDbContextOptionsProvider
     {
         private DbContextOptions _dbContextOptions;
         private MySqlConnection _connection;
 
-        public SqlServerDbContextOptionsProvider(MySqlOptions mySqlOptions,ILoggerFactory loggerFactory)
+        public MySqlDbContextOptionsProvider(MySqlOptions mySqlOptions,ILoggerFactory loggerFactory)
         {
             _connection=new MySqlConnection(mySqlOptions.ConnectionString);
             _dbContextOptions = new DbContextOptionsBuilder()

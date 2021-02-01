@@ -15,5 +15,6 @@ namespace ShardingCore.Core.Internal.StreamMerge
     {
         StreamMergeContext<T> Create<T>(IQueryable<T> queryable, IEnumerable<RouteResult> routeResults);
         StreamMergeContext<T> Create<T>(IQueryable<T> queryable);
+        StreamMergeContext<T> Create<T>(IQueryable<T> queryable, RouteRuleContext<T> ruleContext);
     }
 }

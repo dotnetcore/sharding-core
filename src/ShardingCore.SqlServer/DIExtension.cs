@@ -34,15 +34,9 @@ namespace ShardingCore.SqlServer
             var options = new SqlServerOptions();
             configure(options);
             services.AddSingleton(options);
+            services.AddShardingCore();
 
-            services.AddScoped<IVirtualDbContext, VirtualDbContext>();
             services.AddScoped<IDbContextOptionsProvider, SqlServerDbContextOptionsProvider>();
-            services.AddSingleton<IShardingDbContextFactory, ShardingDbContextFactory>();
-            services.AddSingleton<IShardingTableCreator, ShardingTableCreator>();
-            services.AddSingleton<IVirtualTableManager, OneDbVirtualTableManager>();
-            services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
-            services.AddSingleton<IShardingAccessor, ShardingAccessor>();
-            services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingSqlServerParallelDbContextFactory>();
             if (options.HasSharding)
             {

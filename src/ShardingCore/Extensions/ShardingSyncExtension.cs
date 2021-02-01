@@ -71,5 +71,26 @@ namespace ShardingCore.Extensions
         {
             return AsyncHelper.RunSync(() => queryable.MinAsync());
         }
+        
+        public static double Average<T>(this IShardingQueryable<T> queryable)
+        {
+            return AsyncHelper.RunSync(() => queryable.AverageAsync());
+        }
+        public static double LongAverage<T>(this IShardingQueryable<T> queryable)
+        {
+            return AsyncHelper.RunSync(() => queryable.LongAverageAsync());
+        }
+        public static double DoubleAverage<T>(this IShardingQueryable<T> queryable)
+        {
+            return AsyncHelper.RunSync(() => queryable.DoubleAverageAsync());
+        }
+        public static decimal DecimalAverage<T>(this IShardingQueryable<T> queryable)
+        {
+            return AsyncHelper.RunSync(() => queryable.DecimalAverageAsync());
+        }
+        public static float FloatAverage<T>(this IShardingQueryable<T> queryable)
+        {
+            return AsyncHelper.RunSync(() => queryable.FloatAverageAsync());
+        }
     }
 }

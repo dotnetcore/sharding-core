@@ -173,10 +173,18 @@ namespace ShardingCore.Test50.MySql
         [Fact]
         public async Task FirstOrDefault5()
         {
-            var sysUserMod=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name=="name_1001").ShardingFirstOrDefaultAsync();
+            var sysUserMod=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name=="name_101").ShardingFirstOrDefaultAsync();
             Assert.Null(sysUserMod);
             var sysUserRange=await _virtualDbContext.Set<SysUserRange>().Where(o=>o.Name=="name_range_1001").ShardingFirstOrDefaultAsync();
             Assert.Null(sysUserRange);
+        }
+        [Fact]
+        public async Task Count_Test()
+        {
+            var a=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name=="name_100").ShardingCountAsync();
+            Assert.Equal(1,a);
+            var b=await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Name!="name_100").ShardingCountAsync();
+            Assert.Equal(99,b);
         }
     }
 }

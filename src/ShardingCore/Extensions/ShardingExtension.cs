@@ -271,6 +271,100 @@ namespace ShardingCore.Extensions
         {
             return await ShardingSumAsync(source.Select(keySelector));
         }
+        
+        
+        public static async Task<double> ShardingAverageAsync(this IQueryable<int> source)
+        {
+            return await ShardingQueryable<double>.Create(source).AverageAsync();
+        }
+        public static  double ShardingAverage(this IQueryable<int> source)
+        {
+            return  ShardingQueryable<double>.Create(source).Average();
+        }
+        public static double ShardingAverage<T>(this IQueryable<T> source,Expression<Func<T,int>> keySelector)
+        {
+            return  ShardingAverage(source.Select(keySelector));
+        }
+
+        public static async Task<double> ShardingAverageAsync<T>(this IQueryable<T> source,Expression<Func<T,int>> keySelector)
+        {
+            return await ShardingAverageAsync(source.Select(keySelector));
+        }
+        
+        
+        public static async Task<double> ShardingAverageAsync(this IQueryable<long> source)
+        {
+            return await ShardingQueryable<double>.Create(source).AverageAsync();
+        }
+        public static  double ShardingAverage(this IQueryable<long> source)
+        {
+            return  ShardingQueryable<double>.Create(source).Average();
+        }
+        public static double ShardingAverage<T>(this IQueryable<T> source,Expression<Func<T,long>> keySelector)
+        {
+            return  ShardingAverage(source.Select(keySelector));
+        }
+
+        public static async Task<double> ShardingAverageAsync<T>(this IQueryable<T> source,Expression<Func<T,long>> keySelector)
+        {
+            return await ShardingAverageAsync(source.Select(keySelector));
+        }
+        
+        
+        public static async Task<double> ShardingAverageAsync(this IQueryable<double> source)
+        {
+            return await ShardingQueryable<double>.Create(source).AverageAsync();
+        }
+        public static  double ShardingAverage(this IQueryable<double> source)
+        {
+            return  ShardingQueryable<double>.Create(source).Average();
+        }
+        public static double ShardingAverage<T>(this IQueryable<T> source,Expression<Func<T,double>> keySelector)
+        {
+            return  ShardingAverage(source.Select(keySelector));
+        }
+
+        public static async Task<double> ShardingAverageAsync<T>(this IQueryable<T> source,Expression<Func<T,double>> keySelector)
+        {
+            return await ShardingAverageAsync(source.Select(keySelector));
+        }
+        
+        
+        public static async Task<decimal> ShardingAverageAsync(this IQueryable<decimal> source)
+        {
+            return await ShardingQueryable<decimal>.Create(source).DecimalAverageAsync();
+        }
+        public static  decimal ShardingAverage(this IQueryable<decimal> source)
+        {
+            return  ShardingQueryable<decimal>.Create(source).DecimalAverage();
+        }
+        public static decimal ShardingAverage<T>(this IQueryable<T> source,Expression<Func<T,decimal>> keySelector)
+        {
+            return  ShardingAverage(source.Select(keySelector));
+        }
+
+        public static async Task<decimal> ShardingAverageAsync<T>(this IQueryable<T> source,Expression<Func<T,decimal>> keySelector)
+        {
+            return await ShardingAverageAsync(source.Select(keySelector));
+        }
+        
+        public static async Task<float> ShardingAverageAsync(this IQueryable<float> source)
+        {
+            return await ShardingQueryable<float>.Create(source).FloatAverageAsync();
+        }
+        public static  float ShardingAverage(this IQueryable<float> source)
+        {
+            return  ShardingQueryable<float>.Create(source).FloatAverage();
+        }
+        public static float ShardingAverage<T>(this IQueryable<T> source,Expression<Func<T,float>> keySelector)
+        {
+            return  ShardingAverage(source.Select(keySelector));
+        }
+
+        public static async Task<float> ShardingAverageAsync<T>(this IQueryable<T> source,Expression<Func<T,float>> keySelector)
+        {
+            return await ShardingAverageAsync(source.Select(keySelector));
+        }
 
     }
 }

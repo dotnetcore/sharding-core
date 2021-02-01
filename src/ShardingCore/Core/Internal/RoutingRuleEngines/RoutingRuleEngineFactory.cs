@@ -35,8 +35,14 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
         public IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable)
         {
             var engine = CreateEngine();
-            var routeRuleContext = CreateContext<T>(queryable);
-            return engine.Route(routeRuleContext);
+            var ruleContext = CreateContext<T>(queryable);
+            return engine.Route(ruleContext);
+        }
+
+        public IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable, RouteRuleContext<T> ruleContext)
+        {
+            var engine = CreateEngine();
+            return engine.Route(ruleContext);
         }
     }
 }

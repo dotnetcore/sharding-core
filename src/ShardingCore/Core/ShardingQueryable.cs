@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges;
+using ShardingCore.Core.Internal.StreamMerge.GenericMerges.Proxies;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 #if EFCORE2
@@ -30,18 +31,16 @@ namespace ShardingCore.Core
     public class ShardingQueryable<T> : IShardingQueryable<T>
     {
         private IQueryable<T> _source;
-        private bool _autoParseRoute = true;
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
-        private Dictionary<Type, Expression> _routes = new Dictionary<Type, Expression>();
-        private readonly Dictionary<IVirtualTable, List<string>> _endRoutes = new Dictionary<IVirtualTable, List<string>>();
-        private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
+        private readonly RouteRuleContext<T> _routeRuleContext;
 
 
         private ShardingQueryable(IQueryable<T> source)
         {
             _source = source;
             _streamMergeContextFactory = ShardingContainer.Services.GetService<IStreamMergeContextFactory>();
-            _routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
+            var routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
+            _routeRuleContext = routingRuleEngineFactory.CreateContext<T>(source);
         }
 
         public static ShardingQueryable<TSource> Create<TSource>(IQueryable<TSource> source)
@@ -52,48 +51,25 @@ namespace ShardingCore.Core
 
         public IShardingQueryable<T> EnableAutoRouteParse()
         {
-            _autoParseRoute = true;
+            _routeRuleContext.EnableAutoRouteParse();
             return this;
         }
 
         public IShardingQueryable<T> DisableAutoRouteParse()
         {
-            _autoParseRoute = false;
+            _routeRuleContext.DisableAutoRouteParse();
             return this;
         }
 
         public IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingEntity
         {
-            var shardingEntityType = typeof(TShardingEntity);
-            if (!_routes.ContainsKey(shardingEntityType))
-            {
-                ((Expression<Func<TShardingEntity, bool>>) _routes[shardingEntityType]).And(predicate);
-            }
-            else
-            {
-                _routes.Add(typeof(TShardingEntity), predicate);
-            }
-
+            _routeRuleContext.AddRoute(predicate);
             return this;
         }
 
         public IShardingQueryable<T> AddManualRoute(IVirtualTable virtualTable, string tail)
         {
-            if (_endRoutes.ContainsKey(virtualTable))
-            {
-                var tails = _endRoutes[virtualTable];
-                if (!tails.Contains(tail))
-                {
-                    tails.Add(tail);
-                }
-            }
-            else
-            {
-                _endRoutes.Add(virtualTable, new List<string>()
-                {
-                    tail
-                });
-            }
+            _routeRuleContext.AddRoute(virtualTable,tail);
 
             return this;
         }
@@ -101,7 +77,7 @@ namespace ShardingCore.Core
 
         private StreamMergeContext<T> GetContext()
         {
-            return _streamMergeContextFactory.Create(_source);
+            return _streamMergeContextFactory.Create(_source,_routeRuleContext);
         }
         private async Task<List<TResult>> GetGenericMergeEngine<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {
@@ -210,6 +186,20 @@ namespace ShardingCore.Core
             return results.Sum()/results.Count();
         }
 
+        public async Task<double> AverageAsync()
+        {
+            if (typeof(T) != typeof(int))
+                throw new InvalidOperationException($"{typeof(T)} cast to int failed");
+            var results = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.AverageAsync((IQueryable<int>) queryable));
+            return results.Sum()/results.Count();
+        }
+        public async Task<double> LongAverageAsync()
+        {
+            if (typeof(T) != typeof(long))
+                throw new InvalidOperationException($"{typeof(T)} cast to long failed");
+            var results = await GetGenericMergeEngine(async queryable => await EntityFrameworkQueryableExtensions.AverageAsync((IQueryable<long>) queryable));
+            return results.Sum()/results.Count();
+        }
         public async Task<double> DoubleAverageAsync()
         {
             if (typeof(T) != typeof(double))

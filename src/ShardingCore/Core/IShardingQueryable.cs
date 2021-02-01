@@ -111,6 +111,17 @@ namespace ShardingCore.Core
         /// </summary>
         /// <returns></returns>
         Task<float> FloatSumAsync();
+
+        /// <summary>
+        /// 平均数
+        /// </summary>
+        /// <returns></returns>
+        Task<double> AverageAsync();
+        /// <summary>
+        /// 平均数
+        /// </summary>
+        /// <returns></returns>
+        Task<double> LongAverageAsync();
         /// <summary>
         /// 平均数
         /// </summary>

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.StreamMerge.Abstractions;
-using ShardingCore.Core.Internal.StreamMerge.Enumerators;
 
-namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
+namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges.Proxies
 {
 /*
 * @Author: xjm
@@ -14,13 +12,11 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 */
     internal class GenericStreamMergeProxyEngine<T> : IDisposable
     {
-        private readonly StreamMergeContext<T> _mergeContext;
         private IStreamMergeEngine<T> _streamMergeEngine;
 
 
         private GenericStreamMergeProxyEngine(StreamMergeContext<T> mergeContext)
         {
-            _mergeContext = mergeContext;
             _streamMergeEngine = GenericStreamMergeEngine<T>.Create(mergeContext);
         }
 

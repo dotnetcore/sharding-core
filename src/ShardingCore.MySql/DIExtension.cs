@@ -38,14 +38,7 @@ namespace ShardingCore.MySql
             services.AddSingleton(options);
             services.AddShardingCore();
 
-            services.AddScoped<IVirtualDbContext, VirtualDbContext>();
-            services.AddScoped<IDbContextOptionsProvider, SqlServerDbContextOptionsProvider>();
-            services.AddSingleton<IShardingDbContextFactory, ShardingDbContextFactory>();
-            services.AddSingleton<IShardingTableCreator, ShardingTableCreator>();
-            services.AddSingleton<IVirtualTableManager, OneDbVirtualTableManager>();
-            services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
-            services.AddSingleton<IShardingAccessor, ShardingAccessor>();
-            services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
+            services.AddScoped<IDbContextOptionsProvider, MySqlDbContextOptionsProvider>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingMySqlParallelDbContextFactory>();
             if (options.HasSharding)
             {

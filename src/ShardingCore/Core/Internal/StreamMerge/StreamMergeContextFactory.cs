@@ -33,5 +33,9 @@ namespace ShardingCore.Core.Internal.StreamMerge
         {
             return new StreamMergeContext<T>(queryable, _routingRuleEngineFactory.Route(queryable), _shardingParallelDbContextFactory, _shardingScopeFactory);
         }
+        public StreamMergeContext<T> Create<T>(IQueryable<T> queryable,RouteRuleContext<T> ruleContext)
+        {
+            return new StreamMergeContext<T>(queryable, _routingRuleEngineFactory.Route(queryable,ruleContext), _shardingParallelDbContextFactory, _shardingScopeFactory);
+        }
     }
 }

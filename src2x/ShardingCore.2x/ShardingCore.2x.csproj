@@ -20,6 +20,9 @@
         <Compile Include="..\..\src\ShardingCore\**\*.cs" />
         <Compile Remove="..\..\src\ShardingCore\obj\**" />
         <Compile Remove="..\..\src\ShardingCore\bin\**" />
+        <Compile Update="..\..\src\ShardingCore\Core\Internal\StreamMerge\StreamMergeExtension.cs">
+          <Link>Core\Internal\StreamMerge\StreamMergeExtension.cs</Link>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
