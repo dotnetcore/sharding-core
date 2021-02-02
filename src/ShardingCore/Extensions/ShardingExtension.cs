@@ -69,7 +69,7 @@ namespace ShardingCore.Extensions
             return  ShardingQueryable<T>.Create(source).ToList();
         }
         /// <summary>
-        /// 分页
+        /// 集合
         /// </summary>
         /// <param name="source"></param>
         /// <typeparam name="T"></typeparam>
@@ -77,6 +77,30 @@ namespace ShardingCore.Extensions
         public static async Task<List<T>> ToShardingListAsync<T>(this IQueryable<T> source)
         {
             return await ShardingQueryable<T>.Create(source).ToListAsync();
+        }
+        /// <summary>
+        /// 分组
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static async Task<List<TElement>> ShardingGroupByAsync<T,TKey,TElement>(this IQueryable<T> source,
+            Expression<Func<T, TKey>> keySelector,
+            Expression<Func<IGrouping<TKey,T>,TElement>> elementSelector)
+        {
+            return (await ShardingQueryable<T>.Create(source.GroupBy(keySelector).Select(elementSelector)).ToListAsync());
+        }
+        /// <summary>
+        /// 分组
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static List<TElement> ShardingGroupBy<T,TKey,TElement>(this IQueryable<T> source,
+            Expression<Func<T, TKey>> keySelector,
+            Expression<Func<IGrouping<TKey,T>,TElement>> elementSelector)
+        {
+            return ShardingQueryable<T>.Create(source.GroupBy(keySelector).Select(elementSelector)).ToList();
         }
         /// <summary>
         /// 第一条

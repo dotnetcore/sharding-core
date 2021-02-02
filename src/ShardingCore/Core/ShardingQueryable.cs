@@ -67,9 +67,9 @@ namespace ShardingCore.Core
             return this;
         }
 
-        public IShardingQueryable<T> AddManualRoute(IVirtualTable virtualTable, string tail)
+        public IShardingQueryable<T> AddManualRoute<TShardingEntity>( string tail) where TShardingEntity : class, IShardingEntity
         {
-            _routeRuleContext.AddRoute(virtualTable,tail);
+            _routeRuleContext.AddRoute<TShardingEntity>(tail);
 
             return this;
         }

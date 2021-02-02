@@ -72,7 +72,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
             AddRoute(virtualTable, tail);
         }
         
-        public void AddRouteWithGengric<TShardingEntity>(string tail) where TShardingEntity : class, IShardingEntity
+        public void AddRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingEntity
         {
             AddRoute(typeof(TShardingEntity), tail);
         }

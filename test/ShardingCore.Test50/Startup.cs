@@ -53,6 +53,7 @@ namespace ShardingCore.Test50
                 o.UseShardingCoreConfig((provider, config) =>
                 {
                     config.EnsureCreated = true;
+                    config.CreateShardingTableOnStart = true;
                 });
             });
         }

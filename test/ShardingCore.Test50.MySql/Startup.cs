@@ -48,6 +48,7 @@ namespace ShardingCore.Test50.MySql
                 o.CreateIfNotExists((provider, config) =>
                 {
                     config.EnsureCreated = true;
+                    config.CreateShardingTableOnStart = true;
                 });
             });
         }

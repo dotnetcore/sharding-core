@@ -2,47 +2,22 @@
 
 `ShardingCore` 是一个支持efcore 2.x 3.x 5.x的一个对于数据库分表的一个简易扩展,
 目前该库暂未支持分库(未来会支持),仅支持分表,该项目的理念是让你可以已最少的代码量来实现自动分表的实现,经过多个开源项目的摸索参考目前正式开源本项目
+项目地址 [github](https://github.com/xuejmnet/sharding-core) 喜欢的朋友可以点下star Thanks♪(･ω･)ﾉ
 
 ### 依赖
 
 Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFrameworkCore.MySql
 --- | --- | --- | --- | --- | --- 
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.2) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.2) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.2) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.3) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.3) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.3) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
 
-### Support Sharding Method 支持的分表方式
-
-Support
-Any
-Method
-and
-Support
-Any
-ShardingKey
-not
-provide
-job
-but
-provider
-create
-table
-interface [IShardingTableCreator](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/TableCreator/IShardingTableCreator.cs)
-simple
-job [ChronusJob](https://github.com/xuejmnet/ChronusJob)
-support
-cron
-expression
-
-方法  |Method  | Support | ShardingKey Type
---- |--- | --- | --- 
-取模 |Sharding Mod | Yes | Any ClrType
-大数取模范围 |Sharding Range | Yes | Any ClrType
-按天/周/月/年... |Sharding By Day/Week/Month/Year... | Yes | Any ClrType
-其他 |Sharding By Other | Yes | Any ClrType
 
 - [开始](#开始)
+    - [简介](#简介)
     - [概念](#概念)
+    - [优点](#优点)
+    - [缺点](#缺点)
     - [安装](#安装)
     - [配置](#配置)
     - [使用](#使用)
@@ -59,8 +34,18 @@ expression
 
 # 开始
 
-以下所有例子都以Sql
-Server为例
+以下所有例子都以Sql Server为例 MySql亦如此
+
+
+## 简介
+
+目前该库处于初期阶段,有很多bug也希望各位多多理解,一起努力为.net生态做出一份微薄之力,目前该库支持的分页可以进行完全的自定义,基本上可以满足95%以上的
+业务需求，唯一的限制就是分表规则必须满足 x+y+z,x表示固定的表名,y表示固定的表名和表后缀之间的联系(可以为空),z表示表后缀,可以按照你自己的任意业务逻辑进行切分,
+如:user_0,user_1或者user202101,user202102...当然该库同样适用于多租户模式下的隔离,该库为了支持之后的分库已经重写了之前的union all查询模式,并且支持多种api,
+支持多种查询包括join group by max count min avg sum ...等一系列查询,之后可能会添加更多支持,目前该库的使用非常简单,基本上就是针对IQueryable的扩展，为了保证
+该库的简介目前仅使用该库无法或者说难以实现自动建表,但是只需要配合定时任务该库即可完成24小时无人看管自动管理。该库提供了 [IShardingTableCreator](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/TableCreator/IShardingTableCreator.cs)
+作为建表的依赖,如果需要可以参考 [按天自动建表](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
+
 
 ## 概念
 
@@ -71,21 +56,31 @@ Server为例
 - [TailPrefix]
   尾巴前缀虚拟表和物理表的后缀中间的字符
 - [物理表]
-  顾名思义就是数据库对应的实际表信息,表名(
-  tablename
-  +
-  tailprefix
-  +
-  tail) [IPhysicTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/PhysicTables/IPhysicTable.cs)
+  顾名思义就是数据库对应的实际表信息,表名(tablename+ tailprefix+ tail) [IPhysicTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/PhysicTables/IPhysicTable.cs)
 - [虚拟表]
   虚拟表就是系统将所有的物理表在系统里面进行抽象的一个总表对应到程序就是一个entity[IVirtualTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualTables/IVirtualTable.cs)
 - [虚拟路由]
   虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/IVirtualRoute.cs)
   ,由于基本上所有的路由都是和业务逻辑相关的所以虚拟路由由用户自己实现,该框架提供一个高级抽象
 
+## 优点
+
+- [支持自定义分表规则]
+- [支持任意类型分表key]
+- [针对iqueryable的扩展方便使用]
+- [支持分表下的连表] ```join```
+- [支持针对批处理的使用] ``` BulkInsert、BulkUpdate、BulkDelete```
+- [提供多种默认分表规则路由] 按时间按取模
+- [针对分页进行优化] 大页数跳转支持低内存流式处理
+
+## 缺点
+- [暂不支持分库(不久后会支持)]
+- [消耗连接]出现分表与分表对象进行join如果条件没法索引到具体表会生成```笛卡尔积```导致连接数爆炸,后期会进行针对该情况的配置
+- [该库比较年轻] 可能会有一系列bug或者单元测试不到位的情况,但是只要你在群里或者提了issues我会尽快解决
+
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.1" />
+<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.3" />
 ```
 
 ## 配置
@@ -95,76 +90,70 @@ Server为例
 `ShardingKey`分表字段需要使用该特性
 
 ```c#
-
-    public class SysUserRange:IShardingEntity
+    public class SysUserMod:IShardingEntity
     {
         /// <summary>
-        /// 分表分库range切分
+        /// 用户Id用于分表
         /// </summary>
-        [ShardingKey(TailPrefix = "_",AutoCreateTableOnStart = true)]
+        [ShardingKey]
         public string Id { get; set; }
         /// <summary>
-        /// 姓名
+        /// 用户名称
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// 年龄
+        /// 用户姓名
         /// </summary>
         public int Age { get; set; }
     }
     
-    public class SysUserRangeMap:IEntityTypeConfiguration<SysUserRange>
+    public class SysUserModMap:IEntityTypeConfiguration<SysUserMod>
     {
-        public void Configure(EntityTypeBuilder<SysUserRange> builder)
+        public void Configure(EntityTypeBuilder<SysUserMod> builder)
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
             builder.Property(o => o.Name).HasMaxLength(128);
-            builder.ToTable(nameof(SysUserRange));
+            builder.ToTable(nameof(SysUserMod));
         }
     }
     
 ```
-创建virtual
-route
+创建virtual route
 实现 `AbstractShardingOperatorVirtualRoute<T, TKey>`
-抽象
+抽象,或者实现系统默认的虚拟路由
 框架默认有提供几个简单的路由 [默认路由](#默认路由)
 
 ```c#
 
-    public class SysUserRangeVirtualRoute: AbstractShardingOperatorVirtualRoute<SysUserRange, string>
+    public class SysUserModVirtualRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
     {
-        protected override string ConvertToShardingKey(object shardingKey);
-
-        public override string ShardingKeyToTail(object shardingKey);
-
-        public override List<string> GetAllTails();
-
-        protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator);
-     }
+        public SysUserModVirtualRoute() : base(3)
+        {
+        }
+        public override List<string> GetAllTails()
+        {
+            return new() { "0","1","2"};
+        }
+    }
 ```
-
-- `ConvertToShardingKey`
-  分表关键字段如何转换成对应的类型
-- `ShardingKeyToTail`
-  分表关键字段如何转换成对应的物理表后缀
 - `GetAllTails`
   现在数据库已存在的尾巴有哪些
-- `GetRouteToFilter`
-  传入分表字段返回一个如何筛选尾巴的方法
 
 `Startup.cs` 下的 `ConfigureServices(IServiceCollection services)`
 
 ```c#
 
-  services.AddShardingSqlServer(o =>
+ services.AddShardingSqlServer(o =>
   {
-      o.ConnectionString = "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True";
-      o.AddSharding<SysUserRangeVirtualRoute>();
-      o.CreateIfNotExists((provider, config) =>
+      o.ConnectionString = "";
+      o.AddSharding<SysUserModVirtualRoute>();
+      o.UseShardingCoreConfig((provider, config) =>
       {
-          config.EnsureCreated = true;
+          //如果是development就判断并且新建数据库如果不存在的话(ishardingentity不会被创建)
+          config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+          //ishardingentity表是否需要在启动时创建(如果已创建可以选择不创建)
+          config.CreateShardingTableOnStart = true;
       });
   });
 ```
@@ -189,9 +178,37 @@ route
 
         public async Task ToList_All()
         {
-            var ranges=await _virtualDbContext.Set<SysUserRange>().ToShardingListAsync();
+            var all=await _virtualDbContext.Set<SysUserMod>().ToShardingListAsync();
+            var list = await (from u in _virtualDbContext.Set<SysUserMod>()
+                join salary in _virtualDbContext.Set<SysUserSalary>()
+                    on u.Id equals salary.UserId
+                select new
+                {
+                    Salary = salary.Salary,
+                    DateOfMonth = salary.DateOfMonth,
+                    Name = u.Name
+                }).ToShardingListAsync();
+                 var ids = new[] {"200", "300"};
+            var dateOfMonths = new[] {202111, 202110};
+            var group = await (from u in _virtualDbContext.Set<SysUserSalary>()
+                    .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                group u by new
+                {
+                    UId = u.UserId
+                }
+                into g
+                select new
+                {
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                }).ToShardingListAsync();
         }
 ```
+更多操作可以参考单元测试
 
 ## Api
 
@@ -205,6 +222,7 @@ route
 分页 |ToShardingPageResultAsync |yes |yes
 数目 |ShardingCountAsync |yes |yes
 求和 |ShardingSumAsync |yes |yes
+分组 |ShardingGroupByAsync |yes |yes
 
 ## 默认路由
 
@@ -225,7 +243,7 @@ AbstractSimpleShardingYearKeyLongVirtualRoute |按时间戳 |yyyy | `>,>=,<,<=,=
 
 #高级
 
-##批量操作
+## 批量操作
 
 批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如zzz进行批量操作或者batchextension
 ```c#
@@ -245,6 +263,46 @@ shardingBatchUpdateEntry.DbContexts.ForEach(context =>
 context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.UpdateExp);
 });
 ```
+## 手动路由
+```c#
+        var shardingQueryable = _virtualDbContext.Set<SysUserMod>().AsSharding();
+        //禁用自动路由
+        shardingQueryable.DisableAutoRouteParse();
+        //添加路由直接查询尾巴0的表
+        shardingQueryable.AddManualRoute<SysUserMod>("0");
+        //添加路由针对该条件的路由
+        shardingQueryable.AddManualRoute<SysUserMod>(o=>o.Id=="100");
+        var list=await shardingQueryable.ToListAsync();
+```
+
+## 自动建表
+[参考](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
+
+## 事务
+默认savechanges支持事务如果需要where.update需要手动开启事务
+```c#
+
+            _virtualDbContext.BeginTransaction();
+            var shardingBatchUpdateEntry = _virtualDbContext.BulkUpdate<SysUserMod>(o=>o.Id=="123",o=>new SysUserMod()
+            {
+                Name = "name_modify"
+            });
+            foreach (var dbContext in shardingBatchUpdateEntry.DbContexts)
+            {
+             //zzz or other batch   
+            }
+            await  _virtualDbContext.SaveChangesAsync();
+```
+
+# 注意事项
+该库的IVirtualDbContext.Set<T>使用asnotracking所以基本不支持跟踪,目前框架采用AppDomain.CurrentDomain.GetAssemblies();
+可能会导致程序集未被加载所以尽可能在api层加载所需要的dll
+
+# 计划
+- [提供官网如果该项目比较成功的话]
+- [开发更完善的文档]
+- [支持分库]
+- [支持更多数据库查询]
 
 # 最后
 凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)

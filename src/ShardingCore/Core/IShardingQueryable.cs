@@ -34,10 +34,9 @@ namespace ShardingCore.Core
         /// <summary>
         /// 手动指定路由
         /// </summary>
-        /// <param name="virtualTable"></param>
         /// <param name="tail"></param>
         /// <returns></returns>
-        IShardingQueryable<T> AddManualRoute(IVirtualTable virtualTable,string tail);
+        IShardingQueryable<T> AddManualRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingEntity;
         
         /// <summary>
         /// 异步获取数量

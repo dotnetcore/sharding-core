@@ -23,6 +23,5 @@ namespace Sample.SqlServer.Shardings
         {
             return new() { "0","1","2"};
         }
-
     }
 }

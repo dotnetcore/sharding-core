@@ -27,6 +27,7 @@ namespace Sample.SqlServer
                 {
                     //如果是development就判断并且新建数据库如果不存在的话
                     config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+                    config.CreateShardingTableOnStart = true;
                 });
             });
         }

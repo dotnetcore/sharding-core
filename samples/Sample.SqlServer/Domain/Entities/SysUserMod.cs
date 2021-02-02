@@ -14,7 +14,7 @@ namespace Sample.SqlServer.Domain.Entities
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingKey(TailPrefix = "_")]
+        [ShardingKey]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称
@@ -24,6 +24,5 @@ namespace Sample.SqlServer.Domain.Entities
         /// 用户姓名
         /// </summary>
         public int Age { get; set; }
-        
     }
 }

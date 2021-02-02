@@ -300,5 +300,29 @@ namespace ShardingCore.Test50.MySql
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
         }
+        [Fact]
+        public async Task Group_API_Test()
+        {
+            var ids = new[] {"200", "300"};
+            var dateOfMonths = new[] {202111, 202110};
+            var group = await _virtualDbContext.Set<SysUserSalary>()
+                .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                .ShardingGroupByAsync(g => new {UId = g.UserId}, g => new
+                {
+
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                });
+            Assert.Equal(2, group.Count);
+            Assert.Equal(2, group[0].Count);
+            Assert.Equal(2260000, group[0].TotalSalary);
+            Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(1120000, group[0].MinSalary);
+            Assert.Equal(1140000, group[0].MaxSalary);
+        }
     }
 }
