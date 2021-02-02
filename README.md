@@ -178,7 +178,9 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 
         public async Task ToList_All()
         {
+            //查询list集合
             var all=await _virtualDbContext.Set<SysUserMod>().ToShardingListAsync();
+            //链接查询
             var list = await (from u in _virtualDbContext.Set<SysUserMod>()
                 join salary in _virtualDbContext.Set<SysUserSalary>()
                     on u.Id equals salary.UserId
@@ -188,7 +190,8 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
                     DateOfMonth = salary.DateOfMonth,
                     Name = u.Name
                 }).ToShardingListAsync();
-                 var ids = new[] {"200", "300"};
+            //聚合查询
+            var ids = new[] {"200", "300"};
             var dateOfMonths = new[] {202111, 202110};
             var group = await (from u in _virtualDbContext.Set<SysUserSalary>()
                     .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
@@ -309,6 +312,8 @@ context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.Up
 该文档是我晚上赶工赶出来的也想趁热打铁希望更多的人关注,也希望更多的人可以交流。
 
 凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)
+
+[博客](https://www.cnblogs.com/xuejiaming)
 
 QQ群:771630778
 
