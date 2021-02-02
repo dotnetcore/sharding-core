@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
+using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.Visitors
@@ -18,8 +19,18 @@ namespace ShardingCore.Core.Internal.Visitors
         private int? _skip;
         private int? _take;
         private LinkedList<PropertyOrder> _orders = new LinkedList<PropertyOrder>();
-        private LinkedList<string> _groups = new LinkedList<string>();
         private GroupByContext _groupByContext=new GroupByContext();
+        private SelectContext _selectContext=new SelectContext();
+
+        public SelectContext GetSelectContext()
+        {
+            return _selectContext;
+        }
+
+        public GroupByContext GetGroupByContext()
+        {
+            return _groupByContext;
+        }
 
         public int? GetSkip()
         {
@@ -80,29 +91,28 @@ namespace ShardingCore.Core.Internal.Visitors
                 var propertyExpression=string.Join(".", properties);
                 _orders.AddFirst(new PropertyOrder(propertyExpression,method.Name == nameof(Queryable.OrderBy)||method.Name == nameof(Queryable.ThenBy)));
             }
-            // else if (node.Method.Name == nameof(Queryable.GroupBy))
-            // {
-            //     if (_groupByContext.GroupExpression == null)
-            //     {
-            //         var expression=(node.Arguments[1] as UnaryExpression).Operand as LambdaExpression;
-            //         if (expression == null)
-            //             throw new NotSupportedException("sharding group not support ");
-            //         _groupByContext.GroupExpression = expression;
-            //     }
-            // }
-            // else if (node.Method.Name == nameof(Queryable.Select))
-            // {
-            //     if (_groupByContext.GroupByAggregateMethods.IsEmpty())
-            //     {
-            //         var expression=((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as NewExpression;
-            //         if (expression != null)
-            //         {
-            //             var aggregateDiscoverVisitor = new QueryAggregateDiscoverVisitor();
-            //             aggregateDiscoverVisitor.Visit(expression);
-            //             _groupByContext.GroupByAggregateMethods = aggregateDiscoverVisitor.AggregateMethods;
-            //         }
-            //     }
-            // }
+            else if (node.Method.Name == nameof(Queryable.GroupBy))
+            {
+                if (_groupByContext.GroupExpression == null)
+                {
+                    var expression=(node.Arguments[1] as UnaryExpression).Operand as LambdaExpression;
+                    if (expression == null)
+                        throw new NotSupportedException("sharding group not support ");
+                    _groupByContext.GroupExpression = expression;
+                }
+            }
+            else if (node.Method.Name == nameof(Queryable.Select))
+            {
+                if (_selectContext.SelectProperties.IsEmpty())
+                {
+                    var expression=((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as NewExpression;
+                    if (expression != null)
+                    {
+                        var aggregateDiscoverVisitor = new QuerySelectDiscoverVisitor(_selectContext);
+                        aggregateDiscoverVisitor.Visit(expression);
+                    }
+                }
+            }
 
             return base.VisitMethodCall(node);
         }

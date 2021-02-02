@@ -14,7 +14,7 @@ namespace Sample.SqlServer.Domain.Entities
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingKey(TailPrefix = "_",AutoCreateTableOnStart = true)]
+        [ShardingKey(TailPrefix = "_")]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称

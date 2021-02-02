@@ -24,7 +24,7 @@ namespace ShardingCore.Core
         /// <summary>
         /// 是否需要在启动的时候创建表
         /// </summary>
-        public bool AutoCreateTableOnStart { get; set; } = false;
+        public ShardingKeyAutoCreateTableEnum AutoCreateTableOnStart { get; set; } = ShardingKeyAutoCreateTableEnum.UnKnown;
 
         /// <summary>
         /// 分表尾巴前缀 

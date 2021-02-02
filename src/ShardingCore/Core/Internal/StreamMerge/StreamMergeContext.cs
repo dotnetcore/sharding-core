@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Core.Internal.Visitors.GroupBys;
+using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.DbContexts;
 using ShardingCore.Extensions;
@@ -26,6 +28,9 @@ namespace ShardingCore.Core.Internal.StreamMerge
         public int? Skip { get; private set; }
         public int? Take { get; private set; }
         public IEnumerable<PropertyOrder> Orders { get; private set; }
+        
+        public SelectContext SelectContext { get; private set; }
+        public GroupByContext GroupByContext { get; private set; }
 
         public StreamMergeContext(IQueryable<T> source,IEnumerable<RouteResult> routeResults,
             IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
@@ -38,6 +43,8 @@ namespace ShardingCore.Core.Internal.StreamMerge
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
             Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
+            SelectContext = reWriteResult.SelectContext;
+            GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
         }
 
@@ -58,6 +65,21 @@ namespace ShardingCore.Core.Internal.StreamMerge
         public IQueryable<T> GetOriginalQueryable()
         {
             return _source;
+        }
+
+        public bool HasSkipTake()
+        {
+            return Skip.HasValue || Take.HasValue;
+        }
+
+        public bool HasGroupQuery()
+        {
+            return this.GroupByContext.GroupExpression != null;
+        }
+
+        public bool HasAggregateQuery()
+        {
+            return this.SelectContext.SelectProperties.Any(o => o.IsAggregateMethod);
         }
 
     }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Core.Internal.Visitors.GroupBys;
+using ShardingCore.Core.Internal.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
 {
@@ -13,13 +15,15 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
 */
     internal class ReWriteResult<T>
     {
-        public ReWriteResult(IQueryable<T> originalQueryable, IQueryable<T> reWriteQueryable, int? skip, int? take, IEnumerable<PropertyOrder> orders)
+        public ReWriteResult(IQueryable<T> originalQueryable, IQueryable<T> reWriteQueryable, int? skip, int? take, IEnumerable<PropertyOrder> orders, SelectContext selectContext, GroupByContext groupByContext)
         {
             OriginalQueryable = originalQueryable;
             ReWriteQueryable = reWriteQueryable;
             Skip = skip;
             Take = take;
             Orders = orders;
+            SelectContext = selectContext;
+            GroupByContext = groupByContext;
         }
 
         public IQueryable<T> OriginalQueryable { get; }
@@ -27,5 +31,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
         public int? Skip { get; }
         public int? Take { get; }
         public IEnumerable<PropertyOrder> Orders { get; }
+        public SelectContext SelectContext { get; }
+        public GroupByContext GroupByContext { get; }
     }
 }

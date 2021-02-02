@@ -46,7 +46,7 @@ namespace ShardingCore.Utils
                     {
                         ShardingEntityType = entityType,
                         ShardingField = shardingProperty.Name,
-                        AutoCreateTable = shardingKeyAttribute.AutoCreateTableOnStart,
+                        AutoCreateTable = shardingKeyAttribute.AutoCreateTableOnStart==ShardingKeyAutoCreateTableEnum.UnKnown?(bool?)null:(shardingKeyAttribute.AutoCreateTableOnStart==ShardingKeyAutoCreateTableEnum.Create),
                         TailPrefix = shardingKeyAttribute.TailPrefix
                     };
                     _caches.TryAdd(entityType, shardingEntityConfig);

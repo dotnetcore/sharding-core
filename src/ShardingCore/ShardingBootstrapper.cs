@@ -74,12 +74,20 @@ namespace ShardingCore
             }
         }
 
+        private bool NeedCreateTable(ShardingEntityConfig config)
+        {
+            if (config.AutoCreateTable.HasValue)
+            {
+                return config.AutoCreateTable.Value;
+            }
+            return _shardingCoreConfig.CreateShardingTableOnStart.GetValueOrDefault();
+        }
         private void CreateDataTable(IVirtualTable virtualTable)
         {
             var shardingConfig = virtualTable.ShardingConfig;
             foreach (var tail in virtualTable.GetTaleAllTails())
             {
-                if (shardingConfig.AutoCreateTable)
+                if (NeedCreateTable(shardingConfig))
                 {
                     try
                     {

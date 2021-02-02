@@ -31,7 +31,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 启动时是否建表 auto create table when start app
         /// </summary>
-        public bool AutoCreateTable { get; set; }
+        public bool? AutoCreateTable { get; set; }
 
         /// <summary>
         /// 分表尾巴后缀 table sharding tail prefix

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using ShardingCore.Core.Internal.Visitors.GroupBys;
+using ShardingCore.Core.Internal.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
@@ -10,15 +12,19 @@ namespace ShardingCore.Core.Internal.Visitors
 */
     internal class ExtraEntry
     {
-        public ExtraEntry(int? skip, int? take, IEnumerable<PropertyOrder> orders)
+        public ExtraEntry(int? skip, int? take, IEnumerable<PropertyOrder> orders, SelectContext selectContext, GroupByContext groupByContext)
         {
             Skip = skip;
             Take = take;
             Orders = orders;
+            SelectContext = selectContext;
+            GroupByContext = groupByContext;
         }
 
-        public int? Skip { get; set; }
-        public int? Take { get; set; }
-        public IEnumerable<PropertyOrder> Orders { get; set; }
+        public int? Skip { get; }
+        public int? Take { get; }
+        public IEnumerable<PropertyOrder> Orders { get; }
+        public SelectContext SelectContext { get; }
+        public GroupByContext GroupByContext { get; }
     }
 }

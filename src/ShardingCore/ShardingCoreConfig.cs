@@ -12,5 +12,9 @@ namespace ShardingCore
         /// 如果数据库不存在就创建并且创建表
         /// </summary>
         public bool EnsureCreated { get; set; }
+        /// <summary>
+        /// 是否需要在启动时创建分表
+        /// </summary>
+        public bool? CreateShardingTableOnStart { get; set; }
     }
 }

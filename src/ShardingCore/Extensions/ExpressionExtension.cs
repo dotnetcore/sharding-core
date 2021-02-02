@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -12,6 +13,36 @@ namespace ShardingCore.Extensions
 */
     public static class ExpressionExtension
     {
+        public static void SetPropertyValue<T>(this T t, string name, object value)
+        {
+            Type type = t.GetType();
+            PropertyInfo p = type.GetProperty(name);
+            if (p == null)
+            {
+                throw new Exception($"type:{typeof(T)} not found [{name}] properity ");
+            }
+
+            var param_obj = Expression.Parameter(type);
+            var param_val = Expression.Parameter(typeof(object));
+            var body_obj = Expression.Convert(param_obj, type);
+            var body_val = Expression.Convert(param_val, p.PropertyType);
+
+            //获取设置属性的值的方法
+            var setMethod = p.GetSetMethod(true);
+
+            //如果只是只读,则setMethod==null
+            if (setMethod != null)
+            {
+                var body = Expression.Call(param_obj, p.GetSetMethod(), body_val);
+                var setValue = Expression.Lambda<Action<T, object>>(body, param_obj, param_val).Compile();
+                setValue(t, value);
+            }
+            else
+            {
+                t.GetType().GetFields( BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault(o=>o.Name==$"<{name}>i__Field")
+                  .SetValue(t,value);
+            }
+        }
         public static object GetValueByExpression(this object obj, string propertyExpression)
         {
             var entityType = obj.GetType();

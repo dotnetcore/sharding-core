@@ -26,7 +26,10 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
             _mergeContext = mergeContext;
             _skip = mergeContext.Skip;
             _take = mergeContext.Take;
-            _enumerator = new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext,sources);;
+            if (_mergeContext.HasGroupQuery())
+                _enumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<T>(_mergeContext, sources);
+            else
+                _enumerator = new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext,sources);
         }
 #if !EFCORE2
 

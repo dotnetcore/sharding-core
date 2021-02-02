@@ -19,7 +19,7 @@ namespace ShardingCore.Extensions
         {
             var extraVisitor = new QueryableExtraDiscoverVisitor();
             extraVisitor.Visit(source.Expression);
-            return new ExtraEntry(extraVisitor.GetSkip(), extraVisitor.GetTake(), extraVisitor.GetOrders());
+            return new ExtraEntry(extraVisitor.GetSkip(), extraVisitor.GetTake(), extraVisitor.GetOrders(),extraVisitor.GetSelectContext(),extraVisitor.GetGroupByContext());
         }
         /// <summary>
         /// 删除Skip表达式

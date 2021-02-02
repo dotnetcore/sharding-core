@@ -16,7 +16,7 @@ namespace ShardingCore.Test50.MySql.Domain.Entities
         /// <summary>
         /// 每月的金额
         /// </summary>
-        [ShardingKey(AutoCreateTableOnStart = false)]
+        [ShardingKey]
         public int DateOfMonth { get; set; }
         /// <summary>
         /// 工资

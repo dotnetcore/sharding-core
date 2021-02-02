@@ -88,7 +88,7 @@ namespace ShardingCore.Extensions
         /// <param name="sortExpression">"child.name asc,child.age desc"</param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, string sortExpression) where TEntity : class
+        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, string sortExpression)
         {
             String[] orderFields = sortExpression.Split(',');
             IOrderedQueryable<TEntity> result = null;

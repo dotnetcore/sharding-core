@@ -69,8 +69,10 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
                 });
             }).ToArray();
             var streamEnumerators = await Task.WhenAll(enumeratorTasks);
-            if (_mergeContext.Skip.HasValue || _mergeContext.Take.HasValue)
+            if (_mergeContext.HasSkipTake())
                 return new NoPaginationStreamMergeEnumerator<T>(_mergeContext,streamEnumerators );
+            if(_mergeContext.HasGroupQuery())
+                return new MultiAggregateOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
             return new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
         }
 

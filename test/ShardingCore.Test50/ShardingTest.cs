@@ -30,6 +30,36 @@ namespace ShardingCore.Test50
         }
 
         [Fact]
+        public async Task ToList_Join_Test()
+        {
+            var list = await (from u in _virtualDbContext.Set<SysUserMod>()
+                join salary in _virtualDbContext.Set<SysUserSalary>()
+                    on u.Id equals salary.UserId
+                select new
+                {
+                    Salary = salary.Salary,
+                    DateOfMonth = salary.DateOfMonth,
+                    Name = u.Name
+                }).ToShardingListAsync();
+            Assert.Equal(24000, list.Count());
+            Assert.Equal(24, list.Count(o => o.Name == "name_200"));
+
+
+            var queryable = (from u in _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "300")
+                join salary in _virtualDbContext.Set<SysUserSalary>()
+                    on u.Id equals salary.UserId
+                select new
+                {
+                    Salary = salary.Salary,
+                    DateOfMonth = salary.DateOfMonth,
+                    Name = u.Name
+                });
+            var list1 = await queryable.ToShardingListAsync();
+            Assert.Equal(24, list1.Count());
+            Assert.DoesNotContain(list1, o => o.Name != "name_300");
+        }
+
+        [Fact]
         public async Task ToList_OrderBy_Asc_Desc_Test()
         {
             var modascs = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToShardingListAsync();
@@ -201,6 +231,22 @@ namespace ShardingCore.Test50
         }
 
         [Fact]
+        public async Task Max_Join_Test()
+        {
+            var queryable = (from u in _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "300")
+                join salary in _virtualDbContext.Set<SysUserSalary>()
+                    on u.Id equals salary.UserId
+                select new
+                {
+                    Salary = salary.Salary,
+                    DateOfMonth = salary.DateOfMonth,
+                    Name = u.Name
+                });
+            var maxSalary = await queryable.ShardingMaxAsync(o => o.Salary);
+            Assert.Equal(1390000, maxSalary);
+        }
+
+        [Fact]
         public async Task Min_Test()
         {
             var a = await _virtualDbContext.Set<SysUserMod>().ShardingMinAsync(o => o.Age);
@@ -226,18 +272,33 @@ namespace ShardingCore.Test50
             Assert.True(e);
         }
 
-        // [Fact]
-        // public async Task Group_Test()
-        // {
-        //     var x = await (from u in _virtualDbContext.Set<SysUserMod>()
-        //         group u by u.AgeGroup
-        //         into g
-        //         select new
-        //         {
-        //             AgeGroup = g.Key,
-        //             Count = g.Count()
-        //         }).ToShardingListAsync();
-        //     var y = x;
-        // }
+        [Fact]
+        public async Task Group_Test()
+        {
+            var ids = new[] {"200", "300"};
+            var dateOfMonths = new[] {202111, 202110};
+            var group = await (from u in _virtualDbContext.Set<SysUserSalary>()
+                    .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                group u by new
+                {
+                    UId = u.UserId
+                }
+                into g
+                select new
+                {
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                }).ToShardingListAsync();
+            Assert.Equal(2, group.Count);
+            Assert.Equal(2, group[0].Count);
+            Assert.Equal(2260000, group[0].TotalSalary);
+            Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(1120000, group[0].MinSalary);
+            Assert.Equal(1140000, group[0].MaxSalary);
+        }
     }
 }
