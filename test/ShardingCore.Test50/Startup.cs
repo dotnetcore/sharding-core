@@ -50,7 +50,7 @@ namespace ShardingCore.Test50
                 o.ConnectionString = hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"];
                 o.AddSharding<SysUserModVirtualRoute>();
                 o.AddSharding<SysUserSalaryVirtualRoute>();
-                o.CreateIfNotExists((provider, config) =>
+                o.UseShardingCoreConfig((provider, config) =>
                 {
                     config.EnsureCreated = true;
                 });

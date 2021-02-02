@@ -15,10 +15,10 @@ namespace ShardingCore.Core.PhysicTables
     public class DefaultPhysicTable:IPhysicTable
     {
 
-        public DefaultPhysicTable(string originalName, IVirtualTable virtualTable, string tail)
+        public DefaultPhysicTable(IVirtualTable virtualTable, string tail)
         {
             VirtualTable = virtualTable;
-            OriginalName = originalName;
+            OriginalName = virtualTable.GetOriginalTableName();
             Tail = tail;
         }
         public string FullName => $"{OriginalName}{TailPrefix}{Tail}";

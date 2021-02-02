@@ -2,33 +2,47 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ChronusJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sample.SqlServer.Shardings;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using Samples.AutoByDate.SqlServer.Shardings;
 using ShardingCore.SqlServer;
 
-namespace Sample.SqlServer
+namespace Samples.AutoByDate.SqlServer
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
             services.AddShardingSqlServer(o =>
             {
                 o.ConnectionString = "";
-                o.AddSharding<SysUserModVirtualRoute>();
-                o.UseShardingCoreConfig((provider, config) =>
+                o.AddSharding<SysUserLogByDayVirtualRoute>();
+                o.UseShardingCoreConfig((provider, config) => 
                 {
                     //如果是development就判断并且新建数据库如果不存在的话
                     config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+                    config.CreateShardingTableOnStart = true;
                 });
             });
+            services.AddChronusJob();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,13 +51,18 @@ namespace Sample.SqlServer
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Samples.AutoByDate.SqlServer v1"));
             }
 
             app.UseShardingCore();
+            app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints => { endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello World!"); }); });
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

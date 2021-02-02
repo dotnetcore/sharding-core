@@ -23,7 +23,7 @@ namespace ShardingCore.SqlServer
 
         public bool HasSharding => ShardingRoutes.IsNotEmpty();
         public Action<IServiceProvider, ShardingCoreConfig> ShardingCoreConfigConfigure { get; private set; }
-        public void CreateIfNotExists(Action<IServiceProvider, ShardingCoreConfig> function)
+        public void UseShardingCoreConfig(Action<IServiceProvider, ShardingCoreConfig> function)
         {
             ShardingCoreConfigConfigure = function;
         }
