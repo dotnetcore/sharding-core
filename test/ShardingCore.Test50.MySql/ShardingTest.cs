@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 using ShardingCore.Test50.MySql.Domain.Entities;
@@ -16,10 +17,30 @@ namespace ShardingCore.Test50.MySql
     public class ShardingTest
     {
         private readonly IVirtualDbContext _virtualDbContext;
+        private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public ShardingTest(IVirtualDbContext virtualDbContext)
+        public ShardingTest(IVirtualDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
         {
             _virtualDbContext = virtualDbContext;
+            _routingRuleEngineFactory = routingRuleEngineFactory;
+        }
+
+        [Fact]
+        public async Task Route_TEST()
+        {
+            var queryable1 = _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="339");
+            var routeResults1 = _routingRuleEngineFactory.Route(queryable1);
+            Assert.Equal(1,routeResults1.Count());
+            Assert.Equal(1,routeResults1.FirstOrDefault().ReplaceTables.Count());
+            Assert.Equal("0",routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().Tail);
+            Assert.Equal(nameof(SysUserMod),routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().OriginalName);
+            var ids = new[] {"339", "124","142"};
+            var queryable2= _virtualDbContext.Set<SysUserMod>().Where(o=>ids.Contains(o.Id));
+            var routeResult2s = _routingRuleEngineFactory.Route(queryable2);
+            Assert.Equal(2,routeResult2s.Count());
+            Assert.Equal(1,routeResult2s.FirstOrDefault().ReplaceTables.Count());
+            Assert.Equal(2,routeResult2s.SelectMany(o=>o.ReplaceTables).Count());
+            Assert.Equal(true,routeResult2s.SelectMany(o=>o.ReplaceTables).All(o=>new[]{"0","1"}.Contains(o.Tail)));
         }
 
         [Fact]
@@ -290,6 +311,7 @@ namespace ShardingCore.Test50.MySql
                     Count = g.Count(),
                     TotalSalary = g.Sum(o => o.Salary),
                     AvgSalary = g.Average(o => o.Salary),
+                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
                     MinSalary = g.Min(o => o.Salary),
                     MaxSalary = g.Max(o => o.Salary)
                 }).ToShardingListAsync();
@@ -297,6 +319,7 @@ namespace ShardingCore.Test50.MySql
             Assert.Equal(2, group[0].Count);
             Assert.Equal(2260000, group[0].TotalSalary);
             Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(11300, group[0].AvgSalaryDecimal);
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
         }
@@ -314,6 +337,7 @@ namespace ShardingCore.Test50.MySql
                     Count = g.Count(),
                     TotalSalary = g.Sum(o => o.Salary),
                     AvgSalary = g.Average(o => o.Salary),
+                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
                     MinSalary = g.Min(o => o.Salary),
                     MaxSalary = g.Max(o => o.Salary)
                 });
@@ -321,6 +345,7 @@ namespace ShardingCore.Test50.MySql
             Assert.Equal(2, group[0].Count);
             Assert.Equal(2260000, group[0].TotalSalary);
             Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(11300, group[0].AvgSalaryDecimal);
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
         }

@@ -99,7 +99,11 @@ namespace ShardingCore.Test50.MySql
                                 Id = $@"{id}{dateOfMonth}",
                                 UserId = id.ToString(),
                                 DateOfMonth = int.Parse(dateOfMonth),
-                                Salary = 700000+id*100*i
+                                Salary = 700000+id*100*i,
+                                SalaryLong = 700000+id*100*i,
+                                SalaryDecimal = (700000+id*100*i)/100m,
+                                SalaryDouble = (700000+id*100*i)/100d,
+                                SalaryFloat = (700000+id*100*i)/100f
                             });
                             tempTime=tempTime.AddMonths(1);
                             i++;

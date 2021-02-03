@@ -132,9 +132,6 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
         }
     }
 ```
-- `GetAllTails`
-  现在数据库已存在的尾巴有哪些
-
 `Startup.cs` 下的 `ConfigureServices(IServiceCollection services)`
 
 ```c#
@@ -295,6 +292,32 @@ context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.Up
 # 注意事项
 该库的IVirtualDbContext.Set<T>使用asnotracking所以基本不支持跟踪,目前框架采用AppDomain.CurrentDomain.GetAssemblies();
 可能会导致程序集未被加载所以尽可能在api层加载所需要的dll
+使用时需要注意
+- 实体对象是否继承`IShardingEntity`
+- 实体对象是否有`ShardingKey`
+- 实体对象是否已经实现了一个虚拟路由
+- startup是否已经添加虚拟路由
+
+```c#
+
+ services.AddShardingSqlServer(o =>
+  {
+      o.ConnectionString = "";
+      o.AddSharding<SysUserModVirtualRoute>();
+      o.UseShardingCoreConfig((provider, config) =>
+      {
+          //如果是development就判断并且新建数据库如果不存在的话(ishardingentity不会被创建)
+          config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+          //ishardingentity表是否需要在启动时创建(如果已创建可以选择不创建)
+          config.CreateShardingTableOnStart = true;
+      });
+  });
+  ```
+- startup
+```c#
+  var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
+  shardingBootstrapper.Start();
+  ```
 
 # 计划
 - [提供官网如果该项目比较成功的话]

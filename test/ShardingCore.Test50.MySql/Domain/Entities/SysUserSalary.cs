@@ -22,5 +22,23 @@ namespace ShardingCore.Test50.MySql.Domain.Entities
         /// 工资
         /// </summary>
         public int Salary { get; set; }
+        
+        /// <summary>
+        /// 工资
+        /// </summary>
+        public long SalaryLong { get; set; }
+        
+        /// <summary>
+        /// 工资
+        /// </summary>
+        public decimal SalaryDecimal { get; set; }
+        /// <summary>
+        /// 工资
+        /// </summary>
+        public double SalaryDouble { get; set; }
+        /// <summary>
+        /// 工资
+        /// </summary>
+        public float SalaryFloat { get; set; }
     }
 }
