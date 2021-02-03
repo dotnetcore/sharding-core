@@ -20,10 +20,5 @@ namespace ShardingCore.Test50.Shardings
         {
         }
 
-        public override List<string> GetAllTails()
-        {
-            return new() { "0","1","2"};
-        }
-
     }
 }

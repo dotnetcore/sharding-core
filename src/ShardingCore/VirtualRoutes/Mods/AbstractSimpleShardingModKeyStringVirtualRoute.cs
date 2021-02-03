@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
@@ -38,6 +39,10 @@ namespace ShardingCore.VirtualRoutes.Mods
         protected override string ConvertToShardingKey(object shardingKey)
         {
             return shardingKey.ToString();
+        }
+        public override List<string> GetAllTails()
+        {
+            return Enumerable.Range(0, Mod).Select(o => o.ToString()).ToList();
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

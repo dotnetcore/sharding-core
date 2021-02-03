@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
@@ -15,6 +16,26 @@ namespace ShardingCore.VirtualRoutes.Weeks
 */
     public abstract class AbstractSimpleShardingWeekKeyLongVirtualRoute<T> : AbstractShardingTimeKeyLongVirtualRoute<T> where T : class, IShardingEntity
     {
+        public abstract DateTime GetBeginTime();
+        public override List<string> GetAllTails()
+        {
+            var beginTime = GetBeginTime();
+         
+            var tails=new List<string>();
+            //提前创建表
+            var nowTimeStamp =beginTime.AddDays(7).Date;
+            if (beginTime > nowTimeStamp)
+                throw new ArgumentException("起始时间不正确无法生成正确的表名");
+            var currentTimeStamp = beginTime;
+            while (currentTimeStamp <= nowTimeStamp)
+            {
+                var currentTimeStampLong = ShardingCoreHelper.ConvertDateTimeToLong(currentTimeStamp);
+                var tail = ShardingKeyToTail(currentTimeStampLong);
+                tails.Add(tail);
+                currentTimeStamp = currentTimeStamp.AddDays(7);
+            }
+            return tails;
+        }
         protected override string TimeFormatToTail(long time)
         {
             var datetime = ShardingCoreHelper.ConvertLongToDateTime(time);

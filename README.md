@@ -8,9 +8,9 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFrameworkCore.MySql
 --- | --- | --- | --- | --- | --- 
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.3) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.3) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.3) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.4) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.4) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.4) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
 
 
 - [开始](#开始)
@@ -39,10 +39,10 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 
 ## 简介
 
-目前该库处于初期阶段,有很多bug也希望各位多多理解,一起努力为.net生态做出一份微薄之力,目前该库支持的分页可以进行完全的自定义,基本上可以满足95%以上的
+目前该库处于初期阶段,有很多bug也希望各位多多理解,一起努力为.net生态做出一份微薄之力,目前该库支持的分表可以进行完全的自定义,基本上可以满足95%以上的
 业务需求，唯一的限制就是分表规则必须满足 x+y+z,x表示固定的表名,y表示固定的表名和表后缀之间的联系(可以为空),z表示表后缀,可以按照你自己的任意业务逻辑进行切分,
 如:user_0,user_1或者user202101,user202102...当然该库同样适用于多租户模式下的隔离,该库为了支持之后的分库已经重写了之前的union all查询模式,并且支持多种api,
-支持多种查询包括join group by max count min avg sum ...等一系列查询,之后可能会添加更多支持,目前该库的使用非常简单,基本上就是针对IQueryable的扩展，为了保证
+支持多种查询包括```join,group by,max,count,min,avg,sum``` ...等一系列查询,之后可能会添加更多支持,目前该库的使用非常简单,基本上就是针对IQueryable的扩展，为了保证
 该库的简介目前仅使用该库无法或者说难以实现自动建表,但是只需要配合定时任务该库即可完成24小时无人看管自动管理。该库提供了 [IShardingTableCreator](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/TableCreator/IShardingTableCreator.cs)
 作为建表的依赖,如果需要可以参考 [按天自动建表](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
 
@@ -80,7 +80,7 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.3" />
+<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.4" />
 ```
 
 ## 配置

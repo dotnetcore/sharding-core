@@ -19,9 +19,5 @@ namespace Sample.SqlServer.Shardings
         public SysUserModVirtualRoute() : base(3)
         {
         }
-        public override List<string> GetAllTails()
-        {
-            return new() { "0","1","2"};
-        }
     }
 }

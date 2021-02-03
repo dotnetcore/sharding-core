@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Years
@@ -15,6 +16,25 @@ namespace ShardingCore.VirtualRoutes.Years
 */
     public abstract class AbstractSimpleShardingYearKeyDateTimeVirtualRoute<T> : AbstractShardingTimeKeyDateTimeVirtualRoute<T> where T : class, IShardingEntity
     {
+        public abstract DateTime GetBeginTime();
+        public override List<string> GetAllTails()
+        {
+            var beginTime = GetBeginTime();
+         
+            var tails=new List<string>();
+            //提前创建表
+            var nowTimeStamp =beginTime.AddYears(1).Date;
+            if (beginTime > nowTimeStamp)
+                throw new ArgumentException("起始时间不正确无法生成正确的表名");
+            var currentTimeStamp = beginTime;
+            while (currentTimeStamp <= nowTimeStamp)
+            {
+                var tail = ShardingKeyToTail(currentTimeStamp);
+                tails.Add(tail);
+                currentTimeStamp = currentTimeStamp.AddYears(1);
+            }
+            return tails;
+        }
         protected override string TimeFormatToTail(DateTime time)
         {
             return $"{time:yyyy}";

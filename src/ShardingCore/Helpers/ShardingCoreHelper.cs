@@ -27,6 +27,10 @@ namespace ShardingCore.Helpers
         {
             return UtcStartTime.AddMilliseconds(timeStamp).AddHours(8);
         }
+        public static long ConvertDateTimeToLong(DateTime time)
+        {
+            return  (long) (time.AddHours(-8) - UtcStartTime).TotalMilliseconds;
+        }
 
         /// <summary>
         /// 获取当月第一天
