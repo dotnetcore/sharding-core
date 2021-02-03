@@ -1,9 +1,8 @@
 <h1 align="center"> ShardingCore </h1>
 
-`ShardingCore` 是一个支持efcore 2.x 3.x 5.x的一个对于数据库分表的一个简易扩展,
-目前该库暂未支持分库(未来会支持),仅支持分表,该项目的理念是让你可以已最少的代码量来实现自动分表的实现,经过多个开源项目的摸索参考目前正式开源本项目
-项目地址 [github](https://github.com/xuejmnet/sharding-core) 喜欢的朋友可以点下star Thanks♪(･ω･)ﾉ
 
+`ShardingCore` 是一个支持efcore 2.x 3.x 5.x的一个对于数据库分表的一个简易扩展,.Net下并没有类似mycat或者sharding-jdbc之类的开源组件或者说有但是并没有非常适用的或者说个人在用过后有一些地方因为限制没法很好使用所以决定自己开发这个库,目前该库暂未支持分库(未来会支持),仅支持分表,该项目的理念是让你可以已最少的代码量来实现自动分表的实现,经过多个开源项目的摸索参考目前正式开源本项目
+项目地址 [github](https://github.com/xuejmnet/sharding-core) 喜欢的朋友可以点下star Thanks♪(･ω･)ﾉ
 ### 依赖
 
 Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFrameworkCore.MySql
