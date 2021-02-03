@@ -131,10 +131,6 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
         public SysUserModVirtualRoute() : base(3)
         {
         }
-        public override List<string> GetAllTails()
-        {
-            return new() { "0","1","2"};
-        }
     }
 ```
 - `GetAllTails`
