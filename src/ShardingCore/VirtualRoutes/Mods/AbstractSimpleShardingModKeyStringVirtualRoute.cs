@@ -22,9 +22,19 @@ namespace ShardingCore.VirtualRoutes.Mods
     public abstract class AbstractSimpleShardingModKeyStringVirtualRoute<T>:AbstractShardingOperatorVirtualRoute<T,string> where T:class,IShardingEntity
     {
         protected readonly int Mod;
-        protected AbstractSimpleShardingModKeyStringVirtualRoute(int mod)
+        protected readonly int TailLength;
+        protected readonly char PaddingChar;
+        protected AbstractSimpleShardingModKeyStringVirtualRoute(int tailLength,int mod,char paddingChar='0')
         {
+            if(tailLength<1)
+                throw new ArgumentException($"{nameof(tailLength)} less than 1 ");
+            if (mod < 1)
+                throw new ArgumentException($"{nameof(mod)} less than 1 ");
+            if (string.IsNullOrWhiteSpace(paddingChar.ToString()))
+                throw new ArgumentException($"{nameof(paddingChar)} cant empty ");
+            TailLength = tailLength;
             Mod = mod;
+            PaddingChar = paddingChar;
         }
         /// <summary>
         /// 如何将shardingkey转成对应的tail
@@ -34,7 +44,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         public override string ShardingKeyToTail(object shardingKey)
         {
             var shardingKeyStr = ConvertToShardingKey(shardingKey);
-            return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString();
+            return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength,PaddingChar);;
         }
         protected override string ConvertToShardingKey(object shardingKey)
         {

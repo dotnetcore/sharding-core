@@ -295,6 +295,7 @@ context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.Up
 使用时需要注意
 - 实体对象是否继承`IShardingEntity`
 - 实体对象是否有`ShardingKey`
+- 实体对象是否映射配置已实现`IEntityTypeConfiguration<TEntity>`
 - 实体对象是否已经实现了一个虚拟路由
 - startup是否已经添加虚拟路由
 
@@ -326,7 +327,7 @@ context.Where(shardingBatchUpdateEntry.Where).Update(shardingBatchUpdateEntry.Up
 - [支持更多数据库查询]
 
 # 最后
-该框架借鉴了大部分分表组件的思路,目前提供的接口都已经实现,并且支持跨表查询,基于分页查询该框架也使用了流式查询保证不会再skip大数据的时候内存会爆炸,至于groupby目前已经在开发支持了,相信不久后就会发布新版本,目前这个库只是一个刚刚成型的库还有很多不完善的地方希望大家多多包涵,如果喜欢的话也希望大家给个star.
+该框架借鉴了大部分分表组件的思路,目前提供的接口都已经实现,并且支持跨表查询,基于分页查询该框架也使用了流式查询保证不会再skip大数据的时候内存会爆炸,目前这个库只是一个刚刚成型的库还有很多不完善的地方希望大家多多包涵,如果喜欢的话也希望大家给个star.
 该文档是我晚上赶工赶出来的也想趁热打铁希望更多的人关注,也希望更多的人可以交流。
 
 凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)

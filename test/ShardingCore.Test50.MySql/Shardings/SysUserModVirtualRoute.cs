@@ -16,7 +16,7 @@ namespace ShardingCore.Test50.MySql.Shardings
 */
     public class SysUserModVirtualRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
     {
-        public SysUserModVirtualRoute() : base(3)
+        public SysUserModVirtualRoute() : base(2,3)
         {
         }
 

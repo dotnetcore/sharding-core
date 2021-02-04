@@ -21,11 +21,19 @@ namespace ShardingCore.VirtualRoutes.Mods
     public abstract class AbstractSimpleShardingModKeyIntVirtualRoute<T>:AbstractShardingOperatorVirtualRoute<T,int> where T:class,IShardingEntity
     {
         protected readonly int Mod;
-        protected AbstractSimpleShardingModKeyIntVirtualRoute(int mod)
+        protected readonly int TailLength;
+        protected readonly char PaddingChar;
+        protected AbstractSimpleShardingModKeyIntVirtualRoute(int tailLength,int mod,char paddingChar='0')
         {
+            if(tailLength<1)
+                throw new ArgumentException($"{nameof(tailLength)} less than 1 ");
             if (mod < 1)
                 throw new ArgumentException($"{nameof(mod)} less than 1 ");
+            if (string.IsNullOrWhiteSpace(paddingChar.ToString()))
+                throw new ArgumentException($"{nameof(paddingChar)} cant empty ");
+            TailLength = tailLength;
             Mod = mod;
+            PaddingChar = paddingChar;
         }
         protected override int ConvertToShardingKey(object shardingKey)
         {
@@ -35,7 +43,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         public override string ShardingKeyToTail(object shardingKey)
         {
             var shardingKeyInt = ConvertToShardingKey(shardingKey);
-            return Math.Abs(shardingKeyInt % Mod).ToString();
+            return Math.Abs(shardingKeyInt % Mod).ToString().PadLeft(TailLength,PaddingChar);
         }
 
         public override List<string> GetAllTails()
