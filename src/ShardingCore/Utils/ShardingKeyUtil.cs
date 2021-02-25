@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Core.Internal.Visitors.Querys;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
 
@@ -56,9 +57,9 @@ namespace ShardingCore.Utils
             return shardingEntityConfig;
         }
 
-        public static Func<string, bool> GetRouteObjectOperatorFilter<TKey>(IQueryable queryable, ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
+        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
         {
-            QueryableRouteDiscoverVisitor<TKey> visitor = new QueryableRouteDiscoverVisitor<TKey>(shardingConfig, shardingKeyConvert, keyToTailExpression);
+            QueryableRouteShardingTableDiscoverVisitor<TKey> visitor = new QueryableRouteShardingTableDiscoverVisitor<TKey>(shardingConfig, shardingKeyConvert, keyToTailExpression);
 
             visitor.Visit(queryable.Expression);
 
@@ -73,6 +74,14 @@ namespace ShardingCore.Utils
             visitor.Visit(queryable.Expression);
 
             return visitor.GetShardingEntities();
+        }
+        public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable)
+        {
+            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor();
+
+            visitor.Visit(queryable.Expression);
+
+            return visitor.GetQueryEntities();
         }
 
     }

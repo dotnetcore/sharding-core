@@ -29,6 +29,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
         public IEnumerable<RouteResult> Route<T>(RouteRuleContext<T> routeRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
+            var queryEntities = routeRuleContext.Queryable.ParseQueryableRoute();
             //先添加手动路由到当前上下文,之后将不再手动路由里面的自动路由添加到当前上下文
             foreach (var kv in routeRuleContext.ManualTails)
             {
@@ -38,7 +39,8 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
                 if (!routeMaps.ContainsKey(virtualTable))
                 {
                     routeMaps.Add(virtualTable,physicTables.ToHashSet());
-                } else
+                }
+                else
                 {
                     foreach (var physicTable in physicTables)
                     {
@@ -66,7 +68,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
 
             if (routeRuleContext.AutoParseRoute)
             {
-                var shardingEntities = routeRuleContext.Queryable.ParseQueryableRoute();
+                var shardingEntities = queryEntities.Where(o => o.IsShardingEntity());
                 foreach (var shardingEntity in shardingEntities)
                 {
                     var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);

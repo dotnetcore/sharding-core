@@ -1,4 +1,4 @@
-using ShardingCore.DbContexts.ShardingDbContexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace ShardingCore.DbContexts
 {
@@ -10,6 +10,6 @@ namespace ShardingCore.DbContexts
 */
     public interface IShardingParallelDbContextFactory
     {
-        ShardingDbContext Create(string tail);
+        DbContext Create(string tail);
     }
 }

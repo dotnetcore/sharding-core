@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.DbContexts.ShardingTableDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 using ShardingCore.TableCreator;
@@ -47,7 +47,7 @@ namespace ShardingCore
             var virtualTables = _virtualTableManager.GetAllVirtualTables();
             using var scope = _serviceProvider.CreateScope();
             var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-            using var context = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), string.Empty, virtualTables.GetVirtualTableDbContextConfigs()));
+            using var context = _shardingDbContextFactory.Create(new ShardingTableDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), string.Empty, virtualTables.GetVirtualTableDbContextConfigs()));
 
             foreach (var virtualTable in virtualTables)
             {
@@ -69,7 +69,7 @@ namespace ShardingCore
             {
                 using var scope = _serviceProvider.CreateScope();
                 var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-                using var context = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), string.Empty, new List<VirtualTableDbContextConfig>(), true));
+                using var context = _shardingDbContextFactory.Create(new ShardingTableDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), string.Empty, new List<VirtualTableDbContextConfig>(), true));
                 context.Database.EnsureCreated();
             }
         }

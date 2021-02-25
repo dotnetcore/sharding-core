@@ -16,5 +16,7 @@ namespace ShardingCore
         /// 是否需要在启动时创建分表
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
+        
+        
     }
 }

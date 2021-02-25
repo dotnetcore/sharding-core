@@ -20,7 +20,7 @@ namespace ShardingCore.Core.VirtualRoutes.Abstractions
         protected override List<IPhysicTable> DoRouteWithWhere(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
-            var filter = ShardingKeyUtil.GetRouteObjectOperatorFilter(queryable, ShardingKeyUtil.Parse(typeof(T)), ConvertToShardingKey, GetRouteToFilter);
+            var filter = ShardingKeyUtil.GetRouteShardingTableFilter(queryable, ShardingKeyUtil.Parse(typeof(T)), ConvertToShardingKey, GetRouteToFilter);
             var physicTables = allPhysicTables.Where(o => filter(o.Tail)).ToList();
             return physicTables;
         }

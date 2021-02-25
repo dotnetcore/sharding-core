@@ -29,7 +29,6 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 获取虚拟表 get virtual table by sharding entity type
         /// </summary>
-        /// <param name="shardingEntityType"></param>
         /// <returns></returns>     
         IVirtualTable<T> GetVirtualTable<T>() where T:class,IShardingEntity;
 

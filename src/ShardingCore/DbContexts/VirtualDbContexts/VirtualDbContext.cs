@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.DbContexts.ShardingTableDbContexts;
 using ShardingCore.DbContexts.Transactions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -311,7 +311,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             return new ShardingBatchDeleteEntry<T>(where,dbContexts);
         }
 
-        private ShardingDbContext CreateGenericDbContext<T>(T entity) where T : class
+        private DbContext CreateGenericDbContext<T>(T entity) where T : class
         {
             var tail = EMPTY_SHARDING_TAIL_ID;
             if (entity.IsShardingEntity())
@@ -341,12 +341,12 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             throw new QueryableRouteNotMatchException($"{typeof(T)} -> {nameof(queryable)}");
         }
 
-        private ShardingDbContext GetOrCreateShardingDbContext(string tail)
+        private DbContext GetOrCreateShardingDbContext(string tail)
         {
             if (!_dbContextCaches.TryGetValue(tail, out var shardingDbContext))
             {
                 var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables().GetVirtualTableDbContextConfigs();
-                shardingDbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
+                shardingDbContext = _shardingDbContextFactory.Create(new ShardingTableDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
                 _dbContextCaches.TryAdd(tail, shardingDbContext);
             }
 
@@ -355,7 +355,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
                 _dbTransaction.Use(shardingDbContext);
             }
 
-            return (ShardingDbContext) shardingDbContext;
+            return shardingDbContext;
         }
 
 

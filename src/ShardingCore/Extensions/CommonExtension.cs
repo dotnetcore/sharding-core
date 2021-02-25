@@ -19,7 +19,18 @@ namespace ShardingCore.Extensions
     public static class CommonExtension
     {
         /// <summary>
-        /// 是否基继承至ShardingEntity
+        /// 是否基继承至IShardingDataSource
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static bool IsShardingDataSource(this Type entityType)
+        {
+            if (entityType == null)
+                throw new ArgumentNullException(nameof(entityType));
+            return typeof(IShardingDataSource).IsAssignableFrom(entityType);
+        }
+        /// <summary>
+        /// 是否基继承至IShardingEntity
         /// </summary>
         /// <param name="entityType"></param>
         /// <returns></returns>
@@ -62,7 +73,7 @@ namespace ShardingCore.Extensions
         }
         public static ISet<Type> ParseQueryableRoute(this IQueryable queryable)
         {
-            return ShardingKeyUtil.GetShardingEntitiesFilter(queryable);
+            return ShardingKeyUtil.GetQueryEntitiesFilter(queryable);
         }
     }
 }

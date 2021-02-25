@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
@@ -12,24 +12,24 @@ namespace ShardingCore.Core.Internal.Visitors
 /*
 * @Author: xjm
 * @Description:
-* @Date: Monday, 28 December 2020 22:09:39
+* @Date: Saturday, 06 February 2021 09:38:22
 * @Email: 326308290@qq.com
 */
-    public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
+    public class QueryableRouteShardingDataSourceDiscoverVisitor<TKey> : ExpressionVisitor
     {
-        private readonly ShardingEntityConfig _shardingConfig;
+        private readonly ShardingEntityBaseType _shardingEntityBaseType;
         private readonly Func<object, TKey> _shardingKeyConvert;
-        private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
-        private Expression<Func<string, bool>> _where = x => true;
+        private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<IPhysicDataSource, bool>>> _keyToDataSourceWithFilter;
+        private Expression<Func<IPhysicDataSource, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
+        public QueryableRouteShardingDataSourceDiscoverVisitor(ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<IPhysicDataSource, bool>>> keyToDataSourceWithFilter)
         {
-            _shardingConfig = shardingConfig;
+            _shardingEntityBaseType = shardingEntityBaseType;
             _shardingKeyConvert = shardingKeyConvert;
-            _keyToTailWithFilter = keyToTailWithFilter;
+            _keyToDataSourceWithFilter = keyToDataSourceWithFilter;
         }
 
-        public Func<string, bool> GetStringFilterTail()
+        public Func<IPhysicDataSource, bool> GetDataSourceFilter()
         {
             return _where.Compile();
         }
@@ -37,8 +37,8 @@ namespace ShardingCore.Core.Internal.Visitors
         private bool IsShardingKey(Expression expression)
         {
             return expression is MemberExpression member
-                   && member.Expression.Type == _shardingConfig.ShardingEntityType
-                   && member.Member.Name == _shardingConfig.ShardingField;
+                   && member.Expression.Type == _shardingEntityBaseType.EntityType
+                   && member.Member.Name == _shardingEntityBaseType.ShardingDataSourceField;
         }
         /// <summary>
         /// 方法是否包含shardingKey
@@ -52,8 +52,8 @@ namespace ShardingCore.Core.Internal.Visitors
                 for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
                 {
                     var isShardingKey = methodCallExpression.Arguments[i] is MemberExpression member
-                                        && member.Expression.Type == _shardingConfig.ShardingEntityType
-                                        && member.Member.Name == _shardingConfig.ShardingField;
+                                        && member.Expression.Type == _shardingEntityBaseType.EntityType
+                                        && member.Member.Name == _shardingEntityBaseType.ShardingTableField;
                     if (isShardingKey) return true;
                 }
             }
@@ -104,7 +104,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
 
 
-        private Expression<Func<string, bool>> Resolve(Expression expression)
+        private Expression<Func<IPhysicDataSource, bool>> Resolve(Expression expression)
         {
             if (expression is LambdaExpression)
             {
@@ -135,7 +135,7 @@ namespace ShardingCore.Core.Internal.Visitors
             return o => true;
         }
 
-        private Expression<Func<string, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
+        private Expression<Func<IPhysicDataSource, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
         {
             if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name) && IsMethodWrapShardingKey(methodCallExpression))
             {
@@ -163,13 +163,13 @@ namespace ShardingCore.Core.Internal.Visitors
                 if (arrayObject != null)
                 {
                     var enumerable = (IEnumerable) arrayObject;
-                    Expression<Func<string, bool>> contains = x => false;
+                    Expression<Func<IPhysicDataSource, bool>> contains = x => false;
                     if (!@in)
                         contains = x => true;
                     foreach (var item in enumerable)
                     {
                         var keyValue = _shardingKeyConvert(item);
-                        var eq = _keyToTailWithFilter(keyValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
+                        var eq = _keyToDataSourceWithFilter(keyValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
                         if (@in)
                             contains = contains.Or(eq);
                         else
@@ -183,10 +183,10 @@ namespace ShardingCore.Core.Internal.Visitors
             return x => true;
         }
 
-        private Expression<Func<string, bool>> ParseGetWhere(BinaryExpression binaryExpression)
+        private Expression<Func<IPhysicDataSource, bool>> ParseGetWhere(BinaryExpression binaryExpression)
         {
-            Expression<Func<string, bool>> left = x => true;
-            Expression<Func<string, bool>> right = x => true;
+            Expression<Func<IPhysicDataSource, bool>> left = x => true;
+            Expression<Func<IPhysicDataSource, bool>> right = x => true;
 
             //递归获取
             if (binaryExpression.Left is BinaryExpression)
@@ -244,7 +244,7 @@ namespace ShardingCore.Core.Internal.Visitors
 
 
                 var keyValue = _shardingKeyConvert(value);
-                return _keyToTailWithFilter(keyValue, op);
+                return _keyToDataSourceWithFilter(keyValue, op);
             }
         }
     }

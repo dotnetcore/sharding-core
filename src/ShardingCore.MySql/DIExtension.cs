@@ -45,7 +45,7 @@ namespace ShardingCore.MySql
                 foreach (var shardingRoute in options.ShardingRoutes)
                 {
                     var genericVirtualRoute = shardingRoute.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualRoute<>)
-                                                                                                && it.GetGenericArguments().Any());
+                                                                                                                                                                                && it.GetGenericArguments().Any());
                     if (genericVirtualRoute == null)
                         throw new ArgumentException("add sharding route type error not assignable from IVirtualRoute<>.");
                     var shardingEntity=genericVirtualRoute.GetGenericArguments()[0];

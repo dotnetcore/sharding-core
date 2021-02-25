@@ -60,7 +60,7 @@ namespace ShardingCore.Core.VirtualTables
                 return new List<IPhysicTable>(1) {routeWithValue};
             }
 
-            throw new NotImplementedException(nameof(routeConfig));
+            throw new NotImplementedException(nameof(RouteConfig));
         }
 
 

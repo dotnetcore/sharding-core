@@ -18,8 +18,8 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
 
         public RouteRuleContext(IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
         {
-            _virtualTableManager = virtualTableManager;
             Queryable = queryable;
+            _virtualTableManager = virtualTableManager;
         }
 
         public IQueryable<T> Queryable { get; }
