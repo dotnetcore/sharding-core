@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore.SqlServer;
 
@@ -21,14 +22,12 @@ namespace Sample.SqlServer
             services.AddControllers();
             services.AddShardingSqlServer(o =>
             {
-                o.ConnectionString = "";
-                o.AddSharding<SysUserModVirtualRoute>();
-                o.UseShardingCoreConfig((provider, config) =>
+                o.AddShardingDbContext<DefaultDbContext>("conn1","123", dbConfig =>
                 {
-                    //如果是development就判断并且新建数据库如果不存在的话
-                    config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
-                    config.CreateShardingTableOnStart = true;
+                    dbConfig.AddShardingTableRoute<SysUserModVirtualRoute>();
                 });
+                //o.AddDataSourceVirtualRoute<>();
+               
             });
         }
 

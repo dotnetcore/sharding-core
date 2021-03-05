@@ -7,6 +7,7 @@ using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
 using ShardingCore.Extensions;
 
@@ -23,8 +24,12 @@ namespace ShardingCore.Core.Internal.StreamMerge
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
+        private readonly IDataSourceRoutingRuleEngineFactory _dataSourceRoutingRuleEngineFactory;
+        private readonly IRoutingRuleEngineFactory _tableRoutingRuleEngineFactory;
+
         private readonly IQueryable<T> _reWriteSource;
-        public IEnumerable<RouteResult> RouteResults { get; }
+        //public IEnumerable<RouteResult> RouteResults { get; }
+        //public DataSourceRoutingResult RoutingResult { get; }
         public int? Skip { get; private set; }
         public int? Take { get; private set; }
         public IEnumerable<PropertyOrder> Orders { get; private set; }
@@ -32,13 +37,14 @@ namespace ShardingCore.Core.Internal.StreamMerge
         public SelectContext SelectContext { get; private set; }
         public GroupByContext GroupByContext { get; private set; }
 
-        public StreamMergeContext(IQueryable<T> source,IEnumerable<RouteResult> routeResults,
+        public StreamMergeContext(IQueryable<T> source, IDataSourceRoutingRuleEngineFactory dataSourceRoutingRuleEngineFactory,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory,
             IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
         {
             _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
             _shardingScopeFactory = shardingScopeFactory;
             _source = source;
-            RouteResults = routeResults;
+            _dataSourceRoutingRuleEngineFactory = dataSourceRoutingRuleEngineFactory;
+            _tableRoutingRuleEngineFactory = tableRoutingRuleEngineFactory;
             var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
@@ -47,10 +53,34 @@ namespace ShardingCore.Core.Internal.StreamMerge
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
         }
+        //public StreamMergeContext(IQueryable<T> source,IEnumerable<RouteResult> routeResults,
+        //    IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
+        //{
+        //    _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
+        //    _shardingScopeFactory = shardingScopeFactory;
+        //    _source = source;
+        //    RouteResults = routeResults;
+        //    var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
+        //    Skip = reWriteResult.Skip;
+        //    Take = reWriteResult.Take;
+        //    Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
+        //    SelectContext = reWriteResult.SelectContext;
+        //    GroupByContext = reWriteResult.GroupByContext;
+        //    _reWriteSource = reWriteResult.ReWriteQueryable;
+        //}
 
-        public DbContext CreateDbContext()
+        public DbContext CreateDbContext(string connectKey)
         {
-            return _shardingParallelDbContextFactory.Create(string.Empty);
+            return _shardingParallelDbContextFactory.Create(connectKey, string.Empty);
+        }
+
+        public DataSourceRoutingResult GetDataSourceRoutingResult()
+        {
+            return _dataSourceRoutingRuleEngineFactory.Route(_source);
+        }
+        public IEnumerable<RouteResult> GetRouteResults(string connectKey)
+        {
+            return _tableRoutingRuleEngineFactory.Route(connectKey,_source);
         }
 
         public ShardingScope CreateScope()

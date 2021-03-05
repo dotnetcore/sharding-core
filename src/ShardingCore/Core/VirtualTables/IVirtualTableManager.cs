@@ -16,52 +16,80 @@ namespace ShardingCore.Core.VirtualTables
     public interface IVirtualTableManager
     {
         /// <summary>
-        /// 获取所有的虚拟表 get all virtual table
+        /// 添加虚拟表应用启动时 add virtual table when app start
         /// </summary>
-        /// <returns></returns>
-        List<IVirtualTable> GetAllVirtualTables();
+        /// <param name="connectKey">链接</param>
+        /// <param name="virtualTable">虚拟表</param>
+        void AddVirtualTable(string connectKey, IVirtualTable virtualTable);
+
         /// <summary>
         /// 获取虚拟表 get virtual table by sharding entity type
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <param name="shardingEntityType"></param>
         /// <returns></returns>
-        IVirtualTable GetVirtualTable(Type shardingEntityType);  
+        IVirtualTable GetVirtualTable(string connectKey, Type shardingEntityType);
+
         /// <summary>
         /// 获取虚拟表 get virtual table by sharding entity type
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <returns></returns>     
-        IVirtualTable<T> GetVirtualTable<T>() where T:class,IShardingEntity;
-
+        IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingEntity;
         /// <summary>
         /// 获取虚拟表 get virtual table by original table name
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <param name="originalTableName"></param>
         /// <returns></returns>
-        IVirtualTable GetVirtualTable(string originalTableName);
+        IVirtualTable GetVirtualTable(string connectKey,string originalTableName);
+
+
+
         /// <summary>
-        /// 添加虚拟表应用启动时 add virtual table when app start
+        /// 获取所有的虚拟表 get all virtual table
         /// </summary>
-        /// <param name="virtualTable"></param>
-        void AddVirtualTable(IVirtualTable virtualTable);
-        /// <summary>
-        /// 添加物理表 add physic table
-        /// </summary>
-        /// <param name="virtualTable"></param>
-        /// <param name="physicTable"></param>
-        void AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable);
-        /// <summary>
-        /// 添加物理表 add physic table
-        /// </summary>
-        /// <param name="shardingEntityType"></param>
-        /// <param name="physicTable"></param>
-        void AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable);
-        /// <summary>
-        /// 判断是否是分表字段
-        /// </summary>
-        /// <param name="shardingEntityType"></param>
-        /// <param name="shardingField"></param>
+        /// <param name="connectKey"></param>
         /// <returns></returns>
-        bool IsShardingKey(Type shardingEntityType, string shardingField);
+        List<IVirtualTable> GetAllVirtualTables(string connectKey);
+
+
+        /// <summary>
+        /// 添加物理表 add physic table
+        /// </summary>
+        /// <param name="connectKey"></param>
+        /// <param name="virtualTable"></param>
+        /// <param name="physicTable"></param>
+        void AddPhysicTable(string connectKey,IVirtualTable virtualTable, IPhysicTable physicTable);
+
+
+        /// <summary>
+        /// 添加物理表 add physic table
+        /// </summary>
+        /// <param name="connectKey"></param>
+        /// <param name="shardingEntityType"></param>
+        /// <param name="physicTable"></param>
+        void AddPhysicTable(string connectKey, Type shardingEntityType, IPhysicTable physicTable);
+
+        ///// <summary>
+        ///// 添加物理表 add physic table
+        ///// </summary>
+        ///// <param name="virtualTable"></param>
+        ///// <param name="physicTable"></param>
+        //void AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable);
+        ///// <summary>
+        ///// 添加物理表 add physic table
+        ///// </summary>
+        ///// <param name="shardingEntityType"></param>
+        ///// <param name="physicTable"></param>
+        //void AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable);
+        ///// <summary>
+        ///// 判断是否是分表字段
+        ///// </summary>
+        ///// <param name="shardingEntityType"></param>
+        ///// <param name="shardingField"></param>
+        ///// <returns></returns>
+        //bool IsShardingKey(Type shardingEntityType, string shardingField);
 
     }
 }

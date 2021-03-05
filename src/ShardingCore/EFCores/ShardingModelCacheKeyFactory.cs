@@ -15,14 +15,13 @@ namespace ShardingCore.EFCores
     {
         public object Create(DbContext context)
         {
-            if (context is ShardingDbContext shardingDbContext)
+            if (context is AbstractShardingDbContext shardingDbContext)
             {
                 //当出现尾巴不一样,本次映射的数据库实体数目不一样就需要重建ef model
                 var tail = shardingDbContext.Tail;
-                var removeSharding = shardingDbContext.RemoveRemoveShardingEntity;
-                var allEntities = string.Join(",",shardingDbContext.VirtualTableConfigs.Select(o=>o.ShardingEntityType.FullName).OrderBy(o=>o).ToList());
+                var allEntities = string.Join(",",shardingDbContext.VirtualTableConfigs.Values.Select(o=>o.ShardingEntityType.FullName).OrderBy(o=>o).ToList());
 
-                return $"{context.GetType()}_{allEntities}_{tail}_{removeSharding}";
+                return $"{context.GetType()}_{allEntities}_{tail}";
             }
             else
             {

@@ -39,18 +39,18 @@ namespace ShardingCore.Test50.MySql
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingMySql(o =>
-            {
-                o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
-                o.ServerVersion = new MySqlServerVersion(new Version());
-                o.AddSharding<SysUserModVirtualRoute>();
-                o.AddSharding<SysUserSalaryVirtualRoute>();
-                o.CreateIfNotExists((provider, config) =>
-                {
-                    config.EnsureCreated = true;
-                    config.CreateShardingTableOnStart = true;
-                });
-            });
+            //services.AddShardingMySql(o =>
+            //{
+            //    o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
+            //    o.ServerVersion = new MySqlServerVersion(new Version());
+            //    o.AddSharding<SysUserModVirtualRoute>();
+            //    o.AddSharding<SysUserSalaryVirtualRoute>();
+            //    o.CreateIfNotExists((provider, config) =>
+            //    {
+            //        config.EnsureCreated = true;
+            //        config.CreateShardingTableOnStart = true;
+            //    });
+            //});
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法

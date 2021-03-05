@@ -64,7 +64,7 @@ namespace ShardingCore.MySql.EFCores
             if (shardingAccessor?.ShardingContext != null)
             {
                 var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
-                var virtualTable = virtualTableManager.GetAllVirtualTables().FirstOrDefault(o => o.GetOriginalTableName() == tableExpression.Name);
+                var virtualTable = virtualTableManager.GetAllVirtualTables(shardingAccessor.ShardingContext.ConnectKey).FirstOrDefault(o => o.GetOriginalTableName() == tableExpression.Name);
                 if(virtualTable!=null)
                 {
                     var tails = shardingAccessor.ShardingContext.GetContextQueryTails(virtualTable);
@@ -74,7 +74,7 @@ namespace ShardingCore.MySql.EFCores
 
                     if (tails.IsEmpty())
                     {
-                        var firstTail = virtualTableManager.GetVirtualTable(tableExpression.Name).GetAllPhysicTables()[0].Tail;
+                        var firstTail = virtualTableManager.GetVirtualTable(shardingAccessor.ShardingContext.ConnectKey,tableExpression.Name).GetAllPhysicTables()[0].Tail;
                         newTableName = $"( select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{tailPrefix}{firstTail}", tableExpression.Schema)} where 1=2 )";
                     }
                     else if (tails.Count == 1)
@@ -173,7 +173,7 @@ namespace ShardingCore.MySql.EFCores
             if (shardingAccessor?.ShardingContext != null)
             {
                 var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
-                var virtualTable = virtualTableManager.GetAllVirtualTables().FirstOrDefault(o => o.GetOriginalTableName() == tableExpression.Table);
+                var virtualTable = virtualTableManager.GetAllVirtualTables(shardingAccessor.ShardingContext.ConnectKey).FirstOrDefault(o => o.GetOriginalTableName() == tableExpression.Table);
                 if(virtualTable!=null)
                 {
                     var tails = shardingAccessor.ShardingContext.GetContextQueryTails(virtualTable);
@@ -183,7 +183,7 @@ namespace ShardingCore.MySql.EFCores
 
                     if (tails.IsEmpty())
                     {
-                        var firstTail = virtualTableManager.GetVirtualTable(tableExpression.Table).GetAllPhysicTables()[0].Tail;
+                        var firstTail = virtualTableManager.GetVirtualTable(shardingAccessor.ShardingContext.ConnectKey,tableExpression.Table).GetAllPhysicTables()[0].Tail;
                         newTableName = $"( select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Table}{tailPrefix}{firstTail}", tableExpression.Schema)} where 1=2 )";
                     }
                     else if (tails.Count == 1)

@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
 using ShardingCore.DbContexts.VirtualDbContexts;
+using ShardingCore.DbContexts.VirtualDbContexts.ShareDbContextOptionsProviders;
 using ShardingCore.EFCores;
+using ShardingCore.Extensions;
 #if EFCORE2
 using System.Data.SqlClient;
 #endif
@@ -21,29 +24,39 @@ namespace ShardingCore.SqlServer
 */
     public class SqlServerDbContextOptionsProvider:IDbContextOptionsProvider
     {
-        private DbContextOptions _dbContextOptions;
-        private SqlConnection _connection;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IShardingCoreOptions _shardingCoreOptions;
 
-        public SqlServerDbContextOptionsProvider(SqlServerOptions sqlServerOptions,ILoggerFactory loggerFactory)
+        private readonly Dictionary<string, ShareDbContextWrapItem> _contextWrapItems =
+            new Dictionary<string, ShareDbContextWrapItem>();
+
+        public SqlServerDbContextOptionsProvider(ILoggerFactory loggerFactory,IShardingCoreOptions shardingCoreOptions)
         {
-            _connection=new SqlConnection(sqlServerOptions.ConnectionString);
-            _dbContextOptions = new DbContextOptionsBuilder()
-                .UseSqlServer(_connection)
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                .UseLoggerFactory(loggerFactory)
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
-                .UseShardingSqlServerQuerySqlGenerator()
-                .Options;
+            _loggerFactory = loggerFactory;
+            _shardingCoreOptions = shardingCoreOptions;
         }
-        public DbContextOptions GetDbContextOptions()
+        public DbContextOptions GetDbContextOptions(string connectKey)
         {
-            return _dbContextOptions;
+            if (_contextWrapItems.ContainsKey(connectKey))
+            {
+                var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
+                var connection = new SqlConnection(connectionString);
+                var dbContextOptions = new DbContextOptionsBuilder()
+                    .UseSqlServer(connection)
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                    .UseLoggerFactory(_loggerFactory)
+                    .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                    .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                    .UseShardingSqlServerQuerySqlGenerator()
+                    .Options;
+                _contextWrapItems.Add(connectKey, new ShareDbContextWrapItem(connection, dbContextOptions));
+            }
+            return _contextWrapItems[connectKey].ContextOptions;
         }
 
         public void Dispose()
         {
-            _connection?.Dispose();
+            _contextWrapItems.ForEach(o => o.Value.Connection?.Dispose());
         }
     }
 }

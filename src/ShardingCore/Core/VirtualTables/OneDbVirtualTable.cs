@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
@@ -29,9 +30,9 @@ namespace ShardingCore.Core.VirtualTables
         public ShardingEntityConfig ShardingConfig { get; }
         private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
 
-        public OneDbVirtualTable(IServiceProvider serviceProvider)
+        public OneDbVirtualTable(IVirtualRoute<T> virtualRoute)
         {
-            _virtualRoute = serviceProvider.GetService<IVirtualRoute<T>>() ?? throw new ShardingOwnerNotFoundException($"{EntityType}");
+            _virtualRoute = virtualRoute;
             ShardingConfig = ShardingKeyUtil.Parse(EntityType);
         }
 
@@ -40,19 +41,19 @@ namespace ShardingCore.Core.VirtualTables
             return _physicTables;
         }
 
-        public List<IPhysicTable> RouteTo(RouteConfig routeConfig)
+        public List<IPhysicTable> RouteTo(TableRouteConfig tableRouteConfig)
         {
             var route = _virtualRoute;
-            if (routeConfig.UseQueryable())
-                return route.RouteWithWhere(_physicTables, routeConfig.GetQueryable());
-            if (routeConfig.UsePredicate())
-                return route.RouteWithWhere(_physicTables, new EnumerableQuery<T>((Expression<Func<T, bool>>) routeConfig.GetPredicate()));
+            if (tableRouteConfig.UseQueryable())
+                return route.RouteWithWhere(_physicTables, tableRouteConfig.GetQueryable());
+            if (tableRouteConfig.UsePredicate())
+                return route.RouteWithWhere(_physicTables, new EnumerableQuery<T>((Expression<Func<T, bool>>) tableRouteConfig.GetPredicate()));
             object shardingKeyValue = null;
-            if (routeConfig.UseValue())
-                shardingKeyValue = routeConfig.GetShardingKeyValue();
+            if (tableRouteConfig.UseValue())
+                shardingKeyValue = tableRouteConfig.GetShardingKeyValue();
 
-            if (routeConfig.UseEntity())
-                shardingKeyValue = routeConfig.GetShardingEntity().GetPropertyValue(ShardingConfig.ShardingField);
+            if (tableRouteConfig.UseEntity())
+                shardingKeyValue = tableRouteConfig.GetShardingEntity().GetPropertyValue(ShardingConfig.ShardingField);
 
             if (shardingKeyValue != null)
             {
@@ -60,7 +61,7 @@ namespace ShardingCore.Core.VirtualTables
                 return new List<IPhysicTable>(1) {routeWithValue};
             }
 
-            throw new NotImplementedException(nameof(RouteConfig));
+            throw new NotImplementedException(nameof(TableRouteConfig));
         }
 
 

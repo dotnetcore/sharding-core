@@ -34,24 +34,25 @@ namespace ShardingCore.TableCreator
             _serviceProvider = serviceProvider;
         }
 
-        public void CreateTable<T>(string tail) where T : class, IShardingEntity
+        public void CreateTable<T>(string connectKey,string tail) where T : class, IShardingEntity
         {
-             CreateTable(typeof(T), tail);
+             CreateTable(connectKey,typeof(T), tail);
         }
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        public void CreateTable(Type shardingEntityType, string tail)
+        public void CreateTable(string connectKey, Type shardingEntityType, string tail)
         {
             using (var serviceScope = _serviceProvider.CreateScope())
             {
                 var dbContextOptionsProvider = serviceScope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntityType);
+                var virtualTable = _virtualTableManager.GetVirtualTable(connectKey,shardingEntityType);
 
-                using (var dbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), tail,
+                using (var dbContext = _shardingDbContextFactory.Create(connectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail,
                     new List<VirtualTableDbContextConfig>() {new VirtualTableDbContextConfig(shardingEntityType, virtualTable.GetOriginalTableName(), virtualTable.ShardingConfig.TailPrefix)})))
                 {
                     var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;

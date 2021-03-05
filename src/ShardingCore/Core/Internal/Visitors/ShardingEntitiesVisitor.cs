@@ -28,7 +28,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
         protected override Expression VisitConstant(ConstantExpression node)
         {
-            if (node.Value is IQueryable queryable&&queryable.ElementType.IsShardingEntity())
+            if (node.Value is IQueryable queryable&&queryable.ElementType.IsShardingTable())
             {
                 _shardingEntities.Add(queryable.ElementType);
             }
@@ -54,7 +54,7 @@ namespace ShardingCore.Core.Internal.Visitors
 
         protected override Expression VisitExtension(Expression node)
         {
-            if (node is QueryRootExpression queryRootExpression&&queryRootExpression.EntityType.ClrType.IsShardingEntity())
+            if (node is QueryRootExpression queryRootExpression&&queryRootExpression.EntityType.ClrType.IsShardingTable())
             {
                 _shardingEntities.Add(queryRootExpression.EntityType.ClrType);
             }

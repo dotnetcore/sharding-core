@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace ShardingCore.Core.ShardingDataSources
@@ -32,5 +33,6 @@ namespace ShardingCore.Core.ShardingDataSources
        bool IsShardingDataSource();
 
        public IEnumerable<ShardingDataSourceDbEntry> FilterDataSources(ISet<Type> queryEntities);
+
     }
 }

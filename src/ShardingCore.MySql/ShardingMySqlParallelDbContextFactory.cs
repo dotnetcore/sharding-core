@@ -18,30 +18,35 @@ namespace ShardingCore.MySql
     public class ShardingMySqlParallelDbContextFactory : IShardingParallelDbContextFactory
     {
         private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IShardingDbContextFactory _shardingDbContextFactory;
+        private readonly IShardingCoreOptions _shardingCoreOptions;
         private readonly MySqlOptions _mySqlOptions;
 
-        public ShardingMySqlParallelDbContextFactory(IVirtualTableManager virtualTableManager, MySqlOptions mySqlOptions)
+        public ShardingMySqlParallelDbContextFactory(IVirtualTableManager virtualTableManager,IShardingDbContextFactory shardingDbContextFactory,IShardingCoreOptions shardingCoreOptions, MySqlOptions mySqlOptions)
         {
             _virtualTableManager = virtualTableManager;
+            _shardingDbContextFactory = shardingDbContextFactory;
+            _shardingCoreOptions = shardingCoreOptions;
             _mySqlOptions = mySqlOptions;
         }
 
-        public ShardingDbContext Create(string tail)
+        public DbContext Create(string connectKey, string tail)
         {
-            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables().GetVirtualTableDbContextConfigs();
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(), tail, virtualTableConfigs);
-            return new ShardingDbContext(shardingDbContextOptions);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
+            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions()
+        private DbContextOptions CreateOptions(string connectionString)
         {
             return new DbContextOptionsBuilder()
 #if EFCORE5
-                .UseMySql(_mySqlOptions.ConnectionString,_mySqlOptions.ServerVersion,_mySqlOptions.MySqlOptionsAction)
+                .UseMySql(connectionString,_mySqlOptions.ServerVersion,_mySqlOptions.MySqlOptionsAction)
 #endif
 #if !EFCORE5
             
-                .UseMySql(_mySqlOptions.ConnectionString,_mySqlOptions.MySqlOptionsAction)
+                .UseMySql(connectionString, _mySqlOptions.MySqlOptionsAction)
 #endif
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()

@@ -10,6 +10,6 @@ namespace ShardingCore.DbContexts
 */
     public interface IShardingParallelDbContextFactory
     {
-        DbContext Create(string tail);
+        DbContext Create(string connectKey, string tail);
     }
 }

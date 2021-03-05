@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Days

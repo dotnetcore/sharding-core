@@ -1,43 +1,43 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-namespace ShardingCore.DbContexts.ShardingTableDbContexts
+namespace ShardingCore.DbContexts.ShardingDbContexts
 {
-/*
-* @Author: xjm
-* @Description: 用于分表使用 分表比较特殊必须使用规定的dbcontext
-* @Date: Thursday, 18 February 2021 15:06:46
-* @Email: 326308290@qq.com
-*/
-    /// <summary>
-    /// 
-    /// </summary>
-    public abstract class ShardingTableDbContext:DbContext
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: 2021/3/4 16:11:18
+    * @Ver: 1.0
+    * @Email: 326308290@qq.com
+    */
+    public abstract class AbstractShardingDbContext : DbContext
     {
         public string Tail { get; }
-        public Dictionary<Type,VirtualTableDbContextConfig> VirtualTableConfigs { get; }
-        public bool RemoveRemoveShardingEntity { get; }
-        
-        public ShardingTableDbContext(ShardingTableDbContextOptions options)
+        public Dictionary<Type, VirtualTableDbContextConfig> VirtualTableConfigs { get; }
+
+        protected AbstractShardingDbContext(ShardingDbContextOptions options)
         {
             Tail = options.Tail;
-            VirtualTableConfigs = options.VirtualTableDbContextConfigs.ToDictionary(o=>o.ShardingEntityType,o=>o);
-            RemoveRemoveShardingEntity = options.RemoveShardingEntity;
+            VirtualTableConfigs = options.VirtualTableDbContextConfigs.ToDictionary(o => o.ShardingEntityType, o => o);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            OnShardingModelCreating(modelBuilder);
             OnModelCreatingAfter(modelBuilder);
         }
+
+        protected abstract void OnShardingModelCreating(ModelBuilder modelBuilder);
 
         protected virtual void OnModelCreatingAfter(ModelBuilder modelBuilder)
         {
             if (!string.IsNullOrWhiteSpace(Tail))
             {
-                var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o=>VirtualTableConfigs.ContainsKey(o.ClrType));
+                var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => VirtualTableConfigs.ContainsKey(o.ClrType));
                 foreach (var entityType in mutableEntityTypes)
                 {
                     var virtualTableConfig = VirtualTableConfigs[entityType.ClrType];

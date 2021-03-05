@@ -27,19 +27,19 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
             return _routeRuleEngine;
         }
 
-        public RouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
+        public RouteRuleContext<T> CreateContext<T>(string connectKey, IQueryable<T> queryable)
         {
-            return new RouteRuleContext<T>(queryable, _virtualTableManager);
+            return new RouteRuleContext<T>(connectKey,queryable, _virtualTableManager);
         }
 
-        public IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable)
+        public IEnumerable<RouteResult> Route<T>(string connectKey, IQueryable<T> queryable)
         {
             var engine = CreateEngine();
-            var ruleContext = CreateContext<T>(queryable);
+            var ruleContext = CreateContext<T>(connectKey,queryable);
             return engine.Route(ruleContext);
         }
 
-        public IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable, RouteRuleContext<T> ruleContext)
+        public IEnumerable<RouteResult> Route<T>(string connectKey, IQueryable<T> queryable, RouteRuleContext<T> ruleContext)
         {
             var engine = CreateEngine();
             return engine.Route(ruleContext);

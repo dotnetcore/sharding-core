@@ -52,11 +52,11 @@ namespace ShardingCore.Extensions
         /// 给IEnumerable拓展ForEach方法
         /// </summary>
         /// <typeparam name="T">模型类</typeparam>
-        /// <param name="iEnumberable">数据源</param>
+        /// <param name="enumberable">数据源</param>
         /// <param name="func">方法</param>
-        public static void ForEach<T>(this IEnumerable<T> iEnumberable, Action<T> func)
+        public static void ForEach<T>(this IEnumerable<T> enumberable, Action<T> func)
         {
-            foreach (var item in iEnumberable)
+            foreach (var item in enumberable)
             {
                 func(item);
             }

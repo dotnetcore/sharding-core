@@ -6,9 +6,7 @@ using System.Reflection;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal;
 using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Utils
@@ -35,7 +33,7 @@ namespace ShardingCore.Utils
             }
 
             var isShardingDataSource = entityType.IsShardingDataSource();
-            var isShardingTable = entityType.IsShardingEntity();
+            var isShardingTable = entityType.IsShardingTable();
             baseType = new ShardingEntityBaseType()
             {
                 EntityType = entityType,
@@ -95,7 +93,7 @@ namespace ShardingCore.Utils
         }
         
         
-        public static Func<IPhysicDataSource, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<IPhysicDataSource, bool>>> keyToTailExpression)
+        public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
         {
             QueryableRouteShardingDataSourceDiscoverVisitor<TKey> visitor = new QueryableRouteShardingDataSourceDiscoverVisitor<TKey>(shardingEntityBaseType, shardingKeyConvert, keyToTailExpression);
 

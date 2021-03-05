@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Core.PhysicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
@@ -23,18 +22,18 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <param name="shardingKey">分表的值</param>
         /// <param name="shardingOperator">操作</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        protected abstract Expression<Func<IPhysicDataSource, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
+        protected abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
         /// <summary>
         /// 通过iqueryable来解析本次路由到的具体数据源
         /// </summary>
-        /// <param name="allPhysicDataSources"></param>
+        /// <param name="allShardingDataSourceConfigs"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        protected override List<IPhysicDataSource> DoRouteWithWhere(List<IPhysicDataSource> allPhysicDataSources, IQueryable queryable)
+        protected override List<string> DoRouteWithWhere(List<string> allShardingDataSourceConfigs, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
             var filter = ShardingUtil.GetRouteDataSourceFilter(queryable, ShardingUtil.Parse(typeof(T)), ConvertToShardingKey, GetRouteToFilter);
-            var physicTables = allPhysicDataSources.Where(o => filter(o)).ToList();
+            var physicTables = allShardingDataSourceConfigs.Where(o => filter(o)).ToList();
             return physicTables;
         }
         /// <summary>
@@ -45,7 +44,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <returns></returns>
         /// <exception cref="ShardingDataSourceRouteNotMatchException"></exception>
         /// <exception cref="ShardingDataSourceRouteMatchMoreException"></exception>
-        public override IPhysicDataSource RouteWithValue(List<IPhysicDataSource> allPhysicDataSources, object shardingKey)
+        public override string RouteWithValue(List<string> allPhysicDataSources, object shardingKey)
         {
             var filter = GetRouteToFilter(ConvertToShardingKey(shardingKey), ShardingOperatorEnum.Equal).Compile();
 
@@ -57,7 +56,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
             }
 
             if (physicDataSources.Count > 1)
-                throw new ShardingDataSourceRouteMatchMoreException($"data source :{string.Join(",", physicDataSources.Select(o => $"[{o.GetDataSourceType()}]"))}");
+                throw new ShardingDataSourceRouteMatchMoreException($"data source :{string.Join(",", physicDataSources.Select(o => $"[{o}]"))}");
             return physicDataSources[0];
         }
     }

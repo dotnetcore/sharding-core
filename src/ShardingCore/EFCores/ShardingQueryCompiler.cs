@@ -263,7 +263,7 @@ namespace ShardingCore.EFCores
 			return database.CompileAsyncQuery<TResult>(queryModel);
 		}
 		private static async Task<TResult> ExecuteSingletonAsyncQuery<TResult>(
-			QueryContext queryContext,
+            QueryContext queryContext,
 			Func<QueryContext, IAsyncEnumerable<TResult>> compiledQuery,
 			IDiagnosticsLogger<DbLoggerCategory.Query> logger,
 			Type contextType)

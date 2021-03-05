@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace ShardingCore.Core.VirtualRoutes
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 {
 /*
 * @Author: xjm
@@ -9,7 +9,7 @@ namespace ShardingCore.Core.VirtualRoutes
 * @Date: Friday, 18 December 2020 14:15:02
 * @Email: 326308290@qq.com
 */
-    public class RouteConfig
+    public class TableRouteConfig
     {
         private readonly IQueryable _queryable;
         private readonly IShardingEntity _shardingEntity;
@@ -17,7 +17,7 @@ namespace ShardingCore.Core.VirtualRoutes
         private readonly Expression _predicate;
 
 
-        public RouteConfig(IQueryable queryable=null,IShardingEntity shardingEntity=null,object shardingKeyValue=null,Expression predicate=null)
+        public TableRouteConfig(IQueryable queryable=null,IShardingEntity shardingEntity=null,object shardingKeyValue=null,Expression predicate=null)
         {
             _queryable = queryable;
             _shardingEntity = shardingEntity;

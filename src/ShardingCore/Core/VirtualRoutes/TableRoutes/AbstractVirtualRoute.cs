@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.PhysicTables;
 
-namespace ShardingCore.Core.VirtualRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 {
 /*
 * @Author: xjm

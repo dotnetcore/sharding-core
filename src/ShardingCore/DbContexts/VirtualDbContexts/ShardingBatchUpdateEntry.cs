@@ -13,15 +13,15 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 */
     public class ShardingBatchUpdateEntry<T> where T:class
     {
-        public ShardingBatchUpdateEntry(Expression<Func<T, bool>> @where, Expression<Func<T, T>> updateExp, List<DbContext> dbContexts)
+        public ShardingBatchUpdateEntry(Expression<Func<T, bool>> @where, Expression<Func<T, T>> updateExp, List<(string connectKey, List<DbContext> dbContexts)> dbContextGroups)
         {
             Where = @where;
             UpdateExp = updateExp;
-            DbContexts = dbContexts;
+            DbContextGroups = dbContextGroups;
         }
 
         public Expression<Func<T, bool>> Where {get;}
        public Expression<Func<T, T>> UpdateExp{get;}
-       public List<DbContext> DbContexts { get; }
+       public List<(string connectKey, List<DbContext> dbContexts)>  DbContextGroups { get; }
     }
 }

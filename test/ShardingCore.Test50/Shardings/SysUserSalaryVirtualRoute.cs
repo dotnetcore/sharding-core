@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Test50.Domain.Entities;
 
 namespace ShardingCore.Test50.Shardings

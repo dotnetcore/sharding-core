@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Helpers;
 
 namespace ShardingCore.VirtualRoutes.Mods

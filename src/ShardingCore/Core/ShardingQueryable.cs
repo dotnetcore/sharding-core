@@ -9,6 +9,7 @@ using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges.Proxies;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 #if EFCORE2
@@ -32,15 +33,18 @@ namespace ShardingCore.Core
     {
         private IQueryable<T> _source;
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
-        private readonly RouteRuleContext<T> _routeRuleContext;
+        //private readonly RouteRuleContext<T> _routeRuleContext;
+        private readonly DataSourceRoutingRuleContext<T> _dataSourceRoutingRuleContext;
 
 
         private ShardingQueryable(IQueryable<T> source)
         {
             _source = source;
             _streamMergeContextFactory = ShardingContainer.Services.GetService<IStreamMergeContextFactory>();
-            var routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
-            _routeRuleContext = routingRuleEngineFactory.CreateContext<T>(source);
+            //var routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
+            var dataSourceRoutingRuleEngineFactory=ShardingContainer.Services.GetService<IDataSourceRoutingRuleEngineFactory>();
+            //_routeRuleContext = routingRuleEngineFactory.CreateContext<T>(source);
+            _dataSourceRoutingRuleContext = dataSourceRoutingRuleEngineFactory.CreateContext<T>(source);
         }
 
         public static ShardingQueryable<TSource> Create<TSource>(IQueryable<TSource> source)
@@ -51,33 +55,37 @@ namespace ShardingCore.Core
 
         public IShardingQueryable<T> EnableAutoRouteParse()
         {
-            _routeRuleContext.EnableAutoRouteParse();
-            return this;
+            throw new NotImplementedException();
+            //_routeRuleContext.EnableAutoRouteParse();
+            //return this;
         }
 
         public IShardingQueryable<T> DisableAutoRouteParse()
         {
-            _routeRuleContext.DisableAutoRouteParse();
-            return this;
+            throw new NotImplementedException();
+            //_routeRuleContext.DisableAutoRouteParse();
+            //return this;
         }
 
         public IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingEntity
         {
-            _routeRuleContext.AddRoute(predicate);
-            return this;
+            throw new NotImplementedException();
+            //_routeRuleContext.AddRoute(predicate);
+            //return this;
         }
 
         public IShardingQueryable<T> AddManualRoute<TShardingEntity>( string tail) where TShardingEntity : class, IShardingEntity
         {
-            _routeRuleContext.AddRoute<TShardingEntity>(tail);
+            throw new NotImplementedException();
+            //_routeRuleContext.AddRoute<TShardingEntity>(tail);
 
-            return this;
+            //return this;
         }
 
 
         private StreamMergeContext<T> GetContext()
         {
-            return _streamMergeContextFactory.Create(_source,_routeRuleContext);
+            return _streamMergeContextFactory.Create(_source,_dataSourceRoutingRuleContext);
         }
         private async Task<List<TResult>> GetGenericMergeEngine<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {

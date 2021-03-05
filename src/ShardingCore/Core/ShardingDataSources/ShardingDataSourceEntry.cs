@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 
 namespace ShardingCore.Core.ShardingDataSources
 {
@@ -20,7 +21,7 @@ namespace ShardingCore.Core.ShardingDataSources
         /// </summary>
         /// <param name="entityType"></param>
         /// <param name="dataSourceDbEntry"></param>
-        public ShardingDataSourceEntry(Type entityType,ShardingDataSourceDbEntry dataSourceDbEntry)
+        public ShardingDataSourceEntry(Type entityType, ShardingDataSourceDbEntry dataSourceDbEntry)
         {
             EntityType = entityType;
             DataSourceDbEntry = dataSourceDbEntry;
@@ -35,5 +36,23 @@ namespace ShardingCore.Core.ShardingDataSources
         /// 分库对应的数据库对象
         /// </summary>
         public ShardingDataSourceDbEntry DataSourceDbEntry { get; }
+
+        public override int GetHashCode()
+        {
+            return this.EntityType.GetHashCode() ^ 31;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ShardingDataSourceEntry))
+                return false;
+
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            ShardingDataSourceEntry item = (ShardingDataSourceEntry) obj;
+
+            return item.EntityType == this.EntityType;
+        }
     }
 }

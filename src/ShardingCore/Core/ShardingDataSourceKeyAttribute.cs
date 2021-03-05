@@ -12,7 +12,7 @@ namespace ShardingCore.Core
     /// 数据源分库规则字段
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
-    public class ShardingDataSourceKeyAttribute
+    public class ShardingDataSourceKeyAttribute: Attribute
     {
     }
 }

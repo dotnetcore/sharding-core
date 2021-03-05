@@ -1,4 +1,5 @@
-using ShardingCore.DbContexts.ShardingTableDbContexts;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.DbContexts.ShardingDbContexts;
 
 namespace ShardingCore.DbContexts
 {
@@ -10,6 +11,6 @@ namespace ShardingCore.DbContexts
 */
     public interface IShardingDbContextFactory
     {
-        ShardingTableDbContext Create(ShardingTableDbContextOptions shardingDbContextOptions);
+        DbContext Create(string connectKey,ShardingDbContextOptions shardingDbContextOptions);
     }
 }

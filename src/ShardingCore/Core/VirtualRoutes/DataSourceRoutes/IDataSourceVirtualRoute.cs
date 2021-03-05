@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.PhysicDataSources;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 {
@@ -11,7 +10,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 * @Date: Friday, 05 February 2021 13:03:58
 * @Email: 326308290@qq.com
 */
-    public interface IVirtualDataSourceRoute
+    public interface IDataSourceVirtualRoute
     {
         Type ShardingEntityType { get; }
 
@@ -21,7 +20,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <param name="allPhysicDataSources"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        List<IPhysicDataSource> RouteWithWhere(List<IPhysicDataSource> allPhysicDataSources,IQueryable queryable);
+        List<string> RouteWithWhere(List<string> allPhysicDataSources,IQueryable queryable);
 
         /// <summary>
         /// 根据值进行路由
@@ -29,11 +28,11 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <param name="allPhysicDataSources"></param>
         /// <param name="shardingKeyValue"></param>
         /// <returns></returns>
-        IPhysicDataSource RouteWithValue(List<IPhysicDataSource> allPhysicDataSources, object shardingKeyValue);
+        string RouteWithValue(List<string> allPhysicDataSources, object shardingKeyValue);
         
     }
     
-    public interface IVirtualDataSourceRoute<T> : IVirtualDataSourceRoute where T : class, IShardingDataSource
+    public interface IDataSourceVirtualRoute<T> : IDataSourceVirtualRoute where T : class, IShardingDataSource
     {
     }
 }

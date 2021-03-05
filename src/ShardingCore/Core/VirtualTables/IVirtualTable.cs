@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -31,9 +32,9 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 路由到具体的物理表 which physic table route
         /// </summary>
-        /// <param name="routeConfig"></param>
+        /// <param name="tableRouteConfig"></param>
         /// <returns></returns>
-        List<IPhysicTable> RouteTo(RouteConfig routeConfig);
+        List<IPhysicTable> RouteTo(TableRouteConfig tableRouteConfig);
 
         /// <summary>
         /// 添加物理表 add physic table

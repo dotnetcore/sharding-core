@@ -31,17 +31,17 @@ namespace Samples.AutoByDate.SqlServer
         {
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
-            services.AddShardingSqlServer(o =>
-            {
-                o.ConnectionString = "";
-                o.AddSharding<SysUserLogByDayVirtualRoute>();
-                o.UseShardingCoreConfig((provider, config) => 
-                {
-                    //如果是development就判断并且新建数据库如果不存在的话
-                    config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
-                    config.CreateShardingTableOnStart = true;
-                });
-            });
+            //services.AddShardingSqlServer(o =>
+            //{
+            //    o.ConnectionString = "";
+            //    o.AddSharding<SysUserLogByDayVirtualRoute>();
+            //    o.UseShardingCoreConfig((provider, config) => 
+            //    {
+            //        //如果是development就判断并且新建数据库如果不存在的话
+            //        config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+            //        config.CreateShardingTableOnStart = true;
+            //    });
+            //});
             services.AddChronusJob();
         }
 

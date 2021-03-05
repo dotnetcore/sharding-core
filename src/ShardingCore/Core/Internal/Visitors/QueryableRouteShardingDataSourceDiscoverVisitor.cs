@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Core.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -19,17 +18,17 @@ namespace ShardingCore.Core.Internal.Visitors
     {
         private readonly ShardingEntityBaseType _shardingEntityBaseType;
         private readonly Func<object, TKey> _shardingKeyConvert;
-        private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<IPhysicDataSource, bool>>> _keyToDataSourceWithFilter;
-        private Expression<Func<IPhysicDataSource, bool>> _where = x => true;
+        private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToDataSourceWithFilter;
+        private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingDataSourceDiscoverVisitor(ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<IPhysicDataSource, bool>>> keyToDataSourceWithFilter)
+        public QueryableRouteShardingDataSourceDiscoverVisitor(ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToDataSourceWithFilter)
         {
             _shardingEntityBaseType = shardingEntityBaseType;
             _shardingKeyConvert = shardingKeyConvert;
             _keyToDataSourceWithFilter = keyToDataSourceWithFilter;
         }
 
-        public Func<IPhysicDataSource, bool> GetDataSourceFilter()
+        public Func<string, bool> GetDataSourceFilter()
         {
             return _where.Compile();
         }
@@ -104,7 +103,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
 
 
-        private Expression<Func<IPhysicDataSource, bool>> Resolve(Expression expression)
+        private Expression<Func<string, bool>> Resolve(Expression expression)
         {
             if (expression is LambdaExpression)
             {
@@ -135,7 +134,7 @@ namespace ShardingCore.Core.Internal.Visitors
             return o => true;
         }
 
-        private Expression<Func<IPhysicDataSource, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
+        private Expression<Func<string, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
         {
             if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name) && IsMethodWrapShardingKey(methodCallExpression))
             {
@@ -163,7 +162,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 if (arrayObject != null)
                 {
                     var enumerable = (IEnumerable) arrayObject;
-                    Expression<Func<IPhysicDataSource, bool>> contains = x => false;
+                    Expression<Func<string, bool>> contains = x => false;
                     if (!@in)
                         contains = x => true;
                     foreach (var item in enumerable)
@@ -183,10 +182,10 @@ namespace ShardingCore.Core.Internal.Visitors
             return x => true;
         }
 
-        private Expression<Func<IPhysicDataSource, bool>> ParseGetWhere(BinaryExpression binaryExpression)
+        private Expression<Func<string, bool>> ParseGetWhere(BinaryExpression binaryExpression)
         {
-            Expression<Func<IPhysicDataSource, bool>> left = x => true;
-            Expression<Func<IPhysicDataSource, bool>> right = x => true;
+            Expression<Func<string, bool>> left = x => true;
+            Expression<Func<string, bool>> right = x => true;
 
             //递归获取
             if (binaryExpression.Left is BinaryExpression)

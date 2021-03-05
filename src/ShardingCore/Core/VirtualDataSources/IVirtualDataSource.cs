@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ShardingCore.Core.PhysicDataSources;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -19,32 +18,21 @@ namespace ShardingCore.Core.VirtualDataSources
     public interface IVirtualDataSource
     {
         Type EntityType{get;}
-        /// <summary>
-        /// 获取所有的物理数据源
-        /// </summary>
-        /// <returns></returns>
-        List<IPhysicDataSource> GetAllDataSources();
 
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
         /// <returns></returns>
-        List<IPhysicDataSource> RouteTo(VirutalDataSourceConfig routeConfig);
-
-        /// <summary>
-        /// 添加物理表 add physic table
-        /// </summary>
-        /// <param name="physicTable"></param>
-        void AddDataSource(IPhysicDataSource physicTable);
+        List<string> RouteTo(VirutalDataSourceRouteConfig routeRouteConfig);
 
         /// <summary>
         /// 获取当前数据源的路由
         /// </summary>
         /// <returns></returns>
-        IVirtualDataSourceRoute GetRoute();
+        IDataSourceVirtualRoute GetRoute();
     }
     public interface IVirtualDataSource<T> : IVirtualDataSource where T : class, IShardingDataSource
     {
-        new IVirtualDataSourceRoute<T> GetRoute();
+        new IDataSourceVirtualRoute<T> GetRoute();
     }
 }

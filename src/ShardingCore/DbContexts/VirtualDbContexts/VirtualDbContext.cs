@@ -6,35 +6,39 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts.ShardingTableDbContexts;
+using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.Transactions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.DbContexts.VirtualDbContexts
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 17 December 2020 21:50:49
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Thursday, 17 December 2020 21:50:49
+    * @Email: 326308290@qq.com
+    */
     public class VirtualDbContext : AbstractInjectVirtualDbContext, IVirtualDbContext
     {
         private readonly string EMPTY_SHARDING_TAIL_ID = Guid.NewGuid().ToString("n");
         private readonly IServiceProvider _serviceProvider;
+        private readonly IVirtualDataSourceManager _virtualDataSourceManager;
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
-        private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string,ConcurrentDictionary<string, DbContext>>();
 
         private IShardingTransaction _dbTransaction = new ShardingTransaction();
 
-        public VirtualDbContext(IServiceProvider serviceProvider,
+        public VirtualDbContext(IServiceProvider serviceProvider, IVirtualDataSourceManager virtualDataSourceManager,
             IVirtualTableManager virtualTableManager, IShardingDbContextFactory shardingDbContextFactory) : base(serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _virtualDataSourceManager = virtualDataSourceManager;
             _virtualTableManager = virtualTableManager;
             _shardingDbContextFactory = shardingDbContextFactory;
         }
@@ -45,7 +49,13 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
         public IShardingTransaction BeginTransaction()
         {
             _dbTransaction.Open();
-            _dbContextCaches.ForEach(kv => { _dbTransaction.Use(kv.Value); });
+            _dbContextCaches.ForEach(kv =>
+            {
+                kv.Value.ForEach(d =>
+                {
+                    _dbTransaction.Use(d.Value);
+                });
+            });
             return _dbTransaction;
         }
 
@@ -62,7 +72,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
         public IQueryable<T> Set<T>() where T : class
         {
-            return GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID).Set<T>().AsNoTracking();
+            return GetOrCreateShardingDbContext(_virtualDataSourceManager.GetDefaultConnectKey(),EMPTY_SHARDING_TAIL_ID).Set<T>().AsNoTracking();
         }
 
         public async Task<int> InsertAsync<T>(T entity) where T : class
@@ -85,7 +95,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                await group.Key.AddRangeAsync(group.Select(o=>o.Entity));
+                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
             }
 
             return entities.Count;
@@ -111,7 +121,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                group.Key.UpdateRange(group.Select(o=>o.Entity));
+                group.Key.UpdateRange(group.Select(o => o.Entity));
             }
 
             return Task.FromResult(entities.Count);
@@ -137,7 +147,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                group.Key.RemoveRange(group.Select(o=>o.Entity));
+                group.Key.RemoveRange(group.Select(o => o.Entity));
             }
 
             return Task.FromResult(entities.Count);
@@ -145,7 +155,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
         public async Task<int> SaveChangesAsync()
         {
-            var transOpenNow = !_dbTransaction.IsOpened&&_dbContextCaches.Count>1;
+            var transOpenNow = !_dbTransaction.IsOpened && _dbContextCaches.Count > 1;
             if (transOpenNow)
             {
                 BeginTransaction();
@@ -153,7 +163,10 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             var effects = 0;
             foreach (var dbContextCache in _dbContextCaches)
             {
-                effects += await dbContextCache.Value.SaveChangesAsync();
+                foreach (var dbContext in dbContextCache.Value)
+                {
+                    effects += await dbContext.Value.SaveChangesAsync();
+                }
             }
 
             if (transOpenNow)
@@ -182,7 +195,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                group.Key.AddRange(group.Select(o=>o.Entity));
+                group.Key.AddRange(group.Select(o => o.Entity));
             }
 
             return entities.Count;
@@ -208,7 +221,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                group.Key.UpdateRange(group.Select(o=>o.Entity));
+                group.Key.UpdateRange(group.Select(o => o.Entity));
             }
 
             return entities.Count;
@@ -234,7 +247,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             foreach (var group in groups)
             {
-                group.Key.RemoveRange(group.Select(o=>o.Entity));
+                group.Key.RemoveRange(group.Select(o => o.Entity));
             }
 
             return entities.Count;
@@ -242,7 +255,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
         public int SaveChanges()
         {
-            var transOpenNow = !_dbTransaction.IsOpened&&_dbContextCaches.Count>1;
+            var transOpenNow = !_dbTransaction.IsOpened && _dbContextCaches.Count > 1;
             if (transOpenNow)
             {
                 BeginTransaction();
@@ -250,10 +263,13 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             var effects = 0;
             foreach (var dbContextCache in _dbContextCaches)
             {
-                effects += dbContextCache.Value.SaveChanges();
+                foreach (var dbContext in dbContextCache.Value)
+                {
+                    effects += dbContext.Value.SaveChanges();
+                }
             }
             if (transOpenNow)
-               _dbTransaction.Commit();
+                _dbTransaction.Commit();
 
             return effects;
         }
@@ -269,93 +285,127 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
                         Entity = o
                     };
                 }).GroupBy(g => g.DbContext)
-                .ToDictionary(o => (DbContext) o.Key, o => o.Select(item => item.Entity).ToList());
+                .ToDictionary(o => (DbContext)o.Key, o => o.Select(item => item.Entity).ToList());
             return new ShardingBatchInsertEntry<T>(groups);
         }
 
         public ShardingBatchUpdateEntry<T> BulkUpdate<T>(Expression<Func<T, bool>> where, Expression<Func<T, T>> updateExp) where T : class
         {
-            List<DbContext> dbContexts = null;
-            if (typeof(T).IsShardingEntity())
+            List<(string connectKey, List<DbContext> dbContexts)> dbContexts = null;
+            var connectKeys = _virtualDataSourceManager.GetConnectKeys<T>(where);
+
+            if (typeof(T).IsShardingTable())
             {
-                var shardingDbContexts = CreateShardingDbContexts<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
-                dbContexts = shardingDbContexts.Select(o => (DbContext) o).ToList();
+                dbContexts = CreateShardingDbContexts<IShardingEntity>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
             }
             else
             {
-                dbContexts = new List<DbContext>(1)
+                dbContexts = connectKeys.Select(connectKey =>
                 {
-                    GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID)
-                };
+                    return (connectKey, new List<DbContext>(1)
+                    {
+                        GetOrCreateShardingDbContext(connectKey, EMPTY_SHARDING_TAIL_ID)
+                    });
+                }).ToList();
             }
 
-            return new ShardingBatchUpdateEntry<T>(where,updateExp,dbContexts);
+            return new ShardingBatchUpdateEntry<T>(where, updateExp, dbContexts);
         }
 
         public ShardingBatchDeleteEntry<T> BulkDelete<T>(Expression<Func<T, bool>> where) where T : class
         {
-            List<DbContext> dbContexts = null;
-            if (typeof(T).IsShardingEntity())
+            List<(string connectKey,List<DbContext> dbContexts)> dbContexts = null;
+            var connectKeys = _virtualDataSourceManager.GetConnectKeys<T>(where);
+
+            if (typeof(T).IsShardingTable())
             {
-                var shardingDbContexts = CreateShardingDbContexts<IShardingEntity>(new EnumerableQuery<T>(where).AsQueryable());
-                dbContexts = shardingDbContexts.Select(o => (DbContext) o).ToList();
+                dbContexts = CreateShardingDbContexts<IShardingEntity>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
             }
             else
             {
-                dbContexts = new List<DbContext>(1)
+                dbContexts = connectKeys.Select(connectKey =>
                 {
-                    GetOrCreateShardingDbContext(EMPTY_SHARDING_TAIL_ID)
-                };
+                    return (connectKey, new List<DbContext>(1)
+                    {
+                        GetOrCreateShardingDbContext(connectKey, EMPTY_SHARDING_TAIL_ID)
+                    });
+                }).ToList();
             }
 
-            return new ShardingBatchDeleteEntry<T>(where,dbContexts);
+            return new ShardingBatchDeleteEntry<T>(where, dbContexts);
         }
 
         private DbContext CreateGenericDbContext<T>(T entity) where T : class
         {
             var tail = EMPTY_SHARDING_TAIL_ID;
-            if (entity.IsShardingEntity())
+            var connectKey = _virtualDataSourceManager.GetConnectKey(entity);
+            if (entity.IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new RouteConfig(null, entity as IShardingEntity, null))[0];
+                var physicTable = _virtualTableManager.GetVirtualTable(connectKey, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingEntity, null))[0];
                 tail = physicTable.Tail;
             }
-           return GetOrCreateShardingDbContext(tail);
+            return GetOrCreateShardingDbContext(connectKey,tail);
         }
 
-        private List<ShardingDbContext> CreateShardingDbContexts<T>(IQueryable queryable) where T : class, IShardingEntity
+        private List<(string connectKey, List<DbContext> dbContexts)> CreateShardingDbContexts<T>(List<string> connectKeys,IQueryable queryable) where T : class, IShardingEntity
         {
-            var physicTables = _virtualTableManager.GetVirtualTable(typeof(T)).RouteTo(new RouteConfig(queryable, null, null));
-            if (physicTables.Any())
+            var results =
+                new List<(string connectKey, List<DbContext> dbContexts)>();
+            foreach (var connectKey in connectKeys)
             {
-                var shardingDbContexts = new List<ShardingDbContext>(physicTables.Count);
-                foreach (var physicTable in physicTables)
+                var physicTables = _virtualTableManager.GetVirtualTable(connectKey,typeof(T)).RouteTo(new TableRouteConfig(queryable, null, null));
+                if (physicTables.Any())
                 {
-                    var shardingDbContext = GetOrCreateShardingDbContext(physicTable.Tail);
+                    var dbContexts = new List<DbContext>(physicTables.Count);
+                    foreach (var physicTable in physicTables)
+                    {
+                        var dbContext = GetOrCreateShardingDbContext(connectKey,physicTable.Tail);
 
-                    shardingDbContexts.Add(shardingDbContext);
+                        dbContexts.Add(dbContext);
+                    }
+                    results.Add((connectKey, dbContexts));
                 }
-
-                return shardingDbContexts;
             }
+
+            if (results.Any())
+                return results;
 
             throw new QueryableRouteNotMatchException($"{typeof(T)} -> {nameof(queryable)}");
         }
 
-        private DbContext GetOrCreateShardingDbContext(string tail)
+        private DbContext GetOrCreateShardingDbContext(string connectKey,string tail)
         {
-            if (!_dbContextCaches.TryGetValue(tail, out var shardingDbContext))
+            if (!_dbContextCaches.TryGetValue(connectKey, out var dbContexts))
             {
-                var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables().GetVirtualTableDbContextConfigs();
-                shardingDbContext = _shardingDbContextFactory.Create(new ShardingTableDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
-                _dbContextCaches.TryAdd(tail, shardingDbContext);
+                dbContexts = new ConcurrentDictionary<string, DbContext>();
+                _dbContextCaches.TryAdd(connectKey, dbContexts);
+            }
+            if(!dbContexts.TryGetValue(tail,out var dbContext))
+            {
+                var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
+                dbContext = _shardingDbContextFactory.Create(connectKey, new ShardingDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(connectKey), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
+                dbContexts.TryAdd(tail, dbContext);
             }
 
             if (IsOpenTransaction)
             {
-                _dbTransaction.Use(shardingDbContext);
+                _dbTransaction.Use(dbContext);
             }
 
-            return shardingDbContext;
+            return dbContext;
+            //if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
+            //{
+            //    var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables().GetVirtualTableDbContextConfigs();
+            //    dbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
+            //    _dbContextCaches.TryAdd(tail, dbContext);
+            //}
+
+            //if (IsOpenTransaction)
+            //{
+            //    _dbTransaction.Use(dbContext);
+            //}
+
+            //return dbContext;
         }
 
 
@@ -365,14 +415,17 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             {
                 _dbContextCaches.ForEach(o =>
                 {
-                    try
+                    o.Value.ForEach(v =>
                     {
-                        o.Value.Dispose();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                        try
+                        {
+                            v.Value.Dispose();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    });
                 });
                 _dbContextCaches.Clear();
             }

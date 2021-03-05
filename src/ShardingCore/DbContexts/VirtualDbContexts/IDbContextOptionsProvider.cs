@@ -11,6 +11,6 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 */
     public interface IDbContextOptionsProvider:IDisposable
     {
-        DbContextOptions GetDbContextOptions();
+        DbContextOptions GetDbContextOptions(string connectKey);
     }
 }

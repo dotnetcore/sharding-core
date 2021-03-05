@@ -1,5 +1,5 @@
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.DbContexts.ShardingTableDbContexts;
 
 namespace ShardingCore.DbContexts
 {
@@ -11,9 +11,16 @@ namespace ShardingCore.DbContexts
 */
     public class ShardingDbContextFactory:IShardingDbContextFactory
     {
-        public ShardingTableDbContext Create(ShardingTableDbContextOptions shardingDbContextOptions)
+        private readonly IShardingCoreOptions _shardingCoreOptions;
+
+        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions)
         {
-            return new ShardingDbContext(shardingDbContextOptions);
+            _shardingCoreOptions = shardingCoreOptions;
+        }
+        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions)
+        {
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            return shardingConfigEntry.Creator(shardingDbContextOptions);
         }
     }
 }

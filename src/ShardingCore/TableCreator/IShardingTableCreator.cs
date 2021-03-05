@@ -1,5 +1,6 @@
 using System;
 using ShardingCore.Core;
+using ShardingCore.Exceptions;
 
 namespace ShardingCore.TableCreator
 {
@@ -17,15 +18,17 @@ namespace ShardingCore.TableCreator
         /// <summary>
         /// 创建表
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <param name="tail"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(string tail) where T : class, IShardingEntity;
+        void CreateTable<T>(string connectKey,string tail) where T : class, IShardingEntity;
         /// <summary>
         /// 创建表
         /// </summary>
+        /// <param name="connectKey"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        void CreateTable(Type shardingEntityType,string tail);
+        void CreateTable(string connectKey, Type shardingEntityType,string tail);
     }
 }

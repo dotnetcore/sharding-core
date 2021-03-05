@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -33,31 +34,15 @@ namespace ShardingCore.SqlServer
            
             var options = new SqlServerOptions();
             configure(options);
-            services.AddSingleton(options);
+            services.AddSingleton<IShardingCoreOptions, SqlServerOptions>(sp=> options);
             services.AddShardingCore();
 
             services.AddScoped<IDbContextOptionsProvider, SqlServerDbContextOptionsProvider>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingSqlServerParallelDbContextFactory>();
-            if (options.HasSharding)
-            {
-                foreach (var shardingRoute in options.ShardingRoutes)
-                {
-                    var genericVirtualRoute = shardingRoute.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualRoute<>)
-                                                                                                && it.GetGenericArguments().Any());
-                    if (genericVirtualRoute == null)
-                        throw new ArgumentException("add sharding route type error not assignable from IVirtualRoute<>.");
-                    var shardingEntity=genericVirtualRoute.GetGenericArguments()[0];
-                    if(!shardingEntity.IsShardingEntity())
-                        throw new ArgumentException("add sharding route type error generic arguments first not assignable from IShardingEntity.");
-                    Type genericType = typeof(IVirtualRoute<>);
-                    Type interfaceType = genericType.MakeGenericType(shardingEntity);
-                    services.AddSingleton(interfaceType, shardingRoute);
-                }
-            }
+          
             services.AddSingleton(sp =>
             {
                 var shardingCoreConfig = new ShardingCoreConfig();
-                options.ShardingCoreConfigConfigure?.Invoke(sp,shardingCoreConfig);
                 return shardingCoreConfig;
             });
             services.AddSingleton<IShardingBootstrapper,ShardingBootstrapper>();

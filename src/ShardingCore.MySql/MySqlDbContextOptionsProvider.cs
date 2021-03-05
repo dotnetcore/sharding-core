@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -10,7 +11,9 @@ using MySql.Data.MySqlClient;
 using MySqlConnector;
 #endif
 using ShardingCore.DbContexts.VirtualDbContexts;
+using ShardingCore.DbContexts.VirtualDbContexts.ShareDbContextOptionsProviders;
 using ShardingCore.EFCores;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.MySql
 {
@@ -22,34 +25,46 @@ namespace ShardingCore.MySql
 */
     public class MySqlDbContextOptionsProvider:IDbContextOptionsProvider
     {
-        private DbContextOptions _dbContextOptions;
-        private MySqlConnection _connection;
+        private readonly MySqlOptions _mySqlOptions;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IShardingCoreOptions _shardingCoreOptions;
 
-        public MySqlDbContextOptionsProvider(MySqlOptions mySqlOptions,ILoggerFactory loggerFactory)
+        private readonly Dictionary<string, ShareDbContextWrapItem> _contextWrapItems =
+            new Dictionary<string, ShareDbContextWrapItem>();
+
+        public MySqlDbContextOptionsProvider(MySqlOptions mySqlOptions,ILoggerFactory loggerFactory,IShardingCoreOptions shardingCoreOptions)
         {
-            _connection=new MySqlConnection(mySqlOptions.ConnectionString);
-            _dbContextOptions = new DbContextOptionsBuilder()
+            _mySqlOptions = mySqlOptions;
+            _loggerFactory = loggerFactory;
+            _shardingCoreOptions = shardingCoreOptions;
+        }
+        public DbContextOptions GetDbContextOptions(string connectKey)
+        {
+            if (!_contextWrapItems.ContainsKey(connectKey))
+            {
+                var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
+                var connection = new MySqlConnection(connectionString);
+                var dbContextOptions= new DbContextOptionsBuilder()
 #if EFCORE5
-                .UseMySql(_connection,mySqlOptions.ServerVersion,mySqlOptions.MySqlOptionsAction)
+                    .UseMySql(connection, _mySqlOptions.ServerVersion, _mySqlOptions.MySqlOptionsAction)
 #endif
 #if !EFCORE5
-                .UseMySql(_connection,mySqlOptions.MySqlOptionsAction)
+                    .UseMySql(connection, _mySqlOptions.MySqlOptionsAction)
 #endif
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                .UseLoggerFactory(loggerFactory)
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
-                .UseShardingSqlServerQuerySqlGenerator()
-                .Options;
-        }
-        public DbContextOptions GetDbContextOptions()
-        {
-            return _dbContextOptions;
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                    .UseLoggerFactory(_loggerFactory)
+                    .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                    .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                    .UseShardingSqlServerQuerySqlGenerator()
+                    .Options;
+                _contextWrapItems.Add(connectKey,new ShareDbContextWrapItem(connection, dbContextOptions));
+            }
+            return _contextWrapItems[connectKey].ContextOptions;
         }
 
         public void Dispose()
         {
-            _connection?.Dispose();
+            _contextWrapItems.ForEach(o=>o.Value.Connection?.Dispose());
         }
     }
 }

@@ -13,13 +13,13 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 */
     public class ShardingBatchDeleteEntry<T>where T:class
     {
-        public ShardingBatchDeleteEntry(Expression<Func<T, bool>> @where, List<DbContext> dbContexts)
+        public ShardingBatchDeleteEntry(Expression<Func<T, bool>> @where, List<(string connectKey,List<DbContext>)> dbContextGroups)
         {
             Where = @where;
-            DbContexts = dbContexts;
+            DbContextGroups = dbContextGroups;
         }
 
         public Expression<Func<T, bool>> Where{ get; }
-        public List<DbContext> DbContexts { get; }
+        public List<(string connectKey, List<DbContext>)> DbContextGroups { get; }
     }
 }

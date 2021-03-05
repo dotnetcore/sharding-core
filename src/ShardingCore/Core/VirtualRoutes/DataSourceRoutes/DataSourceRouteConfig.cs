@@ -1,25 +1,27 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 
-namespace ShardingCore.Core.VirtualDataSources
+namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 06 February 2021 11:28:33
-* @Email: 326308290@qq.com
-*/
-    public class VirutalDataSourceConfig
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: 2021/3/2 16:08:34
+    * @Ver: 1.0
+    * @Email: 326308290@qq.com
+    */
+    public class DataSourceRouteConfig
     {
-        
         private readonly IQueryable _queryable;
         private readonly IShardingDataSource _shardingDataSource;
         private readonly object _shardingKeyValue;
         private readonly Expression _predicate;
 
 
-        public VirutalDataSourceConfig(IQueryable queryable=null,IShardingDataSource shardingDataSource=null,object shardingKeyValue=null,Expression predicate=null)
+        public DataSourceRouteConfig(IQueryable queryable = null, IShardingDataSource shardingDataSource = null, object shardingKeyValue = null, Expression predicate = null)
         {
             _queryable = queryable;
             _shardingDataSource = shardingDataSource;

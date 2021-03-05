@@ -7,7 +7,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
 
-namespace ShardingCore.Core.VirtualRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 {
 /*
 * @Author: xjm

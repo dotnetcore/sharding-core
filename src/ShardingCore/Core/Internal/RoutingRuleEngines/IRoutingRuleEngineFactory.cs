@@ -13,8 +13,8 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
     public interface IRoutingRuleEngineFactory
     {
         IRouteRuleEngine CreateEngine();
-        RouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable);
-        IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable);
-        IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable,RouteRuleContext<T> ruleContext);
+        RouteRuleContext<T> CreateContext<T>(string connectKey,IQueryable<T> queryable);
+        IEnumerable<RouteResult> Route<T>(string connectKey, IQueryable<T> queryable);
+        IEnumerable<RouteResult> Route<T>(string connectKey, IQueryable<T> queryable,RouteRuleContext<T> ruleContext);
     }
 }

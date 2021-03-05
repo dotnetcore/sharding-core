@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -18,25 +22,28 @@ namespace ShardingCore.SqlServer
     public class ShardingSqlServerParallelDbContextFactory : IShardingParallelDbContextFactory
     {
         private readonly IVirtualTableManager _virtualTableManager;
-        private readonly SqlServerOptions _sqlServerOptions;
+        private readonly IShardingDbContextFactory _shardingDbContextFactory;
+        private readonly IShardingCoreOptions _shardingCoreOptions;
 
-        public ShardingSqlServerParallelDbContextFactory(IVirtualTableManager virtualTableManager, SqlServerOptions sqlServerOptions)
+        public ShardingSqlServerParallelDbContextFactory(IVirtualTableManager virtualTableManager,IShardingCoreOptions shardingCoreOptions, IShardingDbContextFactory shardingDbContextFactory)
         {
             _virtualTableManager = virtualTableManager;
-            _sqlServerOptions = sqlServerOptions;
+            _shardingDbContextFactory = shardingDbContextFactory;
+            _shardingCoreOptions = shardingCoreOptions;
         }
 
-        public ShardingDbContext Create(string tail)
+        public DbContext Create(string connectKey,string tail)
         {
-            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables().GetVirtualTableDbContextConfigs();
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(), tail, virtualTableConfigs);
-            return new ShardingDbContext(shardingDbContextOptions);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
+            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions()
+        private DbContextOptions CreateOptions(string connectString)
         {
             return new DbContextOptionsBuilder()
-                .UseSqlServer(_sqlServerOptions.ConnectionString)
+                .UseSqlServer(connectString)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()

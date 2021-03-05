@@ -30,11 +30,29 @@ namespace ShardingCore.Extensions
             return typeof(IShardingDataSource).IsAssignableFrom(entityType);
         }
         /// <summary>
+        /// 是否基继承至IShardingDataSource
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static bool IsShardingDataSource(this object entity)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+            return typeof(IShardingDataSource).IsAssignableFrom(entity.GetType());
+        }
+
+        public static bool IsShardingDbContext(this Type entityType)
+        {
+            if (entityType == null)
+                throw new ArgumentNullException(nameof(entityType));
+            return typeof(AbstractShardingDbContext).IsAssignableFrom(entityType);
+        }
+        /// <summary>
         /// 是否基继承至IShardingEntity
         /// </summary>
         /// <param name="entityType"></param>
         /// <returns></returns>
-        public static bool IsShardingEntity(this Type entityType)
+        public static bool IsShardingTable(this Type entityType)
         {
             if (entityType == null)
                 throw new ArgumentNullException(nameof(entityType));
@@ -46,7 +64,7 @@ namespace ShardingCore.Extensions
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static bool IsShardingEntity(this object entity)
+        public static bool IsShardingTable(this object entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -71,6 +89,7 @@ namespace ShardingCore.Extensions
         {
             return  express.Method.DeclaringType.Namespace.IsIn("System.Linq", "System.Collections.Generic") && methodName == nameof(IList.Contains);
         }
+
         public static ISet<Type> ParseQueryableRoute(this IQueryable queryable)
         {
             return ShardingKeyUtil.GetQueryEntitiesFilter(queryable);
