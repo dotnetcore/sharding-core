@@ -25,9 +25,47 @@ namespace ShardingCore.Extensions
         {
             return ShardingQueryable<T>.Create(source);
         }
+        /// <summary>
+        /// 是否存在待条件
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static async Task<bool> ShardingAnyAsync<T>(this IQueryable<T> source, Expression<Func<T, bool>> predicate)
         {
             return await ShardingQueryable<T>.Create(source.Where(predicate)).AnyAsync();
+        }
+        /// <summary>
+        /// 是否存在待条件
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="predicate"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static bool ShardingAny<T>(this IQueryable<T> source, Expression<Func<T, bool>> predicate)
+        {
+            return  ShardingQueryable<T>.Create(source.Where(predicate)).Any();
+        }
+        /// <summary>
+        /// 是否存在
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static async Task<bool> ShardingAnyAsync<T>(this IQueryable<T> source)
+        {
+            return await ShardingQueryable<T>.Create(source).AnyAsync();
+        }
+        /// <summary>
+        /// 是否存在
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static bool ShardingAny<T>(this IQueryable<T> source)
+        {
+            return  ShardingQueryable<T>.Create(source).Any();
         }
         /// <summary>
         /// 分页

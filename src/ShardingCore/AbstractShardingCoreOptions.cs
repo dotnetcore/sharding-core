@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -21,7 +22,8 @@ namespace ShardingCore
     {
         private readonly IDictionary<string, ShardingConfigEntry> _shardingConfigs = new Dictionary<string, ShardingConfigEntry>();
 
-        public void AddShardingDbContext<TContext>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where TContext : DbContext
+
+        public void AddShardingDbContext<TContext>(string connectKey, string connectString) where TContext : DbContext
         {
             if (_shardingConfigs.ContainsKey(connectKey))
             {
@@ -30,13 +32,22 @@ namespace ShardingCore
 
             ShardingCoreHelper.CheckContextConstructors<TContext>();
             var creator = ShardingCoreHelper.CreateActivator<TContext>();
-            var config = new ShardingConfigEntry(connectKey, connectString, creator, typeof(TContext), func);
+            var config = new ShardingConfigEntry(connectKey, connectString, creator, typeof(TContext), null);
             _shardingConfigs.Add(connectKey, config);
         }
-
-        public void AddShardingDbContext<T>(string connectKey, string connectString) where T : DbContext
+        
+        
+        public void AddShardingDbContextWithShardingTable<TContext>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where TContext : AbstractShardingTableDbContext
         {
-            AddShardingDbContext<T>(connectKey, connectString, null);
+            if (_shardingConfigs.ContainsKey(connectKey))
+            {
+                throw new ArgumentException($"same connect key:[{connectKey}]");
+            }
+        
+            ShardingCoreHelper.CheckContextConstructors<TContext>();
+            var creator = ShardingCoreHelper.CreateActivator<TContext>();
+            var config = new ShardingConfigEntry(connectKey, connectString, creator, typeof(TContext), func);
+            _shardingConfigs.Add(connectKey, config);
         }
 
 

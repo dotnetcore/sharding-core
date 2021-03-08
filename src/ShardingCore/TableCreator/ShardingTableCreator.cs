@@ -10,6 +10,7 @@ using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.TableCreator
 {
@@ -55,6 +56,7 @@ namespace ShardingCore.TableCreator
                 using (var dbContext = _shardingDbContextFactory.Create(connectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail,
                     new List<VirtualTableDbContextConfig>() {new VirtualTableDbContextConfig(shardingEntityType, virtualTable.GetOriginalTableName(), virtualTable.ShardingConfig.TailPrefix)})))
                 {
+                    dbContext.RemoveDbContextRelationModelSaveOnlyThatIsShardingTable(shardingEntityType);
                     var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
                     try
                     {

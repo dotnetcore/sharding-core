@@ -24,7 +24,7 @@ namespace Sample.SqlServer
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContext<DefaultDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True", dbConfig =>
+                o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True", dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualRoute>();
                 });
@@ -46,6 +46,7 @@ namespace Sample.SqlServer
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.DbSeed();
         }
     }
 }

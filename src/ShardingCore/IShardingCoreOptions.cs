@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.DbContexts.ShardingDbContexts;
 
 namespace ShardingCore
 {
@@ -15,7 +16,7 @@ namespace ShardingCore
     */
     public interface IShardingCoreOptions
     {
-         void AddShardingDbContext<T>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where T : DbContext;
+         void AddShardingDbContextWithShardingTable<T>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where T : AbstractShardingTableDbContext;
 
          void AddShardingDbContext<T>(string connectKey, string connectString) where T : DbContext;
 

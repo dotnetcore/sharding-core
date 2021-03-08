@@ -167,7 +167,7 @@ namespace ShardingCore
                     using var scope = _serviceProvider.CreateScope();
                     var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
                     using var context = _shardingDbContextFactory.Create(shardingConfig.ConnectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty, new List<VirtualTableDbContextConfig>()));
-                    var contextModel = context.Model as Model;
+                    context.RemoveDbContextRelationModelThatIsShardingTable();
                     context.Database.EnsureCreated();
                 }
             }

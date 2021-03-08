@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Sample.SqlServer.Domain.Entities;
 using ShardingCore;
+using ShardingCore.DbContexts.VirtualDbContexts;
+using ShardingCore.Extensions;
 
 namespace Sample.SqlServer
 {
@@ -18,6 +23,31 @@ namespace Sample.SqlServer
             var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
             return app;
+        }
+
+        public static void DbSeed(this IApplicationBuilder app)
+        {
+            using (var scope=app.ApplicationServices.CreateScope())
+            {
+                var virtualDbContext =scope.ServiceProvider.GetService<IVirtualDbContext>();
+                if (!virtualDbContext.Set<SysUserMod>().ShardingAny())
+                {
+                    var ids = Enumerable.Range(1, 1000);
+                    var userMods = new List<SysUserMod>();
+                    foreach (var id in ids)
+                    {
+                        userMods.Add(new SysUserMod()
+                        {
+                            Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                        });
+                    }
+
+                    virtualDbContext.InsertRange(userMods);
+                    virtualDbContext.SaveChanges();
+                }
+            }
         }
     }
 }

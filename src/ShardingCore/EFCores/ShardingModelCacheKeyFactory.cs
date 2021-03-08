@@ -15,7 +15,7 @@ namespace ShardingCore.EFCores
     {
         public object Create(DbContext context)
         {
-            if (context is AbstractShardingDbContext shardingDbContext)
+            if (context is AbstractShardingTableDbContext shardingDbContext)
             {
                 //当出现尾巴不一样,本次映射的数据库实体数目不一样就需要重建ef model
                 var tail = shardingDbContext.Tail;

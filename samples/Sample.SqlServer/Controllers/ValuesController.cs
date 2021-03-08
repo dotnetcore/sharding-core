@@ -25,7 +25,7 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get()
         {
             var result = await _virtualDbContext.Set<SysUserMod>().ToShardingListAsync();
-            var result1 = await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="2").ToShardingListAsync();
+            var result1 = await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="2"||o.Id=="3").ToShardingListAsync();
             return Ok(result1);
         }
     }

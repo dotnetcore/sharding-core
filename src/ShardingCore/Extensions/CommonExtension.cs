@@ -45,7 +45,7 @@ namespace ShardingCore.Extensions
         {
             if (entityType == null)
                 throw new ArgumentNullException(nameof(entityType));
-            return typeof(AbstractShardingDbContext).IsAssignableFrom(entityType);
+            return typeof(AbstractShardingTableDbContext).IsAssignableFrom(entityType);
         }
         /// <summary>
         /// 是否基继承至IShardingEntity
