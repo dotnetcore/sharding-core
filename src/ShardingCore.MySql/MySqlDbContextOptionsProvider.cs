@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
-
+using ShardingCore.Core.VirtualTables;
 #if !EFCORE5
 using MySql.Data.MySqlClient;
 #endif
@@ -44,7 +45,7 @@ namespace ShardingCore.MySql
             {
                 var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
                 var connection = new MySqlConnection(connectionString);
-                var dbContextOptions= new DbContextOptionsBuilder()
+                var dbContextOptions= CreateDbContextOptionBuilder(connectKey)
 #if EFCORE5
                     .UseMySql(connection, _mySqlOptions.ServerVersion, _mySqlOptions.MySqlOptionsAction)
 #endif
@@ -61,7 +62,17 @@ namespace ShardingCore.MySql
             }
             return _contextWrapItems[connectKey].ContextOptions;
         }
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        {
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            Type type = typeof(DbContextOptionsBuilder<>);
+            type = type.MakeGenericType(shardingConfigEntry.DbContextType);
+            return  (DbContextOptionsBuilder)Activator.CreateInstance(type);
+        }
 
+        /// <summary>
+        /// ÊÍ·Å×ÊÔ´
+        /// </summary>
         public void Dispose()
         {
             _contextWrapItems.ForEach(o=>o.Value.Connection?.Dispose());

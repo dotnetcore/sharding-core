@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -34,13 +35,13 @@ namespace ShardingCore.MySql
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
             var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey,shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
             return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions(string connectionString)
+        private DbContextOptions CreateOptions(string connectKey, string connectionString)
         {
-            return new DbContextOptionsBuilder()
+            return CreateDbContextOptionBuilder(connectKey)
 #if EFCORE5
                 .UseMySql(connectionString,_mySqlOptions.ServerVersion,_mySqlOptions.MySqlOptionsAction)
 #endif
@@ -53,6 +54,13 @@ namespace ShardingCore.MySql
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .UseShardingSqlServerQuerySqlGenerator()
                 .Options;
+        }
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        {
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            Type type = typeof(DbContextOptionsBuilder<>);
+            type = type.MakeGenericType(shardingConfigEntry.DbContextType);
+            return (DbContextOptionsBuilder)Activator.CreateInstance(type);
         }
     }
 }

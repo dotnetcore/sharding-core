@@ -56,9 +56,11 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 
         public async Task<IStreamMergeAsyncEnumerator<T>> GetStreamEnumerator()
         {
-            var enumeratorTasks = _mergeContext.GetDataSourceRoutingResult().IntersectConfigs.SelectMany(connectKey =>
+            var dataSourceResult = _mergeContext.GetDataSourceRoutingResult();
+            var enumeratorTasks = dataSourceResult.IntersectConfigs.SelectMany(connectKey =>
             {
-                return _mergeContext.GetRouteResults(connectKey).Select(routeResult =>
+                var tableResult = _mergeContext.GetRouteResults(connectKey);
+                return tableResult.Select(routeResult =>
                 {
                     return Task.Run(async () =>
                     {

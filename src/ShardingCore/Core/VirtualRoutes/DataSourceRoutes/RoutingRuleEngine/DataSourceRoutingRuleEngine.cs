@@ -36,6 +36,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
             foreach (var queryEntity in queryEntities)
             {
+                if(!_virtualDataSourceManager.HasVirtualShardingDataSourceRoute(queryEntity))
+                    continue;
                 var virtualDataSource = _virtualDataSourceManager.GetVirtualDataSource(queryEntity);
                 var dataSourceConfigs = virtualDataSource.RouteTo(new VirutalDataSourceRouteConfig(routingRuleContext.Queryable));
                 if (!dataSourceMaps.ContainsKey(queryEntity))

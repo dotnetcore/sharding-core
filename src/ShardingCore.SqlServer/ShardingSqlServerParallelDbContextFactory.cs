@@ -36,19 +36,26 @@ namespace ShardingCore.SqlServer
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
             var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey, shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
             return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions(string connectString)
+        private DbContextOptions CreateOptions(string connectKey, string connectString)
         {
-            return new DbContextOptionsBuilder()
+            return CreateDbContextOptionBuilder(connectKey)
                 .UseSqlServer(connectString)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .UseShardingSqlServerQuerySqlGenerator()
                 .Options;
+        }
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        {
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            Type type = typeof(DbContextOptionsBuilder<>);
+            type = type.MakeGenericType(shardingConfigEntry.DbContextType);
+            return (DbContextOptionsBuilder)Activator.CreateInstance(type);
         }
     }
 }

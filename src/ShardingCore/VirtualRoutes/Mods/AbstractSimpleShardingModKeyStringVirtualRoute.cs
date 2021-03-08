@@ -52,7 +52,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         }
         public override List<string> GetAllTails()
         {
-            return Enumerable.Range(0, Mod).Select(o => o.ToString()).ToList();
+            return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

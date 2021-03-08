@@ -28,5 +28,16 @@ namespace ShardingCore
          ISet<Type> GetVirtualRoutes();
          Type GetVirtualRoute(Type entityType);
 
+
+
+         /// <summary>
+         /// 如果数据库不存在就创建并且创建表除了分表的
+         /// </summary>
+         bool EnsureCreatedWithOutShardingTable { get; set; }
+         /// <summary>
+         /// 是否需要在启动时创建分表
+         /// </summary>
+         bool? CreateShardingTableOnStart { get; set; }
+
     }
 }

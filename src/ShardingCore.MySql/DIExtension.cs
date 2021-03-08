@@ -42,16 +42,16 @@ namespace ShardingCore.MySql
             services.AddScoped<IDbContextOptionsProvider, MySqlDbContextOptionsProvider>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingMySqlParallelDbContextFactory>();
           
-            services.AddSingleton(sp =>
-            {
-                var shardingCoreConfig = new ShardingCoreConfig();
-                return shardingCoreConfig;
-            });
             services.AddSingleton<IShardingBootstrapper,ShardingBootstrapper>();
             return services;
         }
 
         public static DbContextOptionsBuilder UseShardingSqlServerQuerySqlGenerator(this DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingMySqlQuerySqlGeneratorFactory>();
+            return optionsBuilder;
+        }
+        public static DbContextOptionsBuilder<TContext> UseShardingSqlServerQuerySqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext:DbContext
         {
             optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingMySqlQuerySqlGeneratorFactory>();
             return optionsBuilder;

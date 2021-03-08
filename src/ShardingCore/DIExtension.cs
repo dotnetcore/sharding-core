@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -21,14 +23,24 @@ namespace ShardingCore
         
         public static IServiceCollection AddShardingCore(this IServiceCollection services)
         {
-            services.AddScoped<IStreamMergeContextFactory, StreamMergeContextFactory>();
-            services.AddScoped<IRouteRuleEngine, QueryRouteRuleEngines>();
-            services.AddScoped<IRoutingRuleEngineFactory, RoutingRuleEngineFactory>();
+            services.AddSingleton<IStreamMergeContextFactory, StreamMergeContextFactory>();
             services.AddScoped<IVirtualDbContext, VirtualDbContext>();
+
             services.AddSingleton<IShardingDbContextFactory, ShardingDbContextFactory>();
             services.AddSingleton<IShardingTableCreator, ShardingTableCreator>();
+            //分库
+            services.AddSingleton<IVirtualDataSourceManager, VirtualDataSourceManager>();
+            //分库路由引擎工厂
+            services.AddSingleton<IDataSourceRoutingRuleEngineFactory, DataSourceRoutingRuleEngineFactory>();
+            //分库引擎
+            services.AddSingleton<IDataSourceRoutingRuleEngine, DataSourceRoutingRuleEngine>();
+            //分表
             services.AddSingleton<IVirtualTableManager, OneDbVirtualTableManager>();
-            services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
+            //分表引擎工程
+            services.AddSingleton<IRoutingRuleEngineFactory, RoutingRuleEngineFactory>();
+            //分表引擎
+            services.AddSingleton<IRouteRuleEngine, QueryRouteRuleEngines>();
+            //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
             return services;

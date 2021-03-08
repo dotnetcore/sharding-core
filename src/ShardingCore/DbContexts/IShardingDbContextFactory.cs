@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.DbContexts.VirtualDbContexts;
 
 namespace ShardingCore.DbContexts
 {
@@ -12,5 +13,6 @@ namespace ShardingCore.DbContexts
     public interface IShardingDbContextFactory
     {
         DbContext Create(string connectKey,ShardingDbContextOptions shardingDbContextOptions);
+        DbContext Create(string connectKey,string tail, IDbContextOptionsProvider dbContextOptionsProvider);
     }
 }

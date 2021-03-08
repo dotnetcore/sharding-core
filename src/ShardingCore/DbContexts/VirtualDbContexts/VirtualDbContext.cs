@@ -382,8 +382,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             }
             if(!dbContexts.TryGetValue(tail,out var dbContext))
             {
-                var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
-                dbContext = _shardingDbContextFactory.Create(connectKey, new ShardingDbContextOptions(DbContextOptionsProvider.GetDbContextOptions(connectKey), tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, virtualTableConfigs));
+                dbContext = _shardingDbContextFactory.Create(connectKey, tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, DbContextOptionsProvider);
                 dbContexts.TryAdd(tail, dbContext);
             }
 

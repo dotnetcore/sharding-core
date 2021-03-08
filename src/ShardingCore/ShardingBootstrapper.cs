@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
@@ -34,11 +36,10 @@ namespace ShardingCore
         private readonly IShardingTableCreator _tableCreator;
         private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
-        private readonly ShardingCoreConfig _shardingCoreConfig;
 
         public ShardingBootstrapper(IServiceProvider serviceProvider, IShardingCoreOptions shardingCoreOptions, IVirtualDataSourceManager virtualDataSourceManager, IVirtualTableManager virtualTableManager
             , IShardingTableCreator tableCreator, ILogger<ShardingBootstrapper> logger,
-            IShardingDbContextFactory shardingDbContextFactory, ShardingCoreConfig shardingCoreConfig)
+            IShardingDbContextFactory shardingDbContextFactory)
         {
             ShardingContainer.SetServices(serviceProvider);
             _serviceProvider = serviceProvider;
@@ -48,12 +49,11 @@ namespace ShardingCore
             _tableCreator = tableCreator;
             _logger = logger;
             _shardingDbContextFactory = shardingDbContextFactory;
-            _shardingCoreConfig = shardingCoreConfig;
         }
 
         public void Start()
         {
-            //EnsureCreated();
+            EnsureCreated();
             //_shardingCoreOptions.GetShardingConfigs().Select(o=>o.ConnectKey).ForEach(connectKey=> _virtualDataSourceManager.AddShardingConnectKey(connectKey));
             var isShardingDataSource = _shardingCoreOptions.GetShardingConfigs().Count > 1;
             foreach (var virtualRouteType in _shardingCoreOptions.GetVirtualRoutes())
@@ -74,7 +74,7 @@ namespace ShardingCore
                 {
                   
                     _virtualDataSourceManager.AddConnectEntities(connectKey,entity.ClrType);
-                    if (entity.IsShardingTable())
+                    if (entity.ClrType.IsShardingTable())
                     {
                         var routeType = shardingConfig.DbConfigOptions.GetVirtualRoute(entity.ClrType);
                         var virtualRoute = CreateVirtualRoute(routeType);
@@ -157,16 +157,21 @@ namespace ShardingCore
             return (IVirtualTable)o;
         }
 
-        //private void EnsureCreated()
-        //{
-        //    if (_shardingCoreConfig.EnsureCreated)
-        //    {
-        //        using var scope = _serviceProvider.CreateScope();
-        //        var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-        //        using var context = _shardingDbContextFactory.Create(new ShardingTableDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), string.Empty, new List<VirtualTableDbContextConfig>(), true));
-        //        context.Database.EnsureCreated();
-        //    }
-        //}
+        private void EnsureCreated()
+        {
+            if (_shardingCoreOptions.EnsureCreatedWithOutShardingTable)
+            {
+                foreach (var shardingConfig in _shardingCoreOptions.GetShardingConfigs())
+                {
+                    
+                    using var scope = _serviceProvider.CreateScope();
+                    var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
+                    using var context = _shardingDbContextFactory.Create(shardingConfig.ConnectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty, new List<VirtualTableDbContextConfig>()));
+                    var contextModel = context.Model as Model;
+                    context.Database.EnsureCreated();
+                }
+            }
+        }
 
         private bool NeedCreateTable(ShardingEntityConfig config)
         {
@@ -174,7 +179,7 @@ namespace ShardingCore
             {
                 return config.AutoCreateTable.Value;
             }
-            return _shardingCoreConfig.CreateShardingTableOnStart.GetValueOrDefault();
+            return _shardingCoreOptions.CreateShardingTableOnStart.GetValueOrDefault();
         }
         private void CreateDataTable(string connectKey,IVirtualTable virtualTable)
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -37,11 +38,11 @@ namespace ShardingCore.SqlServer
         }
         public DbContextOptions GetDbContextOptions(string connectKey)
         {
-            if (_contextWrapItems.ContainsKey(connectKey))
+            if (!_contextWrapItems.ContainsKey(connectKey))
             {
                 var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
                 var connection = new SqlConnection(connectionString);
-                var dbContextOptions = new DbContextOptionsBuilder()
+                var dbContextOptions = CreateDbContextOptionBuilder(connectKey)
                     .UseSqlServer(connection)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                     .UseLoggerFactory(_loggerFactory)
@@ -53,7 +54,16 @@ namespace ShardingCore.SqlServer
             }
             return _contextWrapItems[connectKey].ContextOptions;
         }
-
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        {
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            Type type = typeof(DbContextOptionsBuilder<>);
+            type = type.MakeGenericType(shardingConfigEntry.DbContextType);
+            return (DbContextOptionsBuilder)Activator.CreateInstance(type);
+        }
+        /// <summary>
+        /// ÊÍ·Å×ÊÔ´
+        /// </summary>
         public void Dispose()
         {
             _contextWrapItems.ForEach(o => o.Value.Connection?.Dispose());

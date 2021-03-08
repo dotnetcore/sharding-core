@@ -1,4 +1,11 @@
 using System;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.Helpers
 {
@@ -62,6 +69,119 @@ namespace ShardingCore.Helpers
         public static DateTime GetCurrentSunday(DateTime time)
         {
             return GetCurrentMonday(time).AddDays(6);
+        }
+
+
+
+        public static void CheckContextConstructors<TContext>()
+            where TContext : DbContext
+        {
+            var contextType = typeof(TContext);
+            var declaredConstructors = contextType.GetTypeInfo().DeclaredConstructors.ToList();
+            if (declaredConstructors.Count != 1)
+            {
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor count more {contextType}");
+            }
+            if (declaredConstructors[0].GetParameters().Length != 1)
+            {
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters more ");
+            }
+
+            var paramType = declaredConstructors[0].GetParameters()[0].ParameterType;
+            if (paramType != typeof(ShardingDbContextOptions) && paramType != typeof(DbContextOptions) && paramType!= typeof(DbContextOptions<TContext>))
+            {
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters should use {typeof(ShardingDbContextOptions)} or {typeof(DbContextOptions)} or {typeof(DbContextOptions<TContext>)} ");
+            }
+
+            //if (!contextType.IsShardingDbContext())
+            //{
+            //    throw new ArgumentException($"dbcontext : {contextType} is assignable from {typeof(AbstractShardingDbContext)}  ");
+            //}
+            //if (declaredConstructors[0].GetParameters()[0].ParameterType != typeof(ShardingDbContextOptions))
+            //{
+            //    throw new ArgumentException($"dbcontext : {contextType} is assignable from {typeof(AbstractShardingDbContext)} declared constructor parameters should use {typeof(ShardingDbContextOptions)} ");
+            //}
+
+        }
+
+        public static Func<ShardingDbContextOptions, DbContext> CreateActivator<TContext>() where TContext : DbContext
+        {
+            var constructors
+                = typeof(TContext).GetTypeInfo().DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .ToArray();
+
+            var parameters = constructors[0].GetParameters();
+            var parameterType = parameters[0].ParameterType;
+
+
+
+            if (parameterType == typeof(ShardingDbContextOptions))
+            {
+                return CreateShardingDbContextOptionsActivator<TContext>(constructors[0],parameterType);
+            }
+            else if (typeof(DbContextOptions).IsAssignableFrom(parameterType))
+            {
+                if ((parameters[0].ParameterType != typeof(DbContextOptions)
+                     && parameters[0].ParameterType != typeof(DbContextOptions<TContext>)))
+                {
+                    throw new ShardingCoreException("cant create activator");
+                }
+                return CreateDbContextOptionsGenericActivator<TContext>(constructors[0], parameterType);
+            }
+
+            var po = Expression.Parameter(parameterType, "o");
+            var new1 = Expression.New(constructors[0], po);
+            var inner = Expression.Lambda(new1, po);
+
+            var args = Expression.Parameter(typeof(ShardingDbContextOptions), "args");
+            var body = Expression.Invoke(inner, Expression.Convert(args, po.Type));
+            var outer = Expression.Lambda<Func<ShardingDbContextOptions, TContext>>(body, args);
+            var func = outer.Compile();
+            return func;
+        }
+        /// <summary>
+        /// {args => Invoke(x => new DbContext(x), Convert(args, ShardingDbContextOptions))}
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="constructor"></param>
+        /// <param name="paramType"></param>
+        /// <returns></returns>
+        private static Func<ShardingDbContextOptions, DbContext> CreateShardingDbContextOptionsActivator<TContext>(ConstructorInfo constructor,Type paramType) where TContext : DbContext
+        {
+            var po = Expression.Parameter(paramType, "o");
+            var newExpression = Expression.New(constructor, po);
+            var inner = Expression.Lambda(newExpression, po);
+
+            var args = Expression.Parameter(typeof(ShardingDbContextOptions), "args");
+            var body = Expression.Invoke(inner, Expression.Convert(args, po.Type));
+            var outer = Expression.Lambda<Func<ShardingDbContextOptions, TContext>>(body, args);
+            var func = outer.Compile();
+            return func;
+        }
+        /// <summary>
+        /// {args => Invoke(o => new DefaultDbContext(Convert(o.DbContextOptions, DbContextOptions`1)), Convert(args, ShardingDbContextOptions))}
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="constructor"></param>
+        /// <param name="paramType"></param>
+        /// <returns></returns>
+        private static Func<ShardingDbContextOptions, DbContext> CreateDbContextOptionsGenericActivator<TContext>(ConstructorInfo constructor,Type paramType) where TContext : DbContext
+        {
+            var parameterExpression = Expression.Parameter(typeof(ShardingDbContextOptions), "o");
+            //o.DbContextOptions
+            var paramMemberExpression = Expression.Property(parameterExpression, nameof(ShardingDbContextOptions.DbContextOptions));
+
+
+            var newExpression = Expression.New(constructor, Expression.Convert(paramMemberExpression, paramType));
+
+            var inner = Expression.Lambda(newExpression, parameterExpression);
+
+            var args = Expression.Parameter(typeof(ShardingDbContextOptions), "args");
+            var body = Expression.Invoke(inner, Expression.Convert(args, parameterExpression.Type));
+            var outer = Expression.Lambda<Func<ShardingDbContextOptions, TContext>>(body, args);
+            var func = outer.Compile();
+            return func;
         }
     }
 }

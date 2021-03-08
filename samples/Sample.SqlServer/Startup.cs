@@ -22,7 +22,9 @@ namespace Sample.SqlServer
             services.AddControllers();
             services.AddShardingSqlServer(o =>
             {
-                o.AddShardingDbContext<DefaultDbContext>("conn1","123", dbConfig =>
+                o.EnsureCreatedWithOutShardingTable = true;
+                o.CreateShardingTableOnStart = true;
+                o.AddShardingDbContext<DefaultDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True", dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualRoute>();
                 });
@@ -43,7 +45,7 @@ namespace Sample.SqlServer
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints => { endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello World!"); }); });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

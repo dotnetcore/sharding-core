@@ -40,16 +40,16 @@ namespace ShardingCore.SqlServer
             services.AddScoped<IDbContextOptionsProvider, SqlServerDbContextOptionsProvider>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingSqlServerParallelDbContextFactory>();
           
-            services.AddSingleton(sp =>
-            {
-                var shardingCoreConfig = new ShardingCoreConfig();
-                return shardingCoreConfig;
-            });
             services.AddSingleton<IShardingBootstrapper,ShardingBootstrapper>();
             return services;
         }
 
         public static DbContextOptionsBuilder UseShardingSqlServerQuerySqlGenerator(this DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory>();
+            return optionsBuilder;
+        }
+        public static DbContextOptionsBuilder<TContext> UseShardingSqlServerQuerySqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext : DbContext
         {
             optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory>();
             return optionsBuilder;
