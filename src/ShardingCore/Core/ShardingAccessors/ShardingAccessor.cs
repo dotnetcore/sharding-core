@@ -16,24 +16,11 @@ namespace ShardingCore.Core.ShardingAccessors
     {
         private static AsyncLocal<ShardingContext> _shardingContext = new AsyncLocal<ShardingContext>();
 
-        /// <summary>
-        /// 分表访问器
-        /// </summary>
-        public ShardingAccessor(IVirtualTableManager virtualTableManager)
-        {
-            VirtualTableManager = virtualTableManager;
-        }
-
         /// <inheritdoc />
         public ShardingContext ShardingContext
         {
             get => _shardingContext.Value;
             set => _shardingContext.Value = value;
         }
-
-        /// <summary>
-        /// 虚拟表管理者
-        /// </summary>
-        public IVirtualTableManager VirtualTableManager { get; }
     }
 }

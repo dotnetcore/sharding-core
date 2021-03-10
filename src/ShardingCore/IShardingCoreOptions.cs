@@ -16,7 +16,8 @@ namespace ShardingCore
     */
     public interface IShardingCoreOptions
     {
-         void AddShardingDbContextWithShardingTable<T>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where T : AbstractShardingTableDbContext;
+        void AddShardingDbContextWithShardingTable<T>(string connectKey, string connectString,
+            Action<ShardingDbConfigOptions> func) where T : DbContext, IShardingTableDbContext;
 
          void AddShardingDbContext<T>(string connectKey, string connectString) where T : DbContext;
 

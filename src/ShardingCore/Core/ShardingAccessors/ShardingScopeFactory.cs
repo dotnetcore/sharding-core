@@ -27,6 +27,7 @@ namespace ShardingCore.Core.ShardingAccessors
         /// <returns></returns>
         public ShardingScope CreateScope()
         {
+            _shardingAccessor.ShardingContext = null;
             return new ShardingScope(_shardingAccessor);
         }
     }

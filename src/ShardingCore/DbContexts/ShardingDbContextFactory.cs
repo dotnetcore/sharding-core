@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts.ShardingDbContexts;
@@ -16,23 +17,43 @@ namespace ShardingCore.DbContexts
     {
         private readonly IShardingCoreOptions _shardingCoreOptions;
         private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IShardingTableScopeFactory _shardingTableScopeFactory;
 
-        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IVirtualTableManager virtualTableManager)
+        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IVirtualTableManager virtualTableManager,IShardingTableScopeFactory shardingTableScopeFactory)
         {
             _shardingCoreOptions = shardingCoreOptions;
             _virtualTableManager = virtualTableManager;
+            _shardingTableScopeFactory = shardingTableScopeFactory;
         }
         public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions)
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
-            return shardingConfigEntry.Creator(shardingDbContextOptions);
+            
+            using (var scope = _shardingTableScopeFactory.CreateScope())
+            {
+                string tail = null;
+                string modelChangeKey = null;
+                if (!string.IsNullOrWhiteSpace(shardingDbContextOptions.Tail))
+                {
+                    tail = shardingDbContextOptions.Tail;
+                    modelChangeKey = $"sharding_{tail}";
+                }
+                scope.ShardingTableAccessor.Context = ShardingTableContext.Create(connectKey,tail);
+                var dbcontext=  shardingConfigEntry.Creator(shardingDbContextOptions);
+                if (modelChangeKey != null&&dbcontext is IShardingTableDbContext shardingTableDbContext)
+                {
+                    shardingTableDbContext.ModelChangeKey = modelChangeKey;
+                }
+                var dbcontextModel = dbcontext.Model;
+                return dbcontext;
+            }
         }
 
         public DbContext Create(string connectKey, string tail,IDbContextOptionsProvider dbContextOptionsProvider)
         {
-            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
-            return shardingConfigEntry.Creator(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail, virtualTableConfigs));
+            var shardingDbContextOptions =
+                new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail);
+           return Create(connectKey,shardingDbContextOptions);
         }
     }
 }

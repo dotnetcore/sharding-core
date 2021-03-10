@@ -56,6 +56,7 @@ namespace ShardingCore.MySql
                     .UseLoggerFactory(_loggerFactory)
                     .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                     .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                    .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
                     .UseShardingSqlServerQuerySqlGenerator()
                     .Options;
                 _contextWrapItems.Add(connectKey,new ShareDbContextWrapItem(connection, dbContextOptions));
@@ -71,7 +72,7 @@ namespace ShardingCore.MySql
         }
 
         /// <summary>
-        /// ÊÍ·Å×ÊÔ´
+        /// ï¿½Í·ï¿½ï¿½ï¿½Ô´
         /// </summary>
         public void Dispose()
         {

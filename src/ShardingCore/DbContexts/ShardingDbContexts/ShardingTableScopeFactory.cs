@@ -11,8 +11,26 @@
     /// <summary>
     /// 
     /// </summary>
-    public class ShardingTableScopeFactory
+    public class ShardingTableScopeFactory:IShardingTableScopeFactory
     {
-        
+        private readonly IShardingTableAccessor _shardingTableAccessor;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="shardingTableAccessor"></param>
+        public ShardingTableScopeFactory(IShardingTableAccessor shardingTableAccessor)
+        {
+            _shardingTableAccessor = shardingTableAccessor;
+        }
+        /// <summary>
+        /// 创建环境
+        /// </summary>
+        /// <returns></returns>
+        public ShardingTableScope CreateScope()
+        {
+            _shardingTableAccessor.Context = null;
+            return new ShardingTableScope(_shardingTableAccessor);
+        }
     }
 }

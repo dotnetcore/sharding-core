@@ -7,6 +7,7 @@ using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
+using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.TableCreator;
 
@@ -28,21 +29,24 @@ namespace ShardingCore
 
             services.AddSingleton<IShardingDbContextFactory, ShardingDbContextFactory>();
             services.AddSingleton<IShardingTableCreator, ShardingTableCreator>();
-            //分库
+            //鍒嗗簱
             services.AddSingleton<IVirtualDataSourceManager, VirtualDataSourceManager>();
-            //分库路由引擎工厂
+            //鍒嗗簱璺敱寮曟搸宸ュ巶
             services.AddSingleton<IDataSourceRoutingRuleEngineFactory, DataSourceRoutingRuleEngineFactory>();
-            //分库引擎
+            //鍒嗗簱寮曟搸
             services.AddSingleton<IDataSourceRoutingRuleEngine, DataSourceRoutingRuleEngine>();
-            //分表
+            //鍒嗚〃
             services.AddSingleton<IVirtualTableManager, OneDbVirtualTableManager>();
-            //分表引擎工程
+            //鍒嗚〃寮曟搸宸ョ▼
             services.AddSingleton<IRoutingRuleEngineFactory, RoutingRuleEngineFactory>();
-            //分表引擎
+            //鍒嗚〃寮曟搸
             services.AddSingleton<IRouteRuleEngine, QueryRouteRuleEngines>();
             //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
+            //鍒嗚〃
+            services.AddSingleton<IShardingTableAccessor, ShardingTableAccessor>();
+            services.AddSingleton<IShardingTableScopeFactory, ShardingTableScopeFactory>();
             return services;
         }
     }

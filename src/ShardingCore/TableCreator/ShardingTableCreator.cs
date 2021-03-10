@@ -53,19 +53,28 @@ namespace ShardingCore.TableCreator
                 var dbContextOptionsProvider = serviceScope.ServiceProvider.GetService<IDbContextOptionsProvider>();
                 var virtualTable = _virtualTableManager.GetVirtualTable(connectKey,shardingEntityType);
 
-                using (var dbContext = _shardingDbContextFactory.Create(connectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail,
-                    new List<VirtualTableDbContextConfig>() {new VirtualTableDbContextConfig(shardingEntityType, virtualTable.GetOriginalTableName(), virtualTable.ShardingConfig.TailPrefix)})))
+                using (var dbContext = _shardingDbContextFactory.Create(connectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail)))
                 {
-                    dbContext.RemoveDbContextRelationModelSaveOnlyThatIsShardingTable(shardingEntityType);
-                    var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-                    try
+                    var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
+                    
+                    lock (modelCacheSyncObject)
                     {
-                        databaseCreator.CreateTables();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning($"create table error maybe table:[{virtualTable.GetOriginalTableName()}_{virtualTable.ShardingConfig.TailPrefix}_{tail}]");
-                        throw new ShardingCreateException(" create table error :", ex);
+                        dbContext.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
+                        var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+                        try
+                        {
+                            databaseCreator.CreateTables();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(
+                                $"create table error maybe table:[{virtualTable.GetOriginalTableName()}_{virtualTable.ShardingConfig.TailPrefix}_{tail}]");
+                            throw new ShardingCreateException(" create table error :", ex);
+                        }
+                        finally
+                        {
+                            dbContext.RemoveModelCache();
+                        }
                     }
 
                 }

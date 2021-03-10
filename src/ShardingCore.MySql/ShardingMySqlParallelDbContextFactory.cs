@@ -34,8 +34,7 @@ namespace ShardingCore.MySql
         public DbContext Create(string connectKey, string tail)
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
-            var virtualTableConfigs = _virtualTableManager.GetAllVirtualTables(connectKey).GetVirtualTableDbContextConfigs();
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey,shardingConfigEntry.ConnectionString), tail, virtualTableConfigs);
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey,shardingConfigEntry.ConnectionString), tail);
             return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
@@ -52,6 +51,7 @@ namespace ShardingCore.MySql
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
                 .UseShardingSqlServerQuerySqlGenerator()
                 .Options;
         }

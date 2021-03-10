@@ -26,7 +26,8 @@ namespace ShardingCore.DbContexts.Abstractions
             _builder = optionsBuilder
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>();
+                .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                .ReplaceService<IModelCustomizer, ShardingModelCustomizer>();
         }
 
         public ShardingDbContextOptionBuilder UseLoggerFactory(ILoggerFactory loggerFactory)

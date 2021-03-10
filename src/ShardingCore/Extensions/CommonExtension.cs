@@ -40,13 +40,6 @@ namespace ShardingCore.Extensions
                 throw new ArgumentNullException(nameof(entity));
             return typeof(IShardingDataSource).IsAssignableFrom(entity.GetType());
         }
-
-        public static bool IsShardingDbContext(this Type entityType)
-        {
-            if (entityType == null)
-                throw new ArgumentNullException(nameof(entityType));
-            return typeof(AbstractShardingTableDbContext).IsAssignableFrom(entityType);
-        }
         /// <summary>
         /// 是否基继承至IShardingEntity
         /// </summary>
@@ -70,15 +63,15 @@ namespace ShardingCore.Extensions
                 throw new ArgumentNullException(nameof(entity));
             return typeof(IShardingEntity).IsAssignableFrom(entity.GetType());
         }
-        /// <summary>
-        /// 虚拟表转换成对应的db配置
-        /// </summary>
-        /// <param name="virtualTables"></param>
-        /// <returns></returns>
-        public static List<VirtualTableDbContextConfig> GetVirtualTableDbContextConfigs(this List<IVirtualTable> virtualTables)
-        {
-            return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetOriginalTableName(), o.ShardingConfig.TailPrefix)).ToList();
-        }
+        // /// <summary>
+        // /// 虚拟表转换成对应的db配置
+        // /// </summary>
+        // /// <param name="virtualTables"></param>
+        // /// <returns></returns>
+        // public static List<VirtualTableDbContextConfig> GetVirtualTableDbContextConfigs(this List<IVirtualTable> virtualTables)
+        // {
+        //     return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetOriginalTableName(), o.ShardingConfig.TailPrefix)).ToList();
+        // }
         /// <summary>
         /// 是否是集合contains方法
         /// </summary>

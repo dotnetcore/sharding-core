@@ -8,17 +8,20 @@ using ShardingCore.DbContexts.ShardingDbContexts;
 
 namespace Sample.SqlServer.DbContexts
 {
-    public class DefaultTableDbContext: AbstractShardingTableDbContext
+    public class DefaultTableDbContext: DbContext,IShardingTableDbContext
     {
-        public DefaultTableDbContext(ShardingDbContextOptions shardingDbContextOptions):base(shardingDbContextOptions)
+        public DefaultTableDbContext(ShardingDbContextOptions shardingDbContextOptions):base(shardingDbContextOptions.DbContextOptions)
         {
             
         }
 
-        protected override void OnShardingModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
+
+        public string ModelChangeKey { get; set; }
     }
 }

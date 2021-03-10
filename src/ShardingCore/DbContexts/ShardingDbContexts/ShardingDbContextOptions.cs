@@ -12,15 +12,13 @@ namespace ShardingCore.DbContexts.ShardingDbContexts
     public class ShardingDbContextOptions
     {
 
-        public ShardingDbContextOptions(DbContextOptions dbContextOptions, string tail, List<VirtualTableDbContextConfig> virtualTableDbContextConfigs)
+        public ShardingDbContextOptions(DbContextOptions dbContextOptions, string tail)
         {
             DbContextOptions = dbContextOptions;
             Tail = tail;
-            VirtualTableDbContextConfigs = virtualTableDbContextConfigs;
         }
 
         public DbContextOptions DbContextOptions { get; }
         public string Tail { get; }
-        public List<VirtualTableDbContextConfig> VirtualTableDbContextConfigs { get; }
     }
 }

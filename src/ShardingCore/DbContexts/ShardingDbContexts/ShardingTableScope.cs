@@ -1,4 +1,6 @@
-﻿namespace ShardingCore.DbContexts.ShardingDbContexts
+﻿using System;
+
+namespace ShardingCore.DbContexts.ShardingDbContexts
 {
     /*
     * @Author: xjm
@@ -10,8 +12,29 @@
     /// <summary>
     /// 
     /// </summary>
-    public interface ShardingTableScope
+    public class ShardingTableScope: IDisposable
     {
-        
+
+        /// <summary>
+        /// 分表配置访问器
+        /// </summary>
+        public IShardingTableAccessor ShardingTableAccessor { get; }
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="shardingAccessor"></param>
+        public ShardingTableScope(IShardingTableAccessor shardingAccessor)
+        {
+            ShardingTableAccessor = shardingAccessor;
+        }
+
+        /// <summary>
+        /// 回收
+        /// </summary>
+        public void Dispose()
+        {
+            ShardingTableAccessor.Context = null;
+        }
     }
 }

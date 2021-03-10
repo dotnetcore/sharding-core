@@ -12,6 +12,6 @@
     /// </summary>
     public interface IShardingTableAccessor
     {
-        
+        ShardingTableContext Context { get; set; }
     }
 }

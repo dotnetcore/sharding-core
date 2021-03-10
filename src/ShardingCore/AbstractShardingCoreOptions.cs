@@ -37,7 +37,7 @@ namespace ShardingCore
         }
         
         
-        public void AddShardingDbContextWithShardingTable<TContext>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where TContext : AbstractShardingTableDbContext
+        public void AddShardingDbContextWithShardingTable<TContext>(string connectKey, string connectString, Action<ShardingDbConfigOptions> func) where TContext : DbContext,IShardingTableDbContext
         {
             if (_shardingConfigs.ContainsKey(connectKey))
             {

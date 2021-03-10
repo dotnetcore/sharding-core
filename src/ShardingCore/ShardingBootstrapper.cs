@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
@@ -37,7 +40,8 @@ namespace ShardingCore
         private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider, IShardingCoreOptions shardingCoreOptions, IVirtualDataSourceManager virtualDataSourceManager, IVirtualTableManager virtualTableManager
+        public ShardingBootstrapper(IServiceProvider serviceProvider, IShardingCoreOptions shardingCoreOptions,
+            IVirtualDataSourceManager virtualDataSourceManager, IVirtualTableManager virtualTableManager
             , IShardingTableCreator tableCreator, ILogger<ShardingBootstrapper> logger,
             IShardingDbContextFactory shardingDbContextFactory)
         {
@@ -62,6 +66,7 @@ namespace ShardingCore
                 var virtualDataSource = CreateDataSourceVirtualTable(virtualRoute.ShardingEntityType, virtualRoute);
                 _virtualDataSourceManager.AddVirtualDataSource(virtualDataSource);
             }
+
             foreach (var shardingConfig in _shardingCoreOptions.GetShardingConfigs())
             {
                 var connectKey = shardingConfig.ConnectKey;
@@ -69,11 +74,12 @@ namespace ShardingCore
 
                 using var scope = _serviceProvider.CreateScope();
                 var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-                using var context = _shardingDbContextFactory.Create(connectKey, new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), string.Empty, new List<VirtualTableDbContextConfig>()));
+                using var context = _shardingDbContextFactory.Create(connectKey,
+                    new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey),
+                        string.Empty));
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
-                  
-                    _virtualDataSourceManager.AddConnectEntities(connectKey,entity.ClrType);
+                    _virtualDataSourceManager.AddConnectEntities(connectKey, entity.ClrType);
                     if (entity.ClrType.IsShardingTable())
                     {
                         var routeType = shardingConfig.DbConfigOptions.GetVirtualRoute(entity.ClrType);
@@ -89,12 +95,12 @@ namespace ShardingCore
 #endif
                         virtualTable.SetOriginalTableName(tableName);
                         _virtualTableManager.AddVirtualTable(connectKey, virtualTable);
-                        CreateDataTable(connectKey,virtualTable);
+                        CreateDataTable(connectKey, virtualTable);
                     }
                 }
             }
-
         }
+
         private IDataSourceVirtualRoute CreateDataSourceVirtualRoute(Type virtualRouteType)
         {
             var constructors
@@ -104,7 +110,7 @@ namespace ShardingCore
             if (constructors.IsEmpty())
             {
                 object o = Activator.CreateInstance(virtualRouteType);
-                return (IDataSourceVirtualRoute)o;
+                return (IDataSourceVirtualRoute) o;
             }
             else
             {
@@ -113,18 +119,22 @@ namespace ShardingCore
                     throw new ArgumentException(
                         $"data source virtual route :[{virtualRouteType}] found more  declared constructor ");
                 }
-                var @params = constructors[0].GetParameters().Select(x => _serviceProvider.GetService(x.ParameterType)).ToArray();
+
+                var @params = constructors[0].GetParameters().Select(x => _serviceProvider.GetService(x.ParameterType))
+                    .ToArray();
                 object o = Activator.CreateInstance(virtualRouteType, @params);
-                return (IDataSourceVirtualRoute)o;
+                return (IDataSourceVirtualRoute) o;
             }
         }
+
         private IVirtualDataSource CreateDataSourceVirtualTable(Type entityType, IDataSourceVirtualRoute virtualRoute)
         {
             Type type = typeof(VirtualDataSource<>);
             type = type.MakeGenericType(entityType);
-            object o = Activator.CreateInstance(type,_serviceProvider, virtualRoute);
-            return (IVirtualDataSource)o;
+            object o = Activator.CreateInstance(type, _serviceProvider, virtualRoute);
+            return (IVirtualDataSource) o;
         }
+
         private IVirtualRoute CreateVirtualRoute(Type virtualRouteType)
         {
             var constructors
@@ -134,7 +144,7 @@ namespace ShardingCore
             if (constructors.IsEmpty())
             {
                 object o = Activator.CreateInstance(virtualRouteType);
-                return (IVirtualRoute)o;
+                return (IVirtualRoute) o;
             }
             else
             {
@@ -143,9 +153,11 @@ namespace ShardingCore
                     throw new ArgumentException(
                         $"virtual route :[{virtualRouteType}] found more  declared constructor ");
                 }
-                var @params = constructors[0].GetParameters().Select(x => _serviceProvider.GetService(x.ParameterType)).ToArray();
+
+                var @params = constructors[0].GetParameters().Select(x => _serviceProvider.GetService(x.ParameterType))
+                    .ToArray();
                 object o = Activator.CreateInstance(virtualRouteType, @params);
-                return (IVirtualRoute)o;
+                return (IVirtualRoute) o;
             }
         }
 
@@ -154,7 +166,7 @@ namespace ShardingCore
             Type type = typeof(OneDbVirtualTable<>);
             type = type.MakeGenericType(entityType);
             object o = Activator.CreateInstance(type, virtualRoute);
-            return (IVirtualTable)o;
+            return (IVirtualTable) o;
         }
 
         private void EnsureCreated()
@@ -163,12 +175,18 @@ namespace ShardingCore
             {
                 foreach (var shardingConfig in _shardingCoreOptions.GetShardingConfigs())
                 {
-                    
                     using var scope = _serviceProvider.CreateScope();
                     var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-                    using var context = _shardingDbContextFactory.Create(shardingConfig.ConnectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty, new List<VirtualTableDbContextConfig>()));
-                    context.RemoveDbContextRelationModelThatIsShardingTable();
-                    context.Database.EnsureCreated();
+                    using var context = _shardingDbContextFactory.Create(shardingConfig.ConnectKey,
+                        new ShardingDbContextOptions(
+                            dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty));
+                    var modelCacheSyncObject = context.GetModelCacheSyncObject();
+                    lock (modelCacheSyncObject)
+                    {
+                        context.RemoveDbContextRelationModelThatIsShardingTable();
+                        context.Database.EnsureCreated();
+                        context.RemoveModelCache();
+                    }
                 }
             }
         }
@@ -179,9 +197,11 @@ namespace ShardingCore
             {
                 return config.AutoCreateTable.Value;
             }
+
             return _shardingCoreOptions.CreateShardingTableOnStart.GetValueOrDefault();
         }
-        private void CreateDataTable(string connectKey,IVirtualTable virtualTable)
+
+        private void CreateDataTable(string connectKey, IVirtualTable virtualTable)
         {
             var shardingConfig = virtualTable.ShardingConfig;
             foreach (var tail in virtualTable.GetTaleAllTails())
@@ -190,11 +210,12 @@ namespace ShardingCore
                 {
                     try
                     {
-                        _tableCreator.CreateTable(connectKey,virtualTable.EntityType, tail);
+                        _tableCreator.CreateTable(connectKey, virtualTable.EntityType, tail);
                     }
                     catch (Exception)
                     {
-                        _logger.LogWarning($"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created");
+                        _logger.LogWarning(
+                            $"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created");
                     }
                 }
 

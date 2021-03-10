@@ -9,10 +9,26 @@
     */
 
     /// <summary>
-    /// 
+    /// 分表上下文
     /// </summary>
     public class ShardingTableContext
     {
-        
+        private ShardingTableContext(string connectKey,string tail)
+        {
+            ConnectKey = connectKey;
+            Tail = tail;
+        }
+        public static ShardingTableContext Create(string connectKey,string tail)
+        {
+            return new ShardingTableContext(connectKey,tail);
+        }
+        /// <summary>
+        /// 链接Key
+        /// </summary>
+        public string ConnectKey { get; set; }
+        /// <summary>
+        /// 尾巴
+        /// </summary>
+        public string Tail { get; set; }
     }
 }

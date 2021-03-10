@@ -12,7 +12,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
     public interface IDbContextOptionsProvider:IDisposable
     {
         /// <summary>
-        /// ´´½¨Êı¾İ¿âÁ´½ÓÅäÖÃ
+        /// åˆ›å»ºæ•°æ®åº“é“¾æ¥é…ç½®
         /// </summary>
         /// <param name="connectKey"></param>
         /// <returns></returns>

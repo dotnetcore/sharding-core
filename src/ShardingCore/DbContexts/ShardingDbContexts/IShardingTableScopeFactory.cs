@@ -12,6 +12,10 @@
     /// </summary>
     public interface IShardingTableScopeFactory
     {
-        
+        /// <summary>
+        /// 创建查询scope
+        /// </summary>
+        /// <returns></returns>
+        ShardingTableScope CreateScope();
     }
 }
