@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace ShardingCore.Core
 {
@@ -17,7 +17,7 @@ namespace ShardingCore.Core
     /// SimpleShardingDateByDayVirtualRoute 分表 
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
-    public class ShardingKeyAttribute : Attribute
+    public class ShardingTableKeyAttribute : Attribute
     {
         public const string DEFAULT_TAIL_PREFIX = "_";
 
