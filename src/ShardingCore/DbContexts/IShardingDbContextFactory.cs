@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -12,7 +13,7 @@ namespace ShardingCore.DbContexts
 */
     public interface IShardingDbContextFactory
     {
-        DbContext Create(string connectKey,ShardingDbContextOptions shardingDbContextOptions);
-        DbContext Create(string connectKey,string tail, IDbContextOptionsProvider dbContextOptionsProvider);
+        DbContext Create(string connectKey,ShardingDbContextOptions shardingDbContextOptions,IServiceProvider serviceProvider);
+        DbContext Create(string connectKey,string tail, IServiceProvider serviceProvider);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -25,7 +26,7 @@ namespace ShardingCore.DbContexts
             _virtualTableManager = virtualTableManager;
             _shardingTableScopeFactory = shardingTableScopeFactory;
         }
-        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions)
+        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions,IServiceProvider serviceProvider)
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
             
@@ -44,16 +45,22 @@ namespace ShardingCore.DbContexts
                 {
                     shardingTableDbContext.ModelChangeKey = modelChangeKey;
                 }
-                var dbcontextModel = dbcontext.Model;
+
+                if (serviceProvider != null)
+                {
+                    
+                }
+                var dbContextModel = dbcontext.Model;
                 return dbcontext;
             }
         }
 
-        public DbContext Create(string connectKey, string tail,IDbContextOptionsProvider dbContextOptionsProvider)
+        public DbContext Create(string connectKey, string tail,IServiceProvider serviceProvider)
         {
+            var dbContextOptionsProvider = serviceProvider.GetService<IDbContextOptionsProvider>();
             var shardingDbContextOptions =
                 new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail);
-           return Create(connectKey,shardingDbContextOptions);
+           return Create(connectKey,shardingDbContextOptions,serviceProvider);
         }
     }
 }

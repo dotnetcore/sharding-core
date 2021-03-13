@@ -27,7 +27,5 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             return reference ??= (TRef)ServiceProvider.GetService(serviceType);
         }
 
-        protected IDbContextOptionsProvider DbContextOptionsProvider => LazyGet(ref _dbContextOptionsProvider);
-        private IDbContextOptionsProvider _dbContextOptionsProvider;
     }
 }
