@@ -7,17 +7,17 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes;
 
 namespace ShardingCore.VirtualRoutes.Abstractions
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 27 January 2021 12:29:19
-* @Email: 326308290@qq.com
-*/
-    public abstract class AbstractShardingTimeKeyDateTimeVirtualRoute<T>:AbstractShardingOperatorVirtualRoute<T,DateTime> where T:class,IShardingEntity
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 27 January 2021 13:06:01
+    * @Email: 326308290@qq.com
+    */
+    public abstract class AbstractShardingTimeKeyLongVirtualTableRoute<T> : AbstractShardingOperatorVirtualTableRoute<T, long> where T : class, IShardingTable
     {
-        protected override DateTime ConvertToShardingKey(object shardingKey)
+        protected override long ConvertToShardingKey(object shardingKey)
         {
-            return Convert.ToDateTime(shardingKey);
+            return (long)shardingKey;
         }
 
         public override string ShardingKeyToTail(object shardingKey)
@@ -25,8 +25,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var time = ConvertToShardingKey(shardingKey);
             return TimeFormatToTail(time);
         }
-
-        protected abstract string TimeFormatToTail(DateTime time);
+        protected abstract string TimeFormatToTail(long time);
 
     }
 }

@@ -1,15 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
+
+#if !EFCORE5
 using ShardingCore.Extensions;
+#endif
 
 namespace ShardingCore.Core.Internal.StreamMerge
 {

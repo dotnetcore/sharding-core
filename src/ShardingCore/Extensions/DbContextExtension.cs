@@ -75,7 +75,7 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
         }
 
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType<T>(this DbContext dbContext)
-            where T : IShardingEntity
+            where T : IShardingTable
         {
             RemoveDbContextRelationModelSaveOnlyThatIsNamedType(dbContext, typeof(T));
         }

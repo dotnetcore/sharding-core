@@ -30,13 +30,13 @@ namespace ShardingCore.Core
         /// <param name="predicate"></param>
         /// <typeparam name="TShardingEntity"></typeparam>
         /// <returns></returns>
-        IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingEntity;
+        IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingTable;
         /// <summary>
         /// 手动指定路由
         /// </summary>
         /// <param name="tail"></param>
         /// <returns></returns>
-        IShardingQueryable<T> AddManualRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingEntity;
+        IShardingQueryable<T> AddManualRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingTable;
         
         /// <summary>
         /// 异步获取数量

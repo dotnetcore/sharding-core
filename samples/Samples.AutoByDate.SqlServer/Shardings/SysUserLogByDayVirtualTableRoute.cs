@@ -11,7 +11,7 @@ namespace Samples.AutoByDate.SqlServer.Shardings
 * @Date: Tuesday, 02 February 2021 17:14:53
 * @Email: 326308290@qq.com
 */
-    public class SysUserLogByDayVirtualRoute:AbstractSimpleShardingDayKeyDateTimeVirtualRoute<SysUserLogByDay>
+    public class SysUserLogByDayVirtualTableRoute:AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<SysUserLogByDay>
     {
         public override DateTime GetBeginTime()
         {

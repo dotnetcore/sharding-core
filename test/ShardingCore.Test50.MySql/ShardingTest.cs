@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 using ShardingCore.Test50.MySql.Domain.Entities;

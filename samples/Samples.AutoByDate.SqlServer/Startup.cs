@@ -34,7 +34,7 @@ namespace Samples.AutoByDate.SqlServer
             //services.AddShardingSqlServer(o =>
             //{
             //    o.ConnectionString = "";
-            //    o.AddSharding<SysUserLogByDayVirtualRoute>();
+            //    o.AddSharding<SysUserLogByDayVirtualTableRoute>();
             //    o.UseShardingCoreConfig((provider, config) => 
             //    {
             //        //如果是development就判断并且新建数据库如果不存在的话

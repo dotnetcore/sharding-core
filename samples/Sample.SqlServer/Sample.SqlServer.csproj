@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src3x\ShardingCore.SqlServer.3x\ShardingCore.SqlServer.3x.csproj" />
+      <ProjectReference Include="..\..\src\ShardingCore.SqlServer\ShardingCore.SqlServer.csproj" />
     </ItemGroup>
 
 </Project>

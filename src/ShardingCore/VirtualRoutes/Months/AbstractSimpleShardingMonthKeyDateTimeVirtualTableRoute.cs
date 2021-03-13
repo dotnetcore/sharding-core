@@ -14,7 +14,7 @@ namespace ShardingCore.VirtualRoutes.Months
 * @Date: Wednesday, 27 January 2021 12:27:09
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractSimpleShardingMonthKeyDateTimeVirtualRoute<T> : AbstractShardingTimeKeyDateTimeVirtualRoute<T> where T : class, IShardingEntity
+    public abstract class AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T : class, IShardingTable
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()

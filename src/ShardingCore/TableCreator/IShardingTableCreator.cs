@@ -21,7 +21,7 @@ namespace ShardingCore.TableCreator
         /// <param name="connectKey"></param>
         /// <param name="tail"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(string connectKey,string tail) where T : class, IShardingEntity;
+        void CreateTable<T>(string connectKey,string tail) where T : class, IShardingTable;
         /// <summary>
         /// 创建表
         /// </summary>

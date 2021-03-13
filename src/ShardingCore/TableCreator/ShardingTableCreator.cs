@@ -35,7 +35,7 @@ namespace ShardingCore.TableCreator
             _serviceProvider = serviceProvider;
         }
 
-        public void CreateTable<T>(string connectKey,string tail) where T : class, IShardingEntity
+        public void CreateTable<T>(string connectKey,string tail) where T : class, IShardingTable
         {
              CreateTable(connectKey,typeof(T), tail);
         }

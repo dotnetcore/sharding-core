@@ -28,7 +28,7 @@ namespace ShardingCore.Utils
 
         public static ShardingEntityConfig Parse(Type entityType)
         {
-            if (!typeof(IShardingEntity).IsAssignableFrom(entityType))
+            if (!typeof(IShardingTable).IsAssignableFrom(entityType))
                 throw new NotSupportedException(entityType.ToString());
             if (_caches.TryGetValue(entityType, out var shardingEntityConfig))
             {

@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using ShardingCore.Core.VirtualTables;
 
-namespace ShardingCore.Core.Internal.RoutingRuleEngines
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
 /*
 * @Author: xjm
@@ -56,7 +53,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
         ///// </summary>
         ///// <param name="predicate"></param>
         ///// <typeparam name="TShardingEntity"></typeparam>
-        //public void AddRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingEntity
+        //public void AddRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingTable
         //{
         //    var virtualTable = _virtualTableManager.GetVirtualTable<TShardingEntity>();
         //    if (!ManualPredicate.ContainsKey(virtualTable))
@@ -74,7 +71,7 @@ namespace ShardingCore.Core.Internal.RoutingRuleEngines
         //    AddRoute(virtualTable, tail);
         //}
         
-        //public void AddRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingEntity
+        //public void AddRoute<TShardingEntity>(string tail) where TShardingEntity : class, IShardingTable
         //{
         //    AddRoute(typeof(TShardingEntity), tail);
         //}

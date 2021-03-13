@@ -57,7 +57,7 @@ namespace ShardingCore.Core.VirtualTables
         /// 获取当前虚拟表的路由 get this virtual table route
         /// </summary>
         /// <returns></returns>
-        IVirtualRoute GetVirtualRoute();
+        IVirtualTableRoute GetVirtualRoute();
         /// <summary>
         /// 获取启动时已经存在的表后缀 get this virtual table exists tails when app start
         /// <see cref="ShardingBootstrapper"/> CreateDateTables
@@ -66,8 +66,8 @@ namespace ShardingCore.Core.VirtualTables
         List<string> GetTaleAllTails();
     }
 
-    public interface IVirtualTable<T> : IVirtualTable where T : class, IShardingEntity
+    public interface IVirtualTable<T> : IVirtualTable where T : class, IShardingTable
     {
-        new IVirtualRoute<T> GetVirtualRoute();
+        new IVirtualTableRoute<T> GetVirtualRoute();
     }
 }

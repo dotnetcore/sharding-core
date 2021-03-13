@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
 
 namespace ShardingCore.Core.Internal.StreamMerge

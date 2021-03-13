@@ -296,7 +296,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             if (typeof(T).IsShardingTable())
             {
-                dbContexts = CreateShardingDbContexts<IShardingEntity>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
+                dbContexts = CreateShardingDbContexts<IShardingTable>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
             }
             else
             {
@@ -319,7 +319,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
 
             if (typeof(T).IsShardingTable())
             {
-                dbContexts = CreateShardingDbContexts<IShardingEntity>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
+                dbContexts = CreateShardingDbContexts<IShardingTable>(connectKeys, new EnumerableQuery<T>(where).AsQueryable());
             }
             else
             {
@@ -341,13 +341,13 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             var connectKey = _virtualDataSourceManager.GetConnectKey(entity);
             if (entity.IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(connectKey, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingEntity, null))[0];
+                var physicTable = _virtualTableManager.GetVirtualTable(connectKey, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
                 tail = physicTable.Tail;
             }
             return GetOrCreateShardingDbContext(connectKey,tail);
         }
 
-        private List<(string connectKey, List<DbContext> dbContexts)> CreateShardingDbContexts<T>(List<string> connectKeys,IQueryable queryable) where T : class, IShardingEntity
+        private List<(string connectKey, List<DbContext> dbContexts)> CreateShardingDbContexts<T>(List<string> connectKeys,IQueryable queryable) where T : class, IShardingTable
         {
             var results =
                 new List<(string connectKey, List<DbContext> dbContexts)>();

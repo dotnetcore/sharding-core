@@ -8,7 +8,7 @@ namespace ShardingCore.Test50.Domain.Entities
 * @Date: Thursday, 14 January 2021 15:36:43
 * @Email: 326308290@qq.com
 */
-    public class SysUserMod:IShardingEntity
+    public class SysUserMod:IShardingTable
     {
         /// <summary>
         /// 用户Id用于分表

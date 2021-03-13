@@ -14,7 +14,7 @@
 // * @Date: Wednesday, 20 January 2021 10:46:37
 // * @Email: 326308290@qq.com
 // */
-//     public class SysUserRangeVirtualRoute: AbstractShardingOperatorVirtualRoute<SysUserRange, string>
+//     public class SysUserRangeVirtualRoute: AbstractShardingOperatorVirtualTableRoute<SysUserRange, string>
 //     {
 //         private int _mod = 1000;
 //         protected override string ConvertToShardingKey(object shardingKey)

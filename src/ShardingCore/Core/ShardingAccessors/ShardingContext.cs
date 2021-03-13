@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 

@@ -35,7 +35,7 @@ namespace ShardingCore.Core.VirtualTables
         /// </summary>
         /// <param name="connectKey"></param>
         /// <returns></returns>     
-        IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingEntity;
+        IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingTable;
         /// <summary>
         /// 获取虚拟表 get virtual table by original table name
         /// </summary>

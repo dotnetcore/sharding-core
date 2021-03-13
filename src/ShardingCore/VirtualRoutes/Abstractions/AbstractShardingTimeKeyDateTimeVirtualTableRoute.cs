@@ -10,14 +10,14 @@ namespace ShardingCore.VirtualRoutes.Abstractions
 /*
 * @Author: xjm
 * @Description:
-* @Date: Wednesday, 27 January 2021 13:06:01
+* @Date: Wednesday, 27 January 2021 12:29:19
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractShardingTimeKeyLongVirtualRoute<T>:AbstractShardingOperatorVirtualRoute<T,long> where T:class,IShardingEntity
+    public abstract class AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>:AbstractShardingOperatorVirtualTableRoute<T,DateTime> where T:class,IShardingTable
     {
-        protected override long ConvertToShardingKey(object shardingKey)
+        protected override DateTime ConvertToShardingKey(object shardingKey)
         {
-            return (long)shardingKey;
+            return Convert.ToDateTime(shardingKey);
         }
 
         public override string ShardingKeyToTail(object shardingKey)
@@ -25,7 +25,8 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var time = ConvertToShardingKey(shardingKey);
             return TimeFormatToTail(time);
         }
-        protected abstract string TimeFormatToTail(long time);
+
+        protected abstract string TimeFormatToTail(DateTime time);
 
     }
 }

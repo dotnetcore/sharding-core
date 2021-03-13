@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualTables;
@@ -49,9 +50,13 @@ namespace ShardingCore.DbContexts
 
                 if (serviceProvider != null)
                 {
-                    foreach (var dbContextCreateFilter in _dbContextCreateFilterManager.GetFilters())
+                    var filters = _dbContextCreateFilterManager.GetFilters();
+                    if (filters.Any())
                     {
-                        dbContextCreateFilter.CreateAfter(dbContext, serviceProvider);
+                        foreach (var dbContextCreateFilter in filters)
+                        {
+                            dbContextCreateFilter.CreateAfter(dbContext, serviceProvider);
+                        }
                     }
                 }
                 var dbContextModel = dbContext.Model;

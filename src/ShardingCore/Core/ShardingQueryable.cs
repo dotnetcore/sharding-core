@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges.Proxies;
@@ -67,14 +66,14 @@ namespace ShardingCore.Core
             //return this;
         }
 
-        public IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingEntity
+        public IShardingQueryable<T> AddManualRoute<TShardingEntity>(Expression<Func<TShardingEntity, bool>> predicate) where TShardingEntity : class, IShardingTable
         {
             throw new NotImplementedException();
             //_routeRuleContext.AddRoute(predicate);
             //return this;
         }
 
-        public IShardingQueryable<T> AddManualRoute<TShardingEntity>( string tail) where TShardingEntity : class, IShardingEntity
+        public IShardingQueryable<T> AddManualRoute<TShardingEntity>( string tail) where TShardingEntity : class, IShardingTable
         {
             throw new NotImplementedException();
             //_routeRuleContext.AddRoute<TShardingEntity>(tail);

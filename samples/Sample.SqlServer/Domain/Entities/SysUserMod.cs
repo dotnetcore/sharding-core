@@ -9,7 +9,7 @@ namespace Sample.SqlServer.Domain.Entities
 * @Date: Tuesday, 26 January 2021 12:25:39
 * @Email: 326308290@qq.com
 */
-    public class SysUserMod:IShardingEntity
+    public class SysUserMod:IShardingTable
     {
         /// <summary>
         /// 用户Id用于分表

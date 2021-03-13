@@ -60,7 +60,7 @@ namespace ShardingCore
             var genericVirtualRoute = virtualRouteType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IDataSourceVirtualRoute)
                 && it.GetGenericArguments().Any());
             if (genericVirtualRoute == null)
-                throw new ArgumentException("add sharding route type error not assignable from IVirtualRoute<>.");
+                throw new ArgumentException("add sharding route type error not assignable from IVirtualTableRoute<>.");
 
             var shardingEntityType = genericVirtualRoute.GetGenericArguments()[0];
             if (shardingEntityType == null)

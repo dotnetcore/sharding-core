@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 
 namespace ShardingCore.Core.DataSourceAccessors
 {

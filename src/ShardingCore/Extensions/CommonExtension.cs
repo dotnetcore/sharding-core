@@ -49,7 +49,7 @@ namespace ShardingCore.Extensions
         {
             if (entityType == null)
                 throw new ArgumentNullException(nameof(entityType));
-            return typeof(IShardingEntity).IsAssignableFrom(entityType);
+            return typeof(IShardingTable).IsAssignableFrom(entityType);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace ShardingCore.Extensions
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
-            return typeof(IShardingEntity).IsAssignableFrom(entity.GetType());
+            return typeof(IShardingTable).IsAssignableFrom(entity.GetType());
         }
         // /// <summary>
         // /// 虚拟表转换成对应的db配置

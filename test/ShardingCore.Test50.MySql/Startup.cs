@@ -43,8 +43,8 @@ namespace ShardingCore.Test50.MySql
             //{
             //    o.ConnectionString =  hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"];
             //    o.ServerVersion = new MySqlServerVersion(new Version());
-            //    o.AddSharding<SysUserModVirtualRoute>();
-            //    o.AddSharding<SysUserSalaryVirtualRoute>();
+            //    o.AddSharding<SysUserModVirtualTableRoute>();
+            //    o.AddSharding<SysUserSalaryVirtualTableRoute>();
             //    o.CreateIfNotExists((provider, config) =>
             //    {
             //        config.EnsureCreated = true;

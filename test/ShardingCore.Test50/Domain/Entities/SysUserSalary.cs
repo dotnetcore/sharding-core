@@ -9,7 +9,7 @@ namespace ShardingCore.Test50.Domain.Entities
 * @Date: Monday, 01 February 2021 15:43:22
 * @Email: 326308290@qq.com
 */
-    public class SysUserSalary:IShardingEntity
+    public class SysUserSalary:IShardingTable
     {
         public string Id { get; set; }
         public string UserId { get; set; }

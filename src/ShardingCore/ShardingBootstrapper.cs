@@ -142,7 +142,7 @@ namespace ShardingCore
             return (IVirtualDataSource) o;
         }
 
-        private IVirtualRoute CreateVirtualRoute(Type virtualRouteType)
+        private IVirtualTableRoute CreateVirtualRoute(Type virtualRouteType)
         {
             var constructors
                 = virtualRouteType.GetTypeInfo().DeclaredConstructors
@@ -151,7 +151,7 @@ namespace ShardingCore
             if (constructors.IsEmpty())
             {
                 object o = Activator.CreateInstance(virtualRouteType);
-                return (IVirtualRoute) o;
+                return (IVirtualTableRoute) o;
             }
             else
             {
@@ -164,15 +164,15 @@ namespace ShardingCore
                 var @params = constructors[0].GetParameters().Select(x => _serviceProvider.GetService(x.ParameterType))
                     .ToArray();
                 object o = Activator.CreateInstance(virtualRouteType, @params);
-                return (IVirtualRoute) o;
+                return (IVirtualTableRoute) o;
             }
         }
 
-        private IVirtualTable CreateVirtualTable(Type entityType, IVirtualRoute virtualRoute)
+        private IVirtualTable CreateVirtualTable(Type entityType, IVirtualTableRoute virtualTableRoute)
         {
             Type type = typeof(OneDbVirtualTable<>);
             type = type.MakeGenericType(entityType);
-            object o = Activator.CreateInstance(type, virtualRoute);
+            object o = Activator.CreateInstance(type, virtualTableRoute);
             return (IVirtualTable) o;
         }
 

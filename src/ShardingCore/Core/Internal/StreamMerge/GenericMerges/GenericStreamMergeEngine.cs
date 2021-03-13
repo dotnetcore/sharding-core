@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge.Abstractions;
 using ShardingCore.Core.Internal.StreamMerge.Enumerators;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions;
-
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif

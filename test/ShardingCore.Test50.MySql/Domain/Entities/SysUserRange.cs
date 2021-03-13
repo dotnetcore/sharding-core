@@ -8,7 +8,7 @@
 // * @Date: Wednesday, 20 January 2021 10:43:19
 // * @Email: 326308290@qq.com
 // */
-//     public class SysUserRange:IShardingEntity
+//     public class SysUserRange:IShardingTable
 //     {
 //         /// <summary>
 //         /// 分表分库range切分

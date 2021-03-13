@@ -13,7 +13,7 @@ namespace ShardingCore.Test50.MySql.Shardings
 * @Date: Monday, 01 February 2021 15:54:55
 * @Email: 326308290@qq.com
 */
-    public class SysUserSalaryVirtualRoute:AbstractShardingOperatorVirtualRoute<SysUserSalary,int>
+    public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int>
     {
         protected override int ConvertToShardingKey(object shardingKey)
         {

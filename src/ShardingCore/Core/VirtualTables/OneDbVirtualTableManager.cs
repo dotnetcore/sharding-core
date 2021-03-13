@@ -26,7 +26,7 @@ namespace ShardingCore.Core.VirtualTables
             //var shardingEntities = AssemblyHelper.CurrentDomain.GetAssemblies().SelectMany(o => o.GetTypes())
             //    .Where(type => !String.IsNullOrEmpty(type.Namespace))
             //    .Where(type => !type.IsAbstract&&type.GetInterfaces()
-            //        .Any(it => it.IsInterface  &&typeof(IShardingEntity)==it)
+            //        .Any(it => it.IsInterface  &&typeof(IShardingTable)==it)
             //    );
             //foreach (var shardingEntity in shardingEntities)
             //{
@@ -57,7 +57,7 @@ namespace ShardingCore.Core.VirtualTables
             return virtualTable;
         }
 
-        public IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingEntity
+        public IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingTable
         {
             return (IVirtualTable<T>)GetVirtualTable(connectKey, typeof(T));
         }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.PhysicTables;
@@ -7,7 +6,7 @@ using ShardingCore.Core.PhysicTables;
 using ShardingCore.Extensions;
 #endif
 
-namespace ShardingCore.Core.Internal.RoutingRuleEngines
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
 /*
 * @Author: xjm

@@ -14,9 +14,9 @@ namespace Sample.SqlServer.Shardings
 * @Date: Thursday, 14 January 2021 15:39:27
 * @Email: 326308290@qq.com
 */
-    public class SysUserModVirtualRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
+    public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserMod>
     {
-        public SysUserModVirtualRoute() : base(2,3)
+        public SysUserModVirtualTableRoute() : base(2,3)
         {
         }
     }

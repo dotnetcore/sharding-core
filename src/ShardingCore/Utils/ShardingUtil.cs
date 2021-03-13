@@ -52,7 +52,7 @@ namespace ShardingCore.Utils
             {
                 var shardingTables = shardingProperties.SelectMany(p => p.GetCustomAttributes(true).Where(o => o.GetType() == typeof(ShardingKeyAttribute))).ToList();
                 if (shardingTables.Count != 1)
-                    throw new NotSupportedException($"{entityType}  From IShardingEntity should use single attribute [ShardingKey]");
+                    throw new NotSupportedException($"{entityType}  From IShardingTable should use single attribute [ShardingKey]");
             }
 
             var shardingDataSourceCount = 0;
@@ -77,7 +77,7 @@ namespace ShardingCore.Utils
                     if (attributes.FirstOrDefault(x => x.GetType() == typeof(ShardingKeyAttribute)) is ShardingKeyAttribute shardingKey)
                     {
                         if (shardingTableCount > 1)
-                            throw new NotSupportedException($"{entityType}  From IShardingEntity should use single attribute [{nameof(ShardingKeyAttribute)}]");
+                            throw new NotSupportedException($"{entityType}  From IShardingTable should use single attribute [{nameof(ShardingKeyAttribute)}]");
 
                         baseType.ShardingTableField = shardingProperty.Name;
                         baseType.AutoCreateTable = shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.UnKnown ? (bool?) null : (shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.Create);

@@ -22,17 +22,17 @@ namespace ShardingCore.Core.VirtualTables
     /// 同数据库虚拟表
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class OneDbVirtualTable<T> : IVirtualTable<T> where T : class, IShardingEntity
+    public class OneDbVirtualTable<T> : IVirtualTable<T> where T : class, IShardingTable
     {
-        private readonly IVirtualRoute<T> _virtualRoute;
+        private readonly IVirtualTableRoute<T> _virtualTableRoute;
 
         public Type EntityType => typeof(T);
         public ShardingEntityConfig ShardingConfig { get; }
         private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
 
-        public OneDbVirtualTable(IVirtualRoute<T> virtualRoute)
+        public OneDbVirtualTable(IVirtualTableRoute<T> virtualTableRoute)
         {
-            _virtualRoute = virtualRoute;
+            _virtualTableRoute = virtualTableRoute;
             ShardingConfig = ShardingKeyUtil.Parse(EntityType);
         }
 
@@ -43,7 +43,7 @@ namespace ShardingCore.Core.VirtualTables
 
         public List<IPhysicTable> RouteTo(TableRouteConfig tableRouteConfig)
         {
-            var route = _virtualRoute;
+            var route = _virtualTableRoute;
             if (tableRouteConfig.UseQueryable())
                 return route.RouteWithWhere(_physicTables, tableRouteConfig.GetQueryable());
             if (tableRouteConfig.UsePredicate())
@@ -81,19 +81,19 @@ namespace ShardingCore.Core.VirtualTables
             return ShardingConfig.ShardingOriginalTable;
         }
 
-        IVirtualRoute IVirtualTable.GetVirtualRoute()
+        IVirtualTableRoute IVirtualTable.GetVirtualRoute()
         {
             return GetVirtualRoute();
         }
 
         public List<string> GetTaleAllTails()
         {
-            return _virtualRoute.GetAllTails();
+            return _virtualTableRoute.GetAllTails();
         }
 
-        public IVirtualRoute<T> GetVirtualRoute()
+        public IVirtualTableRoute<T> GetVirtualRoute()
         {
-            return _virtualRoute;
+            return _virtualTableRoute;
         }
     }
 }

@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.Abstractions;

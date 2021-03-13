@@ -11,7 +11,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 * @Date: Friday, 18 December 2020 14:33:01
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractVirtualRoute<T, TKey> : IVirtualRoute<T> where T : class, IShardingEntity
+    public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T> where T : class, IShardingTable
     {
         public Type ShardingEntityType => typeof(T);
 

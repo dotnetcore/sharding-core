@@ -26,7 +26,7 @@ namespace Sample.SqlServer
                 o.CreateShardingTableOnStart = true;
                 o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True", dbConfig =>
                 {
-                    dbConfig.AddShardingTableRoute<SysUserModVirtualRoute>();
+                    dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
                 //o.AddDataSourceVirtualRoute<>();
                

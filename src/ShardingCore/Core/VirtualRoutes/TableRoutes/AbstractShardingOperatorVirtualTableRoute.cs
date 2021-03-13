@@ -15,7 +15,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 * @Date: Saturday, 19 December 2020 19:55:24
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractShardingOperatorVirtualRoute<T, TKey> : AbstractVirtualRoute<T, TKey> where T : class, IShardingEntity
+    public abstract class AbstractShardingOperatorVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class, IShardingTable
     {
         protected override List<IPhysicTable> DoRouteWithWhere(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {

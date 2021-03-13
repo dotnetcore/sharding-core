@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ShardingCore.Core.Internal.RoutingRuleEngines;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;

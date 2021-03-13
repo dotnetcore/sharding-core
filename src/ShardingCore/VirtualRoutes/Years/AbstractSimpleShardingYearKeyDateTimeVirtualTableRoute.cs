@@ -6,43 +6,40 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
 
-namespace ShardingCore.VirtualRoutes.Months
+namespace ShardingCore.VirtualRoutes.Years
 {
 /*
 * @Author: xjm
 * @Description:
-* @Date: Wednesday, 27 January 2021 13:09:52
+* @Date: Wednesday, 27 January 2021 13:00:57
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractSimpleShardingMonthKeyLongVirtualRoute<T>:AbstractShardingTimeKeyLongVirtualRoute<T> where T:class,IShardingEntity
+    public abstract class AbstractSimpleShardingYearKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T : class, IShardingTable
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
-            var beginTime = ShardingCoreHelper.GetCurrentMonthFirstDay(GetBeginTime());
+            var beginTime = GetBeginTime();
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp =ShardingCoreHelper.GetNextMonthFirstDay(beginTime);
+            var nowTimeStamp =beginTime.AddYears(1).Date;
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("起始时间不正确无法生成正确的表名");
             var currentTimeStamp = beginTime;
             while (currentTimeStamp <= nowTimeStamp)
             {
-                var currentTimeStampLong = ShardingCoreHelper.ConvertDateTimeToLong(currentTimeStamp);
-                var tail = ShardingKeyToTail(currentTimeStampLong);
+                var tail = ShardingKeyToTail(currentTimeStamp);
                 tails.Add(tail);
-                currentTimeStamp = ShardingCoreHelper.GetNextMonthFirstDay(currentTimeStamp);
+                currentTimeStamp = currentTimeStamp.AddYears(1);
             }
             return tails;
         }
-
-        protected override string TimeFormatToTail(long time)
+        protected override string TimeFormatToTail(DateTime time)
         {
-            var datetime = ShardingCoreHelper.ConvertLongToDateTime(time);
-            return $"{datetime:yyyyMM}";
+            return $"{time:yyyy}";
         }
-        protected override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
+        protected override Expression<Func<string, bool>> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)
@@ -52,10 +49,9 @@ namespace ShardingCore.VirtualRoutes.Months
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) >= 0;
                 case ShardingOperatorEnum.LessThan:
                 {
-                    var dateTime = ShardingCoreHelper.ConvertLongToDateTime(shardingKey);
-                    var currentMonth = ShardingCoreHelper.GetCurrentMonthFirstDay(dateTime);
+                    var currentYear =new DateTime(shardingKey.Year);
                     //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
-                    if (currentMonth == dateTime)
+                    if (currentYear == shardingKey)
                         return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
                 }

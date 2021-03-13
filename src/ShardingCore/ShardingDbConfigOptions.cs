@@ -20,18 +20,18 @@ namespace ShardingCore
         
 
         private readonly Dictionary<Type,Type> _virtualRoutes = new Dictionary<Type, Type>();
-        public void AddShardingTableRoute<TRoute>() where TRoute : IVirtualRoute
+        public void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute
         {
             var routeType = typeof(TRoute);
             //获取类型
-            var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualRoute<>)
+            var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualTableRoute<>)
                 && it.GetGenericArguments().Any());
             if (genericVirtualRoute == null)
-                throw new ArgumentException("add sharding route type error not assignable from IVirtualRoute<>.");
+                throw new ArgumentException("add sharding route type error not assignable from IVirtualTableRoute<>.");
 
             var shardingEntityType = genericVirtualRoute.GetGenericArguments()[0];
             if (shardingEntityType == null)
-                throw new ArgumentException("add sharding table route type error not assignable from IVirtualRoute<>");
+                throw new ArgumentException("add sharding table route type error not assignable from IVirtualTableRoute<>");
             if (!_virtualRoutes.ContainsKey(shardingEntityType))
             {
                 _virtualRoutes.Add(shardingEntityType, routeType);
@@ -41,7 +41,7 @@ namespace ShardingCore
         public Type GetVirtualRoute(Type entityType)
         {
             if (!_virtualRoutes.ContainsKey(entityType))
-                throw new ArgumentException("not found IVirtualRoute");
+                throw new ArgumentException("not found IVirtualTableRoute");
             return _virtualRoutes[entityType];
         }
     }

@@ -6,16 +6,17 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
 
-namespace ShardingCore.VirtualRoutes.Weeks
+namespace ShardingCore.VirtualRoutes.Days
 {
 /*
 * @Author: xjm
 * @Description:
-* @Date: Wednesday, 27 January 2021 13:12:50
+* @Date: Wednesday, 27 January 2021 08:56:38
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractSimpleShardingWeekKeyLongVirtualRoute<T> : AbstractShardingTimeKeyLongVirtualRoute<T> where T : class, IShardingEntity
+    public abstract class AbstractSimpleShardingDayKeyLongVirtualTableRoute<T>:AbstractShardingTimeKeyLongVirtualTableRoute<T> where T:class,IShardingTable
     {
+
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
@@ -23,25 +24,23 @@ namespace ShardingCore.VirtualRoutes.Weeks
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp =beginTime.AddDays(7).Date;
+            var nowTimeStamp = DateTime.Now.AddDays(1).Date;
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("起始时间不正确无法生成正确的表名");
             var currentTimeStamp = beginTime;
             while (currentTimeStamp <= nowTimeStamp)
             {
-                var currentTimeStampLong = ShardingCoreHelper.ConvertDateTimeToLong(currentTimeStamp);
-                var tail = ShardingKeyToTail(currentTimeStampLong);
+                var currentTimeStampLong=ShardingCoreHelper.ConvertDateTimeToLong(currentTimeStamp);
+                var tail = TimeFormatToTail(currentTimeStampLong);
                 tails.Add(tail);
-                currentTimeStamp = currentTimeStamp.AddDays(7);
+                currentTimeStamp = currentTimeStamp.AddDays(1);
             }
             return tails;
         }
         protected override string TimeFormatToTail(long time)
         {
-            var datetime = ShardingCoreHelper.ConvertLongToDateTime(time);
-            var currentMonday = ShardingCoreHelper.GetCurrentMonday(datetime);
-            var currentSunday = ShardingCoreHelper.GetCurrentSunday(datetime);
-            return $"{currentMonday:yyyyMM}{currentMonday:dd}_{currentSunday:dd}";
+            var dateTime=ShardingCoreHelper.ConvertLongToDateTime(time);
+            return $"{dateTime:yyyyMMdd}";
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
@@ -55,9 +54,9 @@ namespace ShardingCore.VirtualRoutes.Weeks
                 case ShardingOperatorEnum.LessThan:
                 {
                     var dateTime = ShardingCoreHelper.ConvertLongToDateTime(shardingKey);
-                    var currentMonth = ShardingCoreHelper.GetCurrentMonday(dateTime);
+                    var shardingKeyDate = dateTime.Date;
                     //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
-                    if (currentMonth == dateTime)
+                    if (shardingKeyDate == dateTime)
                         return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
                 }
@@ -73,5 +72,6 @@ namespace ShardingCore.VirtualRoutes.Weeks
                 }
             }
         }
+
     }
 }

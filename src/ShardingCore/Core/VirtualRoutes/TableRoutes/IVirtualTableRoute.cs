@@ -14,7 +14,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
     /// <summary>
     /// 
     /// </summary>
-    public interface IVirtualRoute
+    public interface IVirtualTableRoute
     {
         Type ShardingEntityType { get; }
         string ShardingKeyToTail(object shardingKey);
@@ -42,7 +42,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         List<string> GetAllTails();
     }
 
-    public interface IVirtualRoute<T> : IVirtualRoute where T : class, IShardingEntity
+    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class, IShardingTable
     {
     }
 }

@@ -9,7 +9,7 @@ namespace ShardingCore.Core
 * @Email: 326308290@qq.com
 */
     /// <summary>
-    /// AbstractVirtualRoute 最基础分表规则 需要自己解析如何分表
+    /// AbstractVirtualTableRoute 最基础分表规则 需要自己解析如何分表
     /// 仅ShardingMode为Custom:以下接口提供自定义分表
     /// AbstractShardingKeyObjectEqualVirtualRoute 自定义分表 
     /// SimpleShardingKeyStringModVirtualRoute 默认对AbstractShardingKeyObjectEqualVirtualRoute的实现,字符串按取模分表

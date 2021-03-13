@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ShardingCore.Core.Internal.RoutingRuleEngines
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
 /*
 * @Author: xjm
