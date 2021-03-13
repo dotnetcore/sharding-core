@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ShardingCore.DbContexts.Abstractions
 {
@@ -10,6 +11,8 @@ namespace ShardingCore.DbContexts.Abstractions
 */
     public interface IDbContextCreateFilterManager
     {
-        
+
+        void RegisterFilter(IDbContextCreateFilter filter);
+        List<IDbContextCreateFilter> GetFilters();
     }
 }

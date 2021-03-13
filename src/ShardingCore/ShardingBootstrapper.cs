@@ -16,6 +16,7 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
+using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Exceptions;
@@ -39,11 +40,12 @@ namespace ShardingCore
         private readonly IShardingTableCreator _tableCreator;
         private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
+        private readonly IDbContextCreateFilterManager _dbContextCreateFilterManager;
 
         public ShardingBootstrapper(IServiceProvider serviceProvider, IShardingCoreOptions shardingCoreOptions,
             IVirtualDataSourceManager virtualDataSourceManager, IVirtualTableManager virtualTableManager
             , IShardingTableCreator tableCreator, ILogger<ShardingBootstrapper> logger,
-            IShardingDbContextFactory shardingDbContextFactory)
+            IShardingDbContextFactory shardingDbContextFactory,IDbContextCreateFilterManager dbContextCreateFilterManager)
         {
             ShardingContainer.SetServices(serviceProvider);
             _serviceProvider = serviceProvider;
@@ -53,10 +55,15 @@ namespace ShardingCore
             _tableCreator = tableCreator;
             _logger = logger;
             _shardingDbContextFactory = shardingDbContextFactory;
+            _dbContextCreateFilterManager = dbContextCreateFilterManager;
         }
 
         public void Start()
         {
+            foreach (var filter in _shardingCoreOptions.GetFilters())
+            {
+                _dbContextCreateFilterManager.RegisterFilter((IDbContextCreateFilter)Activator.CreateInstance(filter));
+            }
             EnsureCreated();
             //_shardingCoreOptions.GetShardingConfigs().Select(o=>o.ConnectKey).ForEach(connectKey=> _virtualDataSourceManager.AddShardingConnectKey(connectKey));
             var isShardingDataSource = _shardingCoreOptions.GetShardingConfigs().Count > 1;

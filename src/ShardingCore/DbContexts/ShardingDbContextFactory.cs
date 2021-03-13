@@ -2,6 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
@@ -17,14 +18,14 @@ namespace ShardingCore.DbContexts
     public class ShardingDbContextFactory:IShardingDbContextFactory
     {
         private readonly IShardingCoreOptions _shardingCoreOptions;
-        private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingTableScopeFactory _shardingTableScopeFactory;
+        private readonly IDbContextCreateFilterManager _dbContextCreateFilterManager;
 
-        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IVirtualTableManager virtualTableManager,IShardingTableScopeFactory shardingTableScopeFactory)
+        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IShardingTableScopeFactory shardingTableScopeFactory, IDbContextCreateFilterManager dbContextCreateFilterManager)
         {
             _shardingCoreOptions = shardingCoreOptions;
-            _virtualTableManager = virtualTableManager;
             _shardingTableScopeFactory = shardingTableScopeFactory;
+            _dbContextCreateFilterManager = dbContextCreateFilterManager;
         }
         public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions,IServiceProvider serviceProvider)
         {
@@ -40,18 +41,21 @@ namespace ShardingCore.DbContexts
                     modelChangeKey = $"sharding_{tail}";
                 }
                 scope.ShardingTableAccessor.Context = ShardingTableContext.Create(connectKey,tail);
-                var dbcontext=  shardingConfigEntry.Creator(shardingDbContextOptions);
-                if (modelChangeKey != null&&dbcontext is IShardingTableDbContext shardingTableDbContext)
+                var dbContext=  shardingConfigEntry.Creator(shardingDbContextOptions);
+                if (modelChangeKey != null&& dbContext is IShardingTableDbContext shardingTableDbContext)
                 {
                     shardingTableDbContext.ModelChangeKey = modelChangeKey;
                 }
 
                 if (serviceProvider != null)
                 {
-                    
+                    foreach (var dbContextCreateFilter in _dbContextCreateFilterManager.GetFilters())
+                    {
+                        dbContextCreateFilter.CreateAfter(dbContext, serviceProvider);
+                    }
                 }
-                var dbContextModel = dbcontext.Model;
-                return dbcontext;
+                var dbContextModel = dbContext.Model;
+                return dbContext;
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 
 namespace ShardingCore
@@ -40,6 +41,14 @@ namespace ShardingCore
          /// 是否需要在启动时创建分表
          /// </summary>
          bool? CreateShardingTableOnStart { get; set; }
+
+         /// <summary>
+         /// 添加filter过滤器
+         /// </summary>
+         /// <typeparam name="TFilter"></typeparam>
+         public void AddDbContextCreateFilter<TFilter>() where TFilter : class, IDbContextCreateFilter;
+
+         public List<Type> GetFilters();
 
     }
 }

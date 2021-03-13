@@ -7,6 +7,7 @@ using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
+using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.TableCreator;
@@ -24,6 +25,7 @@ namespace ShardingCore
         
         public static IServiceCollection AddShardingCore(this IServiceCollection services)
         {
+            services.AddSingleton<IDbContextCreateFilterManager, DbContextCreateFilterManager>();
             services.AddSingleton<IStreamMergeContextFactory, StreamMergeContextFactory>();
             services.AddScoped<IVirtualDbContext, VirtualDbContext>();
 

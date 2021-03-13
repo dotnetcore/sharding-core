@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -103,5 +104,22 @@ namespace ShardingCore
         /// 是否需要在启动时创建分表
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
+
+        public readonly List<Type> _filters = new List<Type>();
+        /// <summary>
+        /// 添加filter过滤器
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        public void AddDbContextCreateFilter<TFilter>() where TFilter : class, IDbContextCreateFilter
+        {
+            if (_filters.Contains(typeof(TFilter)))
+                throw new ArgumentException("请勿重复添加DbContextCreateFilter");
+            _filters.Add(typeof(TFilter));
+        }
+
+        public List<Type> GetFilters()
+        {
+            return _filters;
+        }
     }
 }
