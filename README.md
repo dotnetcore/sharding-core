@@ -1,15 +1,16 @@
 <h1 align="center"> ShardingCore </h1>
 
 
-`ShardingCore` 是一个支持efcore 2.x 3.x 5.x的一个对于数据库分表的一个简易扩展,.Net下并没有类似mycat或者sharding-jdbc之类的开源组件或者说有但是并没有非常适用的或者说个人在用过后有一些地方因为限制没法很好使用所以决定自己开发这个库,目前该库暂未支持分库(未来会支持),仅支持分表,该项目的理念是让你可以已最少的代码量来实现自动分表的实现,经过多个开源项目的摸索参考目前正式开源本项目
-项目地址 [github](https://github.com/xuejmnet/sharding-core) 喜欢的朋友可以点下star Thanks♪(･ω･)ﾉ
+`ShardingCore` 是一个支持efcore 2.x 3.x 5.x的一个分库分表的一个简易扩展,针对dbContext实现了无感知开发,针对之前x.0.0.x版本目前在之前的分表功能上支持了分库功能。
+目前x.1.0.x的所有版本都支持分库分表,在使用程度上极大的降低了代码侵入性保证开发时候的无感知使用。该框架是基于efcore的虽然没有像sharding-jdbc一样支持任意jdbc的实现，但是针对efcore下的框架基本上都适用,
+最后如果喜欢本项目的话或者本项目对您有帮助的话麻烦[点我star github 地址](https://github.com/xuejmnet/sharding-core) ,也欢迎各位.neter交流。
 ### 依赖
 
-Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFrameworkCore.MySql
+Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | [Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 --- | --- | --- | --- | --- | --- 
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.0.0.4) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.0.0.4) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.0.0.4) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
+[5.1.x.x](https://www.nuget.org/packages/ShardingCore/5.1.0.3) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
+[3.1.x.x](https://www.nuget.org/packages/ShardingCore/3.1.0.3) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
+[2.1.x.x](https://www.nuget.org/packages/ShardingCore/2.1.0.3) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
 
 
 - [开始](#开始)
@@ -38,7 +39,8 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 
 ## 简介
 
-目前该库处于初期阶段,有很多bug也希望各位多多理解,一起努力为.net生态做出一份微薄之力,目前该库支持的分表可以进行完全的自定义,基本上可以满足95%以上的
+该库从最初```2020年12月初```到现在还处于初期阶段,可能或许会有bug也希望各位多多理解,也是为了给.net生态贡献一下,从最初的仅支持单库分表到现在的多数据库分库分表且支持多表join和流式聚合等操作
+开发该库也给我自己带了了很多新的编程思路,目前该库支持的分库分表可以进行完全的自定义,基本上可以满足95%以上的
 业务需求，唯一的限制就是分表规则必须满足 x+y+z,x表示固定的表名,y表示固定的表名和表后缀之间的联系(可以为空),z表示表后缀,可以按照你自己的任意业务逻辑进行切分,
 如:user_0,user_1或者user202101,user202102...当然该库同样适用于多租户模式下的隔离,该库为了支持之后的分库已经重写了之前的union all查询模式,并且支持多种api,
 支持多种查询包括```join,group by,max,count,min,avg,sum``` ...等一系列查询,之后可能会添加更多支持,目前该库的使用非常简单,基本上就是针对IQueryable的扩展，为了保证
@@ -59,27 +61,26 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 - [虚拟表]
   虚拟表就是系统将所有的物理表在系统里面进行抽象的一个总表对应到程序就是一个entity[IVirtualTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualTables/IVirtualTable.cs)
 - [虚拟路由]
-  虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/IVirtualRoute.cs)
+  虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualTableRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/IVirtualRoute.cs)
   ,由于基本上所有的路由都是和业务逻辑相关的所以虚拟路由由用户自己实现,该框架提供一个高级抽象
 
 ## 优点
 
-- [支持自定义分表规则]
+- [支持自定义分库、分表规则]
 - [支持任意类型分表key]
 - [针对iqueryable的扩展方便使用]
-- [支持分表下的连表] ```join```
-- [支持针对批处理的使用] ``` BulkInsert、BulkUpdate、BulkDelete```
+- [支持分表下的连表] ```join,group by,max,count,min,avg,sum```
+- [支持针对批处理的使用] ``` BulkInsert、BulkUpdate、BulkDelete```支持efcore的扩展生态
 - [提供多种默认分表规则路由] 按时间按取模
 - [针对分页进行优化] 大页数跳转支持低内存流式处理
 
 ## 缺点
-- [暂不支持分库(不久后会支持)]
 - [消耗连接]出现分表与分表对象进行join如果条件没法索引到具体表会生成```笛卡尔积```导致连接数爆炸,后期会进行针对该情况的配置
 - [该库比较年轻] 可能会有一系列bug或者单元测试不到位的情况,但是只要你在群里或者提了issues我会尽快解决
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore.SqlServer" Version="5.0.0.4" />
+<PackageReference Include="ShardingCore.SqlServer" Version="5.1.0.3" />
 ```
 
 ## 配置
@@ -89,12 +90,12 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 `ShardingKey`分表字段需要使用该特性
 
 ```c#
-    public class SysUserMod:IShardingEntity
+    public class SysUserMod:IShardingTable
     {
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingKey]
+        [ShardingTableKey]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称
@@ -106,28 +107,17 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
         public int Age { get; set; }
     }
     
-    public class SysUserModMap:IEntityTypeConfiguration<SysUserMod>
-    {
-        public void Configure(EntityTypeBuilder<SysUserMod> builder)
-        {
-            builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
-            builder.Property(o => o.Name).HasMaxLength(128);
-            builder.ToTable(nameof(SysUserMod));
-        }
-    }
-    
 ```
 创建virtual route
-实现 `AbstractShardingOperatorVirtualRoute<T, TKey>`
+实现 `AbstractShardingOperatorVirtualTableRoute<T, TKey>`
 抽象,或者实现系统默认的虚拟路由
 框架默认有提供几个简单的路由 [默认路由](#默认路由)
 
 ```c#
 
-    public class SysUserModVirtualRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
+    public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
     {
-        public SysUserModVirtualRoute() : base(3)
+        public SysUserModVirtualTableRoute() : base(2,3)
         {
         }
     }
@@ -137,16 +127,17 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 ```c#
 
  services.AddShardingSqlServer(o =>
-  {
-      o.ConnectionString = "";
-      o.AddSharding<SysUserModVirtualRoute>();
-      o.UseShardingCoreConfig((provider, config) =>
-      {
+  { 
           //如果是development就判断并且新建数据库如果不存在的话(ishardingentity不会被创建)
-          config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
+        o.EnsureCreatedWithOutShardingTable = true;
           //ishardingentity表是否需要在启动时创建(如果已创建可以选择不创建)
-          config.CreateShardingTableOnStart = true;
-      });
+        o.CreateShardingTableOnStart = true;
+        //添加分库dbcontext
+        o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True", dbConfig =>
+        {
+            //添加分表规则
+            dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+        });
   });
 ```
 
@@ -223,16 +214,16 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | Pomelo.EntityFra
 
 抽象abstract  | 路由规则 | tail | 索引
 --- |--- |--- |--- 
-AbstractSimpleShardingModKeyIntVirtualRoute |取模 |0,1,2... | `=`
-AbstractSimpleShardingModKeyStringVirtualRoute |取模 |0,1,2... | `=`
-AbstractSimpleShardingDayKeyDateTimeVirtualRoute |按时间 |yyyyMMdd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingDayKeyLongVirtualRoute |按时间戳 |yyyyMMdd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingWeekKeyDateTimeVirtualRoute |按时间 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingWeekKeyLongVirtualRoute |按时间戳 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingMonthKeyDateTimeVirtualRoute |按时间 |yyyyMM | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingMonthKeyLongVirtualRoute |按时间戳 |yyyyMM | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingYearKeyDateTimeVirtualRoute |按时间 |yyyy | `>,>=,<,<=,=,contains`
-AbstractSimpleShardingYearKeyLongVirtualRoute |按时间戳 |yyyy | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingModKeyIntVirtualTableRoute |取模 |0,1,2... | `=`
+AbstractSimpleShardingModKeyStringVirtualTableRoute |取模 |0,1,2... | `=`
+AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute |按时间 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingDayKeyLongVirtualTableRoute |按时间戳 |yyyyMMdd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute |按时间 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingWeekKeyLongVirtualTableRoute |按时间戳 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute |按时间 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingMonthKeyLongVirtualTableRoute |按时间戳 |yyyyMM | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyDateTimeVirtualTableRoute |按时间 |yyyy | `>,>=,<,<=,=,contains`
+AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<,<=,=,contains`
 
 注:`contains`表示为`o=>ids.contains(o.shardingkey)`
 

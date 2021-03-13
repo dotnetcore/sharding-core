@@ -39,7 +39,7 @@ namespace ShardingCore.Utils
             foreach (var shardingProperty in shardingProperties)
             {
                 var attribbutes = shardingProperty.GetCustomAttributes(true);
-                if (attribbutes.FirstOrDefault(x => x.GetType() == typeof(ShardingKeyAttribute)) is ShardingKeyAttribute shardingKeyAttribute)
+                if (attribbutes.FirstOrDefault(x => x.GetType() == typeof(ShardingTableKeyAttribute)) is ShardingTableKeyAttribute shardingKeyAttribute)
                 {
                     if (shardingEntityConfig != null)
                         throw new ArgumentException($"{entityType} found more than one [ShardingKeyAttribute]");

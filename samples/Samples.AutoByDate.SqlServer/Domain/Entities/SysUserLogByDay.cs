@@ -13,7 +13,7 @@ namespace Samples.AutoByDate.SqlServer.Domain.Entities
     {
         public int Id { get; set; }
         public string Body { get; set; }
-        [ShardingKey]
+        [ShardingTableKey]
         public DateTime CreateTime { get; set; }
     }
 }
