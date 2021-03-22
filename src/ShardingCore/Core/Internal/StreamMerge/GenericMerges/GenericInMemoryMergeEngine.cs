@@ -44,10 +44,12 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
             ICollection<DbContext> parallelDbContexts = new LinkedList<DbContext>();
             try
             {
+                var intersectConfigs = _mergeContext.GetDataSourceRoutingResult().IntersectConfigs;
 
-                var enumeratorTasks = _mergeContext.GetDataSourceRoutingResult().IntersectConfigs.SelectMany(connectKey =>
+                var enumeratorTasks = intersectConfigs.SelectMany(connectKey =>
                 {
-                    return _mergeContext.GetRouteResults(connectKey).Select(routeResult =>
+                    var routeResults = _mergeContext.GetRouteResults(connectKey);
+                    return routeResults.Select(routeResult =>
                     {
                         return Task.Run(async () =>
                         {
@@ -58,7 +60,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 
                             return await EFCoreExecute(connectKey,newQueryable, routeResult, efQuery);
                         });
-                    });
+                    }).ToList();
                 }).ToArray();
                
                 return (await Task.WhenAll(enumeratorTasks)).ToList();

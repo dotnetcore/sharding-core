@@ -1,4 +1,5 @@
 #if !EFCORE2
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
@@ -89,7 +90,6 @@ namespace ShardingCore.MySql.EFCores
                     {
                         newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{tailPrefix}{tail}", tableExpression.Schema)}")) + ")";
                     }
-
                     var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
                     relationalCommandBuilder.Append(newTableName).Append(this.AliasSeparator).Append(sqlGenerationHelper.DelimitIdentifier(tableExpression.Alias));
                     return tableExpression;
@@ -105,6 +105,7 @@ namespace ShardingCore.MySql.EFCores
 #endif
 
 #if EFCORE2
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore;
@@ -204,7 +205,6 @@ namespace ShardingCore.MySql.EFCores
                     return tableExpression;
                 }
             }
-
             var result = base.VisitTable(tableExpression);
             return result;
         }

@@ -11,11 +11,13 @@ namespace Sample.MySql.DbContexts
             
         }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
+            modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
         }
 
         public string ModelChangeKey { get; set; }

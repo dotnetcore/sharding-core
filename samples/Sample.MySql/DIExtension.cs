@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
@@ -42,8 +43,18 @@ namespace Sample.MySql
                             Name = $"name_{id}",
                         });
                     }
+                    var userModMonths = new List<SysUserLogByMonth>();
+                    foreach (var id in ids)
+                    {
+                        userModMonths.Add(new SysUserLogByMonth()
+                        {
+                            Id = id.ToString(),
+                            Time = DateTime.Now
+                        });
+                    }
 
                     virtualDbContext.InsertRange(userMods);
+                    virtualDbContext.InsertRange(userModMonths);
                     virtualDbContext.SaveChanges();
                 }
             }

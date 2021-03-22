@@ -165,6 +165,7 @@ namespace ShardingCore.EFCores
 			var compiledQuery
 				= CompileQueryCore<TResult>(query, _queryModelGenerator, _database, _logger, _contextType);
 
+
 			return compiledQuery(queryContext);
 		}
 
@@ -190,6 +191,13 @@ namespace ShardingCore.EFCores
 
 		public override Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
 		{
+
+            var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
+            if (shardingAccessor?.ShardingContext != null)
+            {
+                return ShardingExecuteAsync<TResult>(query, cancellationToken);
+            }
+
 			return base.ExecuteAsync<TResult>(query, cancellationToken);
 		}
 		private Task<TResult> ShardingExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
