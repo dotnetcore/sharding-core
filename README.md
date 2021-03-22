@@ -86,8 +86,8 @@ Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | [Pomelo.EntityFr
 ## 配置
 
 配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 可以实现自动建表功能
-`IShardingEntity`数据库对象必须继承该接口
-`ShardingKey`分表字段需要使用该特性
+`IShardingTable`数据库对象必须继承该接口
+`ShardingTableKey`分表字段需要使用该特性
 
 ```c#
     public class SysUserMod:IShardingTable
