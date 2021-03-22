@@ -42,7 +42,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
             if (physicTables.IsEmpty())
             {
                 var routeConfig = ShardingKeyUtil.Parse(typeof(T));
-                throw new ShardingKeyRouteNotMatchException($"{routeConfig.ShardingEntityType} -> [{routeConfig.ShardingField}] ->【{shardingKey}】");
+                throw new ShardingKeyRouteNotMatchException($"{routeConfig.ShardingEntityType} -> [{routeConfig.ShardingField}] ->【{shardingKey}】 all tails ->[{string.Join(",", allPhysicTables.Select(o=>o.FullName))}]");
             }
 
             if (physicTables.Count > 1)

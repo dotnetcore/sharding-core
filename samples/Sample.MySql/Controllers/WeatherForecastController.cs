@@ -29,7 +29,7 @@ namespace Sample.MySql.Controllers
             var result = await _virtualDbContext.Set<SysTest>().AnyAsync();
             var result1 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").ToShardingListAsync();
             var shardingCountAsync = await _virtualDbContext.Set<SysUserMod>().ShardingCountAsync();
-            var shardingCountAsyn2c = await _virtualDbContext.Set<SysUserLogByMonth>().ShardingCountAsync();
+            var shardingCountAsyn2c =  _virtualDbContext.Set<SysUserLogByMonth>().ShardingCount();
 
             return Ok(result1);
         }
