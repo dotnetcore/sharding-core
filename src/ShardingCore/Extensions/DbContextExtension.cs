@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -111,13 +112,12 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
 #if EFCORE2
            
             var modelSource = serviceScope.ServiceProvider.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as ModelSource;
+            var modelSourceImpl = modelSource as RelationalModelSource;
             
             var modelSourceDependencies =
                 modelSourceImpl.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            
             var models =
-                modelSourceImpl.GetPropertyValue("_models") as ConcurrentDictionary<object, Lazy<IModel>>;
+                typeof(ModelSource).GetTypeFieldValue(modelSourceImpl, "_models") as ConcurrentDictionary<object, Lazy<IModel>>;
             object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
             models.TryRemove(key1,out var del);
 #endif
@@ -138,14 +138,20 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
             var syncObject = dependenciesModelSource.GetFieldValue("_syncObject");
             return syncObject;
 #endif
-#if !EFCORE5
+#if EFCORE3
             var modelSource = serviceScope.ServiceProvider.GetService<IModelSource>();
             var modelSourceImpl = modelSource as ModelSource;
 
             var syncObject = modelSourceImpl.GetFieldValue("_syncObject");
             return syncObject;
 #endif
+#if EFCORE2
+            return sLock;
+#endif
 
         }
+
+        private static object sLock = new object();
+
     }
 }

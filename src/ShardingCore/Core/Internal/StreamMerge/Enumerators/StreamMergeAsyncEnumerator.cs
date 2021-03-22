@@ -47,13 +47,18 @@ namespace ShardingCore.Core.Internal.StreamMerge.Enumerators
             }
             return await _source.MoveNext();
         }
+        public async Task<bool> MoveNext(CancellationToken cancellationToken)
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != _source.Current;
+            }
+            return await _source.MoveNext(cancellationToken);
+        }
 
 #endif
 
-        public Task<bool> MoveNext(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
 
         public T Current => skip?default:_source.Current;
 

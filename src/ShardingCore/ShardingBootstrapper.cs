@@ -188,6 +188,7 @@ namespace ShardingCore
                         new ShardingDbContextOptions(
                             dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty),scope.ServiceProvider);
                     var modelCacheSyncObject = context.GetModelCacheSyncObject();
+
                     lock (modelCacheSyncObject)
                     {
                         context.RemoveDbContextRelationModelThatIsShardingTable();

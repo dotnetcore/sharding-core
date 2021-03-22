@@ -179,7 +179,7 @@ namespace ShardingCore.MySql.EFCores
                     var tails = shardingAccessor.ShardingContext.GetContextQueryTails(virtualTable);
                     var tailPrefix = virtualTable.ShardingConfig.TailPrefix;
                     string newTableName = null;
-                    var sqlGenerationHelper = typeof(DefaultQuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
+                    var sqlGenerationHelper = typeof(DefaultQuerySqlGenerator).GetTypePropertyValue(this, "SqlGenerator") as ISqlGenerationHelper;
 
                     if (tails.IsEmpty())
                     {
