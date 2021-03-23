@@ -33,12 +33,13 @@ namespace Sample.MySql
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
+                o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "server=106.54.131.109;userid=xjm;password=mysqlXJM#qwe;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     dbConfig.AddShardingTableRoute<SysUserLogByMonthRoute>();
                 });
                 //o.AddDataSourceVirtualRoute<>();
+                o.IgnoreCreateTableError = true;
 
             });
 

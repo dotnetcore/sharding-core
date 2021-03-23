@@ -121,5 +121,7 @@ namespace ShardingCore
         {
             return _filters;
         }
+
+        public bool? IgnoreCreateTableError { get; set; }
     }
 }

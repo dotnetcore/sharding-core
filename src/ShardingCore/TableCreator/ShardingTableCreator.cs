@@ -26,13 +26,16 @@ namespace ShardingCore.TableCreator
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IShardingCoreOptions _shardingCoreOptions;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator> logger, IShardingDbContextFactory shardingDbContextFactory, IVirtualTableManager virtualTableManager, IServiceProvider serviceProvider)
+        public ShardingTableCreator(ILogger<ShardingTableCreator> logger, IShardingDbContextFactory shardingDbContextFactory,
+            IVirtualTableManager virtualTableManager, IServiceProvider serviceProvider,IShardingCoreOptions shardingCoreOptions)
         {
             _logger = logger;
             _shardingDbContextFactory = shardingDbContextFactory;
             _virtualTableManager = virtualTableManager;
             _serviceProvider = serviceProvider;
+            _shardingCoreOptions = shardingCoreOptions;
         }
 
         public void CreateTable<T>(string connectKey,string tail) where T : class, IShardingTable
@@ -67,9 +70,12 @@ namespace ShardingCore.TableCreator
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogWarning(
-                                $"create table error maybe table:[{virtualTable.GetOriginalTableName()}_{virtualTable.ShardingConfig.TailPrefix}_{tail}]");
-                            throw new ShardingCreateException(" create table error :", ex);
+                            if (!_shardingCoreOptions.IgnoreCreateTableError.GetValueOrDefault())
+                            {
+                                _logger.LogWarning(
+                                    $"create table error maybe table:[{virtualTable.GetOriginalTableName()}{virtualTable.ShardingConfig.TailPrefix}{tail}]");
+                                throw new ShardingCreateException(" create table error :", ex);
+                            }
                         }
                         finally
                         {

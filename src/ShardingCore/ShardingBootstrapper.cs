@@ -212,12 +212,14 @@ namespace ShardingCore
         private void CreateDataTable(string connectKey, IVirtualTable virtualTable)
         {
             var shardingConfig = virtualTable.ShardingConfig;
-            foreach (var tail in virtualTable.GetTaleAllTails())
+            foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
             {
                 if (NeedCreateTable(shardingConfig))
                 {
                     try
                     {
+                        //添加物理表
+                        virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
                         _tableCreator.CreateTable(connectKey, virtualTable.EntityType, tail);
                     }
                     catch (Exception)
@@ -227,8 +229,7 @@ namespace ShardingCore
                     }
                 }
 
-                //添加物理表
-                virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
+                
             }
         }
     }

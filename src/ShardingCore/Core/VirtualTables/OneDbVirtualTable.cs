@@ -88,7 +88,7 @@ namespace ShardingCore.Core.VirtualTables
 
         public List<string> GetTaleAllTails()
         {
-            return _virtualTableRoute.GetAllTails();
+            return _physicTables.Select(o => o.Tail).ToList();
         }
 
         public IVirtualTableRoute<T> GetVirtualRoute()

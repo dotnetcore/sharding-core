@@ -50,5 +50,7 @@ namespace ShardingCore
 
          public List<Type> GetFilters();
 
+         bool? IgnoreCreateTableError { get; set; }
+
     }
 }

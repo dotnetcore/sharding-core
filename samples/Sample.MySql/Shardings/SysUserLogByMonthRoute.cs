@@ -11,7 +11,7 @@ namespace Sample.MySql.Shardings
     {
         public override DateTime GetBeginTime()
         {
-            return new DateTime(2021, 3, 01);
+            return new DateTime(2021, 1, 01);
         }
     }
 }
