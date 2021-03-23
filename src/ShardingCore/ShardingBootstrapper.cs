@@ -224,8 +224,11 @@ namespace ShardingCore
                     }
                     catch (Exception)
                     {
-                        _logger.LogWarning(
-                            $"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created");
+                        if (!_shardingCoreOptions.IgnoreCreateTableError.GetValueOrDefault())
+                        {
+                            _logger.LogWarning(
+                                $"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created");
+                        }
                     }
                 }
 
