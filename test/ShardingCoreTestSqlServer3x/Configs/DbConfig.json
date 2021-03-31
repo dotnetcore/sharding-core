@@ -1,0 +1,5 @@
+{
+  "SqlServer": {
+    "ConnectionString": "Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True"
+  }
+}

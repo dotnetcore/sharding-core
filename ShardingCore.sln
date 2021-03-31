@@ -39,7 +39,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test50.MySql",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples.AutoByDate.SqlServer", "samples\Samples.AutoByDate.SqlServer\Samples.AutoByDate.SqlServer.csproj", "{C34FCF48-1A98-4268-BFEE-6C9BFC7FD539}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.MySql", "samples\Sample.MySql\Sample.MySql.csproj", "{90675788-D5C3-415A-9C18-FF159A75B4D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.MySql", "samples\Sample.MySql\Sample.MySql.csproj", "{90675788-D5C3-415A-9C18-FF159A75B4D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServer3x", "samples\Sample.SqlServer3x\Sample.SqlServer3x.csproj", "{447D5357-F095-45DE-9DA5-2D9997237366}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCoreTestSqlServer3x", "test\ShardingCoreTestSqlServer3x\ShardingCoreTestSqlServer3x.csproj", "{1CE858B8-56D8-4009-BF46-EE0F79F259D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +107,14 @@ Global
 		{90675788-D5C3-415A-9C18-FF159A75B4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90675788-D5C3-415A-9C18-FF159A75B4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90675788-D5C3-415A-9C18-FF159A75B4D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{447D5357-F095-45DE-9DA5-2D9997237366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{447D5357-F095-45DE-9DA5-2D9997237366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{447D5357-F095-45DE-9DA5-2D9997237366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{447D5357-F095-45DE-9DA5-2D9997237366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CE858B8-56D8-4009-BF46-EE0F79F259D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CE858B8-56D8-4009-BF46-EE0F79F259D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CE858B8-56D8-4009-BF46-EE0F79F259D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CE858B8-56D8-4009-BF46-EE0F79F259D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +134,8 @@ Global
 		{C8FAB96F-F13E-4094-883C-2D38D39EE4A3} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{C34FCF48-1A98-4268-BFEE-6C9BFC7FD539} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{90675788-D5C3-415A-9C18-FF159A75B4D5} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
+		{447D5357-F095-45DE-9DA5-2D9997237366} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
+		{1CE858B8-56D8-4009-BF46-EE0F79F259D1} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

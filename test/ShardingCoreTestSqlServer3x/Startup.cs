@@ -2,24 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ShardingCore;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 using ShardingCore.SqlServer;
-using ShardingCore.Test50.Domain.Entities;
-using ShardingCore.Test50.Shardings;
+using ShardingCoreTestSqlServer3x.Domain.Entities;
+using ShardingCoreTestSqlServer3x.Shardings;
 
-#if EFCORE5SQLSERVER
-using ShardingCore.SqlServer;
-#endif
-#if EFCORE5MYSQL
-using ShardingCore.MySql;
-#endif
-
-namespace ShardingCore.Test50
+namespace ShardingCoreTestSqlServer3x
 {
 /*
 * @Author: xjm
@@ -45,7 +38,6 @@ namespace ShardingCore.Test50
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-
             services.AddShardingSqlServer(o =>
             {
                 o.EnsureCreatedWithOutShardingTable = true;
@@ -58,17 +50,6 @@ namespace ShardingCore.Test50
                 //o.AddDataSourceVirtualRoute<>();
 
             });
-            //services.AddShardingSqlServer(o =>
-            //{
-            //    o.ConnectionString = hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"];
-            //    o.AddSharding<SysUserModVirtualTableRoute>();
-            //    o.AddSharding<SysUserSalaryVirtualTableRoute>();
-            //    o.UseShardingCoreConfig((provider, config) =>
-            //    {
-            //        config.EnsureCreated = true;
-            //        config.CreateShardingTableOnStart = true;
-            //    });
-            //});
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
