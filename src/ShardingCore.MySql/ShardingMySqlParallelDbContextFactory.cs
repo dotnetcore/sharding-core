@@ -35,7 +35,7 @@ namespace ShardingCore.MySql
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
             var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey,shardingConfigEntry.ConnectionString), tail);
-            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions,null);
+            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
         }
 
         private DbContextOptions CreateOptions(string connectKey, string connectionString)

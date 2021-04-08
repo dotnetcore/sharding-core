@@ -83,7 +83,7 @@ namespace ShardingCore
                 var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
                 using var context = _shardingDbContextFactory.Create(connectKey,
                     new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey),
-                        string.Empty),scope.ServiceProvider);
+                        string.Empty));
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     _virtualDataSourceManager.AddConnectEntities(connectKey, entity.ClrType);
@@ -186,7 +186,7 @@ namespace ShardingCore
                     var dbContextOptionsProvider = scope.ServiceProvider.GetService<IDbContextOptionsProvider>();
                     using var context = _shardingDbContextFactory.Create(shardingConfig.ConnectKey,
                         new ShardingDbContextOptions(
-                            dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty),scope.ServiceProvider);
+                            dbContextOptionsProvider.GetDbContextOptions(shardingConfig.ConnectKey), string.Empty));
                     var modelCacheSyncObject = context.GetModelCacheSyncObject();
 
                     lock (modelCacheSyncObject)

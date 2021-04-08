@@ -28,7 +28,7 @@ namespace ShardingCore.DbContexts
             _shardingTableScopeFactory = shardingTableScopeFactory;
             _dbContextCreateFilterManager = dbContextCreateFilterManager;
         }
-        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions,IServiceProvider serviceProvider)
+        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions)
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
             
@@ -48,15 +48,12 @@ namespace ShardingCore.DbContexts
                     shardingTableDbContext.ModelChangeKey = modelChangeKey;
                 }
 
-                if (serviceProvider != null)
+                var filters = _dbContextCreateFilterManager.GetFilters();
+                if (filters.Any())
                 {
-                    var filters = _dbContextCreateFilterManager.GetFilters();
-                    if (filters.Any())
+                    foreach (var dbContextCreateFilter in filters)
                     {
-                        foreach (var dbContextCreateFilter in filters)
-                        {
-                            dbContextCreateFilter.CreateAfter(dbContext, serviceProvider);
-                        }
+                        dbContextCreateFilter.CreateAfter(dbContext);
                     }
                 }
                 var dbContextModel = dbContext.Model;
@@ -64,12 +61,11 @@ namespace ShardingCore.DbContexts
             }
         }
 
-        public DbContext Create(string connectKey, string tail,IServiceProvider serviceProvider)
+        public DbContext Create(string connectKey, string tail, IDbContextOptionsProvider dbContextOptionsProvider)
         {
-            var dbContextOptionsProvider = serviceProvider.GetService<IDbContextOptionsProvider>();
             var shardingDbContextOptions =
                 new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail);
-           return Create(connectKey,shardingDbContextOptions,serviceProvider);
+           return Create(connectKey,shardingDbContextOptions);
         }
     }
 }

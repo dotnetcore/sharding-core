@@ -8,12 +8,12 @@ using ShardingCore.TableCreator;
 
 namespace Samples.AutoByDate.SqlServer.Jobs
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Tuesday, 02 February 2021 17:24:17
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Tuesday, 02 February 2021 17:24:17
+    * @Email: 326308290@qq.com
+    */
     //public class AutoCreateTableByDay : IJob
     //{
     //    /// <summary>
@@ -34,8 +34,8 @@ namespace Samples.AutoByDate.SqlServer.Jobs
     //                var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
     //                try
     //                {
-    //                    tableCreator.CreateTable<SysUserLogByDay>(tail);
     //                    virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+    //                    tableCreator.CreateTable<SysUserLogByDay>(tail);
     //                }
     //                catch (Exception e)
     //                {

@@ -19,6 +19,6 @@ namespace ShardingCore.DbContexts.Abstractions
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="s"></param>
-        void CreateAfter(DbContext dbContext, IServiceProvider s);
+        void CreateAfter(DbContext dbContext);
     }
 }

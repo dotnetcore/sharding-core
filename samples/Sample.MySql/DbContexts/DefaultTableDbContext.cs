@@ -6,7 +6,7 @@ namespace Sample.MySql.DbContexts
 {
     public class DefaultTableDbContext: DbContext,IShardingTableDbContext
     {
-        public DefaultTableDbContext(ShardingDbContextOptions shardingDbContextOptions):base(shardingDbContextOptions.DbContextOptions)
+        public DefaultTableDbContext(DbContextOptions<DefaultTableDbContext> options) :base(options)
         {
             
         }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes;
@@ -382,7 +383,7 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             }
             if(!dbContexts.TryGetValue(tail,out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(connectKey, tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, _serviceProvider);
+                dbContext = _shardingDbContextFactory.Create(connectKey, tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail, _serviceProvider.GetService<IDbContextOptionsProvider>());
                 dbContexts.TryAdd(tail, dbContext);
             }
 
