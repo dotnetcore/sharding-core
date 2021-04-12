@@ -29,6 +29,8 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
         int Insert<T>(T entity) where T : class;
         int InsertRange<T>(ICollection<T> entities) where T : class;
         int Update<T>(T entity) where T : class;
+        void UpdateColumns<T>(T entity,Expression<Func<T,object>> getUpdatePropertyNames) where T : class;
+        void UpdateWithOutIgnoreColumns<T>(T entity,Expression<Func<T,object>> getIgnorePropertyNames) where T : class;
         int UpdateRange<T>(ICollection<T> entities) where T : class;
         int Delete<T>(T entity) where T : class;
         int DeleteRange<T>(ICollection<T> entities) where T : class;

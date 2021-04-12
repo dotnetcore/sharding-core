@@ -208,6 +208,45 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
             return 1;
         }
 
+
+        public void UpdateColumns<T>(T entity, Expression<Func<T, object>> getUpdatePropertyNames) where T : class
+        {
+            var context= CreateGenericDbContext(entity);
+            context.Set<T>().Attach(entity);
+            var props = GetUpdatePropNames(entity, getUpdatePropertyNames);
+            foreach (var prop in props)
+            {
+                context.Entry(entity).Property(prop).IsModified = true;
+            }
+        }
+        private IEnumerable<string> GetUpdatePropNames<T>(T entity, Expression<Func<T, object>> getUpdatePropertyNames) where T : class
+        {
+            var updatePropertyNames = getUpdatePropertyNames.Compile()(entity);
+            var fullPropNames = entity.GetType().GetProperties().Select(o => o.Name);
+            var updatePropNames = updatePropertyNames.GetType().GetProperties().Select(o => o.Name);
+           return updatePropNames.Intersect(fullPropNames);
+
+        }
+
+        public void UpdateWithOutIgnoreColumns<T>(T entity, Expression<Func<T, object>> getIgnorePropertyNames) where T : class
+        {
+            var context = CreateGenericDbContext(entity);
+            context.Entry(entity).State = EntityState.Modified;
+            var props = GetIgnorePropNames(entity, getIgnorePropertyNames);
+            foreach (var prop in props)
+            {
+                context.Entry(entity).Property(prop).IsModified = false;
+            }
+        }
+
+        private IEnumerable<string> GetIgnorePropNames<T>(T entity, Expression<Func<T, object>> getIgnorePropertyNames) where T : class
+        {
+            var ignoreProp = getIgnorePropertyNames.Compile()(entity);
+            var fullUpdatePropNames = entity.GetType().GetProperties().Select(o => o.Name);
+            var ignorePropNames = ignoreProp.GetType().GetProperties().Select(o => o.Name);
+            return ignorePropNames.Intersect(fullUpdatePropNames);
+        }
+
         public int UpdateRange<T>(ICollection<T> entities) where T : class
         {
             var groups = entities.Select(o =>

@@ -18,4 +18,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="DbContexts\VirtualDbContexts\UpdatePart\" />
+    </ItemGroup>
 </Project>
