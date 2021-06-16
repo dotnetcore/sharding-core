@@ -8,7 +8,7 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) | Sql Server | [Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql)
 --- | --- | --- | --- | --- | --- 
-[5.1.x.x](https://www.nuget.org/packages/ShardingCore/5.1.0.20) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0-alpha.2
+[5.1.x.x](https://www.nuget.org/packages/ShardingCore/5.1.0.20) | >= 5.0.x | 2.1 | 3.0+ | >= 2012 | 5.0.0
 [3.1.x.x](https://www.nuget.org/packages/ShardingCore/3.1.0.20) | 3.1.10 | 2.0 | 2.0+ | >= 2012 |  3.2.4
 [2.1.x.x](https://www.nuget.org/packages/ShardingCore/2.1.0.20) | 2.2.6 | 2.0 | 2.0+ | >= 2008 |  2.2.6
 
