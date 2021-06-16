@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace ShardingCore.DbContexts.VirtualDbContexts
@@ -17,5 +18,6 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
         /// <param name="connectKey"></param>
         /// <returns></returns>
         DbContextOptions GetDbContextOptions(string connectKey);
+
     }
 }

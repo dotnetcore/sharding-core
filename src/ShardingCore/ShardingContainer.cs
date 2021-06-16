@@ -10,6 +10,10 @@ namespace ShardingCore
 */
     public class ShardingContainer
     {
+        private ShardingContainer()
+        {
+            
+        }
         public static IServiceProvider Services { get; private set; }
         /// <summary>
         /// 静态注入

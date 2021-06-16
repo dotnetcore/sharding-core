@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -31,6 +32,7 @@ namespace ShardingCore.SqlServer
         private readonly Dictionary<string, ShareDbContextWrapItem> _contextWrapItems =
             new Dictionary<string, ShareDbContextWrapItem>();
 
+
         public SqlServerDbContextOptionsProvider(ILoggerFactory loggerFactory,IShardingCoreOptions shardingCoreOptions)
         {
             _loggerFactory = loggerFactory;
@@ -40,8 +42,7 @@ namespace ShardingCore.SqlServer
         {
             if (!_contextWrapItems.ContainsKey(connectKey))
             {
-                var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                var connection = GetSqlConnection(connectKey);
                 var dbContextOptions = CreateDbContextOptionBuilder(connectKey)
                     .UseSqlServer(connection)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
@@ -55,6 +56,13 @@ namespace ShardingCore.SqlServer
             }
             return _contextWrapItems[connectKey].ContextOptions;
         }
+        private SqlConnection GetSqlConnection(string connectKey)
+        {
+            var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
+            return new SqlConnection(connectionString);
+        }
+
+
         private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
         {
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
