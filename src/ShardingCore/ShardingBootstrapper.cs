@@ -231,8 +231,12 @@ namespace ShardingCore
                         }
                     }
                 }
+                else
+                {
+                    //添加物理表
+                    virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
+                }
 
-                
             }
         }
     }
