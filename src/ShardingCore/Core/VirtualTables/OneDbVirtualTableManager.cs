@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Exceptions;
-using ShardingCore.Helpers;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -19,10 +18,12 @@ namespace ShardingCore.Core.VirtualTables
     /// </summary>
     public class OneDbVirtualTableManager : IVirtualTableManager
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, IVirtualTable>> _shardingVirtualTables = new ConcurrentDictionary<string, ConcurrentDictionary<Type, IVirtualTable>>();
-
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ConcurrentDictionary<Type, IVirtualTable> _shardingVirtualTables = new ConcurrentDictionary<Type, IVirtualTable>();
+        private readonly ConcurrentDictionary<string, IVirtualTable> _shardingOriginalTaleVirtualTales = new ConcurrentDictionary<string, IVirtualTable>();
         public OneDbVirtualTableManager(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             //var shardingEntities = AssemblyHelper.CurrentDomain.GetAssemblies().SelectMany(o => o.GetTypes())
             //    .Where(type => !String.IsNullOrEmpty(type.Namespace))
             //    .Where(type => !type.IsAbstract&&type.GetInterfaces()
@@ -37,58 +38,59 @@ namespace ShardingCore.Core.VirtualTables
             //}
         }
 
-        public void AddVirtualTable(string connectKey, IVirtualTable virtualTable)
+        public void AddVirtualTable(IVirtualTable virtualTable)
         {
-            if (!_shardingVirtualTables.ContainsKey(connectKey))
+            if (!_shardingVirtualTables.ContainsKey(virtualTable.EntityType))
             {
-                _shardingVirtualTables.TryAdd(connectKey, new ConcurrentDictionary<Type, IVirtualTable>());
+                _shardingVirtualTables.TryAdd(virtualTable.EntityType, virtualTable);
             }
 
-            var shardingVirtualTable = _shardingVirtualTables[connectKey];
-            shardingVirtualTable.TryAdd(virtualTable.EntityType, virtualTable);
+            if (!_shardingOriginalTaleVirtualTales.ContainsKey(virtualTable.GetOriginalTableName()))
+            {
+                _shardingOriginalTaleVirtualTales.TryAdd(virtualTable.GetOriginalTableName(), virtualTable);
+            }
         }
 
-        public IVirtualTable GetVirtualTable(string connectKey, Type shardingEntityType)
+        public IVirtualTable GetVirtualTable(Type shardingEntityType)
         {
-            if (!_shardingVirtualTables.TryGetValue(connectKey, out var tableKv))
-                throw new ShardingVirtualTableNotFoundException(connectKey);
-            if (!tableKv.TryGetValue(shardingEntityType, out var virtualTable))
-                throw new ShardingVirtualTableNotFoundException($"[{connectKey}]-[{shardingEntityType}]");
+            if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
+                throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
             return virtualTable;
         }
 
-        public IVirtualTable<T> GetVirtualTable<T>(string connectKey) where T : class, IShardingTable
+
+        public IVirtualTable<T> GetVirtualTable<T>() where T : class, IShardingTable
         {
-            return (IVirtualTable<T>)GetVirtualTable(connectKey, typeof(T));
+            return (IVirtualTable<T>)GetVirtualTable(typeof(T));
         }
 
-        public IVirtualTable GetVirtualTable(string connectKey, string originalTableName)
+        public IVirtualTable GetVirtualTable(string originalTableName)
         {
-            if (!_shardingVirtualTables.TryGetValue(connectKey, out var tableKv))
-                throw new ShardingVirtualTableNotFoundException(connectKey);
-            var virtualTable = tableKv.Where(o => o.Value.GetOriginalTableName() == originalTableName).Select(o=>o.Value).FirstOrDefault();
-            if (virtualTable==null)
-                throw new ShardingVirtualTableNotFoundException($"[{connectKey}]-[{originalTableName}]");
+            if (!_shardingOriginalTaleVirtualTales.TryGetValue(originalTableName, out var virtualTable)||virtualTable==null)
+                throw new ShardingVirtualTableNotFoundException(originalTableName);
             return virtualTable;
         }
 
-        public List<IVirtualTable> GetAllVirtualTables(string connectKey)
+        public IVirtualTable TryGetVirtualTable(string originalTableName)
         {
-            if (!_shardingVirtualTables.ContainsKey(connectKey))
-                return new List<IVirtualTable>(0);
-            return _shardingVirtualTables[connectKey].Select(o => o.Value).ToList();
+            if (!_shardingOriginalTaleVirtualTales.TryGetValue(originalTableName, out var virtualTable))
+                return null;
+            return virtualTable;
         }
 
-        public void AddPhysicTable(string connectKey, IVirtualTable virtualTable, IPhysicTable physicTable)
+        public List<IVirtualTable> GetAllVirtualTables()
         {
-            AddPhysicTable(connectKey, virtualTable.EntityType, physicTable);
+            return _shardingVirtualTables.Values.ToList();
         }
 
-        public void AddPhysicTable(string connectKey, Type shardingEntityType, IPhysicTable physicTable)
+        public void AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable)
         {
-            if (!_shardingVirtualTables.ContainsKey(connectKey))
-                throw new ShardingConnectKeyNotFoundException(connectKey);
-            var virtualTable = GetVirtualTable(connectKey,shardingEntityType);
+            AddPhysicTable(virtualTable.EntityType, physicTable);
+        }
+
+        public void AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable)
+        {
+            var virtualTable = GetVirtualTable(shardingEntityType);
             virtualTable.AddPhysicTable(physicTable);
         }
 

@@ -13,11 +13,8 @@ namespace ShardingCore.Core.ShardingAccessors
 */
     public class ShardingContext
     {
-        public string ConnectKey { get; }
-
-        private ShardingContext(string connectKey,RouteResult routeResult)
+        private ShardingContext(RouteResult routeResult)
         {
-            ConnectKey = connectKey;
             foreach (var physicTable in routeResult.ReplaceTables)
             {
                 _shardingTables.Add(physicTable.VirtualTable, new List<string>(1){physicTable.Tail});
@@ -44,9 +41,9 @@ namespace ShardingCore.Core.ShardingAccessors
         /// 创建一个分表上下文
         /// </summary>
         /// <returns></returns>
-        public static ShardingContext Create(string connectKey, RouteResult routeResult)
+        public static ShardingContext Create(RouteResult routeResult)
         {
-            return new ShardingContext(connectKey,routeResult);
+            return new ShardingContext(routeResult);
         }
 
         /// <summary>

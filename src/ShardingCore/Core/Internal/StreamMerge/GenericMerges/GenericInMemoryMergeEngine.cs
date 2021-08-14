@@ -28,11 +28,11 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
             return new GenericInMemoryMergeEngine<T>(mergeContext);
         }
         
-        private async Task<TResult> EFCoreExecute<TResult>(string connectKey,IQueryable<T> newQueryable,RouteResult routeResult,Func<IQueryable, Task<TResult>> efQuery)
+        private async Task<TResult> EFCoreExecute<TResult>(IQueryable<T> newQueryable,RouteResult routeResult,Func<IQueryable, Task<TResult>> efQuery)
         {
             using (var scope = _mergeContext.CreateScope())
             {
-                scope.ShardingAccessor.ShardingContext = ShardingContext.Create(connectKey,routeResult);
+                scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
                 return await efQuery(newQueryable);
             }
         }
@@ -44,23 +44,18 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
             ICollection<DbContext> parallelDbContexts = new LinkedList<DbContext>();
             try
             {
-                var intersectConfigs = _mergeContext.GetDataSourceRoutingResult().IntersectConfigs;
-
-                var enumeratorTasks = intersectConfigs.SelectMany(connectKey =>
+                var routeResults = _mergeContext.GetRouteResults();
+                var enumeratorTasks =  routeResults.Select(routeResult =>
                 {
-                    var routeResults = _mergeContext.GetRouteResults(connectKey);
-                    return routeResults.Select(routeResult =>
+                    return Task.Run(async () =>
                     {
-                        return Task.Run(async () =>
-                        {
-                            var shardingDbContext = _mergeContext.CreateDbContext(connectKey);
-                            parallelDbContexts.Add(shardingDbContext);
-                            var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
-                                .ReplaceDbContextQueryable(shardingDbContext);
+                        var shardingDbContext = _mergeContext.CreateDbContext();
+                        parallelDbContexts.Add(shardingDbContext);
+                        var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
+                            .ReplaceDbContextQueryable(shardingDbContext);
 
-                            return await EFCoreExecute(connectKey,newQueryable, routeResult, efQuery);
-                        });
-                    }).ToList();
+                        return await EFCoreExecute(newQueryable, routeResult, efQuery);
+                    });
                 }).ToArray();
                
                 return (await Task.WhenAll(enumeratorTasks)).ToList();

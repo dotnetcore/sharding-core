@@ -17,10 +17,10 @@ namespace ShardingCoreTestSqlServer3x
 */
     public class ShardingTest
     {
-        private readonly IVirtualDbContext _virtualDbContext;
+        private readonly DefaultDbContext _virtualDbContext;
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public ShardingTest(IVirtualDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
+        public ShardingTest(DefaultDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
         {
             _virtualDbContext = virtualDbContext;
             _routingRuleEngineFactory = routingRuleEngineFactory;
@@ -349,43 +349,43 @@ namespace ShardingCoreTestSqlServer3x
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
         }
-        [Fact]
-        public async Task UpdateColumn()
-        {
-            var item = await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="147").ShardingFirstOrDefaultAsync();
-            var oldName = item.Name;
-            var oldAge = item.Age;
-            var newName = $"test_{new Random().Next(0, 99999)}";
-            var newAge = new Random().Next(0, 99999);
-            item.Name = newName;
-            item.Age = newAge;
-            _virtualDbContext.UpdateColumns(item,o=>new {o.Name});
-            await _virtualDbContext.SaveChangesAsync();
-
-            var newItem = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "147").ShardingFirstOrDefaultAsync();
-            Assert.Equal(newName, newItem.Name);
-            Assert.NotEqual(oldName, newItem.Name);
-            Assert.NotEqual(newAge, newItem.Age);
-            Assert.Equal(oldAge, newItem.Age);
-        }
-        [Fact]
-        public async Task UpdateIgnoreColumn()
-        {
-            var item = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "153").ShardingFirstOrDefaultAsync();
-            var oldName = item.Name;
-            var oldAge = item.Age;
-            var newName = $"test_{new Random().Next(0, 99999)}";
-            var newAge = new Random().Next(0, 99999);
-            item.Name = newName;
-            item.Age = newAge;
-            _virtualDbContext.UpdateWithOutIgnoreColumns(item, o => new { o.Name });
-            await _virtualDbContext.SaveChangesAsync();
-
-            var newItem = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "153").ShardingFirstOrDefaultAsync();
-            Assert.NotEqual(newName, newItem.Name);
-            Assert.Equal(oldName, newItem.Name);
-            Assert.Equal(newAge, newItem.Age);
-            Assert.NotEqual(oldAge, newItem.Age);
-        }
+        // [Fact]
+        // public async Task UpdateColumn()
+        // {
+        //     var item = await _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="147").ShardingFirstOrDefaultAsync();
+        //     var oldName = item.Name;
+        //     var oldAge = item.Age;
+        //     var newName = $"test_{new Random().Next(0, 99999)}";
+        //     var newAge = new Random().Next(0, 99999);
+        //     item.Name = newName;
+        //     item.Age = newAge;
+        //     _virtualDbContext.UpdateColumns(item,o=>new {o.Name});
+        //     await _virtualDbContext.SaveChangesAsync();
+        //
+        //     var newItem = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "147").ShardingFirstOrDefaultAsync();
+        //     Assert.Equal(newName, newItem.Name);
+        //     Assert.NotEqual(oldName, newItem.Name);
+        //     Assert.NotEqual(newAge, newItem.Age);
+        //     Assert.Equal(oldAge, newItem.Age);
+        // }
+        // [Fact]
+        // public async Task UpdateIgnoreColumn()
+        // {
+        //     var item = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "153").ShardingFirstOrDefaultAsync();
+        //     var oldName = item.Name;
+        //     var oldAge = item.Age;
+        //     var newName = $"test_{new Random().Next(0, 99999)}";
+        //     var newAge = new Random().Next(0, 99999);
+        //     item.Name = newName;
+        //     item.Age = newAge;
+        //     _virtualDbContext.UpdateWithOutIgnoreColumns(item, o => new { o.Name });
+        //     await _virtualDbContext.SaveChangesAsync();
+        //
+        //     var newItem = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "153").ShardingFirstOrDefaultAsync();
+        //     Assert.NotEqual(newName, newItem.Name);
+        //     Assert.Equal(oldName, newItem.Name);
+        //     Assert.Equal(newAge, newItem.Age);
+        //     Assert.NotEqual(oldAge, newItem.Age);
+        // }
     }
 }

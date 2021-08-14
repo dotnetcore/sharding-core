@@ -31,16 +31,16 @@ namespace ShardingCore.MySql
             _mySqlOptions = mySqlOptions;
         }
 
-        public DbContext Create(string connectKey, string tail)
+        public DbContext Create(string tail)
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey,shardingConfigEntry.ConnectionString), tail);
-            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail);
+            return _shardingDbContextFactory.Create(shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions(string connectKey, string connectionString)
+        private DbContextOptions CreateOptions(string connectionString)
         {
-            return CreateDbContextOptionBuilder(connectKey)
+            return CreateDbContextOptionBuilder()
 #if EFCORE5
                 .UseMySql(connectionString,_mySqlOptions.ServerVersion,_mySqlOptions.MySqlOptionsAction)
 #endif
@@ -52,12 +52,12 @@ namespace ShardingCore.MySql
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
-                .UseShardingSqlServerQuerySqlGenerator()
+                .UseShardingMySqlQuerySqlGenerator()
                 .Options;
         }
-        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder()
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             Type type = typeof(DbContextOptionsBuilder<>);
             type = type.MakeGenericType(shardingConfigEntry.DbContextType);
             return (DbContextOptionsBuilder)Activator.CreateInstance(type);

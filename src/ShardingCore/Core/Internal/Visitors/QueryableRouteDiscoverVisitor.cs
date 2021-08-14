@@ -17,12 +17,12 @@ namespace ShardingCore.Core.Internal.Visitors
 */
     public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
     {
-        private readonly ShardingEntityConfig _shardingConfig;
+        private readonly ShardingTableConfig _shardingConfig;
         private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
+        public QueryableRouteShardingTableDiscoverVisitor(ShardingTableConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
         {
             _shardingConfig = shardingConfig;
             _shardingKeyConvert = shardingKeyConvert;

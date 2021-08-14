@@ -33,7 +33,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             var shardingEntities = queryEntities.Where(o => o.IsShardingTable());
             foreach (var shardingEntity in shardingEntities)
             {
-                var virtualTable = _virtualTableManager.GetVirtualTable(routeRuleContext.ConnectKey,shardingEntity);
+                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
 
                 var physicTables = virtualTable.RouteTo(new TableRouteConfig(routeRuleContext.Queryable));
                 if (!routeMaps.ContainsKey(virtualTable))

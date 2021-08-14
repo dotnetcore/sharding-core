@@ -21,16 +21,18 @@ namespace ShardingCore.DbContexts
         private readonly IShardingCoreOptions _shardingCoreOptions;
         private readonly IShardingTableScopeFactory _shardingTableScopeFactory;
         private readonly IDbContextCreateFilterManager _dbContextCreateFilterManager;
+        private readonly IDbContextOptionsProvider _dbContextOptionsProvider;
 
-        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IShardingTableScopeFactory shardingTableScopeFactory, IDbContextCreateFilterManager dbContextCreateFilterManager)
+        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IShardingTableScopeFactory shardingTableScopeFactory, IDbContextCreateFilterManager dbContextCreateFilterManager,IDbContextOptionsProvider dbContextOptionsProvider)
         {
             _shardingCoreOptions = shardingCoreOptions;
             _shardingTableScopeFactory = shardingTableScopeFactory;
             _dbContextCreateFilterManager = dbContextCreateFilterManager;
+            _dbContextOptionsProvider = dbContextOptionsProvider;
         }
-        public DbContext Create(string connectKey, ShardingDbContextOptions shardingDbContextOptions)
+        public DbContext Create(ShardingDbContextOptions shardingDbContextOptions)
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             
             using (var scope = _shardingTableScopeFactory.CreateScope())
             {
@@ -41,7 +43,7 @@ namespace ShardingCore.DbContexts
                     tail = shardingDbContextOptions.Tail;
                     modelChangeKey = $"sharding_{tail}";
                 }
-                scope.ShardingTableAccessor.Context = ShardingTableContext.Create(connectKey,tail);
+                scope.ShardingTableAccessor.Context = ShardingTableContext.Create(tail);
                 var dbContext=  shardingConfigEntry.Creator(shardingDbContextOptions);
                 if (modelChangeKey != null&& dbContext is IShardingTableDbContext shardingTableDbContext)
                 {
@@ -61,11 +63,11 @@ namespace ShardingCore.DbContexts
             }
         }
 
-        public DbContext Create(string connectKey, string tail, IDbContextOptionsProvider dbContextOptionsProvider)
+        public DbContext Create(string tail, bool isQuery)
         {
             var shardingDbContextOptions =
-                new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail);
-           return Create(connectKey,shardingDbContextOptions);
+                new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(isQuery), tail);
+           return Create(shardingDbContextOptions);
         }
     }
 }

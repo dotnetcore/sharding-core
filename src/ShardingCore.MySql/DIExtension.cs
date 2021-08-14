@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes;
@@ -40,21 +41,31 @@ namespace ShardingCore.MySql
             services.AddSingleton<IShardingCoreOptions, MySqlOptions>(sp => options);
             services.AddShardingCore();
 
-            services.AddScoped<IDbContextOptionsProvider, MySqlDbContextOptionsProvider>();
+            services.AddSingleton<IDbContextOptionsProvider, MySqlDbContextOptionsProvider>();
             services.AddSingleton<IShardingParallelDbContextFactory, ShardingMySqlParallelDbContextFactory>();
           
             services.AddSingleton<IShardingBootstrapper,ShardingBootstrapper>();
             return services;
         }
 
-        public static DbContextOptionsBuilder UseShardingSqlServerQuerySqlGenerator(this DbContextOptionsBuilder optionsBuilder)
+        internal static DbContextOptionsBuilder UseShardingMySqlQuerySqlGenerator(this DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingMySqlQuerySqlGeneratorFactory>();
             return optionsBuilder;
         }
-        public static DbContextOptionsBuilder<TContext> UseShardingSqlServerQuerySqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext:DbContext
+        internal static DbContextOptionsBuilder<TContext> UseShardingMySqlQuerySqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext:DbContext
         {
             optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingMySqlQuerySqlGeneratorFactory>();
+            return optionsBuilder;
+        }
+        public static DbContextOptionsBuilder UseShardingMySqlUpdateSqlGenerator(this DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ReplaceService<IUpdateSqlGenerator, ShardingMySqlUpdateSqlGenerator>();
+            return optionsBuilder;
+        }
+        public static DbContextOptionsBuilder<TContext> UseShardingMySqlUpdateSqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext:DbContext
+        {
+            optionsBuilder.ReplaceService<IUpdateSqlGenerator, ShardingMySqlUpdateSqlGenerator>();
             return optionsBuilder;
         }
     }

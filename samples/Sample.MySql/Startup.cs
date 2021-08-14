@@ -33,7 +33,7 @@ namespace Sample.MySql
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
+                o.UseShardingDbContext<DefaultTableDbContext>( dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     dbConfig.AddShardingTableRoute<SysUserLogByMonthRoute>();
@@ -42,7 +42,10 @@ namespace Sample.MySql
                 o.IgnoreCreateTableError = true;
 
             });
-
+            services.AddDbContext<DefaultTableDbContext>(o => o.UseMySql("server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", o =>
+            {
+                o.ServerVersion("5.7.13");
+            }).UseShardingMySqlUpdateSqlGenerator());
             services.AddLogging(b => b.AddConsole());
         }
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.Internal.StreamMerge
 {
@@ -13,8 +13,6 @@ namespace ShardingCore.Core.Internal.StreamMerge
 */
     internal interface IStreamMergeContextFactory
     {
-        //StreamMergeContext<T> Create<T>(IQueryable<T> queryable, DataSourceRoutingResult dataSourceRoutingResult);
-        StreamMergeContext<T> Create<T>(IQueryable<T> queryable);
-        StreamMergeContext<T> Create<T>(IQueryable<T> queryable, DataSourceRoutingRuleContext<T> ruleContext);
+        StreamMergeContext<T> Create<T>(IQueryable<T> queryable,IShardingDbContext shardingDbContext);
     }
 }

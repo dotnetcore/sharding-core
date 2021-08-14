@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sample.SqlServer.DbContexts;
@@ -24,13 +25,15 @@ namespace Sample.SqlServer
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultTableDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True", dbConfig =>
+                o.UseShardingDbContext<DefaultTableDbContext>( dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
                 //o.AddDataSourceVirtualRoute<>();
                
             });
+            services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True")
+                .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

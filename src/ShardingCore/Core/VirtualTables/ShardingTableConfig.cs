@@ -11,7 +11,7 @@ namespace ShardingCore.Core.VirtualTables
     /// <summary>
     /// 分表配置 sharding config
     /// </summary>
-    public class ShardingEntityConfig
+    public class ShardingTableConfig
     {
         /// <summary>
         /// 分表类型 sharding entity type

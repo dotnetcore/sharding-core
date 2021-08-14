@@ -39,33 +39,29 @@ namespace ShardingCore.MySql
             _loggerFactory = loggerFactory;
             _shardingCoreOptions = shardingCoreOptions;
         }
-        public DbContextOptions GetDbContextOptions(string connectKey)
+        public DbContextOptions GetDbContextOptions()
         {
-            if (!_contextWrapItems.ContainsKey(connectKey))
-            {
-                var connectionString = _shardingCoreOptions.GetShardingConfig(connectKey).ConnectionString;
-                var connection = new MySqlConnection(connectionString);
-                var dbContextOptions= CreateDbContextOptionBuilder(connectKey)
+            var connectionString = _shardingCoreOptions.GetShardingConfig().ConnectionString;
+            var connection = new MySqlConnection(connectionString);
+            var dbContextOptions= CreateDbContextOptionBuilder()
 #if EFCORE5
-                    .UseMySql(connection, _mySqlOptions.ServerVersion, _mySqlOptions.MySqlOptionsAction)
+                .UseMySql(connection, _mySqlOptions.ServerVersion, _mySqlOptions.MySqlOptionsAction)
 #endif
 #if !EFCORE5
                     .UseMySql(connection, _mySqlOptions.MySqlOptionsAction)
 #endif
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                    .UseLoggerFactory(_loggerFactory)
-                    .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                    .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
-                    .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
-                    .UseShardingSqlServerQuerySqlGenerator()
-                    .Options;
-                _contextWrapItems.Add(connectKey,new ShareDbContextWrapItem(connection, dbContextOptions));
-            }
-            return _contextWrapItems[connectKey].ContextOptions;
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                .UseLoggerFactory(_loggerFactory)
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
+                .UseShardingMySqlQuerySqlGenerator()
+                .Options;
+            return dbContextOptions;
         }
-        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder()
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             Type type = typeof(DbContextOptionsBuilder<>);
             type = type.MakeGenericType(shardingConfigEntry.DbContextType);
             return  (DbContextOptionsBuilder)Activator.CreateInstance(type);

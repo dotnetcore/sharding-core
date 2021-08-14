@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Entities;
 using Sample.SqlServer3x.Shardings;
 using ShardingCore;
@@ -35,13 +36,15 @@ namespace Sample.SqlServer3x
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultDbContext>("conn1", "Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True", dbConfig =>
+                o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
                 //o.AddDataSourceVirtualRoute<>();
 
             });
+            services.AddDbContext<DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True")
+                .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,7 +70,7 @@ namespace Sample.SqlServer3x
         }
 
     /// <summary>
-    /// Ìí¼ÓÖÖ×ÓÊý¾Ý
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
@@ -76,7 +79,7 @@ namespace Sample.SqlServer3x
         var serviceProvider = app.ApplicationServices;
         using (var scope = serviceProvider.CreateScope())
         {
-            var virtualDbContext = scope.ServiceProvider.GetService<IVirtualDbContext>();
+            var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
             if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
             {
                 var ids = Enumerable.Range(1, 1000);
@@ -95,7 +98,7 @@ namespace Sample.SqlServer3x
                     
                 }
 
-                await virtualDbContext.InsertRangeAsync(userMods);
+                await virtualDbContext.AddRangeAsync(userMods);
 
                 await virtualDbContext.SaveChangesAsync();
             }

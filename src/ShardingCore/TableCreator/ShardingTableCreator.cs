@@ -38,25 +38,24 @@ namespace ShardingCore.TableCreator
             _shardingCoreOptions = shardingCoreOptions;
         }
 
-        public void CreateTable<T>(string connectKey,string tail) where T : class, IShardingTable
+        public void CreateTable<T>(string tail) where T : class, IShardingTable
         {
-             CreateTable(connectKey,typeof(T), tail);
+             CreateTable(typeof(T), tail);
         }
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="connectKey"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        public void CreateTable(string connectKey, Type shardingEntityType, string tail)
+        public void CreateTable(Type shardingEntityType, string tail)
         {
             using (var serviceScope = _serviceProvider.CreateScope())
             {
                 var dbContextOptionsProvider = serviceScope.ServiceProvider.GetService<IDbContextOptionsProvider>();
-                var virtualTable = _virtualTableManager.GetVirtualTable(connectKey,shardingEntityType);
+                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntityType);
 
-                using (var dbContext = _shardingDbContextFactory.Create(connectKey,new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(connectKey), tail)))
+                using (var dbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), tail)))
                 {
                     var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
                     

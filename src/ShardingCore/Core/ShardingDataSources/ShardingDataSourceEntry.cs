@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 
 namespace ShardingCore.Core.ShardingDataSources
 {

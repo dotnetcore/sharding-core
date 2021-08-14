@@ -20,13 +20,13 @@ namespace ShardingCore.Utils
 */
     public class ShardingKeyUtil
     {
-        private static readonly ConcurrentDictionary<Type, ShardingEntityConfig> _caches = new ConcurrentDictionary<Type, ShardingEntityConfig>();
+        private static readonly ConcurrentDictionary<Type, ShardingTableConfig> _caches = new ConcurrentDictionary<Type, ShardingTableConfig>();
 
         private ShardingKeyUtil()
         {
         }
 
-        public static ShardingEntityConfig Parse(Type entityType)
+        public static ShardingTableConfig Parse(Type entityType)
         {
             if (!typeof(IShardingTable).IsAssignableFrom(entityType))
                 throw new NotSupportedException(entityType.ToString());
@@ -43,7 +43,7 @@ namespace ShardingCore.Utils
                 {
                     if (shardingEntityConfig != null)
                         throw new ArgumentException($"{entityType} found more than one [ShardingKeyAttribute]");
-                    shardingEntityConfig = new ShardingEntityConfig()
+                    shardingEntityConfig = new ShardingTableConfig()
                     {
                         ShardingEntityType = entityType,
                         ShardingField = shardingProperty.Name,
@@ -57,7 +57,7 @@ namespace ShardingCore.Utils
             return shardingEntityConfig;
         }
 
-        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
+        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, ShardingTableConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
         {
             QueryableRouteShardingTableDiscoverVisitor<TKey> visitor = new QueryableRouteShardingTableDiscoverVisitor<TKey>(shardingConfig, shardingKeyConvert, keyToTailExpression);
 

@@ -21,7 +21,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 分表配置
         /// </summary>
-        ShardingEntityConfig ShardingConfig { get; }
+        ShardingTableConfig ShardingConfig { get; }
 
         /// <summary>
         /// 获取所有的物理表

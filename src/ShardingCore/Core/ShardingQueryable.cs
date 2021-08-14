@@ -8,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges;
 using ShardingCore.Core.Internal.StreamMerge.GenericMerges.Proxies;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -32,18 +30,12 @@ namespace ShardingCore.Core
     {
         private IQueryable<T> _source;
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
-        //private readonly RouteRuleContext<T> _routeRuleContext;
-        private readonly DataSourceRoutingRuleContext<T> _dataSourceRoutingRuleContext;
 
 
         private ShardingQueryable(IQueryable<T> source)
         {
             _source = source;
             _streamMergeContextFactory = ShardingContainer.Services.GetService<IStreamMergeContextFactory>();
-            //var routingRuleEngineFactory=ShardingContainer.Services.GetService<IRoutingRuleEngineFactory>();
-            var dataSourceRoutingRuleEngineFactory=ShardingContainer.Services.GetService<IDataSourceRoutingRuleEngineFactory>();
-            //_routeRuleContext = routingRuleEngineFactory.CreateContext<T>(source);
-            _dataSourceRoutingRuleContext = dataSourceRoutingRuleEngineFactory.CreateContext<T>(source);
         }
 
         public static ShardingQueryable<TSource> Create<TSource>(IQueryable<TSource> source)
@@ -84,7 +76,7 @@ namespace ShardingCore.Core
 
         private StreamMergeContext<T> GetContext()
         {
-            return _streamMergeContextFactory.Create(_source,_dataSourceRoutingRuleContext);
+            return _streamMergeContextFactory.Create(_source);
         }
         private async Task<List<TResult>> GetGenericMergeEngine<TResult>(Func<IQueryable, Task<TResult>> efQuery)
         {

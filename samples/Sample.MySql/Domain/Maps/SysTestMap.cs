@@ -11,6 +11,7 @@ namespace Sample.MySql.Domain.Maps
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
             builder.Property(o => o.UserId).IsRequired().HasMaxLength(128);
+            builder.Property(o => o.UserId).IsConcurrencyToken();
             builder.ToTable(nameof(SysTest));
         }
     }

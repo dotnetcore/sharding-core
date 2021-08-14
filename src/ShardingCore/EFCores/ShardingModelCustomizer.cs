@@ -37,9 +37,8 @@ namespace ShardingCore.EFCores
                     if (!string.IsNullOrWhiteSpace(shardingTableAccessor.Context.Tail))
                     {
                         var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
-                        var connectKey = shardingTableAccessor.Context.ConnectKey;
                         var tail = shardingTableAccessor.Context.Tail;
-                        var typeMap = virtualTableManager.GetAllVirtualTables(connectKey).Where(o=>o.GetTaleAllTails().Contains(tail)).Select(o=>o.EntityType).ToHashSet();
+                        var typeMap = virtualTableManager.GetAllVirtualTables().Where(o=>o.GetTaleAllTails().Contains(tail)).Select(o=>o.EntityType).ToHashSet();
 
                         //设置分表
                         var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable()&&typeMap.Contains(o.ClrType));

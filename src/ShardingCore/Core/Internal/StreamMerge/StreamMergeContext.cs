@@ -6,9 +6,9 @@ using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Core.ShardingAccessors;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
+using ShardingCore.Sharding.Abstractions;
 
 #if !EFCORE5
 using ShardingCore.Extensions;
@@ -27,7 +27,7 @@ namespace ShardingCore.Core.Internal.StreamMerge
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
-        private readonly IDataSourceRoutingRuleEngineFactory _dataSourceRoutingRuleEngineFactory;
+        private readonly IShardingDbContext _shardingDbContext;
         private readonly IRoutingRuleEngineFactory _tableRoutingRuleEngineFactory;
 
         private readonly IQueryable<T> _reWriteSource;
@@ -40,13 +40,13 @@ namespace ShardingCore.Core.Internal.StreamMerge
         public SelectContext SelectContext { get; private set; }
         public GroupByContext GroupByContext { get; private set; }
 
-        public StreamMergeContext(IQueryable<T> source, IDataSourceRoutingRuleEngineFactory dataSourceRoutingRuleEngineFactory,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory,
+        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory,
             IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
         {
             _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
             _shardingScopeFactory = shardingScopeFactory;
             _source = source;
-            _dataSourceRoutingRuleEngineFactory = dataSourceRoutingRuleEngineFactory;
+            _shardingDbContext = shardingDbContext;
             _tableRoutingRuleEngineFactory = tableRoutingRuleEngineFactory;
             var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
             Skip = reWriteResult.Skip;
@@ -72,18 +72,13 @@ namespace ShardingCore.Core.Internal.StreamMerge
         //    _reWriteSource = reWriteResult.ReWriteQueryable;
         //}
 
-        public DbContext CreateDbContext(string connectKey)
+        public DbContext CreateDbContext()
         {
-            return _shardingParallelDbContextFactory.Create(connectKey, string.Empty);
+            return _shardingParallelDbContextFactory.Create(string.Empty);
         }
-
-        public DataSourceRoutingResult GetDataSourceRoutingResult()
+        public IEnumerable<RouteResult> GetRouteResults()
         {
-            return _dataSourceRoutingRuleEngineFactory.Route(_source);
-        }
-        public IEnumerable<RouteResult> GetRouteResults(string connectKey)
-        {
-            return _tableRoutingRuleEngineFactory.Route(connectKey,_source);
+            return _tableRoutingRuleEngineFactory.Route(_source);
         }
 
         public ShardingScope CreateScope()

@@ -13,14 +13,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     {
         private readonly IVirtualTableManager _virtualTableManager;
 
-        public RouteRuleContext(string connectKey,IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
+        public RouteRuleContext(IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
         {
-            ConnectKey = connectKey;
             Queryable = queryable;
             _virtualTableManager = virtualTableManager;
         }
 
-        public string ConnectKey { get; }
         public IQueryable<T> Queryable { get; }
 
         ///// <summary>

@@ -16,10 +16,10 @@ namespace ShardingCore.Test50.MySql
 */
     public class ShardingTest
     {
-        private readonly IVirtualDbContext _virtualDbContext;
+        private readonly DefaultDbContext _virtualDbContext;
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public ShardingTest(IVirtualDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
+        public ShardingTest(DefaultDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
         {
             _virtualDbContext = virtualDbContext;
             _routingRuleEngineFactory = routingRuleEngineFactory;

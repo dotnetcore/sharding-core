@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using ShardingCore;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -29,7 +30,7 @@ namespace Sample.MySql
         {
             using (var scope=app.ApplicationServices.CreateScope())
             {
-                var virtualDbContext =scope.ServiceProvider.GetService<IVirtualDbContext>();
+                var virtualDbContext =scope.ServiceProvider.GetService<DefaultTableDbContext>();
                 if (!virtualDbContext.Set<SysUserMod>().ShardingAny())
                 {
                     var ids = Enumerable.Range(1, 1000);
@@ -53,8 +54,8 @@ namespace Sample.MySql
                         });
                     }
 
-                    virtualDbContext.InsertRange(userMods);
-                    virtualDbContext.InsertRange(userModMonths);
+                    virtualDbContext.AddRange(userMods);
+                    virtualDbContext.AddRange(userModMonths);
                     virtualDbContext.SaveChanges();
                 }
             }

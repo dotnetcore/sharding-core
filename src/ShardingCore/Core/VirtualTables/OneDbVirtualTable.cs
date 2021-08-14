@@ -27,7 +27,7 @@ namespace ShardingCore.Core.VirtualTables
         private readonly IVirtualTableRoute<T> _virtualTableRoute;
 
         public Type EntityType => typeof(T);
-        public ShardingEntityConfig ShardingConfig { get; }
+        public ShardingTableConfig ShardingConfig { get; }
         private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
 
         public OneDbVirtualTable(IVirtualTableRoute<T> virtualTableRoute)

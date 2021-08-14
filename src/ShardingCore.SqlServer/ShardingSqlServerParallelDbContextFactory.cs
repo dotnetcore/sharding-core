@@ -32,16 +32,16 @@ namespace ShardingCore.SqlServer
             _shardingCoreOptions = shardingCoreOptions;
         }
 
-        public DbContext Create(string connectKey,string tail)
+        public DbContext Create(string tail)
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
-            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(connectKey, shardingConfigEntry.ConnectionString), tail);
-            return _shardingDbContextFactory.Create(connectKey, shardingDbContextOptions);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
+            var shardingDbContextOptions = new ShardingDbContextOptions(CreateOptions(shardingConfigEntry.ConnectionString), tail);
+            return _shardingDbContextFactory.Create(shardingDbContextOptions);
         }
 
-        private DbContextOptions CreateOptions(string connectKey, string connectString)
+        private DbContextOptions CreateOptions(string connectString)
         {
-            return CreateDbContextOptionBuilder(connectKey)
+            return CreateDbContextOptionBuilder()
                 .UseSqlServer(connectString)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
@@ -50,9 +50,9 @@ namespace ShardingCore.SqlServer
                 .UseShardingSqlServerQuerySqlGenerator()
                 .Options;
         }
-        private DbContextOptionsBuilder CreateDbContextOptionBuilder(string connectKey)
+        private DbContextOptionsBuilder CreateDbContextOptionBuilder()
         {
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig(connectKey);
+            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             Type type = typeof(DbContextOptionsBuilder<>);
             type = type.MakeGenericType(shardingConfigEntry.DbContextType);
             return (DbContextOptionsBuilder)Activator.CreateInstance(type);

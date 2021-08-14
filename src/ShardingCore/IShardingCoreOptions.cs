@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 
@@ -17,17 +16,13 @@ namespace ShardingCore
     */
     public interface IShardingCoreOptions
     {
-        void AddShardingDbContextWithShardingTable<T>(string connectKey, string connectString,
+        void UseShardingDbContext<T>(
             Action<ShardingDbConfigOptions> func) where T : DbContext, IShardingTableDbContext;
 
-         void AddShardingDbContext<T>(string connectKey, string connectString) where T : DbContext;
 
 
-         void AddDataSourceVirtualRoute<TRoute>() where TRoute : IDataSourceVirtualRoute;
 
-
-         ISet<ShardingConfigEntry> GetShardingConfigs();
-         ShardingConfigEntry GetShardingConfig(string connectKey);
+         ShardingConfigEntry GetShardingConfig();
          ISet<Type> GetVirtualRoutes();
          Type GetVirtualRoute(Type entityType);
 

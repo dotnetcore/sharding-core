@@ -18,17 +18,15 @@ namespace ShardingCore.TableCreator
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="connectKey"></param>
         /// <param name="tail"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(string connectKey,string tail) where T : class, IShardingTable;
+        void CreateTable<T>(string tail) where T : class, IShardingTable;
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="connectKey"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        void CreateTable(string connectKey, Type shardingEntityType,string tail);
+        void CreateTable(Type shardingEntityType,string tail);
     }
 }

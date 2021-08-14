@@ -13,19 +13,14 @@
     /// </summary>
     public class ShardingTableContext
     {
-        private ShardingTableContext(string connectKey,string tail)
+        private ShardingTableContext(string tail)
         {
-            ConnectKey = connectKey;
             Tail = tail;
         }
-        public static ShardingTableContext Create(string connectKey,string tail)
+        public static ShardingTableContext Create(string tail)
         {
-            return new ShardingTableContext(connectKey,tail);
+            return new ShardingTableContext(tail);
         }
-        /// <summary>
-        /// 链接Key
-        /// </summary>
-        public string ConnectKey { get; set; }
         /// <summary>
         /// 尾巴
         /// </summary>

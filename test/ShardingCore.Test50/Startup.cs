@@ -50,7 +50,7 @@ namespace ShardingCore.Test50
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultDbContext>("conn1", hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"], dbConfig =>
+                o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -69,6 +69,9 @@ namespace ShardingCore.Test50
             //        config.CreateShardingTableOnStart = true;
             //    });
             //});
+            services.AddDbContext<DefaultDbContext>(o=>
+                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+                    .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
@@ -89,7 +92,7 @@ namespace ShardingCore.Test50
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var virtualDbContext = scope.ServiceProvider.GetService<IVirtualDbContext>();
+                var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
                 if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
                 {
                     var ids = Enumerable.Range(1, 1000);
@@ -127,8 +130,8 @@ namespace ShardingCore.Test50
                         }
                     }
 
-                    await virtualDbContext.InsertRangeAsync(userMods);
-                    await virtualDbContext.InsertRangeAsync(userSalaries);
+                    await virtualDbContext.AddRangeAsync(userMods);
+                    await virtualDbContext.AddRangeAsync(userSalaries);
                     
                     await virtualDbContext.SaveChangesAsync();
                 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,7 +43,7 @@ namespace ShardingCoreTestSqlServer3x
             {
                 o.EnsureCreatedWithOutShardingTable = true;
                 o.CreateShardingTableOnStart = true;
-                o.AddShardingDbContextWithShardingTable<DefaultDbContext>("conn1", hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"], dbConfig =>
+                o.UseShardingDbContext<DefaultDbContext>(dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -50,6 +51,9 @@ namespace ShardingCoreTestSqlServer3x
                 //o.AddDataSourceVirtualRoute<>();
 
             });
+            services.AddDbContext<DefaultDbContext>(o => 
+                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+                    .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
@@ -70,7 +74,7 @@ namespace ShardingCoreTestSqlServer3x
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var virtualDbContext = scope.ServiceProvider.GetService<IVirtualDbContext>();
+                var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
                 if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
                 {
                     var ids = Enumerable.Range(1, 1000);
@@ -108,8 +112,8 @@ namespace ShardingCoreTestSqlServer3x
                         }
                     }
 
-                    await virtualDbContext.InsertRangeAsync(userMods);
-                    await virtualDbContext.InsertRangeAsync(userSalaries);
+                    await virtualDbContext.AddRangeAsync(userMods);
+                    await virtualDbContext.AddRangeAsync(userSalaries);
                     
                     await virtualDbContext.SaveChangesAsync();
                 }

@@ -20,6 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="DbContexts\VirtualDbContexts\UpdatePart\" />
+      <Folder Include="Sharding\Enumerators\StreamMeregeSync" />
     </ItemGroup>
 </Project>

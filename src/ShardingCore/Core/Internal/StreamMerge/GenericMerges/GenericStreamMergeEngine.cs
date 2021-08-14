@@ -36,11 +36,11 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
             return new GenericStreamMergeEngine<T>(mergeContext);
         }
 
-        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(string connectKey,IQueryable<T> newQueryable, RouteResult routeResult)
+        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable, RouteResult routeResult)
         {
             using (var scope = _mergeContext.CreateScope())
             {
-                scope.ShardingAccessor.ShardingContext = ShardingContext.Create(connectKey,routeResult);
+                scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
 #if !EFCORE2
                 var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
                 await enumator.MoveNextAsync();
@@ -55,22 +55,19 @@ namespace ShardingCore.Core.Internal.StreamMerge.GenericMerges
 
         public async Task<IStreamMergeAsyncEnumerator<T>> GetStreamEnumerator()
         {
-            var dataSourceResult = _mergeContext.GetDataSourceRoutingResult();
-            var enumeratorTasks = dataSourceResult.IntersectConfigs.SelectMany(connectKey =>
+            
+            var tableResult = _mergeContext.GetRouteResults();
+            var enumeratorTasks =tableResult.Select(routeResult =>
             {
-                var tableResult = _mergeContext.GetRouteResults(connectKey);
-                return tableResult.Select(routeResult =>
+                return Task.Run(async () =>
                 {
-                    return Task.Run(async () =>
-                    {
-                        var shardingDbContext = _mergeContext.CreateDbContext(connectKey);
-                        _parallelDbContexts.Add(shardingDbContext);
-                        var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable()
-                            .ReplaceDbContextQueryable(shardingDbContext);
+                    var shardingDbContext = _mergeContext.CreateDbContext();
+                    _parallelDbContexts.Add(shardingDbContext);
+                    var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable()
+                        .ReplaceDbContextQueryable(shardingDbContext);
 
-                        var asyncEnumerator = await GetAsyncEnumerator(connectKey,newQueryable, routeResult);
-                        return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
-                    });
+                    var asyncEnumerator = await GetAsyncEnumerator(newQueryable, routeResult);
+                    return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
                 });
             }).ToArray();
 

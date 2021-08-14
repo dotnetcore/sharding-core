@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ShardingCore
 {
@@ -22,6 +23,11 @@ namespace ShardingCore
         public static void SetServices(IServiceProvider services)
         {
             Services = services;
+        }
+
+        public static T GetService<T>()
+        {
+            return Services.GetService<T>();
         }
     }
 }

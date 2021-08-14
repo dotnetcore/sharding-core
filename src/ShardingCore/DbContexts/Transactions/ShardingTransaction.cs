@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,10 @@ namespace ShardingCore.DbContexts.Transactions
 /*
 * @Author: xjm
 * @Description:
-* @Date: Friday, 18 December 2020 10:23:42
+* @Date: Saturday, 14 August 2021 04:20:53
 * @Email: 326308290@qq.com
 */
-    public class ShardingTransaction : IShardingTransaction
+    public class ShardingTransaction: IShardingTransaction
     {
         private IDbContextTransaction _dbTransaction;
         private bool _isOpened;
