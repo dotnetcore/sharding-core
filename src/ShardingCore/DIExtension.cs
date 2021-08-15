@@ -37,9 +37,6 @@ namespace ShardingCore
             //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
-            //分表
-            services.AddSingleton<IShardingTableAccessor, ShardingTableAccessor>();
-            services.AddSingleton<IShardingTableScopeFactory, ShardingTableScopeFactory>();
             return services;
         }
     }

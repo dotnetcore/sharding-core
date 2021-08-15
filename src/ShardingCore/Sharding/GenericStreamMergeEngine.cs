@@ -48,18 +48,27 @@ namespace ShardingCore.Sharding
 
                  return Task.Run(async () =>
                  {
-                     using (var scope = _mergeContext.CreateScope())
+                     try
                      {
-                         var shardingContext = ShardingContext.Create(routeResult);
-                         scope.ShardingAccessor.ShardingContext = shardingContext;
 
-                         var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                         _parallelDbContexts.Add(shardingDbContext);
-                         var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
-                             .ReplaceDbContextQueryable(shardingDbContext);
+                         using (var scope = _mergeContext.CreateScope())
+                         {
+                             var shardingContext = ShardingContext.Create(routeResult);
+                             scope.ShardingAccessor.ShardingContext = shardingContext;
 
-                         var asyncEnumerator = await GetAsyncEnumerator(newQueryable);
-                         return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
+                             var shardingDbContext = _mergeContext.CreateDbContext(tail);
+                             _parallelDbContexts.Add(shardingDbContext);
+                             var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable()
+                                 .ReplaceDbContextQueryable(shardingDbContext);
+
+                             var asyncEnumerator = await GetAsyncEnumerator(newQueryable);
+                             return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
+                         }
+                     }
+                     catch (Exception e)
+                     {
+                         Console.WriteLine(e);
+                         throw;
                      }
                  });
              }).ToArray();

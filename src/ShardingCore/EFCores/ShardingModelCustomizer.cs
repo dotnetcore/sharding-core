@@ -29,34 +29,30 @@ namespace ShardingCore.EFCores
         public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
             base.Customize(modelBuilder, context);
-            if (context is IShardingTableDbContext)
+            if (context is IShardingTableDbContext shardingTableDbContext)
             {
-                var shardingTableAccessor = ShardingContainer.Services.GetService<IShardingTableAccessor>();
-            
-                if (shardingTableAccessor.Context != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(shardingTableAccessor.Context.Tail))
-                    {
-                        var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
-                        var tail = shardingTableAccessor.Context.Tail;
-                        var typeMap = virtualTableManager.GetAllVirtualTables().Where(o=>o.GetTaleAllTails().Contains(tail)).Select(o=>o.EntityType).ToHashSet();
+                var tail = shardingTableDbContext.GetShardingTableDbContextTail();
 
-                        //设置分表
-                        var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable()&&typeMap.Contains(o.ClrType));
-                        foreach (var entityType in mutableEntityTypes)
-                        {
-                            var shardingEntityConfig = ShardingKeyUtil.Parse(entityType.ClrType);
-                            var shardingEntity = shardingEntityConfig.ShardingEntityType;
-                            var tailPrefix = shardingEntityConfig.TailPrefix;
-                            var entity = modelBuilder.Entity(shardingEntity);
-                            var tableName = shardingEntityConfig.ShardingOriginalTable;
-                            if (string.IsNullOrWhiteSpace(tableName))
-                                throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
+                if (!string.IsNullOrWhiteSpace(tail))
+                {
+                    var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
+                    var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTaleAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
+
+                    //设置分表
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && typeMap.Contains(o.ClrType));
+                    foreach (var entityType in mutableEntityTypes)
+                    {
+                        var shardingEntityConfig = ShardingKeyUtil.Parse(entityType.ClrType);
+                        var shardingEntity = shardingEntityConfig.ShardingEntityType;
+                        var tailPrefix = shardingEntityConfig.TailPrefix;
+                        var entity = modelBuilder.Entity(shardingEntity);
+                        var tableName = shardingEntityConfig.ShardingOriginalTable;
+                        if (string.IsNullOrWhiteSpace(tableName))
+                            throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
 #if DEBUG
-                            Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tailPrefix}{tail}]");
+                        Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tailPrefix}{tail}]");
 #endif
-                            entity.ToTable($"{tableName}{tailPrefix}{tail}");
-                        }
+                        entity.ToTable($"{tableName}{tailPrefix}{tail}");
                     }
                 }
             }

@@ -4,16 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer.Domain.Maps;
-using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding;
 
 namespace Sample.SqlServer.DbContexts
 {
-    public class DefaultTableDbContext: DbContext,IShardingTableDbContext
+    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
     {
-        public DefaultTableDbContext(DbContextOptions<DefaultTableDbContext> options) :base(options)
+        public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
-            
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,7 +20,5 @@ namespace Sample.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
-
-        public string ModelChangeKey { get; set; }
     }
 }

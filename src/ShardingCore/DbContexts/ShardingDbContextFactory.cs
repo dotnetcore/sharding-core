@@ -21,14 +21,12 @@ namespace ShardingCore.DbContexts
     public class ShardingDbContextFactory:IShardingDbContextFactory
     {
         private readonly IShardingCoreOptions _shardingCoreOptions;
-        private readonly IShardingTableScopeFactory _shardingTableScopeFactory;
         private readonly IDbContextCreateFilterManager _dbContextCreateFilterManager;
         private readonly IDbContextOptionsProvider _dbContextOptionsProvider;
 
-        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions,IShardingTableScopeFactory shardingTableScopeFactory, IDbContextCreateFilterManager dbContextCreateFilterManager,IDbContextOptionsProvider dbContextOptionsProvider)
+        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions, IDbContextCreateFilterManager dbContextCreateFilterManager,IDbContextOptionsProvider dbContextOptionsProvider)
         {
             _shardingCoreOptions = shardingCoreOptions;
-            _shardingTableScopeFactory = shardingTableScopeFactory;
             _dbContextCreateFilterManager = dbContextCreateFilterManager;
             _dbContextOptionsProvider = dbContextOptionsProvider;
         }

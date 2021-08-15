@@ -16,9 +16,9 @@ namespace Sample.SqlServer.Controllers
     public class ValuesController : ControllerBase
     {
 
-        private readonly DefaultTableDbContext _defaultTableDbContext;
+        private readonly DefaultShardingDbContext _defaultTableDbContext;
 
-        public ValuesController(DefaultTableDbContext defaultTableDbContext)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
         }
@@ -26,9 +26,8 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var result = await _defaultTableDbContext.Set<SysTest>().AnyAsync();
-            var result1 = await _defaultTableDbContext.Set<SysUserMod>().Where(o=>o.Id=="2"||o.Id=="3").ToShardingListAsync();
-            return Ok(result1);
+            var result = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToListAsync();
+            return Ok(result);
         }
     }
 }

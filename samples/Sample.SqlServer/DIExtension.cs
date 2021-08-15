@@ -31,23 +31,23 @@ namespace Sample.SqlServer
             using (var scope=app.ApplicationServices.CreateScope())
             {
                 var virtualDbContext =scope.ServiceProvider.GetService<DefaultTableDbContext>();
-                if (!virtualDbContext.Set<SysUserMod>().ShardingAny())
-                {
-                    var ids = Enumerable.Range(1, 1000);
-                    var userMods = new List<SysUserMod>();
-                    foreach (var id in ids)
-                    {
-                        userMods.Add(new SysUserMod()
-                        {
-                            Id = id.ToString(),
-                            Age = id,
-                            Name = $"name_{id}",
-                        });
-                    }
+                //if (!virtualDbContext.Set<SysUserMod>().ShardingAny())
+                //{
+                //    var ids = Enumerable.Range(1, 1000);
+                //    var userMods = new List<SysUserMod>();
+                //    foreach (var id in ids)
+                //    {
+                //        userMods.Add(new SysUserMod()
+                //        {
+                //            Id = id.ToString(),
+                //            Age = id,
+                //            Name = $"name_{id}",
+                //        });
+                //    }
 
-                    virtualDbContext.AddRange(userMods);
-                    virtualDbContext.SaveChanges();
-                }
+                //    virtualDbContext.AddRange(userMods);
+                //    virtualDbContext.SaveChanges();
+                //}
             }
         }
     }

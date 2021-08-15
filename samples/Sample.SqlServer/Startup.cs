@@ -32,8 +32,11 @@ namespace Sample.SqlServer
                 //o.AddDataSourceVirtualRoute<>();
                
             });
-            services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB123;Integrated Security=True")
-                .UseShardingSqlServerUpdateSqlGenerator());
+            services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True"));
+
+
+            services.AddDbContext<DefaultShardingDbContext>(o =>
+                o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;").UseSharding());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,7 +52,7 @@ namespace Sample.SqlServer
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-            app.DbSeed();
+            //app.DbSeed();
         }
     }
 }

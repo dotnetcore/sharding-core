@@ -208,9 +208,9 @@ namespace ShardingCore.Sharding
         }
 
 
-        public override DatabaseFacade Database => _dbContextCaches.Any()
-            ? _dbContextCaches.First().Value.Database
-            : GetDbContext(true, string.Empty).Database;
+        //public override DatabaseFacade Database => _dbContextCaches.Any()
+        //    ? _dbContextCaches.First().Value.Database
+        //    : GetDbContext(true, string.Empty).Database;
 
         public override EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         {

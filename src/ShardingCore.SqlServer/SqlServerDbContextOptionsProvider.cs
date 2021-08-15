@@ -38,6 +38,7 @@ namespace ShardingCore.SqlServer
         }
         public DbContextOptions GetDbContextOptions(DbConnection dbConnection)
         {
+            Console.WriteLine("create new dbcontext options,dbconnection is new:"+(dbConnection==null));
 
             var track = dbConnection != null;
             var connection = dbConnection ?? GetSqlConnection();
