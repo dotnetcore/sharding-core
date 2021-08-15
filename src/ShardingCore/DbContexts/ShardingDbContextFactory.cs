@@ -34,35 +34,25 @@ namespace ShardingCore.DbContexts
         }
         public DbContext Create(ShardingDbContextOptions shardingDbContextOptions)
         {
+            var tail=shardingDbContextOptions.Tail;
             var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             
-            using (var scope = _shardingTableScopeFactory.CreateScope())
+            var dbContext = shardingConfigEntry.Creator(shardingDbContextOptions);
+            if (!string.IsNullOrWhiteSpace(tail) && dbContext is IShardingTableDbContext shardingTableDbContext)
             {
-                string tail = null;
-                string modelChangeKey = null;
-                if (!string.IsNullOrWhiteSpace(shardingDbContextOptions.Tail))
-                {
-                    tail = shardingDbContextOptions.Tail;
-                    modelChangeKey = $"sharding_{tail}";
-                }
-                scope.ShardingTableAccessor.Context = ShardingTableContext.Create(tail);
-                var dbContext=  shardingConfigEntry.Creator(shardingDbContextOptions);
-                if (modelChangeKey != null&& dbContext is IShardingTableDbContext shardingTableDbContext)
-                {
-                    shardingTableDbContext.ModelChangeKey = modelChangeKey;
-                }
-
-                var filters = _dbContextCreateFilterManager.GetFilters();
-                if (filters.Any())
-                {
-                    foreach (var dbContextCreateFilter in filters)
-                    {
-                        dbContextCreateFilter.CreateAfter(dbContext);
-                    }
-                }
-                var dbContextModel = dbContext.Model;
-                return dbContext;
+                shardingTableDbContext.SetShardingTableDbContextTail(tail);
             }
+
+            var filters = _dbContextCreateFilterManager.GetFilters();
+            if (filters.Any())
+            {
+                foreach (var dbContextCreateFilter in filters)
+                {
+                    dbContextCreateFilter.CreateAfter(dbContext);
+                }
+            }
+            var dbContextModel = dbContext.Model;
+            return dbContext;
         }
 
         public DbContext Create(DbConnection dbConnection,string tail)

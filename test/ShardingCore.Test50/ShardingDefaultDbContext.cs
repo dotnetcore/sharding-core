@@ -16,7 +16,7 @@ namespace ShardingCore.Test50
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingDefaultDbContext:ShardingDbContext<DefaultDbContext>
+    public class ShardingDefaultDbContext:AbstractShardingDbContext<DefaultDbContext>
     {
         public ShardingDefaultDbContext(DbContextOptions<ShardingDefaultDbContext> options) : base(options)
         {
