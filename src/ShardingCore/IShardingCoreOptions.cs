@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.Abstractions;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using System;
+using System.Collections.Generic;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {

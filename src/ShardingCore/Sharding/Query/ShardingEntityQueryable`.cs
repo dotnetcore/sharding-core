@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core;
-using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.Query
 {
@@ -62,19 +62,21 @@ namespace ShardingCore.Sharding.Query
 
         public IEnumerator<TResult> GetEnumerator()
         {
-            if (_dbContext is IShardingDbContext shardingDbContext)
-            {
-                IQueryable<TResult> queryable = new EnumerableQuery<TResult>(Expression);
-                var streamMergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(queryable,shardingDbContext);
-
-            }
-
-            throw new ShardingCoreException("db context is not IShardingDbContext");
+            throw new NotImplementedException();
             
         }
         public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            if (_dbContext is IShardingDbContext shardingDbContext)
+            {
+                IQueryable<TResult> queryable = new EnumerableQuery<TResult>(Expression);
+                var streamMergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(queryable, shardingDbContext);
+
+                var streamMergeEngine = GenericStreamMergeEngine<TResult>.Create<TResult>(streamMergeContext);
+                return streamMergeEngine.GetAsyncEnumerator().GetAwaiter().GetResult();
+            }
+
+            throw new ShardingCoreException("db context is not IShardingDbContext");
         }
 
         IEnumerator IEnumerable.GetEnumerator()

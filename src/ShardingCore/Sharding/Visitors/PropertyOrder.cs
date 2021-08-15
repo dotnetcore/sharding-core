@@ -1,12 +1,12 @@
 namespace ShardingCore.Core.Internal.Visitors
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 13 January 2021 15:35:15
-* @Email: 326308290@qq.com
-*/
-    internal class PropertyOrder
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 13 January 2021 15:35:15
+    * @Email: 326308290@qq.com
+    */
+    public class PropertyOrder
     {
         public PropertyOrder(string propertyExpression, bool isAsc)
         {

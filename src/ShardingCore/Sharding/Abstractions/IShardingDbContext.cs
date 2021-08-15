@@ -14,7 +14,9 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IShardingDbContext
     {
 
-        DbContext GetDbContext(string tail);
-        
+        DbContext GetDbContext(bool track,string tail);
+        DbContext CreateGenericDbContext<T>(T entity) where T : class;
+
+
     }
 }

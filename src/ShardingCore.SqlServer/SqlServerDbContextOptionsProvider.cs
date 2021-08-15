@@ -18,36 +18,37 @@ using Microsoft.Data.SqlClient;
 
 namespace ShardingCore.SqlServer
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 24 December 2020 10:33:51
-* @Email: 326308290@qq.com
-*/
-    public class SqlServerDbContextOptionsProvider:IDbContextOptionsProvider
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Thursday, 24 December 2020 10:33:51
+    * @Email: 326308290@qq.com
+    */
+    public class SqlServerDbContextOptionsProvider : IDbContextOptionsProvider
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly IShardingCoreOptions _shardingCoreOptions;
 
 
 
-        public SqlServerDbContextOptionsProvider(ILoggerFactory loggerFactory,IShardingCoreOptions shardingCoreOptions)
+        public SqlServerDbContextOptionsProvider(ILoggerFactory loggerFactory, IShardingCoreOptions shardingCoreOptions)
         {
             _loggerFactory = loggerFactory;
             _shardingCoreOptions = shardingCoreOptions;
         }
-        public DbContextOptions GetDbContextOptions(bool isQuery)
+        public DbContextOptions GetDbContextOptions(DbConnection dbConnection)
         {
-             
-                var connection = GetSqlConnection();
+
+            var track = dbConnection != null;
+            var connection = dbConnection ?? GetSqlConnection();
             var dbContextOptions = CreateDbContextOptionBuilder()
                 .UseSqlServer(connection)
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .UseLoggerFactory(_loggerFactory)
-                .IfDo(isQuery,o=>o.ReplaceService<IQueryCompiler, ShardingQueryCompiler>())
+                .IfDo(!track, o => o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                //.IfDo(isQuery,o=>o.ReplaceService<IQueryCompiler, ShardingQueryCompiler>())
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .ReplaceService<IModelCustomizer, ShardingModelCustomizer>()
-                .IfDo(isQuery,o=>o.UseShardingSqlServerQuerySqlGenerator())
+                //.IfDo(isQuery,o=>o.UseShardingSqlServerQuerySqlGenerator())
                 .Options;
             return dbContextOptions;
         }

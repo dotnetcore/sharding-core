@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.EFCores

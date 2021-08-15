@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding;
 using ShardingCore.SqlServer;
 using ShardingCore.Test50.Domain.Entities;
 using ShardingCore.Test50.Shardings;
@@ -70,8 +71,9 @@ namespace ShardingCore.Test50
             //    });
             //});
             services.AddDbContext<DefaultDbContext>(o=>
-                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                    .UseShardingSqlServerUpdateSqlGenerator());
+                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]));
+            services.AddDbContext<ShardingDefaultDbContext>(o=>
+                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]).UseSharding());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
@@ -80,7 +82,7 @@ namespace ShardingCore.Test50
             var shardingBootstrapper = serviceProvider.GetService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
             // 有一些测试数据要初始化可以放在这里
-           InitData(serviceProvider).GetAwaiter().GetResult();
+           //InitData(serviceProvider).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -93,7 +95,7 @@ namespace ShardingCore.Test50
             using (var scope = serviceProvider.CreateScope())
             {
                 var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
-                if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
+                if (!await virtualDbContext.Set<SysUserMod>().AnyAsync(o => true))
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();

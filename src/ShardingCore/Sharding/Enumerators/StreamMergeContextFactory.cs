@@ -6,15 +6,15 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Core.Internal.StreamMerge
+namespace ShardingCore.Sharding.Enumerators
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 28 January 2021 16:52:43
-* @Email: 326308290@qq.com
-*/
-    internal class StreamMergeContextFactory:IStreamMergeContextFactory
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Thursday, 28 January 2021 16:52:43
+    * @Email: 326308290@qq.com
+    */
+    public class StreamMergeContextFactory:IStreamMergeContextFactory
     {
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         private readonly IShardingScopeFactory _shardingScopeFactory;

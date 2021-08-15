@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DbContexts
 {
@@ -63,10 +65,10 @@ namespace ShardingCore.DbContexts
             }
         }
 
-        public DbContext Create(string tail, bool isQuery)
+        public DbContext Create(DbConnection dbConnection,string tail)
         {
             var shardingDbContextOptions =
-                new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(isQuery), tail);
+                new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(dbConnection), tail);
            return Create(shardingDbContextOptions);
         }
     }

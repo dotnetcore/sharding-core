@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
@@ -14,6 +15,6 @@ namespace ShardingCore.DbContexts
     public interface IShardingDbContextFactory
     {
         DbContext Create(ShardingDbContextOptions shardingDbContextOptions);
-        DbContext Create(string tail, bool isQuery);
+        DbContext Create(DbConnection dbConnection,string tail);
     }
 }

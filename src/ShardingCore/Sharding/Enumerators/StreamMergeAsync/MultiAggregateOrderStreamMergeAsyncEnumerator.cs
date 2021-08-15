@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.PriorityQueues;
-using ShardingCore.Core.Internal.StreamMerge.Enumerators.AggregateExtensions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 
 namespace ShardingCore.Sharding.Enumerators
 {

@@ -30,12 +30,12 @@ namespace ShardingCore.Sharding
         private readonly IQueryable<T> _reWriteSource;
         //public IEnumerable<RouteResult> RouteResults { get; }
         //public DataSourceRoutingResult RoutingResult { get; }
-        public int? Skip { get; private set; }
-        public int? Take { get; private set; }
-        public IEnumerable<PropertyOrder> Orders { get; private set; }
+        public int? Skip { get;}
+        public int? Take { get; }
+        public IEnumerable<PropertyOrder> Orders { get;}
         
-        public SelectContext SelectContext { get; private set; }
-        public GroupByContext GroupByContext { get; private set; }
+        public SelectContext SelectContext { get;}
+        public GroupByContext GroupByContext { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory,
             IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
@@ -71,8 +71,7 @@ namespace ShardingCore.Sharding
 
         public DbContext CreateDbContext(string tail)
         {
-            return _shardingDbContext.GetDbContext(tail);
-            // return _shardingParallelDbContextFactory.Create(string.Empty);
+            return _shardingDbContext.GetDbContext(true,tail);
         }
         public IEnumerable<RouteResult> GetRouteResults()
         {

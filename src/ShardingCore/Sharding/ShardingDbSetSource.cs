@@ -47,6 +47,6 @@ namespace ShardingCore.Sharding
 
         private static Func<DbContext, string, object> CreateSetFactory<TEntity>()
             where TEntity : class
-            => (c, name) => new InternalDbSet<TEntity>(c, name);
+            => (c, name) => new ShardingInternalDbSet<TEntity>(c, name);
     }
 }

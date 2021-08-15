@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.EFCores
 {

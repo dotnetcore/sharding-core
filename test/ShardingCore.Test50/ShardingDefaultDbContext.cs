@@ -1,6 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.Sharding.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding;
 using ShardingCore.Test50.Domain.Maps;
 
 namespace ShardingCore.Test50
@@ -8,15 +12,14 @@ namespace ShardingCore.Test50
     /*
     * @Author: xjm
     * @Description:
-    * @Date: 2021/3/31 15:28:11
+    * @Date: 2021/8/15 10:21:03
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DefaultDbContext : DbContext, IShardingTableDbContext
+    public class ShardingDefaultDbContext:ShardingDbContext<DefaultDbContext>
     {
-        public DefaultDbContext(DbContextOptions<DefaultDbContext> options) : base(options)
+        public ShardingDefaultDbContext(DbContextOptions<ShardingDefaultDbContext> options) : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,7 +28,5 @@ namespace ShardingCore.Test50
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
-
-        public string ModelChangeKey { get; set; }
     }
 }

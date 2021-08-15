@@ -15,9 +15,9 @@ namespace ShardingCore.DbContexts.VirtualDbContexts
         /// <summary>
         /// 创建数据库链接配置
         /// </summary>
-        /// <param name="isQuery"></param>
+        /// <param name="dbConnection"></param>
         /// <returns></returns>
-        DbContextOptions GetDbContextOptions(bool isQuery);
+        DbContextOptions GetDbContextOptions(DbConnection dbConnection);
 
     }
 }

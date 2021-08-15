@@ -9,7 +9,7 @@ namespace ShardingCore.Sharding.Enumerators
 * @Date: Sunday, 15 August 2021 06:44:33
 * @Email: 326308290@qq.com
 */
-    public interface IOrderStreamMergeAsyncEnumerator<T>:IStreamMergeAsyncEnumerator<T>
+    public interface IOrderStreamMergeAsyncEnumerator<T>:IStreamMergeAsyncEnumerator<T>, IComparable<IOrderStreamMergeAsyncEnumerator<T>>
     {
         List<IComparable> GetCompares();
     }

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions

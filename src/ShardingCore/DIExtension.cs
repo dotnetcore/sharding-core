@@ -7,6 +7,7 @@ using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Enumerators;
 using ShardingCore.TableCreator;
 
 namespace ShardingCore

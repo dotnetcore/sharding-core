@@ -55,7 +55,7 @@ namespace ShardingCore.TableCreator
                 var dbContextOptionsProvider = serviceScope.ServiceProvider.GetService<IDbContextOptionsProvider>();
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntityType);
 
-                using (var dbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(), tail)))
+                using (var dbContext = _shardingDbContextFactory.Create(new ShardingDbContextOptions(dbContextOptionsProvider.GetDbContextOptions(null), tail)))
                 {
                     var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
                     

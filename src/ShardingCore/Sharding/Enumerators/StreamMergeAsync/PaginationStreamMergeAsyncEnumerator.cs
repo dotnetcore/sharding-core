@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.StreamMerge.Enumerators;
 
-namespace ShardingCore.Sharding.Enumerators
+namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
 /*
 * @Author: xjm

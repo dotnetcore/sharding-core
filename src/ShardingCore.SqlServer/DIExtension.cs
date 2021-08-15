@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding;
+using ShardingCore.Sharding.Query;
 using ShardingCore.SqlServer.EFCores;
 using ShardingCore.TableCreator;
 
@@ -55,14 +58,11 @@ namespace ShardingCore.SqlServer
             optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory>();
             return optionsBuilder;
         }
-        public static DbContextOptionsBuilder UseShardingSqlServerUpdateSqlGenerator(this DbContextOptionsBuilder optionsBuilder)
+
+
+        public static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.ReplaceService<IUpdateSqlGenerator, ShardingSqlServerUpdateSqlGenerator>();
-            return optionsBuilder;
-        }
-        public static DbContextOptionsBuilder<TContext> UseShardingSqlServerUpdateSqlGenerator<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder) where TContext : DbContext
-        {
-            optionsBuilder.ReplaceService<IUpdateSqlGenerator, ShardingSqlServerUpdateSqlGenerator>();
+            optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>().ReplaceService<IAsyncQueryProvider, ShardingEntityQueryProvider>();
             return optionsBuilder;
         }
     }

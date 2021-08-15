@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ShardingCore.Core.Internal.StreamMerge.Enumerators.AggregateExtensions
+namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 {
 /*
 * @Author: xjm

@@ -32,8 +32,8 @@ namespace ShardingCore.Utils
                 return baseType;
             }
 
-            var isShardingDataSource = entityType.IsShardingDataSource();
             var isShardingTable = entityType.IsShardingTable();
+            var isShardingDataSource = false;
             baseType = new ShardingEntityBaseType()
             {
                 EntityType = entityType,
