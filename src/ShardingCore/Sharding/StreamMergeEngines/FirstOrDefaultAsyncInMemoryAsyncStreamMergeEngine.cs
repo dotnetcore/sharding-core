@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -23,14 +24,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             _mergeContext = mergeContext;
         }
-        public async Task<TResult> ExecuteAsync(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<TResult> DoExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(efQuery, cancellationToken);
+            var result = await base.ExecuteAsync(async iqueryable=> await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((IQueryable<TResult>)iqueryable, cancellationToken), cancellationToken);
             var q = result.Where(o => o != null).AsQueryable();
             if (_mergeContext.Orders.Any())
                 return q.OrderWithExpression(_mergeContext.Orders).FirstOrDefault();
 
             return q.FirstOrDefault();
         }
+
     }
 }

@@ -26,6 +26,7 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var resultx2 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age<=10).CountAsync();
             var resultx = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefaultAsync();
             var result = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
 

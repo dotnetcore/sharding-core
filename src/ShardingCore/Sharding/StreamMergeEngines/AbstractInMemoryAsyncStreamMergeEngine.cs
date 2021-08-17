@@ -27,14 +27,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             _mergeContext = mergeContext;
         }
-        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
-        {
-            var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
-            await enumator.MoveNextAsync();
-            return enumator;
-        }
 
-        public async Task<List<T>> ExecuteAsync(Func<IQueryable, Task<T>> efQuery,CancellationToken cancellationToken = new CancellationToken())
+        public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery,CancellationToken cancellationToken = new CancellationToken())
         {
             var tableResult = _mergeContext.GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
