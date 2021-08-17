@@ -1,21 +1,14 @@
-using System;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Update;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.ShardingAccessors;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
+using ShardingCore.EFCores;
 using ShardingCore.Sharding;
-using ShardingCore.Sharding.Query;
 using ShardingCore.SqlServer.EFCores;
-using ShardingCore.TableCreator;
+using System;
 
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Query.Sql;
@@ -62,7 +55,7 @@ namespace ShardingCore.SqlServer
 
         public static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>().ReplaceService<IAsyncQueryProvider, ShardingEntityQueryProvider>();
+            optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>().ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
             return optionsBuilder;
         }
     }

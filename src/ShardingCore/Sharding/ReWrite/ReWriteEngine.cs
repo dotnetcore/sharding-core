@@ -29,7 +29,17 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             var orders = extraEntry.Orders ?? Enumerable.Empty<PropertyOrder>();
             
             //去除分页,获取前Take+Skip数量
-            var reWriteQueryable = _queryable.RemoveTake().RemoveSkip();
+            var reWriteQueryable = _queryable;
+            if (take.HasValue)
+            {
+                reWriteQueryable = _queryable.RemoveTake();
+            }
+            if (skip.HasValue)
+            {
+                reWriteQueryable = _queryable.RemoveSkip();
+            }
+
+            
             if (take.HasValue)
                 reWriteQueryable = reWriteQueryable.Take(take.Value + skip.GetValueOrDefault());
             //包含group by

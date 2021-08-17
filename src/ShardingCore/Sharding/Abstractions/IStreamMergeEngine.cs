@@ -13,6 +13,6 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IStreamMergeEngine<T>
     {
         Task<IStreamMergeAsyncEnumerator<T>> GetAsyncEnumerator();
-        Task<IStreamMergeEnumerator<T>> GetEnumerator();
+        IStreamMergeEnumerator<T> GetEnumerator();
     }
 }

@@ -183,5 +183,13 @@ namespace ShardingCore.Helpers
             var func = outer.Compile();
             return func;
         }
+
+
+        //public static TResult ShardingExecuteAsyncEnumerabe(Expression expression)
+        //{
+
+        //}
+
+
     }
 }

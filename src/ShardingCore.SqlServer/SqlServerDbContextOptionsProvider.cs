@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts.ShareDbContextOptionsProviders;
 using ShardingCore.EFCores;
@@ -26,25 +27,25 @@ namespace ShardingCore.SqlServer
     */
     public class SqlServerDbContextOptionsProvider : IDbContextOptionsProvider
     {
-        private readonly ILoggerFactory _loggerFactory;
         private readonly IShardingCoreOptions _shardingCoreOptions;
-
-
-
-        public SqlServerDbContextOptionsProvider(ILoggerFactory loggerFactory, IShardingCoreOptions shardingCoreOptions)
+        public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
         {
-            _loggerFactory = loggerFactory;
+            builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
+        });
+
+
+        public SqlServerDbContextOptionsProvider(IShardingCoreOptions shardingCoreOptions)
+        {
             _shardingCoreOptions = shardingCoreOptions;
         }
         public DbContextOptions GetDbContextOptions(DbConnection dbConnection)
         {
-            Console.WriteLine("create new dbcontext options,dbconnection is new:"+(dbConnection==null));
 
             var track = dbConnection != null;
             var connection = dbConnection ?? GetSqlConnection();
             var dbContextOptions = CreateDbContextOptionBuilder()
                 .UseSqlServer(connection)
-                .UseLoggerFactory(_loggerFactory)
+                .UseLoggerFactory(efLogger)
                 .IfDo(!track, o => o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 //.IfDo(isQuery,o=>o.ReplaceService<IQueryCompiler, ShardingQueryCompiler>())
                 .ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()

@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding
     public class StreamMergeContext<T>
     {
         private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
-        private readonly IShardingScopeFactory _shardingScopeFactory;
+        //private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IRoutingRuleEngineFactory _tableRoutingRuleEngineFactory;
@@ -41,7 +41,7 @@ namespace ShardingCore.Sharding
             IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
         {
             _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
-            _shardingScopeFactory = shardingScopeFactory;
+            //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;
             _tableRoutingRuleEngineFactory = tableRoutingRuleEngineFactory;
@@ -78,10 +78,10 @@ namespace ShardingCore.Sharding
             return _tableRoutingRuleEngineFactory.Route(_source);
         }
 
-        public ShardingScope CreateScope()
-        {
-            return _shardingScopeFactory.CreateScope();
-        }
+        //public ShardingScope CreateScope()
+        //{
+        //    return _shardingScopeFactory.CreateScope();
+        //}
 
         public IQueryable<T> GetReWriteQueryable()
         {

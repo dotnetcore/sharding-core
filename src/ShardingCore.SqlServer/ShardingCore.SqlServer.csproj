@@ -21,4 +21,10 @@
         <ProjectReference Include="..\ShardingCore\ShardingCore.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Logging.Console">
+        <HintPath>C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\5.0.0\ref\net5.0\Microsoft.Extensions.Logging.Console.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

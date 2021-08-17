@@ -20,5 +20,6 @@ namespace Sample.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
+
     }
 }

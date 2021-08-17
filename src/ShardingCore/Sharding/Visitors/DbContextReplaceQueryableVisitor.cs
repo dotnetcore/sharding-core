@@ -61,11 +61,13 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 var dbContextDependencies = typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as IDbContextDependencies;
                 var targetIQ = (IQueryable) ((IDbSetCache) _dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.EntityType.ClrType);
-                var newQueryable = targetIQ.Provider.CreateQuery((Expression) Expression.Call((Expression) null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod("AsNoTracking").MakeGenericMethod(queryRootExpression.EntityType.ClrType), targetIQ.Expression));
+                //AsNoTracking
+                //(Expression)Expression.Call((Expression)null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod("AsNoTracking").MakeGenericMethod(queryRootExpression.EntityType.ClrType), targetIQ.Expression)
+                var newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
                 Source = newQueryable;
                 //如何替换ef5的set
                 var replaceQueryRoot = new ReplaceSingleQueryRootExpressionVisitor();
-                replaceQueryRoot.Visit(newQueryable.Expression);
+                replaceQueryRoot.Visit(Source.Expression);
                 return base.VisitExtension(replaceQueryRoot.QueryRootExpression);
             }
 

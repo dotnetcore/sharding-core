@@ -40,7 +40,8 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         internal static IQueryable<T> RemoveTake<T>(this IQueryable<T> source)
         {
-            return (IQueryable<T>) source.Provider.CreateQuery(new RemoveTakeVisitor().Visit(source.Expression));
+            var expression = new RemoveTakeVisitor().Visit(source.Expression);
+            return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
 
         /// <summary>

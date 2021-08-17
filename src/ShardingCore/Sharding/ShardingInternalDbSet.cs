@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Internal;
-using ShardingCore.Sharding.Query;
 
 namespace ShardingCore.Sharding
 {
@@ -28,173 +28,15 @@ namespace ShardingCore.Sharding
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingInternalDbSet<TEntity> :
-        DbSet<TEntity>,
-        IQueryable<TEntity>,
-        IAsyncEnumerable<TEntity>,
-        IInfrastructure<IServiceProvider>,
-        IResettableService
+    public class ShardingInternalDbSet<TEntity> :InternalDbSet<TEntity>
         where TEntity : class
     {
         private readonly DbContext _context;
-        private readonly string _entityTypeName;
-        private IEntityType _entityType;
-        private ShardingEntityQueryable<TEntity> _entityQueryable;
-        private LocalView<TEntity> _localView;
 
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public ShardingInternalDbSet(DbContext context, string entityTypeName)
+        public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
-            Check.NotNull(context, nameof(context));
-
-            // Just storing context/service locator here so that the context will be initialized by the time the
-            // set is used and services will be obtained from the correctly scoped container when this happens.
             _context = context;
-            _entityTypeName = entityTypeName;
         }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public override IEntityType EntityType
-        {
-            get
-            {
-                if (_entityType != null)
-                {
-                    return _entityType;
-                }
-
-                _entityType = _entityTypeName != null
-                    ? _context.Model.FindEntityType(_entityTypeName)
-                    : _context.Model.FindEntityType(typeof(TEntity));
-
-                if (_entityType == null)
-                {
-                    if (_context.Model.HasEntityTypeWithDefiningNavigation(typeof(TEntity)))
-                    {
-                        throw new InvalidOperationException(
-                            CoreStrings.InvalidSetTypeWeak(typeof(TEntity).ShortDisplayName()));
-                    }
-
-                    if (_context.Model.IsShared(typeof(TEntity)))
-                    {
-                        throw new InvalidOperationException(
-                            CoreStrings.InvalidSetSharedType(typeof(TEntity).ShortDisplayName()));
-                    }
-
-                    throw new InvalidOperationException(CoreStrings.InvalidSetType(typeof(TEntity).ShortDisplayName()));
-                }
-
-                if (_entityType.IsOwned())
-                {
-                    _entityType = null;
-
-                    throw new InvalidOperationException(
-                        CoreStrings.InvalidSetTypeOwned(typeof(TEntity).ShortDisplayName()));
-                }
-
-                if (_entityType.ClrType != typeof(TEntity))
-                {
-                    var message = CoreStrings.DbSetIncorrectGenericType(
-                        _entityType.ShortName(), _entityType.ClrType.ShortDisplayName(),
-                        typeof(TEntity).ShortDisplayName());
-                    _entityType = null;
-
-                    throw new InvalidOperationException(message);
-                }
-
-                return _entityType;
-            }
-        }
-
-        private void CheckState()
-        {
-            // ReSharper disable once AssignmentIsFullyDiscarded
-            _ = EntityType;
-        }
-
-        private void CheckKey()
-        {
-            if (EntityType.FindPrimaryKey() == null)
-            {
-                throw new InvalidOperationException(
-                    CoreStrings.InvalidSetKeylessOperation(typeof(TEntity).ShortDisplayName()));
-            }
-        }
-
-        private ShardingEntityQueryable<TEntity> ShardingEntityQueryable
-        {
-            get
-            {
-                CheckState();
-
-                return NonCapturingLazyInitializer.EnsureInitialized(
-                    ref _entityQueryable,
-                    this,
-                    internalSet => internalSet.CreateEntityQueryable());
-            }
-        }
-
-        private ShardingEntityQueryable<TEntity> CreateEntityQueryable()
-            => new ShardingEntityQueryable<TEntity>(_context.GetDependencies().QueryProvider, EntityType);
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public override LocalView<TEntity> Local
-        {
-            get
-            {
-                CheckKey();
-
-                if (_context.ChangeTracker.AutoDetectChangesEnabled)
-                {
-                    _context.ChangeTracker.DetectChanges();
-                }
-
-                return _localView ??= new LocalView<TEntity>(this);
-            }
-        }
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public override TEntity Find(params object[] keyValues)
-            => Finder.Find(keyValues);
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public override ValueTask<TEntity> FindAsync(params object[] keyValues)
-            => Finder.FindAsync(keyValues);
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        public override ValueTask<TEntity> FindAsync(object[] keyValues, CancellationToken cancellationToken)
-            => Finder.FindAsync(keyValues, cancellationToken);
-
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -512,95 +354,6 @@ namespace ShardingCore.Sharding
             {
                 group.Key.UpdateRange(group.Select(o => o.Entity));
             }
-        }
-
-        private IEntityFinder<TEntity> Finder
-            => (IEntityFinder<TEntity>)_context.GetDependencies().EntityFinderFactory.Create(EntityType);
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator()
-            => ShardingEntityQueryable.GetEnumerator();
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        IEnumerator IEnumerable.GetEnumerator()
-            => ShardingEntityQueryable.GetEnumerator();
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        IAsyncEnumerator<TEntity> IAsyncEnumerable<TEntity>.GetAsyncEnumerator(CancellationToken cancellationToken)
-            => ShardingEntityQueryable.GetAsyncEnumerator(cancellationToken);
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        Type IQueryable.ElementType
-            => ShardingEntityQueryable.ElementType;
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        Expression IQueryable.Expression
-            => ShardingEntityQueryable.Expression;
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        IQueryProvider IQueryable.Provider
-            => ShardingEntityQueryable.Provider;
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        IServiceProvider IInfrastructure<IServiceProvider>.Instance
-            => _context.GetInfrastructure();
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        void IResettableService.ResetState()
-            => _localView = null;
-
-        /// <summary>
-        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
-        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
-        ///     any release. You should only use it directly in your code with extreme caution and knowing that
-        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
-        /// </summary>
-        /// <param name="cancellationToken"> A <see cref="CancellationToken" /> to observe while waiting for the task to complete. </param>
-        Task IResettableService.ResetStateAsync(CancellationToken cancellationToken)
-        {
-            ((IResettableService)this).ResetState();
-
-            return Task.CompletedTask;
         }
 
     }

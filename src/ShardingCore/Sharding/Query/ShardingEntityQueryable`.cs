@@ -16,19 +16,19 @@ using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.Query
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 14 August 2021 14:17:30
-* @Email: 326308290@qq.com
-*/
-    public class ShardingEntityQueryable<TResult>: IOrderedQueryable<TResult>,
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 14 August 2021 14:17:30
+    * @Email: 326308290@qq.com
+    */
+    public class ShardingEntityQueryable<TResult> : IOrderedQueryable<TResult>,
         IAsyncEnumerable<TResult>,
         IListSource
     {
         private readonly IAsyncQueryProvider _queryProvider;
 
-        private readonly DbContext _dbContext;
+        //private readonly DbContext _dbContext;
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -36,7 +36,7 @@ namespace ShardingCore.Sharding.Query
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public ShardingEntityQueryable(IAsyncQueryProvider queryProvider,IEntityType entityType)
+        public ShardingEntityQueryable(IAsyncQueryProvider queryProvider, IEntityType entityType)
             : this(queryProvider, new QueryRootExpression(queryProvider, entityType))
         {
         }
@@ -51,10 +51,10 @@ namespace ShardingCore.Sharding.Query
         {
             Check.NotNull(queryProvider, nameof(queryProvider));
             Check.NotNull(expression, nameof(expression));
-            if (queryProvider is ShardingEntityQueryProvider shardingEntityQueryProvider)
-            {
-                _dbContext = shardingEntityQueryProvider.GetCurrentDbContext().Context;
-            }
+            //if (queryProvider is ShardingEntityQueryProvider shardingEntityQueryProvider)
+            //{
+            //    _dbContext = shardingEntityQueryProvider.GetCurrentDbContext().Context;
+            //}
 
             _queryProvider = queryProvider;
             Expression = expression;
@@ -63,20 +63,11 @@ namespace ShardingCore.Sharding.Query
         public IEnumerator<TResult> GetEnumerator()
         {
             throw new NotImplementedException();
-            
+
         }
         public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (_dbContext is IShardingDbContext shardingDbContext)
-            {
-                IQueryable<TResult> queryable = new EnumerableQuery<TResult>(Expression);
-                var streamMergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(queryable, shardingDbContext);
-
-                var streamMergeEngine = GenericStreamMergeEngine<TResult>.Create<TResult>(streamMergeContext);
-                return streamMergeEngine.GetAsyncEnumerator().GetAwaiter().GetResult();
-            }
-
-            throw new ShardingCoreException("db context is not IShardingDbContext");
+            return _queryProvider.ExecuteAsync<IAsyncEnumerable<TResult>>(Expression).GetAsyncEnumerator(cancellationToken);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -86,13 +77,13 @@ namespace ShardingCore.Sharding.Query
 
         public Type ElementType => typeof(TResult);
         public Expression Expression { get; }
-        public IQueryProvider Provider  => _queryProvider;
+        public IQueryProvider Provider => _queryProvider;
 
         public IList GetList()
         {
             throw new NotSupportedException(CoreStrings.DataBindingWithIListSource);
         }
 
-        public bool ContainsListCollection  => false;
+        public bool ContainsListCollection => false;
     }
 }

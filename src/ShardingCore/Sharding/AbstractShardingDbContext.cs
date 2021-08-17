@@ -8,10 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
+using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.EFCores;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -27,28 +30,67 @@ namespace ShardingCore.Sharding
     /// 分表分库的dbcontext
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext where T : DbContext
+    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext where T : DbContext, IShardingTableDbContext
     {
         private readonly string EMPTY_SHARDING_TAIL_ID = Guid.NewGuid().ToString("n");
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
+        private readonly ShardingConfig<T> _shardingConfig;
+        private DbContextOptions<T> _dbContextOptions;
+
+        private readonly object CREATELOCK = new object();
+
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory>();
+            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
+            _shardingConfig = ShardingContainer.GetService<ShardingConfig<T>>();
+
         }
+
+        public Type ActualDbContextType => typeof(T);
+
+
+
+        private DbContextOptionsBuilder<T> CreateDbContextOptionBuilder()
+        {
+            Type type = typeof(DbContextOptionsBuilder<>);
+            type = type.MakeGenericType(ActualDbContextType);
+            return (DbContextOptionsBuilder<T>)Activator.CreateInstance(type);
+        }
+
+        private DbContextOptions<T> GetDbContextOptions()
+        {
+            var dbContextOptionBuilder = CreateDbContextOptionBuilder();
+            var dbConnection = Database.GetDbConnection();
+            dbConnection.Open();
+            return _shardingConfig.ShardingDbContextOptionsCreator(dbConnection, dbContextOptionBuilder);
+        }
+
+        private ShardingDbContextOptions CreateSameShardingDbContextOptions(string tail)
+        {
+            if (_dbContextOptions == null)
+            {
+                lock (CREATELOCK)
+                {
+                    if (_dbContextOptions == null)
+                    {
+                        _dbContextOptions = GetDbContextOptions();
+                    }
+                }
+            }
+            return new ShardingDbContextOptions(_dbContextOptions, tail);
+        }
+
         public DbContext GetDbContext(bool track, string tail)
         {
             if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(track ? this.Database.GetDbConnection() : null, tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail); ;
+                dbContext = _shardingDbContextFactory.Create(CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
                 _dbContextCaches.TryAdd(tail, dbContext);
             }
 
-            //if (IsOpenTransaction)
-            //{
-            //    _dbTransaction.Use(dbContext);
-            //}
 
             return dbContext;
         }
@@ -338,7 +380,12 @@ namespace ShardingCore.Sharding
             finally
             {
                 if (!isBeginTransaction)
-                    Database.CurrentTransaction.Dispose();
+                    Database.CurrentTransaction?.Dispose();
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    dbContextCache.Value.Database.UseTransaction(null);
+                }
             }
             return i;
         }
@@ -368,7 +415,12 @@ namespace ShardingCore.Sharding
             finally
             {
                 if (!isBeginTransaction)
-                    Database.CurrentTransaction.Dispose();
+                    Database.CurrentTransaction?.Dispose();
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    dbContextCache.Value.Database.UseTransaction(null);
+                }
             }
             return i;
         }
@@ -390,15 +442,21 @@ namespace ShardingCore.Sharding
                 foreach (var dbContextCache in _dbContextCaches)
                 {
                     await dbContextCache.Value.Database.UseTransactionAsync(Database.CurrentTransaction.GetDbTransaction(), cancellationToken: cancellationToken);
-                    i +=await dbContextCache.Value.SaveChangesAsync(cancellationToken);
+                    i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
                 }
                 if (!isBeginTransaction)
                     await Database.CurrentTransaction.CommitAsync(cancellationToken);
             }
             finally
             {
-                if (!isBeginTransaction)
+                if (!isBeginTransaction) { }
+                if (Database.CurrentTransaction != null)
                     await Database.CurrentTransaction.DisposeAsync();
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
+                }
             }
             return i;
         }
@@ -420,7 +478,7 @@ namespace ShardingCore.Sharding
                 foreach (var dbContextCache in _dbContextCaches)
                 {
                     await dbContextCache.Value.Database.UseTransactionAsync(Database.CurrentTransaction.GetDbTransaction(), cancellationToken: cancellationToken);
-                    i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess,cancellationToken);
+                    i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
                 }
                 if (!isBeginTransaction)
                     await Database.CurrentTransaction.CommitAsync(cancellationToken);
@@ -428,7 +486,13 @@ namespace ShardingCore.Sharding
             finally
             {
                 if (!isBeginTransaction)
-                    await Database.CurrentTransaction.DisposeAsync();
+                    if (Database.CurrentTransaction != null)
+                        await Database.CurrentTransaction.DisposeAsync();
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
+                }
             }
             return i;
         }

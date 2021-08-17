@@ -22,7 +22,7 @@ namespace ShardingCore.Test50
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext, IRoutingRuleEngineFactory routingRuleEngineFactory)
         {
             _virtualDbContext = virtualDbContext;
             _routingRuleEngineFactory = routingRuleEngineFactory;
@@ -48,31 +48,24 @@ namespace ShardingCore.Test50
         [Fact]
         public async Task ToList_All_Test()
         {
-            try
+
+            var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
             {
-
-                var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
-                Assert.Equal(1000, mods.Count);
-
-                var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
-                int ascAge = 1;
-                foreach (var sysUserMod in modOrders1)
-                {
-                    Assert.Equal(ascAge, sysUserMod.Age);
-                    ascAge++;
-                }
-
-                var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
-                int descAge = 1000;
-                foreach (var sysUserMod in modOrders2)
-                {
-                    Assert.Equal(descAge, sysUserMod.Age);
-                    descAge--;
-                }
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
             }
-            catch (Exception e)
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
             {
-                throw;
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
             }
         }
 

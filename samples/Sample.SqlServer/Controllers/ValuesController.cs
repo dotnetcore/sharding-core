@@ -26,8 +26,13 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var result = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToListAsync();
+            var resultx = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefaultAsync();
+            var result = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
+
+            var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
+            sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";
+            await _defaultTableDbContext.SaveChangesAsync();
             return Ok(result);
         }
     }
-}
+} 

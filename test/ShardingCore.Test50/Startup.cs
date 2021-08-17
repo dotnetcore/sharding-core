@@ -49,8 +49,8 @@ namespace ShardingCore.Test50
 
             services.AddShardingSqlServer(o =>
             {
-                o.EnsureCreatedWithOutShardingTable = true;
-                o.CreateShardingTableOnStart = true;
+                o.EnsureCreatedWithOutShardingTable = false;
+                o.CreateShardingTableOnStart = false;
                 o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
                 {
                     dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
@@ -82,7 +82,7 @@ namespace ShardingCore.Test50
             var shardingBootstrapper = serviceProvider.GetService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
             // 有一些测试数据要初始化可以放在这里
-           //InitData(serviceProvider).GetAwaiter().GetResult();
+            //InitData(serviceProvider).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -94,9 +94,7 @@ namespace ShardingCore.Test50
         {
             using (var scope = serviceProvider.CreateScope())
             {
-                var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
-                if (!await virtualDbContext.Set<SysUserMod>().AnyAsync(o => true))
-                {
+                var virtualDbContext = scope.ServiceProvider.GetService<ShardingDefaultDbContext>();
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();
                     var userSalaries = new List<SysUserSalary>();
@@ -136,7 +134,6 @@ namespace ShardingCore.Test50
                     await virtualDbContext.AddRangeAsync(userSalaries);
                     
                     await virtualDbContext.SaveChangesAsync();
-                }
             }
         }
     }

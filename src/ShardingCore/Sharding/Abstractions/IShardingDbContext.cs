@@ -13,6 +13,10 @@ namespace ShardingCore.Sharding.Abstractions
 */
     public interface IShardingDbContext
     {
+        /// <summary>
+        /// 真实的DbContext 类型
+        /// </summary>
+       Type ActualDbContextType {  get;}
 
         DbContext GetDbContext(bool track,string tail);
         DbContext CreateGenericDbContext<T>(T entity) where T : class;

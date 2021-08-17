@@ -1,15 +1,26 @@
-﻿#if !EFCORE2
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.EFCores
 {
@@ -19,281 +30,132 @@ namespace ShardingCore.EFCores
 	 * Author：xuejiaming
 	 * Created: 2020/12/28 13:58:46
 	 **/
-    public class ShardingQueryCompiler: QueryCompiler
-	{
-		private readonly IQueryContextFactory _queryContextFactory;
+    public class ShardingQueryCompiler: IQueryCompiler
+    {
+        private readonly IQueryContextFactory _queryContextFactory;
 		private readonly IDatabase _database;
 		private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
-		private readonly IModel _model;
+        private readonly ICurrentDbContext _currentContext;
+        private readonly IModel _model;
+        private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
-		public ShardingQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
+        public ShardingQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model)
 		{
 			_queryContextFactory = queryContextFactory;
 			_database = database;
 			_logger = logger;
-			_model = model;
-		}
-
-		public override TResult Execute<TResult>(Expression query)
-		{
-			var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-			if (shardingAccessor?.ShardingContext != null)
-			{
-				return ShardingExecute<TResult>(query);
-			}
-
-			return base.Execute<TResult>(query);
-		}
-		/// <summary>
-		/// use no compiler
-		/// </summary>
-		/// <typeparam name="TResult"></typeparam>
-		/// <param name="query"></param>
-		/// <returns></returns>
-		private TResult ShardingExecute<TResult>(Expression query)
-		{
-			var queryContext = _queryContextFactory.Create();
-
-			query = ExtractParameters(query, queryContext, _logger);
-
-			var compiledQuery
-				= CompileQueryCore<TResult>(_database, query, _model, false);
-
-			return compiledQuery(queryContext);
-		}
-
-		public override TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken = new CancellationToken())
-		{
-			var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-			if (shardingAccessor?.ShardingContext != null)
-			{
-				var result= ShardingExecuteAsync<TResult>(query, cancellationToken);
-				return result;
-			}
-
-			return base.ExecuteAsync<TResult>(query, cancellationToken);
-		}
-
-		private TResult ShardingExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken = new CancellationToken())
-		{
-			var queryContext = _queryContextFactory.Create();
-
-			queryContext.CancellationToken = cancellationToken;
-
-			query = ExtractParameters(query, queryContext, _logger);
-
-			var compiledQuery
-				= CompileQueryCore<TResult>(_database, query, _model, true);
-
-			return compiledQuery(queryContext);
-		}
-	}
-}
-#endif
+            _currentContext = currentContext;
+            _model = model;
+            _streamMergeContextFactory = ShardingContainer.GetService<IStreamMergeContextFactory>();
+        }
 
 
-#if EFCORE2
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
-using ShardingCore;
-using ShardingCore.Core.ShardingAccessors;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
-using Remotion.Linq.Clauses.StreamedData;
+        private ICurrentDbContext GetCurrentDbContext()
+        {
+            return _currentContext;
+        }
+        public TResult Execute<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
 
-namespace ShardingCore.EFCores
-{
-    /**
-	 * 描述：
-	 * 
-	 * Author：xuejiaming
-	 * Created: 2020/12/28 13:58:46
-	 **/
-    public class ShardingQueryCompiler: QueryCompiler
-	{
-		
-		private static MethodInfo CompileQueryMethod { get; }
-			= typeof(IDatabase).GetTypeInfo()
-				.GetDeclaredMethod(nameof(IDatabase.CompileQuery));
-		private readonly IQueryContextFactory _queryContextFactory;
-		private readonly ICompiledQueryCache _compiledQueryCache;
-		private readonly ICompiledQueryCacheKeyGenerator _compiledQueryCacheKeyGenerator;
-		private readonly IDatabase _database;
-		private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
-		private readonly IQueryModelGenerator _queryModelGenerator;
-		private readonly Type _contextType;
+        public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
+        {
+            var currentDbContext = GetCurrentDbContext().Context;
 
-		public ShardingQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IQueryModelGenerator queryModelGenerator) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, queryModelGenerator)
-		{
-			_queryContextFactory = queryContextFactory;
-			_compiledQueryCache = compiledQueryCache;
-			_compiledQueryCacheKeyGenerator = compiledQueryCacheKeyGenerator;
-			_database = database;
-			_logger = logger;
-			_queryModelGenerator = queryModelGenerator;
-			_contextType = currentContext.Context.GetType();
-		}
-
-		public override TResult Execute<TResult>(Expression query)
-		{
-
-			var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-			if (shardingAccessor?.ShardingContext != null)
-			{
-				return ShardingExecute<TResult>(query);
-			}
-
-			return base.Execute<TResult>(query);
-		}
-		private TResult ShardingExecute<TResult>(Expression query)
-		{
-			var queryContext = _queryContextFactory.Create();
-
-			query = _queryModelGenerator.ExtractParameters(_logger, query, queryContext);
-
-			var compiledQuery
-				= CompileQueryCore<TResult>(query, _queryModelGenerator, _database, _logger, _contextType);
-
-
-			return compiledQuery(queryContext);
-		}
-
-		public override IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
-		{
-
-			var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-			if (shardingAccessor?.ShardingContext != null)
-			{
-				return ShardingExecuteEnumerableAsync<TResult>(query);
-			}
-
-			return base.ExecuteAsync<TResult>(query);
-		}
-		private IAsyncEnumerable<TResult> ShardingExecuteEnumerableAsync<TResult>(Expression query)
-		{
-			var queryContext = _queryContextFactory.Create();
-
-			query = _queryModelGenerator.ExtractParameters(_logger, query, queryContext);
-
-			return CompileAsyncQueryCore<TResult>(query,_queryModelGenerator, _database)(queryContext);
-		}
-
-		public override Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
-		{
-
-            var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-            if (shardingAccessor?.ShardingContext != null)
+            if (currentDbContext is IShardingDbContext shardingDbContext)
             {
-                return ShardingExecuteAsync<TResult>(query, cancellationToken);
+                if (typeof(TResult).HasImplementedRawGeneric(typeof(IAsyncEnumerable<>)))
+                {
+
+                    var queryEntityType = typeof(TResult).GetGenericArguments()[0];
+                    Type type = typeof(EnumerableQuery<>);
+                    type = type.MakeGenericType(queryEntityType);
+                    var queryable = Activator.CreateInstance(type, query);
+
+                    var streamMergeContextMethod = _streamMergeContextFactory.GetType().GetMethod("Create");
+                    if (streamMergeContextMethod == null)
+                        throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
+                    var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(_streamMergeContextFactory, new[] { queryable,shardingDbContext });
+
+
+                    Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<>);
+                    streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
+                   return (TResult)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
+
+                }
+
+                if (typeof(TResult).HasImplementedRawGeneric(typeof(Task<>)))
+                {
+                    if (query is MethodCallExpression methodCallExpression)
+                    {
+
+                        var queryEntityType = query.Type;
+                        Type type = typeof(IQueryable<>);
+                        type = type.MakeGenericType(queryEntityType);
+                        var rootQuery = methodCallExpression.Arguments.FirstOrDefault(o=>o.Type==type);
+
+                        switch (methodCallExpression.Method.Name)
+                        {
+                            
+                            case nameof(Enumerable.FirstOrDefault): return FirstOrDefaultAsync<TResult>(shardingDbContext, queryEntityType, rootQuery,  queryable => 
+                                (TResult)(typeof(ShardingEntityFrameworkQueryableExtensions).GetMethod(nameof(ShardingEntityFrameworkQueryableExtensions.ShardingFirstOrDefaultAsync))
+                                    .MakeGenericMethod(new Type[]
+                                    {
+                                        queryEntityType
+                                    }).Invoke(null, new object[] { queryable, cancellationToken })), cancellationToken);
+
+                            
+                                //, BindingFlags.Static | BindingFlags.Public);.InvokeMember(, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Static
+                                //| System.Reflection.BindingFlags.Public, null, null, new object[] { queryable, cancellationToken }), cancellationToken
+                        }
+                    }
+                    return default;
+                }
+
+
+                throw new ShardingCoreException($"db context operator not support query expression:[{query}] result type:[{typeof(TResult).FullName}]");
+                //IQueryable<TResult> queryable = new EnumerableQuery<TResult>(expression);
+                //var streamMergeContext = _streamMergeContextFactory.Create(queryable, shardingDbContext);
+
+                //var streamMergeEngine = AsyncEnumerableStreamMergeEngine<TResult>.Create<TResult>(streamMergeContext);
+                //return streamMergeEngine.GetAsyncEnumerator();
             }
 
-			return base.ExecuteAsync<TResult>(query, cancellationToken);
-		}
-		private Task<TResult> ShardingExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
-		{
-			var queryContext = _queryContextFactory.Create();
+            throw new ShardingCoreException("db context operator is not IShardingDbContext");
+        }
+        
 
-			queryContext.CancellationToken = cancellationToken;
 
-			query = _queryModelGenerator.ExtractParameters(_logger, query, queryContext);
+        private TResult FirstOrDefaultAsync<TResult>(IShardingDbContext shardingDbContext,Type queryEntityType, Expression query,Func<IQueryable, TResult> efQuery, CancellationToken cancellationToken)
+        {
 
-			var compiledQuery = CompileAsyncQueryCore<TResult>(query,_queryModelGenerator, _database);
+            Type type = typeof(EnumerableQuery<>);
+            type = type.MakeGenericType(queryEntityType);
+            var queryable = Activator.CreateInstance(type, query);
 
-			return ExecuteSingletonAsyncQuery(queryContext, compiledQuery, _logger, _contextType);
-		}
-		
-		private static Func<QueryContext, TResult> CompileQueryCore<TResult>(
-			Expression query,
-			IQueryModelGenerator queryModelGenerator,
-			IDatabase database,
-			IDiagnosticsLogger<DbLoggerCategory.Query> logger,
-			Type contextType)
-		{
-			var queryModel = queryModelGenerator.ParseQuery(query);
+            var streamMergeContextMethod = _streamMergeContextFactory.GetType().GetMethod("Create");
+            if (streamMergeContextMethod == null)
+                throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
+            var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(_streamMergeContextFactory, new object[] { queryable, shardingDbContext });
 
-			var resultItemType
-				= (queryModel.GetOutputDataInfo()
-					  as StreamedSequenceInfo)?.ResultItemType
-				  ?? typeof(TResult);
+            Type streamMergeEngineType = typeof(FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine<>);
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
+            var streamEngine = Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
+            var streamEngineMethod = streamMergeEngineType.GetMethod("ExecuteAsync");
+            if (streamEngineMethod == null)
+                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [ExecuteAsync]");
+            return (TResult)streamEngineMethod.Invoke(streamEngine, new object[] { efQuery, cancellationToken });
+        }
 
-			if (resultItemType == typeof(TResult))
-			{
-				var compiledQuery = database.CompileQuery<TResult>(queryModel);
+        public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
 
-				return qc =>
-				{
-					try
-					{
-						return compiledQuery(qc).First();
-					}
-					catch (Exception exception)
-					{
-						logger.QueryIterationFailed(contextType, exception);
-
-						throw;
-					}
-				};
-			}
-
-			try
-			{
-				return (Func<QueryContext, TResult>)CompileQueryMethod
-					.MakeGenericMethod(resultItemType)
-					.Invoke(database, new object[] { queryModel });
-			}
-			catch (TargetInvocationException e)
-			{
-				ExceptionDispatchInfo.Capture(e.InnerException).Throw();
-
-				throw;
-			}
-		}
-		
-		
-		private static Func<QueryContext, IAsyncEnumerable<TResult>> CompileAsyncQueryCore<TResult>(
-			Expression query,
-			IQueryModelGenerator queryModelGenerator,
-			IDatabase database)
-		{
-			var queryModel = queryModelGenerator.ParseQuery(query);
-
-			return database.CompileAsyncQuery<TResult>(queryModel);
-		}
-		private static async Task<TResult> ExecuteSingletonAsyncQuery<TResult>(
-            QueryContext queryContext,
-			Func<QueryContext, IAsyncEnumerable<TResult>> compiledQuery,
-			IDiagnosticsLogger<DbLoggerCategory.Query> logger,
-			Type contextType)
-		{
-			try
-			{
-				var asyncEnumerable = compiledQuery(queryContext);
-
-				using (var asyncEnumerator = asyncEnumerable.GetEnumerator())
-				{
-					await asyncEnumerator.MoveNext(queryContext.CancellationToken);
-
-					return asyncEnumerator.Current;
-				}
-			}
-			catch (Exception exception)
-			{
-				logger.QueryIterationFailed(contextType, exception);
-
-				throw;
-			}
-		}
-	}
+        public Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
-#endif
