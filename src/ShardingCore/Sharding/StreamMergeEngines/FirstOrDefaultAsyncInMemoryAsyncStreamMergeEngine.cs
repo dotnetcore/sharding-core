@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -16,23 +21,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine<TResult>:AbstractInMemoryAsyncStreamMergeEngine<TResult>
+    public class FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine<TEntity> :AbstractGenericMethodCallInMemoryAsyncStreamMergeEngine<TEntity>
     {
-        private readonly StreamMergeContext<TResult> _mergeContext;
-
-        public FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine(StreamMergeContext<TResult> mergeContext) : base(mergeContext)
+        public FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-            _mergeContext = mergeContext;
         }
-        public async Task<TResult> DoExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
+
+        public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(async iqueryable=> await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((IQueryable<TResult>)iqueryable, cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TResult>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
             var q = result.Where(o => o != null).AsQueryable();
-            if (_mergeContext.Orders.Any())
-                return q.OrderWithExpression(_mergeContext.Orders).FirstOrDefault();
+
+            var streamMergeContext = GetStreamMergeContext();
+            if (streamMergeContext.Orders.Any())
+                return q.OrderWithExpression(streamMergeContext.Orders).FirstOrDefault();
 
             return q.FirstOrDefault();
         }
-
     }
 }

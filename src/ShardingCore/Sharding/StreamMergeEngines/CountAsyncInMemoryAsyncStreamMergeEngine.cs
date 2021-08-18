@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -16,17 +21,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class CountAsyncInMemoryAsyncStreamMergeEngine<TResult> : AbstractInMemoryAsyncStreamMergeEngine<TResult>
+    public class CountAsyncInMemoryAsyncStreamMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncStreamMergeEngine<TEntity,int>
     {
-        private readonly StreamMergeContext<TResult> _mergeContext;
-
-        public CountAsyncInMemoryAsyncStreamMergeEngine(StreamMergeContext<TResult> mergeContext) : base(mergeContext)
+        public CountAsyncInMemoryAsyncStreamMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-            _mergeContext = mergeContext;
         }
-        public async Task<int> DoExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(async iqueryable => await EntityFrameworkQueryableExtensions.CountAsync((IQueryable<TResult>)iqueryable, cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
             return result.Sum();
         }

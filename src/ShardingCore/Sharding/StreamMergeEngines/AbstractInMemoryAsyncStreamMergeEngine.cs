@@ -21,16 +21,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     public abstract class AbstractInMemoryAsyncStreamMergeEngine<T>
     {
-        private readonly StreamMergeContext<T> _mergeContext;
-
-        public AbstractInMemoryAsyncStreamMergeEngine(StreamMergeContext<T> mergeContext)
-        {
-            _mergeContext = mergeContext;
-        }
+        /// <summary>
+        /// 获取流失合并上下文
+        /// </summary>
+        /// <returns></returns>
+        protected abstract StreamMergeContext<T> GetStreamMergeContext();
 
         public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery,CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = _mergeContext.GetRouteResults();
+            var tableResult = GetStreamMergeContext().GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 if (routeResult.ReplaceTables.Count > 1)
@@ -48,8 +47,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                         //var shardingContext = ShardingContext.Create(routeResult);
                         //scope.ShardingAccessor.ShardingContext = shardingContext;
 
-                        var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                        var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
+                        var shardingDbContext = GetStreamMergeContext().CreateDbContext(tail);
+                        var newQueryable = (IQueryable<T>)GetStreamMergeContext().GetReWriteQueryable()
                                 .ReplaceDbContextQueryable(shardingDbContext);
                         var query = await efQuery(newQueryable);
                         return query;
