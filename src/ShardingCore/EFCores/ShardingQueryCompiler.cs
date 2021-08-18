@@ -120,14 +120,15 @@ namespace ShardingCore.EFCores
                                 return EnsureMergeExecuteAsync<TResult>(typeof(MinAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, cancellationToken);
                             case nameof(Enumerable.Sum):
                                 return EnsureMergeExecuteAsync2<TResult>(typeof(SumAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, cancellationToken);
-
+                            case nameof(Enumerable.Average):
+                                return EnsureMergeExecuteAsync2<TResult>(typeof(AverageAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, cancellationToken);
                         }
                     }
-                    return default;
+
                 }
 
 
-                throw new ShardingCoreException($"db context operator not support query expression:[{query}] result type:[{typeof(TResult).FullName}]");
+                throw new ShardingCoreException($"db context operator not support query expression:[{query.Print()}] result type:[{typeof(TResult).FullName}]");
                 //IQueryable<TResult> queryable = new EnumerableQuery<TResult>(expression);
                 //var streamMergeContext = _streamMergeContextFactory.Create(queryable, shardingDbContext);
 
