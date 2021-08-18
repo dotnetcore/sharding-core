@@ -11,6 +11,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -21,9 +22,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class CountAsyncInMemoryAsyncStreamMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncStreamMergeEngine<TEntity,int>
+    public class CountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,int>
     {
-        public CountAsyncInMemoryAsyncStreamMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public CountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
         public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

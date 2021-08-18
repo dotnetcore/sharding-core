@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -20,9 +21,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class LongCountAsyncInMemoryAsyncStreamMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncStreamMergeEngine<TEntity,long>
+    public class LongCountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,long>
     {
-        public LongCountAsyncInMemoryAsyncStreamMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public LongCountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
 

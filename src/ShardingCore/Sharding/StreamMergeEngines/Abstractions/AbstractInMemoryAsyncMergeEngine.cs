@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 
-namespace ShardingCore.Sharding.StreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 {
     /*
     * @Author: xjm
@@ -19,7 +15,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractInMemoryAsyncStreamMergeEngine<T>
+    public abstract class AbstractInMemoryAsyncMergeEngine<T>
     {
         /// <summary>
         /// 获取流失合并上下文
@@ -50,7 +46,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                         var shardingDbContext = GetStreamMergeContext().CreateDbContext(tail);
                         var newQueryable = (IQueryable<T>)GetStreamMergeContext().GetReWriteQueryable()
                                 .ReplaceDbContextQueryable(shardingDbContext);
-                        var query = await efQuery(newQueryable);
+                        var newFilterQueryable=EFQueryAfterFilter(newQueryable);
+                        var query = await efQuery(newFilterQueryable);
                         return query;
                         //}
                     }
@@ -64,5 +61,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
             return  (await Task.WhenAll(enumeratorTasks)).ToList();
         }
+
+        public virtual IQueryable EFQueryAfterFilter(IQueryable<T> queryable)
+        {
+            return queryable;
+        }
+
     }
 }

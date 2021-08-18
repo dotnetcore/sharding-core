@@ -11,6 +11,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -21,9 +22,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine<TEntity> :AbstractGenericMethodCallInMemoryAsyncStreamMergeEngine<TEntity>
+    public class FirstOrDefaultAsyncInMemoryMergeEngine<TEntity> :AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity>
     {
-        public FirstOrDefaultAsyncInMemoryAsyncStreamMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public FirstOrDefaultAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
 

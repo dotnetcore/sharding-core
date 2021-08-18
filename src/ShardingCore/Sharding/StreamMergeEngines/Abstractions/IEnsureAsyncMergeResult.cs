@@ -13,7 +13,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IEnsureAsyncMergeResult<T>: IEnsureAsyncMergeResult
+    public interface IEnsureAsyncMergeResult<T>
     {
         /// <summary>
         /// 
