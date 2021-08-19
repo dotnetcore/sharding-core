@@ -15,10 +15,6 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\src\ShardingCore.SqlServer\ShardingCore.SqlServer.csproj" />
-    </ItemGroup>
     <ItemGroup>
         <Content Include="Configs\DbConfig.json">
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

@@ -5,8 +5,4 @@
       <LangVersion>9.0</LangVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\src\ShardingCore.SqlServer\ShardingCore.SqlServer.csproj" />
-    </ItemGroup>
-
 </Project>

@@ -1,14 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
@@ -29,20 +24,12 @@ namespace ShardingCore.EFCores
 	 **/
     public class ShardingQueryCompiler : IQueryCompiler
     {
-        private readonly IQueryContextFactory _queryContextFactory;
-        private readonly IDatabase _database;
-        private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
         private readonly ICurrentDbContext _currentContext;
-        private readonly IModel _model;
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
-        public ShardingQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model)
+        public ShardingQueryCompiler(ICurrentDbContext currentContext)
         {
-            _queryContextFactory = queryContextFactory;
-            _database = database;
-            _logger = logger;
             _currentContext = currentContext;
-            _model = model;
             _streamMergeContextFactory = ShardingContainer.GetService<IStreamMergeContextFactory>();
         }
 
