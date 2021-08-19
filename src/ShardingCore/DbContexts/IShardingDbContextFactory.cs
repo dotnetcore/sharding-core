@@ -15,6 +15,6 @@ namespace ShardingCore.DbContexts
     public interface IShardingDbContextFactory
     {
         DbContext Create(ShardingDbContextOptions shardingDbContextOptions);
-        DbContext Create(DbConnection dbConnection,string tail);
+        //DbContext Create(DbConnection dbConnection,string tail);
     }
 }

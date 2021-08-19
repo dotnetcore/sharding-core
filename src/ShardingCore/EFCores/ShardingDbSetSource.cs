@@ -1,17 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
-namespace ShardingCore.Sharding
+namespace ShardingCore.EFCores
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 14 August 2021 10:17:43
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 14 August 2021 10:17:43
+    * @Email: 326308290@qq.com
+    */
     public class ShardingDbSetSource:IDbSetSource
     {
         private static readonly MethodInfo _genericCreateSet

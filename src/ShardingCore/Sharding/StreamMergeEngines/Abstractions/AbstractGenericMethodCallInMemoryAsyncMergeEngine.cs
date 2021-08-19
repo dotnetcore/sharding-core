@@ -19,39 +19,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
     public abstract class AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity> : AbstractInMemoryAsyncMergeEngine<TEntity>, IGenericAsyncMergeResult
     {
 
-        private readonly StreamMergeContext<TEntity> _mergeContext;
-        private readonly IQueryable<TEntity> _queryable;
 
-        public AbstractGenericMethodCallInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
+        protected AbstractGenericMethodCallInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-            var expression = methodCallExpression.Arguments.FirstOrDefault(o => typeof(IQueryable).IsAssignableFrom(o.Type)) ?? throw new InvalidOperationException(methodCallExpression.Print());
-            _queryable = new EnumerableQuery<TEntity>(expression);
-            var predicate = methodCallExpression.Arguments.FirstOrDefault(o => o is UnaryExpression);
-
-            if (predicate != null)
-            {
-
-                _queryable = _queryable.Where((Expression<Func<TEntity, bool>>)((UnaryExpression)predicate).Operand);
-            }
-            else
-            {
-                if (methodCallExpression.Arguments.Count == 2)
-                    throw new InvalidOperationException(methodCallExpression.Print());
-            }
-
-            _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);
         }
-
         public abstract Task<TResult> MergeResultAsync<TResult>(
             CancellationToken cancellationToken = new CancellationToken());
-
-        protected override StreamMergeContext<TEntity> GetStreamMergeContext()
-        {
-            return _mergeContext;
-        }
-        protected IQueryable<TEntity> GetQueryable()
-        {
-            return _queryable;
-        }
     }
 }

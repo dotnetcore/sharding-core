@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Sharding.Enumerators
+namespace ShardingCore.Sharding.Abstractions
 {
 /*
 * @Author: xjm

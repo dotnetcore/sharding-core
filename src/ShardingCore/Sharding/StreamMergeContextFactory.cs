@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Sharding.Enumerators
+namespace ShardingCore.Sharding
 {
     /*
     * @Author: xjm

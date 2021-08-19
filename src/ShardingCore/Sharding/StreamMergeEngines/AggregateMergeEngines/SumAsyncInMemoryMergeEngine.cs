@@ -11,6 +11,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {

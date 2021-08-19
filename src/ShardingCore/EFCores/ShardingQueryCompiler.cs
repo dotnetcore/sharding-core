@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ShardingCore.EFCores
 {
@@ -122,6 +117,8 @@ namespace ShardingCore.EFCores
                                 return EnsureMergeExecuteAsync2<TResult>(typeof(SumAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, cancellationToken);
                             case nameof(Enumerable.Average):
                                 return EnsureMergeExecuteAsync2<TResult>(typeof(AverageAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, cancellationToken);
+                            case nameof(Enumerable.Contains):
+                                return EnsureMergeExecuteAsync<TResult>(typeof(ContainsAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, cancellationToken);
                         }
                     }
 

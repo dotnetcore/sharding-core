@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericExpressionMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -19,7 +20,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class MinAsyncInMemoryMergeEngine<TEntity> : AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity>
+    public class MinAsyncInMemoryMergeEngine<TEntity> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity>
     {
         public MinAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {

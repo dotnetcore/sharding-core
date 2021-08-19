@@ -17,8 +17,19 @@ namespace ShardingCore.Sharding.Abstractions
         /// 真实的DbContext 类型
         /// </summary>
        Type ActualDbContextType {  get;}
-
+        /// <summary>
+        /// 创建DbContext
+        /// </summary>
+        /// <param name="track"></param>
+        /// <param name="tail"></param>
+        /// <returns></returns>
         DbContext GetDbContext(bool track,string tail);
+        /// <summary>
+        /// 根据实体创建db context
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
 
 

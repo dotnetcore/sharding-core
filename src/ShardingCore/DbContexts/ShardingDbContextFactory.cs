@@ -53,11 +53,12 @@ namespace ShardingCore.DbContexts
             return dbContext;
         }
 
-        public DbContext Create(DbConnection dbConnection,string tail)
-        {
-            var shardingDbContextOptions =
-                new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(dbConnection), tail);
-           return Create(shardingDbContextOptions);
-        }
+
+        //public DbContext Create(DbConnection dbConnection,string tail)
+        //{
+        //    var shardingDbContextOptions =
+        //        new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(dbConnection), tail);
+        //   return Create(shardingDbContextOptions);
+        //}
     }
 }

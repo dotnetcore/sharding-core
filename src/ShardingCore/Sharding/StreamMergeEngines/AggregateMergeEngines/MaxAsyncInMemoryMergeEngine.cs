@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericExpressionMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -18,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class MaxAsyncInMemoryMergeEngine<TEntity>:AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity>
+    public class MaxAsyncInMemoryMergeEngine<TEntity>: AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity>
     {
         public MaxAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
