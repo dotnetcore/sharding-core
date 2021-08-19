@@ -18,8 +18,4 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.7" />
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Sharding\Enumerators\StreamMeregeSync" />
-    </ItemGroup>
 </Project>

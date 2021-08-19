@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.Enumerators.StreamMergeSync;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -17,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Date: Saturday, 14 August 2021 22:07:28
     * @Email: 326308290@qq.com
     */
-    public class AsyncEnumerableStreamMergeEngine<T> :IAsyncEnumerable<T>
+    public class AsyncEnumerableStreamMergeEngine<T> :IAsyncEnumerable<T>,IEnumerable<T>
     {
 
         private readonly StreamMergeContext<T> _mergeContext;
@@ -130,6 +132,61 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             if (_mergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
             return new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
+        }
+
+        private IEnumerator<T>  GetEnumerator(IQueryable<T> newQueryable)
+        {
+            var enumator = newQueryable.AsEnumerable().GetEnumerator();
+             enumator.MoveNext();
+            return enumator;
+        }
+        public IEnumerator<T> GetEnumerator()
+        {
+            var tableResult = _mergeContext.GetRouteResults();
+            var enumeratorTasks = tableResult.Select(routeResult =>
+            {
+                if (routeResult.ReplaceTables.Count > 1)
+                    throw new ShardingCoreException("route found more than 1 table name s");
+                var tail = string.Empty;
+                if (routeResult.ReplaceTables.Count == 1)
+                    tail = routeResult.ReplaceTables.First().Tail;
+
+                return Task.Run( () =>
+                {
+                    try
+                    {
+                        //using (var scope = _mergeContext.CreateScope())
+                        //{
+                        //var shardingContext = ShardingContext.Create(routeResult);
+                        //scope.ShardingAccessor.ShardingContext = shardingContext;
+
+                        var shardingDbContext = _mergeContext.CreateDbContext(tail);
+                        var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
+                                .ReplaceDbContextQueryable(shardingDbContext);
+
+                        var enumerator =  GetEnumerator(newQueryable);
+                        return new StreamMergeEnumerator<T>(enumerator);
+                        //}
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                });
+            }).ToArray();
+
+            var streamEnumerators = Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult();
+            if (_mergeContext.HasSkipTake())
+                return new PaginationStreamMergeEnumerator<T>(_mergeContext, streamEnumerators);
+            if (_mergeContext.HasGroupQuery())
+                return new MultiAggregateOrderStreamMergeEnumerator<T>(_mergeContext, streamEnumerators);
+            return new MultiOrderStreamMergeEnumerator<T>(_mergeContext, streamEnumerators);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

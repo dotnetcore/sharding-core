@@ -26,9 +26,21 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
         }
 
+        public override TResult MergeResult<TResult>()
+        {
+            var result =  base.Execute(queryable => ((IQueryable<TResult>)queryable).SingleOrDefault());
+            var q = result.Where(o => o != null).AsQueryable();
+
+            var streamMergeContext = GetStreamMergeContext();
+            if (streamMergeContext.Orders.Any())
+                return q.OrderWithExpression(streamMergeContext.Orders).SingleOrDefault();
+
+            return q.SingleOrDefault();
+        }
+
         public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TResult>)queryable).SingleOrDefaultAsync(cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TResult>)queryable).SingleOrDefaultAsync(cancellationToken), cancellationToken);
             var q = result.Where(o => o != null).AsQueryable();
 
             var streamMergeContext = GetStreamMergeContext();

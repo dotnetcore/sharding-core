@@ -28,11 +28,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         {
         }
 
-        public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override TEnsureResult MergeResult()
         {
-            if(typeof(decimal)==typeof(TEnsureResult))
+            if (typeof(decimal) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<decimal>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<decimal>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -40,7 +40,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(decimal?) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<decimal?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<decimal?>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(int) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<int>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<int>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -56,7 +56,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(int?) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<int?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<int?>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(long) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<long>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<long>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -72,7 +72,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(long?) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<long?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<long?>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -80,7 +80,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(double) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<double>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<double>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -88,7 +88,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(double?) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<double?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<double?>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -96,7 +96,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(float) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<float>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<float>)queryable).Sum());
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();
@@ -104,7 +104,94 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             if (typeof(float?) == typeof(TEnsureResult))
             {
-                var result = await base.ExecuteAsync(async queryable => await ((IQueryable<float?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                var result = base.Execute(queryable => ((IQueryable<float?>)queryable).Sum());
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+        }
+
+        public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            if (typeof(decimal) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(decimal?) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(int) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<int>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(int?) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<int?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(long) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<long>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(long?) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<long?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(double) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<double>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(double?) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<double?>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(float) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<float>)queryable).SumAsync(cancellationToken), cancellationToken);
+                if (result.IsEmpty())
+                    return default;
+                var sum = result.Sum();
+                return ConvertSum(sum);
+            }
+            if (typeof(float?) == typeof(TEnsureResult))
+            {
+                var result = await base.ExecuteAsync(queryable => ((IQueryable<float?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
                 var sum = result.Sum();

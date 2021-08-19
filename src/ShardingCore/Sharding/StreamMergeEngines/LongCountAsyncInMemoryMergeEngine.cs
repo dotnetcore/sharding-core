@@ -28,10 +28,18 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
         }
 
+        public override long MergeResult()
+        {
+
+            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).LongCount());
+
+            return result.Sum();
+        }
+
         public override async Task<long> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
 
-            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TEntity>)queryable).LongCountAsync(cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LongCountAsync(cancellationToken), cancellationToken);
 
             return result.Sum();
         }

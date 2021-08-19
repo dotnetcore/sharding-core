@@ -26,9 +26,17 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public AnyAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
+
+        public override bool MergeResult()
+        {
+            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).Any());
+
+            return result.Any(o => o);
+        }
+
         public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TEntity>)queryable).AnyAsync(cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).AnyAsync(cancellationToken), cancellationToken);
 
             return result.Any(o => o);
         }

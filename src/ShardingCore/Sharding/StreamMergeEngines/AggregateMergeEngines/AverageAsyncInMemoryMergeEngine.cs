@@ -30,46 +30,158 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         {
         }
 
+        public override TEnsureResult MergeResult()
+        {
+            if (typeof(decimal) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(queryable => ((IQueryable<decimal>)queryable).Average());
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum() / result.Count;
+                return ConvertSum(average);
+            }
+
+            if (typeof(decimal?) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<decimal?>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
+                return ConvertSum(average);
+            }
+
+            if (typeof(int) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<int>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum() / result.Count;
+                return ConvertSum(average);
+            }
+
+            if (typeof(int?) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<int?>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
+                return ConvertSum(average);
+            }
+
+            if (typeof(long) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<long>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum() / result.Count;
+                return ConvertSum(average);
+            }
+
+            if (typeof(long?) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<long?>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
+                return ConvertSum(average);
+            }
+
+            if (typeof(double) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<double>)queryable).Average()
+                    );
+                var average = result.Sum() / result.Count;
+                return ConvertSum(average);
+            }
+
+            if (typeof(double?) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<double?>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
+                return ConvertSum(average);
+            }
+
+            if (typeof(float) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<float>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum() / result.Count;
+                return ConvertSum(average);
+            }
+
+            if (typeof(float?) == typeof(TEnsureResult))
+            {
+                var result = base.Execute(
+                     queryable => ((IQueryable<float?>)queryable).Average()
+                    );
+                if (result.IsEmpty())
+                    return default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
+                return ConvertSum(average);
+            }
+
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+        }
+
         public override async Task<TEnsureResult> MergeResultAsync(
             CancellationToken cancellationToken = new CancellationToken())
         {
             if (typeof(decimal) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<decimal>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<decimal>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var average = result.Sum()/result.Count;
+                var average = result.Sum() / result.Count;
                 return ConvertSum(average);
             }
 
             if (typeof(decimal?) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<decimal?>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<decimal?>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var average = result.Sum().HasValue ?result.Sum()/result.Count: default;
+                var average = result.Sum().HasValue ? result.Sum() / result.Count : default;
                 return ConvertSum(average);
             }
 
             if (typeof(int) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<int>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<int>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var average = result.Sum()/result.Count;
+                var average = result.Sum() / result.Count;
                 return ConvertSum(average);
             }
 
             if (typeof(int?) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<int?>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<int?>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
@@ -80,18 +192,18 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             if (typeof(long) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<long>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<long>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var average = result.Sum()/result.Count;
+                var average = result.Sum() / result.Count;
                 return ConvertSum(average);
             }
 
             if (typeof(long?) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<long?>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<long?>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
@@ -102,16 +214,16 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             if (typeof(double) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<double>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<double>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
-                var average = result.Sum()/result.Count;
+                var average = result.Sum() / result.Count;
                 return ConvertSum(average);
             }
 
             if (typeof(double?) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<double?>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<double?>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
@@ -122,18 +234,18 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             if (typeof(float) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<float>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<float>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var average = result.Sum()/result.Count;
+                var average = result.Sum() / result.Count;
                 return ConvertSum(average);
             }
 
             if (typeof(float?) == typeof(TEnsureResult))
             {
                 var result = await base.ExecuteAsync(
-                    async queryable => await ((IQueryable<float?>) queryable).AverageAsync(cancellationToken),
+                    queryable => ((IQueryable<float?>)queryable).AverageAsync(cancellationToken),
                     cancellationToken);
                 if (result.IsEmpty())
                     return default;

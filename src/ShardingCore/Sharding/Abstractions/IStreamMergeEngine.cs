@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.Enumerators.StreamMergeSync;
 
 namespace ShardingCore.Sharding.Abstractions
 {

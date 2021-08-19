@@ -16,11 +16,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult> : AbstractInMemoryAsyncMergeEngine<TEntity>,IEnsureAsyncMergeResult<TResult>
+    public abstract class AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult> : AbstractInMemoryAsyncMergeEngine<TEntity>,IEnsureMergeResult<TResult>
     {
         protected AbstractEnsureMethodCallInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
+
+        public abstract TResult MergeResult();
+
         public abstract Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken());
     }
 }

@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace ShardingCore.Sharding.Enumerators
+namespace ShardingCore.Sharding.Enumerators.StreamMergeSync
 {
 /*
 * @Author: xjm

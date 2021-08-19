@@ -32,7 +32,21 @@ namespace Sample.SqlServer.Controllers
             var resultx2 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync(o => o.Age<=10);
             var resultx = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefaultAsync();
             var resultx33 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o=>o.Id).FirstOrDefaultAsync();
+            var resulxxt = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").ToListAsync();
             var result = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
+
+
+
+
+            var sresultx11231 =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).Contains("1981");
+            var sresultx1121 =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Sum(o => o.Age);
+            var sresultx111 =  _defaultTableDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
+            var sresultx2 =  _defaultTableDbContext.Set<SysUserMod>().Count(o => o.Age <= 10);
+            var sresultx =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefault();
+            var sresultx33 =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
+            var sresultxc =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).ToList();
+            var sresultxasdc =  _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").ToList();
+            var sresult =  _defaultTableDbContext.Set<SysUserMod>().ToList();
 
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
             sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";

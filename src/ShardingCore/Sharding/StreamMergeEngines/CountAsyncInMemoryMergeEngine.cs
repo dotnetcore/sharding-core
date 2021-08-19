@@ -21,9 +21,17 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public CountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
+
+        public override int MergeResult()
+        {
+            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).Count());
+
+            return result.Sum();
+        }
+
         public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync(async queryable => await ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
             return result.Sum();
         }

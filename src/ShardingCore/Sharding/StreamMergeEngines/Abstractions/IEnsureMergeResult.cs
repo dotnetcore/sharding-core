@@ -13,10 +13,19 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IEnsureAsyncMergeResult<T>
+    /// <summary>
+    /// 确认结果的合并
+    /// </summary>
+    /// <typeparam name="T">返回的确认结果类型</typeparam>
+    public interface IEnsureMergeResult<T>
     {
+       /// <summary>
+       /// 合并结果
+       /// </summary>
+       /// <returns></returns>
+        T MergeResult();
         /// <summary>
-        /// 
+        /// 合并结果
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
