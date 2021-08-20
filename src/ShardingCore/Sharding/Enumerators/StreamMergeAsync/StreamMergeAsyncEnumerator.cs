@@ -44,14 +44,18 @@ namespace ShardingCore.Sharding.Enumerators
         {
              _source.Dispose();
         }
+
+        private bool _canMoveNext=true;
         public async Task<bool> MoveNext(CancellationToken cancellationToken=new CancellationToken())
         {
             if (skip)
             {
                 skip = false;
-                return null!=_source.Current;
+                _canMoveNext= null != _source.Current;
+                return _canMoveNext;
             }
-            return await _source.MoveNext(cancellationToken);
+            _canMoveNext= await _source.MoveNext(cancellationToken);
+            return _canMoveNext;
         }
 
 #endif
@@ -76,14 +80,9 @@ namespace ShardingCore.Sharding.Enumerators
 #if EFCORE2
         public bool HasElement()
         {
-            try
-            {
-                return null != _source.Current;
-            }
-            catch
-            {
+            if (!_canMoveNext)
                 return false;
-            }
+            return null != _source.Current;
         }
 
 #endif
