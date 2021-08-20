@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.Enumerators
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Sunday, 15 August 2021 06:46:32
-* @Email: 326308290@qq.com
-*/
-    public class OrderStreamMergeAsyncEnumerator<T>:IOrderStreamMergeAsyncEnumerator<T>
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Sunday, 15 August 2021 06:46:32
+    * @Email: 326308290@qq.com
+    */
+    public class OrderStreamMergeAsyncEnumerator<T> : IOrderStreamMergeAsyncEnumerator<T>
     {
-        
+
         /// <summary>
         /// 合并数据上下文
         /// </summary>
@@ -35,17 +36,26 @@ namespace ShardingCore.Sharding.Enumerators
         {
             _orderValues = HasElement() ? GetCurrentOrderValues() : new List<IComparable>(0);
         }
-        
 
+#if !EFCORE2
         public async ValueTask<bool> MoveNextAsync()
+#endif
+#if EFCORE2
+        public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
+#endif
         {
+#if !EFCORE2
             var has = await _enumerator.MoveNextAsync();
+#endif
+#if EFCORE2
+            var has = await _enumerator.MoveNext(cancellationToken);
+#endif
             SetOrderValues();
             return has;
         }
-        
 
-        public T Current =>_enumerator.Current;
+
+        public T Current => _enumerator.Current;
 
         public bool SkipFirst()
         {
@@ -79,9 +89,11 @@ namespace ShardingCore.Sharding.Enumerators
         public int CompareTo(IOrderStreamMergeAsyncEnumerator<T> other)
         {
             int i = 0;
-            foreach (var order in _mergeContext.Orders) {
+            foreach (var order in _mergeContext.Orders)
+            {
                 int result = CompareHelper.CompareToWith(_orderValues[i], other.GetCompares()[i], order.IsAsc);
-                if (0 != result) {
+                if (0 != result)
+                {
                     return result;
                 }
                 i++;
@@ -93,11 +105,18 @@ namespace ShardingCore.Sharding.Enumerators
         {
             return _orderValues ?? new List<IComparable>(0);
         }
-
+#if !EFCORE2
         public  ValueTask DisposeAsync()
         {
             return _enumerator.DisposeAsync();
         }
+#endif
+#if EFCORE2
+        public void Dispose()
+        {
+            _enumerator.Dispose();
+        }
+#endif
 
     }
 }

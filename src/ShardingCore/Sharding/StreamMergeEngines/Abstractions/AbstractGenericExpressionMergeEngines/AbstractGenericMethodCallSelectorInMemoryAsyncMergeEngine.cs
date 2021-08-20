@@ -31,7 +31,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericE
                 }
 
 
-                throw new ShardingCoreException($"expression is not selector:{secondExpression.Print()}");
+#if !EFCORE2
+                throw new ShardingCoreException($"expression is not selector:{secondExpression.Print()}");   
+#endif
+#if EFCORE2
+                throw new ShardingCoreException($"expression is not selector:{secondExpression}");
+#endif
             }
             return queryable;
         }

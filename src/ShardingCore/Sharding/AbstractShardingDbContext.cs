@@ -603,7 +603,7 @@ namespace ShardingCore.Sharding
                     i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
                 }
                 if (!isBeginTransaction)
-                    Database.CurrentTransaction.Commit(cancellationToken);
+                    Database.CurrentTransaction.Commit();
             }
             finally
             {

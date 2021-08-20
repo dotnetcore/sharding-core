@@ -28,7 +28,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
             {
                 return queryable.Where(predicate);
             }
+
+#if !EFCORE2
             throw new InvalidOperationException(_methodCallExpression.Print());
+#endif
+#if EFCORE2
+            throw new InvalidOperationException(_methodCallExpression.ToString());
+#endif
 
         }
     }

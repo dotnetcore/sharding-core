@@ -138,8 +138,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 return ConvertSum(average);
             }
 
+#if !EFCORE2
             throw new ShardingCoreException(
                 $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+#endif
+#if EFCORE2
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
+#endif
         }
 
         public override async Task<TEnsureResult> MergeResultAsync(
@@ -253,8 +259,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 return ConvertSum(average);
             }
 
+#if !EFCORE2
             throw new ShardingCoreException(
                 $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+#endif
+#if EFCORE2
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
+#endif
         }
 
         private TEnsureResult ConvertSum<TNumber>(TNumber number)

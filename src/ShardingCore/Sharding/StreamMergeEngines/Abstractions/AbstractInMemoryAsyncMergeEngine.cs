@@ -31,7 +31,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
         {
             _methodCallExpression = methodCallExpression;
-            var expression = methodCallExpression.Arguments.FirstOrDefault(o => typeof(IQueryable).IsAssignableFrom(o.Type)) ?? throw new InvalidOperationException(methodCallExpression.Print());
+            var expression = methodCallExpression.Arguments.FirstOrDefault(o => typeof(IQueryable).IsAssignableFrom(o.Type))
+#if !EFCORE2
+                             ?? throw new InvalidOperationException(methodCallExpression.Print());
+#endif
+#if EFCORE2
+                             ?? throw new InvalidOperationException(methodCallExpression.ToString());
+#endif
             _queryable = new EnumerableQuery<TEntity>(expression);
             _secondExpression = methodCallExpression.Arguments.FirstOrDefault(o => !typeof(IQueryable).IsAssignableFrom(o.Type));
 
@@ -42,7 +48,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             else
             {
                 if (methodCallExpression.Arguments.Count == 2)
-                    throw new InvalidOperationException(methodCallExpression.Print());
+                {
+
+#if !EFCORE2
+            throw new InvalidOperationException(methodCallExpression.Print());
+#endif
+#if EFCORE2
+                    throw new InvalidOperationException(methodCallExpression.ToString());
+#endif
+                }
             }
 
             _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);

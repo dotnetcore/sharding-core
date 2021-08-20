@@ -25,7 +25,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
             var secondExpression = GetSecondExpression();
             if (!(secondExpression is ConstantExpression constantExpression))
             {
-                throw new ShardingCoreException($"not found constant {methodCallExpression.Print()}");
+
+#if !EFCORE2
+                throw new ShardingCoreException($"not found constant {methodCallExpression.Print()}");  
+#endif
+#if EFCORE2
+                throw new ShardingCoreException($"not found constant {methodCallExpression}");
+#endif
             }
             _constantItem = (TEntity)constantExpression.Value;
         }
@@ -33,7 +39,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
         {
             if (!(secondExpression is ConstantExpression))
             {
+#if !EFCORE2
                 throw new InvalidOperationException(_methodCallExpression.Print());
+#endif
+#if EFCORE2
+                throw new InvalidOperationException(_methodCallExpression.ToString());
+#endif
             }
 
             return queryable;

@@ -110,9 +110,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var sum = result.Sum();
                 return ConvertSum(sum);
             }
-
+#if !EFCORE2
             throw new ShardingCoreException(
                 $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+#endif
+#if EFCORE2
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
+#endif
         }
 
         public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -198,8 +203,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 return ConvertSum(sum);
             }
 
+#if !EFCORE2
             throw new ShardingCoreException(
                 $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
+#endif
+#if EFCORE2
+            throw new ShardingCoreException(
+                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
+#endif
         }
         private TEnsureResult ConvertSum<TNumber>(TNumber number)
         {

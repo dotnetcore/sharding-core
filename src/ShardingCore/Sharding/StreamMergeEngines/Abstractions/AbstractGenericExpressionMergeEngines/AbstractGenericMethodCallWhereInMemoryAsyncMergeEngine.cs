@@ -31,7 +31,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericE
                     return queryable.Where(predicate);
                 }
             }
+#if !EFCORE2
             throw new InvalidOperationException(_methodCallExpression.Print());
+#endif
+#if EFCORE2
+            throw new InvalidOperationException(_methodCallExpression.ToString());
+#endif
         }
 
     }

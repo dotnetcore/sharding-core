@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.PriorityQueues;
 using ShardingCore.Extensions;
@@ -54,11 +55,21 @@ namespace ShardingCore.Sharding.Enumerators
             return _mergeContext.SelectContext.SelectProperties.Where(o => !o.IsAggregateMethod)
                 .Select(o => first.GetValueByExpression(o.PropertyName)).ToList();
         }
+#if !EFCORE2
         public async ValueTask<bool> MoveNextAsync()
+#endif
+#if EFCORE2
+        public async Task<bool> MoveNext(CancellationToken cancellationToken=new CancellationToken())
+#endif
         {
             if (_queue.IsEmpty())
                 return false;
-            var hasNext=await SetCurrentValue();
+#if !EFCORE2
+            var hasNext = await SetCurrentValue();
+#endif
+#if EFCORE2
+            var hasNext = await SetCurrentValue(cancellationToken);
+#endif
             if (hasNext)
             {
                 CurrentGroupValues = _queue.IsEmpty() ? new List<object>(0) : GetCurrentGroupValues(_queue.Peek());
@@ -77,7 +88,12 @@ namespace ShardingCore.Sharding.Enumerators
 
             return true;
         }
+#if !EFCORE2
         private async ValueTask<bool>  SetCurrentValue()
+#endif
+#if EFCORE2
+        private async Task<bool> SetCurrentValue(CancellationToken cancellationToken=new CancellationToken())
+#endif
         {
             CurrentValue = default;
             var currentValues = new List<T>();
@@ -87,7 +103,12 @@ namespace ShardingCore.Sharding.Enumerators
                 currentValues.Add(current);
                 var first = _queue.Poll();
 
+#if !EFCORE2
                 if (await first.MoveNextAsync())
+#endif
+#if EFCORE2
+                if (await first.MoveNext(cancellationToken))
+#endif
                 {
                     _queue.Offer(first);
                 }
@@ -157,6 +178,7 @@ namespace ShardingCore.Sharding.Enumerators
 
         public T ReallyCurrent => _queue.IsEmpty()?default(T):_queue.Peek().ReallyCurrent;
 
+#if !EFCORE2
 
         public async ValueTask DisposeAsync()
         {
@@ -165,6 +187,16 @@ namespace ShardingCore.Sharding.Enumerators
                 await enumerator.DisposeAsync();
             }
         }
+#endif
+#if EFCORE2
+        public void Dispose()
+        {
+            foreach (var enumerator in _enumerators)
+            {
+                 enumerator.Dispose();
+            }
+        }
+#endif
 
         public T Current => CurrentValue;
     }
