@@ -340,6 +340,19 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 - startup是否已经添加虚拟路由
 - startup是否已经添加bootstrapper.start()
 
+```c#
+            // //不支持MARS不支持追踪的
+            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+            //     ,op =>
+            //     {
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+            //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //     });
+```
+
 
 # 计划
 - [提供官网如果该项目比较成功的话]
