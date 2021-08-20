@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+
 #if !EFCORE5
 using ShardingCore.Extensions;
 #endif
@@ -24,30 +28,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             _virtualTableManager = virtualTableManager;
         }
 
-        public IEnumerable<RouteResult> Route<T>(RouteRuleContext<T> routeRuleContext)
+        public IEnumerable<RouteResult> Route<T, TShardingDbContext>(RouteRuleContext<T> routeRuleContext) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
-            var queryEntities = routeRuleContext.Queryable.ParseQueryableRoute();
-
-
-            var shardingEntities = queryEntities.Where(o => o.IsShardingTable());
-            foreach (var shardingEntity in shardingEntities)
-            {
-                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
-
-                var physicTables = virtualTable.RouteTo(new TableRouteConfig(routeRuleContext.Queryable));
-                if (!routeMaps.ContainsKey(virtualTable))
-                {
-                    routeMaps.Add(virtualTable, physicTables.ToHashSet());
-                }
-                else
-                {
-                    foreach (var physicTable in physicTables)
-                    {
-                        routeMaps[virtualTable].Add(physicTable);
-                    }
-                }
-            }
+            return Route(typeof(TShardingDbContext), routeRuleContext);
             ////先添加手动路由到当前上下文,之后将不再手动路由里面的自动路由添加到当前上下文
             //foreach (var kv in routeRuleContext.ManualTails)
             //{
@@ -105,8 +88,34 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             //        }
             //    }
             //}
+        }
 
-            return routeMaps.Select(o => o.Value).Cartesian().Select(o=>new RouteResult(o));
+        public IEnumerable<RouteResult> Route<T>(Type shardingDbContextType, RouteRuleContext<T> routeRuleContext)
+        {
+            Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
+            var queryEntities = routeRuleContext.Queryable.ParseQueryableRoute();
+
+
+            var shardingEntities = queryEntities.Where(o => o.IsShardingTable());
+            foreach (var shardingEntity in shardingEntities)
+            {
+                var virtualTable = _virtualTableManager.GetVirtualTable(shardingDbContextType, shardingEntity);
+
+                var physicTables = virtualTable.RouteTo(new TableRouteConfig(routeRuleContext.Queryable));
+                if (!routeMaps.ContainsKey(virtualTable))
+                {
+                    routeMaps.Add(virtualTable, physicTables.ToHashSet());
+                }
+                else
+                {
+                    foreach (var physicTable in physicTables)
+                    {
+                        routeMaps[virtualTable].Add(physicTable);
+                    }
+                }
+            }
+
+            return routeMaps.Select(o => o.Value).Cartesian().Select(o => new RouteResult(o));
         }
     }
 }

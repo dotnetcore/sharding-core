@@ -21,5 +21,6 @@ namespace Sample.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
+        public override Type ShardingDbContextType => this.GetType();
     }
 }

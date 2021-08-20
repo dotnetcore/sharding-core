@@ -2,25 +2,29 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualTables
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Friday, 18 December 2020 14:52:42
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Friday, 18 December 2020 14:52:42
+    * @Email: 326308290@qq.com
+    */
     /// <summary>
     /// 同一个数据库下的虚拟表管理者
     /// </summary>
     public class OneDbVirtualTableManager : IVirtualTableManager
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ConcurrentDictionary<Type, IVirtualTable> _shardingVirtualTables = new ConcurrentDictionary<Type, IVirtualTable>();
-        private readonly ConcurrentDictionary<string, IVirtualTable> _shardingOriginalTaleVirtualTales = new ConcurrentDictionary<string, IVirtualTable>();
+        //{sharidngDbContextType:{entityType,virtualTableType}}
+        private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, IVirtualTable>> _shardingVirtualTables = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, IVirtualTable>>();
+        private readonly ConcurrentDictionary<Type, ConcurrentDictionary<string, IVirtualTable>> _shardingOriginalTaleVirtualTales = new ConcurrentDictionary<Type, ConcurrentDictionary<string, IVirtualTable>>();
         public OneDbVirtualTableManager(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -38,62 +42,135 @@ namespace ShardingCore.Core.VirtualTables
             //}
         }
 
-        public void AddVirtualTable(IVirtualTable virtualTable)
+        private void CheckShardingDbContextType(Type shardingDbContextType)
         {
-            if (!_shardingVirtualTables.ContainsKey(virtualTable.EntityType))
+            if (!shardingDbContextType.IsShardingDbContext())
+                throw new ShardingCoreException(
+                    $"{shardingDbContextType.FullName} must impl {nameof(IShardingDbContext)}");
+        }
+
+        private void CheckShardingTableEntityType(Type shardingEntityType)
+        {
+            if (!shardingEntityType.IsShardingTable())
+                throw new ShardingCoreException(
+                    $"{shardingEntityType.FullName} must impl {nameof(IShardingTable)}");
+        }
+        private string CreateShardingEntityTypeKey(Type shardingDbContextType, Type entityType)
+        {
+            return $"{shardingDbContextType.FullName}{entityType.FullName}";
+        }
+        private string CreateShardingTableNameKey(Type shardingDbContextType, string originalTableName)
+        {
+            return $"{shardingDbContextType.FullName}{originalTableName}";
+        }
+
+        public void AddVirtualTable(Type shardingDbContextType, IVirtualTable virtualTable)
+        {
+            CheckShardingDbContextType(shardingDbContextType);
+
+            var innerShardingVirtualTables = _shardingVirtualTables.GetOrAdd(shardingDbContextType,
+                key => new ConcurrentDictionary<Type, IVirtualTable>());
+
+            if (!innerShardingVirtualTables.ContainsKey(virtualTable.EntityType))
             {
-                _shardingVirtualTables.TryAdd(virtualTable.EntityType, virtualTable);
+                innerShardingVirtualTables.TryAdd(virtualTable.EntityType, virtualTable);
             }
 
-            if (!_shardingOriginalTaleVirtualTales.ContainsKey(virtualTable.GetOriginalTableName()))
+            var innerShardingOriginalTableVirtualTables = _shardingOriginalTaleVirtualTales.GetOrAdd(shardingDbContextType,type=>new ConcurrentDictionary<string, IVirtualTable>());
+
+            if (!innerShardingOriginalTableVirtualTables.ContainsKey(virtualTable.GetOriginalTableName()))
             {
-                _shardingOriginalTaleVirtualTales.TryAdd(virtualTable.GetOriginalTableName(), virtualTable);
+                innerShardingOriginalTableVirtualTables.TryAdd(virtualTable.GetOriginalTableName(), virtualTable);
             }
         }
 
-        public IVirtualTable GetVirtualTable(Type shardingEntityType)
+        public IVirtualTable GetVirtualTable(Type shardingDbContextType, Type shardingEntityType)
         {
-            if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
+            CheckShardingDbContextType(shardingDbContextType);
+            CheckShardingTableEntityType(shardingEntityType);
+
+            var shardingKey = CreateShardingEntityTypeKey(shardingDbContextType, shardingEntityType);
+            if(!_shardingVirtualTables.TryGetValue(shardingDbContextType,out var innerShardingVirtualTables) || innerShardingVirtualTables.IsEmpty())
+                throw new ShardingVirtualTableNotFoundException(shardingDbContextType.FullName);
+
+            if (!innerShardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable)||virtualTable==null)
                 throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
             return virtualTable;
         }
 
 
-        public IVirtualTable<T> GetVirtualTable<T>() where T : class, IShardingTable
+        public IVirtualTable<T> GetVirtualTable<TDbContext, T>() where T : class, IShardingTable where TDbContext : DbContext, IShardingDbContext
         {
-            return (IVirtualTable<T>)GetVirtualTable(typeof(T));
+            return (IVirtualTable<T>)GetVirtualTable(typeof(TDbContext), typeof(T));
         }
 
-        public IVirtualTable GetVirtualTable(string originalTableName)
+        public IVirtualTable GetVirtualTable(Type shardingDbContextType, string originalTableName)
         {
-            if (!_shardingOriginalTaleVirtualTales.TryGetValue(originalTableName, out var virtualTable)||virtualTable==null)
+            CheckShardingDbContextType(shardingDbContextType);
+            if (!_shardingOriginalTaleVirtualTales.TryGetValue(shardingDbContextType, out var innerShardingOriginalTableVirtualTables) || innerShardingOriginalTableVirtualTables.IsEmpty())
+                throw new ShardingVirtualTableNotFoundException(shardingDbContextType.FullName);
+            if(!innerShardingOriginalTableVirtualTables.TryGetValue(originalTableName,out var virtualTable)|| virtualTable==null)
                 throw new ShardingVirtualTableNotFoundException(originalTableName);
             return virtualTable;
         }
 
-        public IVirtualTable TryGetVirtualTable(string originalTableName)
+        public IVirtualTable GetVirtualTable<TDbContext>(string originalTableName) where TDbContext : DbContext, IShardingDbContext
         {
-            if (!_shardingOriginalTaleVirtualTales.TryGetValue(originalTableName, out var virtualTable))
+            return GetVirtualTable(typeof(TDbContext), originalTableName);
+        }
+
+        public IVirtualTable TryGetVirtualTable(Type shardingDbContextType, string originalTableName)
+        {
+            CheckShardingDbContextType(shardingDbContextType);
+            if (!_shardingOriginalTaleVirtualTales.TryGetValue(shardingDbContextType,
+                out var innerShardingOriginalTableVirtualTables) || innerShardingOriginalTableVirtualTables.IsEmpty())
+                return null;
+            if (!innerShardingOriginalTableVirtualTables.TryGetValue(originalTableName, out var virtualTable) || virtualTable == null)
                 return null;
             return virtualTable;
         }
 
-        public List<IVirtualTable> GetAllVirtualTables()
+        public IVirtualTable TryGetVirtualTablee<TDbContext>(string originalTableName) where TDbContext : DbContext, IShardingDbContext
         {
-            return _shardingVirtualTables.Values.ToList();
+            return TryGetVirtualTable(typeof(TDbContext), originalTableName);
         }
 
-        public void AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable)
+        public List<IVirtualTable> GetAllVirtualTables(Type shardingDbContextType)
         {
-            AddPhysicTable(virtualTable.EntityType, physicTable);
+            if (!_shardingOriginalTaleVirtualTales.TryGetValue(shardingDbContextType,
+                out var innerShardingOriginalTableVirtualTables) || innerShardingOriginalTableVirtualTables.IsEmpty())
+                return new List<IVirtualTable>();
+            var keyPrefix = shardingDbContextType.FullName;
+            return innerShardingOriginalTableVirtualTables.Values.ToList();
         }
 
-        public void AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable)
+        public List<IVirtualTable> GetAllVirtualTables<TDbContext>() where TDbContext : DbContext, IShardingDbContext
         {
-            var virtualTable = GetVirtualTable(shardingEntityType);
+            return GetAllVirtualTables(typeof(TDbContext));
+        }
+
+        public void AddPhysicTable(Type shardingDbContextType, IVirtualTable virtualTable, IPhysicTable physicTable)
+        {
+            AddPhysicTable(shardingDbContextType, virtualTable.EntityType, physicTable);
+        }
+
+        public void AddPhysicTable<TDbContext>(IVirtualTable virtualTable, IPhysicTable physicTable) where TDbContext : DbContext, IShardingDbContext
+        {
+            AddPhysicTable(typeof(TDbContext), virtualTable.EntityType, physicTable);
+        }
+
+
+        public void AddPhysicTable(Type shardingDbContextType, Type shardingEntityType, IPhysicTable physicTable)
+        {
+            var virtualTable = GetVirtualTable(shardingDbContextType, shardingEntityType);
             virtualTable.AddPhysicTable(physicTable);
         }
 
+        public void AddPhysicTable<TDbContext>(Type shardingEntityType, IPhysicTable physicTable) where TDbContext : DbContext, IShardingDbContext
+        {
+            var virtualTable = GetVirtualTable(typeof(TDbContext), shardingEntityType);
+            virtualTable.AddPhysicTable(physicTable);
+        }
 
         ///// <summary>
         ///// 是否是分表字段
@@ -103,7 +180,7 @@ namespace ShardingCore.Core.VirtualTables
         ///// <returns></returns>
         //public bool IsShardingKey(Type shardingEntityType, string shardingField)
         //{
-        //    return _virtualTables.TryGetValue(shardingEntityType, out var virtualTable) && virtualTable.ShardingConfig.ShardingField == shardingField;
+        //    return _virtualTables.TryGetValue(shardingEntityType, out var virtualTable) && virtualTable.ShardingConfigOption.ShardingField == shardingField;
         //}
     }
 }

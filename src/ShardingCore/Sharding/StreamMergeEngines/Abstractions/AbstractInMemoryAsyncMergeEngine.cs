@@ -46,6 +46,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             }
 
             _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);
+            _mergeContext.TryOpen();
         }
 
         protected abstract IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression);

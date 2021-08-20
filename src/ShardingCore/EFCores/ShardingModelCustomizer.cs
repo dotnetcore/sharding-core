@@ -20,8 +20,9 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingModelCustomizer: ModelCustomizer
+    public class ShardingModelCustomizer<TShardingDbContext>: ModelCustomizer where TShardingDbContext:DbContext,IShardingDbContext
     {
+        private  Type _shardingDbContextType => typeof(TShardingDbContext);
         public ShardingModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
         {
         }
@@ -36,7 +37,7 @@ namespace ShardingCore.EFCores
                 if (!string.IsNullOrWhiteSpace(tail))
                 {
                     var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
-                    var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTaleAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
+                    var typeMap = virtualTableManager.GetAllVirtualTables(_shardingDbContextType).Where(o => o.GetTaleAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
 
                     //设置分表
                     var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && typeMap.Contains(o.ClrType));

@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -13,7 +16,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     {
         IRouteRuleEngine CreateEngine();
         RouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable);
-        IEnumerable<RouteResult> Route<T>(IQueryable<T> queryable);
-        IEnumerable<RouteResult> Route<T>(RouteRuleContext<T> ruleContext);
+        IEnumerable<RouteResult> Route<T,TShardingDbContext>(IQueryable<T> queryable) where TShardingDbContext:DbContext,IShardingDbContext;
+        IEnumerable<RouteResult> Route<T, TShardingDbContext>(RouteRuleContext<T> ruleContext) where TShardingDbContext : DbContext, IShardingDbContext;
+        IEnumerable<RouteResult> Route<T>(Type shardingDbContextType,IQueryable<T> queryable);
+        IEnumerable<RouteResult> Route<T>(Type shardingDbContextType,RouteRuleContext<T> ruleContext);
     }
 }

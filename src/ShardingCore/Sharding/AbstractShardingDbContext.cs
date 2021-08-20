@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,13 +31,13 @@ namespace ShardingCore.Sharding
     /// 分表分库的dbcontext
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext where T : DbContext, IShardingTableDbContext
+    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingTableDbContext<T> where T : DbContext, IShardingTableDbContext
     {
         private readonly string EMPTY_SHARDING_TAIL_ID = Guid.NewGuid().ToString("n");
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
-        private readonly ShardingConfig<T> _shardingConfig;
+        private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private DbContextOptions<T> _dbContextOptions;
 
         private readonly object CREATELOCK = new object();
@@ -45,10 +46,13 @@ namespace ShardingCore.Sharding
         {
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
-            _shardingConfig = ShardingContainer.GetService<ShardingConfig<T>>();
+            _shardingDbContextOptionsBuilderConfig = ShardingContainer
+                .GetService<IEnumerable<IShardingDbContextOptionsBuilderConfig>>()
+                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType);
 
         }
 
+        public abstract Type ShardingDbContextType { get; }
         public Type ActualDbContextType => typeof(T);
 
 
@@ -64,8 +68,8 @@ namespace ShardingCore.Sharding
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
             var dbConnection = Database.GetDbConnection();
-            dbConnection.Open();
-            return _shardingConfig.ShardingDbContextOptionsCreator(dbConnection, dbContextOptionBuilder);
+            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionBuilder);
+            return dbContextOptionBuilder.Options;
         }
 
         private ShardingDbContextOptions CreateSameShardingDbContextOptions(string tail)
@@ -87,7 +91,7 @@ namespace ShardingCore.Sharding
         {
             if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                dbContext = _shardingDbContextFactory.Create(ShardingDbContextType,CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
                 _dbContextCaches.TryAdd(tail, dbContext);
             }
 
@@ -101,11 +105,23 @@ namespace ShardingCore.Sharding
             var tail = EMPTY_SHARDING_TAIL_ID;
             if (entity.IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
+                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType,entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
                 tail = physicTable.Tail;
             }
 
             return GetDbContext(true, tail);
+        }
+
+        public bool TryOpen()
+        {
+            var dbConnection = Database.GetDbConnection();
+            if (dbConnection.State != ConnectionState.Open)
+            {
+                dbConnection.Open();
+                return true;
+            }
+
+            return false;
         }
 
         public override EntityEntry Add(object entity)
@@ -380,12 +396,14 @@ namespace ShardingCore.Sharding
             finally
             {
                 if (!isBeginTransaction)
-                    Database.CurrentTransaction?.Dispose();
-
-                foreach (var dbContextCache in _dbContextCaches)
                 {
-                    dbContextCache.Value.Database.UseTransaction(null);
+                    Database.CurrentTransaction?.Dispose();
+                    foreach (var dbContextCache in _dbContextCaches)
+                    {
+                        dbContextCache.Value.Database.UseTransaction(null);
+                    }
                 }
+
             }
             return i;
         }
@@ -415,11 +433,12 @@ namespace ShardingCore.Sharding
             finally
             {
                 if (!isBeginTransaction)
-                    Database.CurrentTransaction?.Dispose();
-
-                foreach (var dbContextCache in _dbContextCaches)
                 {
-                    dbContextCache.Value.Database.UseTransaction(null);
+                    Database.CurrentTransaction?.Dispose();
+                    foreach (var dbContextCache in _dbContextCaches)
+                    {
+                        dbContextCache.Value.Database.UseTransaction(null);
+                    }
                 }
             }
             return i;
@@ -451,12 +470,14 @@ namespace ShardingCore.Sharding
             {
                 if (!isBeginTransaction) { }
                 if (Database.CurrentTransaction != null)
-                    await Database.CurrentTransaction.DisposeAsync();
-
-                foreach (var dbContextCache in _dbContextCaches)
                 {
-                    await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
+                    await Database.CurrentTransaction.DisposeAsync();
+                    foreach (var dbContextCache in _dbContextCaches)
+                    {
+                        await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
+                    }
                 }
+
             }
             return i;
         }
@@ -487,12 +508,15 @@ namespace ShardingCore.Sharding
             {
                 if (!isBeginTransaction)
                     if (Database.CurrentTransaction != null)
+                    {
                         await Database.CurrentTransaction.DisposeAsync();
 
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
-                }
+                        foreach (var dbContextCache in _dbContextCaches)
+                        {
+                            await dbContextCache.Value.Database.UseTransactionAsync(null, cancellationToken: cancellationToken);
+                        }
+                    }
+
             }
             return i;
         }

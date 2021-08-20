@@ -1,27 +1,24 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
-using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.DbContexts;
 using ShardingCore.Sharding.Abstractions;
+using System.Collections.Generic;
+using System.Linq;
 
 
 namespace ShardingCore.Sharding
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Monday, 25 January 2021 11:38:27
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Monday, 25 January 2021 11:38:27
+    * @Email: 326308290@qq.com
+    */
     public class StreamMergeContext<T>
     {
-        private readonly IShardingParallelDbContextFactory _shardingParallelDbContextFactory;
         //private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
         private readonly IShardingDbContext _shardingDbContext;
@@ -37,10 +34,8 @@ namespace ShardingCore.Sharding
         public SelectContext SelectContext { get;}
         public GroupByContext GroupByContext { get; }
 
-        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory,
-            IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
+        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory)
         {
-            _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
             //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;
@@ -69,13 +64,17 @@ namespace ShardingCore.Sharding
         //    _reWriteSource = reWriteResult.ReWriteQueryable;
         //}
 
+        public bool TryOpen()
+        {
+            return _shardingDbContext.TryOpen();
+        }
         public DbContext CreateDbContext(string tail)
         {
             return _shardingDbContext.GetDbContext(true,tail);
         }
         public IEnumerable<RouteResult> GetRouteResults()
         {
-            return _tableRoutingRuleEngineFactory.Route(_source);
+            return _tableRoutingRuleEngineFactory.Route(_shardingDbContext.GetType(),_source);
         }
 
         //public ShardingScope CreateScope()

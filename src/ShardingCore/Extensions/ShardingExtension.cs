@@ -26,9 +26,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static string GetShardingTableDbContextTail(this IShardingTableDbContext dbContext)
         {
-            if (string.IsNullOrWhiteSpace(dbContext.ModelChangeKey))
-                throw new ShardingCoreException($"cant found ModelChangeKey in {dbContext.GetType().FullName}");
-            return dbContext.ModelChangeKey.Replace(ShardingTableDbContextFormat, string.Empty);
+            return dbContext.ModelChangeKey?.Replace(ShardingTableDbContextFormat, string.Empty)??string.Empty;
 
         }
         /// <summary>

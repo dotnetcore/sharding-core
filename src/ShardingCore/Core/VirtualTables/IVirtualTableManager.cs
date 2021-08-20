@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -18,58 +20,70 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 添加虚拟表应用启动时 add virtual table when app start
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="virtualTable">虚拟表</param>
-        void AddVirtualTable(IVirtualTable virtualTable);
+        void AddVirtualTable(Type shardingDbContextType,IVirtualTable virtualTable);
 
         /// <summary>
         /// 获取虚拟表 get virtual table by sharding entity type
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="shardingEntityType"></param>
         /// <returns></returns>
-        IVirtualTable GetVirtualTable(Type shardingEntityType);
+        IVirtualTable GetVirtualTable(Type shardingDbContextType, Type shardingEntityType);
 
 
         /// <summary>
         /// 获取虚拟表 get virtual table by sharding entity type
         /// </summary>
         /// <returns></returns>     
-        IVirtualTable<T> GetVirtualTable<T>() where T : class, IShardingTable;
+        IVirtualTable<T> GetVirtualTable<TDbContext,T>() where T : class, IShardingTable where TDbContext : DbContext, IShardingDbContext;
 
         /// <summary>
         /// 获取虚拟表 get virtual table by original table name
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="originalTableName"></param>
         /// <returns></returns>
-        IVirtualTable GetVirtualTable(string originalTableName);
+        IVirtualTable GetVirtualTable(Type shardingDbContextType, string originalTableName);
+        IVirtualTable GetVirtualTable<TDbContext>(string originalTableName) where TDbContext : DbContext, IShardingDbContext;
 
         /// <summary>
         /// 尝试获取虚拟表没有返回null
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="originalTableName"></param>
         /// <returns></returns>
-        IVirtualTable TryGetVirtualTable(string originalTableName);
+        IVirtualTable TryGetVirtualTable(Type shardingDbContextType, string originalTableName);
+        IVirtualTable TryGetVirtualTablee<TDbContext>(string originalTableName) where TDbContext : DbContext, IShardingDbContext;
 
         /// <summary>
         /// 获取所有的虚拟表 get all virtual table
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <returns></returns>
-        List<IVirtualTable> GetAllVirtualTables();
+        List<IVirtualTable> GetAllVirtualTables(Type shardingDbContextType);
+        List<IVirtualTable> GetAllVirtualTables<TDbContext>() where TDbContext : DbContext, IShardingDbContext;
 
 
         /// <summary>
         /// 添加物理表 add physic table
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="virtualTable"></param>
         /// <param name="physicTable"></param>
-        void AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable);
+        void AddPhysicTable(Type shardingDbContextType,IVirtualTable virtualTable, IPhysicTable physicTable);
+        void AddPhysicTable<TDbContext>(IVirtualTable virtualTable, IPhysicTable physicTable) where TDbContext : DbContext, IShardingDbContext;
 
 
         /// <summary>
         /// 添加物理表 add physic table
         /// </summary>
+        /// <param name="shardingDbContextType">分表的dbcontext类型</param>
         /// <param name="shardingEntityType"></param>
         /// <param name="physicTable"></param>
-        void AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable);
+        void AddPhysicTable(Type shardingDbContextType,Type shardingEntityType, IPhysicTable physicTable);
+        void AddPhysicTable<TDbContext>(Type shardingEntityType, IPhysicTable physicTable) where TDbContext : DbContext, IShardingDbContext;
 
         ///// <summary>
         ///// 添加物理表 add physic table

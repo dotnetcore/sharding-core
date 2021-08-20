@@ -6,23 +6,26 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Helpers
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Friday, 22 January 2021 13:32:08
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Friday, 22 January 2021 13:32:08
+    * @Email: 326308290@qq.com
+    */
     public class ShardingCoreHelper
     {
-        private ShardingCoreHelper(){}
+        private ShardingCoreHelper() { }
         public static int GetStringHashCode(string value)
         {
             int h = 0; // 默认值是0
-            if (value.Length > 0) {
-                for (int i = 0; i < value.Length; i++) {
+            if (value.Length > 0)
+            {
+                for (int i = 0; i < value.Length; i++)
+                {
                     h = 31 * h + value[i]; // val[0]*31^(n-1) + val[1]*31^(n-2) + ... + val[n-1]
                 }
             }
@@ -36,7 +39,7 @@ namespace ShardingCore.Helpers
         }
         public static long ConvertDateTimeToLong(DateTime time)
         {
-            return  (long) (time.AddHours(-8) - UtcStartTime).TotalMilliseconds;
+            return (long)(time.AddHours(-8) - UtcStartTime).TotalMilliseconds;
         }
 
         /// <summary>
@@ -61,7 +64,7 @@ namespace ShardingCore.Helpers
         public static DateTime GetCurrentMonday(DateTime time)
         {
             DateTime dateTime1 = new DateTime(time.Year, time.Month, time.Day);
-            int num = (int) (time.DayOfWeek - 1);
+            int num = (int)(time.DayOfWeek - 1);
             if (num == -1)
                 num = 6;
             return dateTime1.AddDays(-num);
@@ -88,7 +91,7 @@ namespace ShardingCore.Helpers
             }
 
             var paramType = declaredConstructors[0].GetParameters()[0].ParameterType;
-            if (paramType != typeof(ShardingDbContextOptions) && paramType != typeof(DbContextOptions) && paramType!= typeof(DbContextOptions<TContext>))
+            if (paramType != typeof(ShardingDbContextOptions) && paramType != typeof(DbContextOptions) && paramType != typeof(DbContextOptions<TContext>))
             {
                 throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters should use {typeof(ShardingDbContextOptions)} or {typeof(DbContextOptions)} or {typeof(DbContextOptions<TContext>)} ");
             }
@@ -103,8 +106,7 @@ namespace ShardingCore.Helpers
             //}
 
         }
-
-        public static Func<ShardingDbContextOptions, DbContext> CreateActivator<TContext>() where TContext : DbContext
+        public static Func<ShardingDbContextOptions, DbContext> CreateActivator<TContext>() where TContext : DbContext, IShardingTableDbContext
         {
             var constructors
                 = typeof(TContext).GetTypeInfo().DeclaredConstructors
@@ -118,7 +120,7 @@ namespace ShardingCore.Helpers
 
             if (parameterType == typeof(ShardingDbContextOptions))
             {
-                return CreateShardingDbContextOptionsActivator<TContext>(constructors[0],parameterType);
+                return CreateShardingDbContextOptionsActivator<TContext>(constructors[0], parameterType);
             }
             else if (typeof(DbContextOptions).IsAssignableFrom(parameterType))
             {
@@ -147,7 +149,7 @@ namespace ShardingCore.Helpers
         /// <param name="constructor"></param>
         /// <param name="paramType"></param>
         /// <returns></returns>
-        private static Func<ShardingDbContextOptions, DbContext> CreateShardingDbContextOptionsActivator<TContext>(ConstructorInfo constructor,Type paramType) where TContext : DbContext
+        private static Func<ShardingDbContextOptions, DbContext> CreateShardingDbContextOptionsActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext, IShardingTableDbContext
         {
             var po = Expression.Parameter(paramType, "o");
             var newExpression = Expression.New(constructor, po);
@@ -166,7 +168,7 @@ namespace ShardingCore.Helpers
         /// <param name="constructor"></param>
         /// <param name="paramType"></param>
         /// <returns></returns>
-        private static Func<ShardingDbContextOptions, DbContext> CreateDbContextOptionsGenericActivator<TContext>(ConstructorInfo constructor,Type paramType) where TContext : DbContext
+        private static Func<ShardingDbContextOptions, DbContext> CreateDbContextOptionsGenericActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext, IShardingTableDbContext
         {
             var parameterExpression = Expression.Parameter(typeof(ShardingDbContextOptions), "o");
             //o.DbContextOptions

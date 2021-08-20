@@ -21,6 +21,32 @@ namespace ShardingCore.Extensions
 */
     public static class CommonExtension
     {
+
+        /// <summary>
+        /// IShardingDbContext
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <returns></returns>
+        public static bool IsShardingDbContext(this DbContext dbContext)
+        {
+            if (dbContext == null)
+                throw new ArgumentNullException(nameof(dbContext));
+            return dbContext is IShardingDbContext;
+        }
+        /// <summary>
+        /// IShardingDbContext
+        /// </summary>
+        /// <param name="dbContextType"></param>
+        /// <returns></returns>
+        public static bool IsShardingDbContext(this Type dbContextType)
+        {
+            if (dbContextType == null)
+                throw new ArgumentNullException(nameof(dbContextType));
+            if (!typeof(DbContext).IsAssignableFrom(dbContextType))
+                return false;
+            return typeof(IShardingDbContext).IsAssignableFrom(dbContextType);
+        }
+
         /// <summary>
         /// IShardingTableDbContext
         /// </summary>
@@ -41,6 +67,8 @@ namespace ShardingCore.Extensions
         {
             if (dbContextType == null)
                 throw new ArgumentNullException(nameof(dbContextType));
+            if (!typeof(DbContext).IsAssignableFrom(dbContextType))
+                return false;
             return typeof(IShardingTableDbContext).IsAssignableFrom(dbContextType);
         }
         /// <summary>
@@ -64,7 +92,7 @@ namespace ShardingCore.Extensions
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
-            return typeof(IShardingTable).IsAssignableFrom(entity.GetType());
+            return entity is IShardingTable;
         }
         // /// <summary>
         // /// 虚拟表转换成对应的db配置
@@ -73,7 +101,7 @@ namespace ShardingCore.Extensions
         // /// <returns></returns>
         // public static List<VirtualTableDbContextConfig> GetVirtualTableDbContextConfigs(this List<IVirtualTable> virtualTables)
         // {
-        //     return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetOriginalTableName(), o.ShardingConfig.TailPrefix)).ToList();
+        //     return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetOriginalTableName(), o.ShardingConfigOption.TailPrefix)).ToList();
         // }
         /// <summary>
         /// 是否是集合contains方法

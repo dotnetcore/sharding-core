@@ -1,64 +1,54 @@
-using System;
-using System.Data.Common;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.DbContexts.VirtualDbContexts;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ShardingCore.DbContexts
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 24 December 2020 08:22:48
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Thursday, 24 December 2020 08:22:48
+    * @Email: 326308290@qq.com
+    */
     public class ShardingDbContextFactory:IShardingDbContextFactory
     {
-        private readonly IShardingCoreOptions _shardingCoreOptions;
-        private readonly IDbContextCreateFilterManager _dbContextCreateFilterManager;
-        private readonly IDbContextOptionsProvider _dbContextOptionsProvider;
+        private readonly IEnumerable<IShardingDbContextCreatorConfig> _shardingDbContextCreatorConfigs;
 
-        public ShardingDbContextFactory(IShardingCoreOptions shardingCoreOptions, IDbContextCreateFilterManager dbContextCreateFilterManager,IDbContextOptionsProvider dbContextOptionsProvider)
+        public ShardingDbContextFactory(IEnumerable<IShardingDbContextCreatorConfig> shardingDbContextCreatorConfigs)
         {
-            _shardingCoreOptions = shardingCoreOptions;
-            _dbContextCreateFilterManager = dbContextCreateFilterManager;
-            _dbContextOptionsProvider = dbContextOptionsProvider;
+            _shardingDbContextCreatorConfigs = shardingDbContextCreatorConfigs;
         }
-        public DbContext Create(ShardingDbContextOptions shardingDbContextOptions)
+        public DbContext Create(Type shardingDbContextType, ShardingDbContextOptions shardingDbContextOptions)
         {
+            if (!shardingDbContextType.IsShardingDbContext())
+                throw new ShardingCoreException(
+                    $"{shardingDbContextType.FullName} must impl {nameof(IShardingDbContext)}");
+            var shardingDbContextCreatorConfig = _shardingDbContextCreatorConfigs.FirstOrDefault(o=>o.ShardingDbContextType==shardingDbContextType);
+            if (shardingDbContextCreatorConfig == null)
+            {
+                throw new ShardingCoreException(
+                    $"{shardingDbContextType.FullName} cant found DefaultShardingDbContextCreatorConfig<{shardingDbContextType.Name}> should use {nameof(DIExtension.AddShardingDbContext)}");
+            }
             var tail=shardingDbContextOptions.Tail;
-            var shardingConfigEntry = _shardingCoreOptions.GetShardingConfig();
             
-            var dbContext = shardingConfigEntry.Creator(shardingDbContextOptions);
+            var dbContext = shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
             if (!string.IsNullOrWhiteSpace(tail) && dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.SetShardingTableDbContextTail(tail);
-            }
-
-            var filters = _dbContextCreateFilterManager.GetFilters();
-            if (filters.Any())
-            {
-                foreach (var dbContextCreateFilter in filters)
-                {
-                    dbContextCreateFilter.CreateAfter(dbContext);
-                }
             }
             var dbContextModel = dbContext.Model;
             return dbContext;
         }
 
 
-        //public DbContext Create(DbConnection dbConnection,string tail)
-        //{
-        //    var shardingDbContextOptions =
-        //        new ShardingDbContextOptions(_dbContextOptionsProvider.GetDbContextOptions(dbConnection), tail);
-        //   return Create(shardingDbContextOptions);
-        //}
+        public DbContext Create<TShardingDbContext>(ShardingDbContextOptions shardingDbContextOptions) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return Create(typeof(TShardingDbContext), shardingDbContextOptions);
+        }
     }
 }

@@ -13,14 +13,15 @@ namespace ShardingCore.Sharding.Abstractions
 */
     public interface IShardingDbContext
     {
+        Type ShardingDbContextType { get; }
         /// <summary>
         /// 真实的DbContext 类型
         /// </summary>
-       Type ActualDbContextType {  get;}
+        Type ActualDbContextType {  get;}
         /// <summary>
         /// 创建DbContext
         /// </summary>
-        /// <param name="track"></param>
+        /// <param name="track">true表示创建的dbcontext挂在当前的shardingdbcontext下无需管理生命周期，false需要手动释放，true not care dbcontext life, false need call dispose()</param>
         /// <param name="tail"></param>
         /// <returns></returns>
         DbContext GetDbContext(bool track,string tail);
@@ -32,6 +33,13 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
 
+
+        bool TryOpen();
+
+    }
+
+    public interface IShardingTableDbContext<T> : IShardingDbContext where T : DbContext, IShardingTableDbContext
+    {
 
     }
 }

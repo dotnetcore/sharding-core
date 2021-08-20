@@ -29,5 +29,9 @@ namespace ShardingCore
         {
             return Services.GetService<T>();
         }
+        public static object GetService(Type serviceType)
+        {
+            return Services.GetService(serviceType);
+        }
     }
 }

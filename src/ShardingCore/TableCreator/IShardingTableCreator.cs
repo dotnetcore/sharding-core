@@ -1,6 +1,8 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Exceptions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.TableCreator
 {
@@ -20,13 +22,14 @@ namespace ShardingCore.TableCreator
         /// </summary>
         /// <param name="tail"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(string tail) where T : class, IShardingTable;
+        void CreateTable<TShardingDbContext,T>(string tail) where T : class, IShardingTable where TShardingDbContext:DbContext,IShardingDbContext;
         /// <summary>
         /// 创建表
         /// </summary>
+        /// <param name="shardingDbContextType"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        void CreateTable(Type shardingEntityType,string tail);
+        void CreateTable(Type shardingDbContextType,Type shardingEntityType,string tail);
     }
 }
