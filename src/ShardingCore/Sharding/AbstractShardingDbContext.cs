@@ -97,11 +97,10 @@ namespace ShardingCore.Sharding
             return new ShardingDbContextOptions(GetParallelDbContextOptions(), tail);
         }
 
-        private bool SupportMARS => _shardingDbContextOptionsBuilderConfig.SupportMARS;
 
-        public DbContext GetDbContext(bool isQuery, string tail)
+        public DbContext GetDbContext(bool track, string tail)
         {
-            if (SupportMARS || !isQuery)
+            if (SupportMARS() || !track)
             {
                 if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
                 {
@@ -128,9 +127,13 @@ namespace ShardingCore.Sharding
                 tail = physicTable.Tail;
             }
 
-            return GetDbContext(false, tail);
+            return GetDbContext(true, tail);
         }
 
+        public bool SupportMARS()
+        {
+            return _shardingDbContextOptionsBuilderConfig.SupportMARS;
+        }
         public bool TryOpen()
         {
             var dbConnection = Database.GetDbConnection();

@@ -122,7 +122,7 @@ namespace ShardingCore
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(true,string.Empty);
+                var dbContext = shardingDbContext.GetDbContext(false,string.Empty);
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
                 lock (modelCacheSyncObject)

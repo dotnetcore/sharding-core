@@ -24,7 +24,8 @@ namespace Sample.SqlServer
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
 
-            services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+            services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
                 ,op =>
                 {
                     op.EnsureCreatedWithOutShardingTable = true;
@@ -33,12 +34,13 @@ namespace Sample.SqlServer
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
             // //不支持MARS不支持追踪的
-            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
             //     ,op =>
             //     {
             //         op.EnsureCreatedWithOutShardingTable = true;
             //         op.CreateShardingTableOnStart = true;
             //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+            //         //不支持mars额外加一条字符串的
             //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //     });

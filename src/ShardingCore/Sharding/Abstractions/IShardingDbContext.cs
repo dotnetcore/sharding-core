@@ -21,10 +21,10 @@ namespace ShardingCore.Sharding.Abstractions
         /// <summary>
         /// ����DbContext
         /// </summary>
-        /// <param name="track">true��ʾ������dbcontext���ڵ�ǰ��shardingdbcontext����������������ڣ�false��Ҫ�ֶ��ͷţ�true not care dbcontext life, false need call dispose()</param>
+        /// <param name="track">true not care dbcontext life, false need call dispose()</param>
         /// <param name="tail"></param>
         /// <returns></returns>
-        DbContext GetDbContext(bool isQuery,string tail);
+        DbContext GetDbContext(bool track,string tail);
         /// <summary>
         /// ����ʵ�崴��db context
         /// </summary>
@@ -35,6 +35,7 @@ namespace ShardingCore.Sharding.Abstractions
 
 
         bool TryOpen();
+        bool SupportMARS();
 
     }
 

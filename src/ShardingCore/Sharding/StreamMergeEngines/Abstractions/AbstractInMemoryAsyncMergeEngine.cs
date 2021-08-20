@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
@@ -27,6 +28,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         private readonly StreamMergeContext<TEntity> _mergeContext;
         private readonly IQueryable<TEntity> _queryable;
         private readonly Expression _secondExpression;
+        private readonly ICollection<DbContext> _parllelDbbContexts;
 
         public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
         {
@@ -61,22 +63,20 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
             _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);
             _mergeContext.TryOpen();
+            _parllelDbbContexts = new List<DbContext>();
         }
 
         protected abstract IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression);
 
         public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery,CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = GetStreamMergeContext().GetRouteResults();
-            var enumeratorTasks = tableResult.Select(routeResult =>
+            var enumeratorTasks = GetRouteDbContext().Select(shardingDbContext =>
             {
-                var tail = CheckAndGetTail(routeResult);
 
                 return Task.Run(async () =>
                 {
                     try
                     {
-                        var shardingDbContext = GetStreamMergeContext().CreateDbContext(tail);
                         var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
                                 .ReplaceDbContextQueryable(shardingDbContext);
                         var newFilterQueryable=EFQueryAfterFilter<TResult>(newQueryable);
@@ -95,16 +95,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         }
         public  List<TResult> Execute<TResult>(Func<IQueryable, TResult> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = GetStreamMergeContext().GetRouteResults();
-            var enumeratorTasks = tableResult.Select(routeResult =>
+            var enumeratorTasks = GetRouteDbContext().Select(shardingDbContext =>
             {
-                var tail = CheckAndGetTail(routeResult);
 
                 return Task.Run( () =>
                 {
                     try
                     {
-                        var shardingDbContext = GetStreamMergeContext().CreateDbContext(tail);
                         var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
                             .ReplaceDbContextQueryable(shardingDbContext);
                         var newFilterQueryable = EFQueryAfterFilter<TResult>(newQueryable);
@@ -119,6 +116,20 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
                 });
             }).ToArray();
             return Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult().ToList();
+        }
+
+        private DbContext[] GetRouteDbContext()
+        {
+
+            var tableResult = _mergeContext.GetRouteResults();
+            return tableResult.Select(routeResult =>
+            {
+                var tail = CheckAndGetTail(routeResult);
+                var shardingDbContext = _mergeContext.CreateDbContext(tableResult.Count() == 1, tail);
+                if (!_mergeContext.SupportMARS())
+                    _parllelDbbContexts.Add(shardingDbContext);
+                return shardingDbContext;
+            }).ToArray();
         }
         private string CheckAndGetTail(RouteResult routeResult)
         {

@@ -207,6 +207,7 @@ Oracle | 支持 | 未测试
             //         op.EnsureCreatedWithOutShardingTable = true;
             //         op.CreateShardingTableOnStart = true;
             //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+            //         //不支持mars额外加一条字符串的
             //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //     });
@@ -348,6 +349,7 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
             //         op.EnsureCreatedWithOutShardingTable = true;
             //         op.CreateShardingTableOnStart = true;
             //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+            //         //不支持mars额外加一条字符串的
             //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //     });

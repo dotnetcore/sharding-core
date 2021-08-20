@@ -68,9 +68,14 @@ namespace ShardingCore.Sharding
         {
             return _shardingDbContext.TryOpen();
         }
-        public DbContext CreateDbContext(string tail)
+
+        public bool SupportMARS()
         {
-            return _shardingDbContext.GetDbContext(true,tail);
+            return _shardingDbContext.SupportMARS();
+        }
+        public DbContext CreateDbContext(bool track,string tail)
+        {
+            return _shardingDbContext.GetDbContext(track, tail);
         }
         public IEnumerable<RouteResult> GetRouteResults()
         {
