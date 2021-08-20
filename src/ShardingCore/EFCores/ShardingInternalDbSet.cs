@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Internal;
 using ShardingCore.Core;
@@ -17,15 +18,25 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingInternalDbSet<TEntity> :InternalDbSet<TEntity>
+    
+    public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
         where TEntity : class
     {
         private readonly DbContext _context;
+#if EFCORE5
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
             _context = context;
         }
+#endif
+#if !EFCORE5
+
+        public ShardingInternalDbSet(DbContext context) : base(context)
+        {
+            _context = context;
+        }
+#endif
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -34,7 +45,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Add(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext) _context).CreateGenericDbContext(entity);
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
             return genericDbContext.Add(entity);
         }
 
@@ -44,14 +55,24 @@ namespace ShardingCore.EFCores
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
+#if !EFCORE2
         public override async ValueTask<EntityEntry<TEntity>> AddAsync(
             TEntity entity,
             CancellationToken cancellationToken = default)
         {
-            var genericDbContext = ((IShardingDbContext) _context).CreateGenericDbContext(entity);
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
             return await genericDbContext.AddAsync(entity, cancellationToken);
 
         }
+#endif
+#if EFCORE2
+        public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            return await genericDbContext.AddAsync(entity, cancellationToken);
+        }
+
+#endif
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -61,7 +82,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Attach(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext) _context).CreateGenericDbContext(entity);
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
             return genericDbContext.Attach(entity);
         }
 
@@ -75,7 +96,7 @@ namespace ShardingCore.EFCores
         {
             Check.NotNull(entity, nameof(entity));
 
-            var genericDbContext = ((IShardingDbContext) _context).CreateGenericDbContext(entity);
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
             return genericDbContext.Remove(entity);
         }
 
@@ -87,7 +108,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Update(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext) _context).CreateGenericDbContext(entity);
+            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
             return genericDbContext.Update(entity);
         }
 
@@ -264,7 +285,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-               await group.Key.AddRangeAsync(group.Select(o => o.Entity));
+                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
             }
         }
 
@@ -276,7 +297,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void AttachRange(IEnumerable<TEntity> entities)
         {
-            
+
             var groups = entities.Select(o =>
             {
                 var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
@@ -289,7 +310,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                 group.Key.AttachRange(group.Select(o => o.Entity));
+                group.Key.AttachRange(group.Select(o => o.Entity));
             }
         }
 
@@ -346,4 +367,5 @@ namespace ShardingCore.EFCores
         }
 
     }
+    
 }

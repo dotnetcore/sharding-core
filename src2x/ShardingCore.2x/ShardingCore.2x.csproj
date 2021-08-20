@@ -25,7 +25,6 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
     </ItemGroup>
 
 </Project>

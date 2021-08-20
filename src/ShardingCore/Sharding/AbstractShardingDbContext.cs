@@ -91,7 +91,7 @@ namespace ShardingCore.Sharding
         {
             if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(ShardingDbContextType,CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
                 _dbContextCaches.TryAdd(tail, dbContext);
             }
 
@@ -105,7 +105,7 @@ namespace ShardingCore.Sharding
             var tail = EMPTY_SHARDING_TAIL_ID;
             if (entity.IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType,entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
+                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
                 tail = physicTable.Tail;
             }
 
@@ -134,6 +134,8 @@ namespace ShardingCore.Sharding
             return CreateGenericDbContext(entity).Add(entity);
         }
 
+#if !EFCORE2
+        
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
@@ -143,6 +145,19 @@ namespace ShardingCore.Sharding
         {
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
+#endif
+#if EFCORE2
+
+        public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
+        }
+
+        public override Task<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
+        }
+#endif
 
         public override void AddRange(params object[] entities)
         {
@@ -443,6 +458,8 @@ namespace ShardingCore.Sharding
             }
             return i;
         }
+#if !EFCORE2
+        
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
@@ -481,6 +498,49 @@ namespace ShardingCore.Sharding
             }
             return i;
         }
+#endif
+#if EFCORE2
+
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+
+            var isBeginTransaction = IsBeginTransaction;
+            //如果是内部开的事务就内部自己消化
+            if (!isBeginTransaction)
+            {
+                await Database.BeginTransactionAsync(cancellationToken);
+            }
+            int i = 0;
+
+            try
+            {
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    dbContextCache.Value.Database.UseTransaction(Database.CurrentTransaction.GetDbTransaction());
+                    i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
+                }
+                if (!isBeginTransaction)
+                    Database.CurrentTransaction.Commit();
+            }
+            finally
+            {
+                if (!isBeginTransaction) { }
+                if (Database.CurrentTransaction != null)
+                {
+                    Database.CurrentTransaction.Dispose();
+                    foreach (var dbContextCache in _dbContextCaches)
+                    {
+                        dbContextCache.Value.Database.UseTransaction(null);
+                    }
+                }
+
+            }
+            return i;
+        }
+#endif
+#if !EFCORE2
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -520,6 +580,48 @@ namespace ShardingCore.Sharding
             }
             return i;
         }
+#endif
+#if EFCORE2
+
+        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        {
+
+            var isBeginTransaction = IsBeginTransaction;
+            //如果是内部开的事务就内部自己消化
+            if (!isBeginTransaction)
+            {
+                await Database.BeginTransactionAsync(cancellationToken);
+            }
+            int i = 0;
+
+            try
+            {
+
+                foreach (var dbContextCache in _dbContextCaches)
+                {
+                    dbContextCache.Value.Database.UseTransaction(Database.CurrentTransaction.GetDbTransaction());
+                    i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                }
+                if (!isBeginTransaction)
+                    Database.CurrentTransaction.Commit(cancellationToken);
+            }
+            finally
+            {
+                if (!isBeginTransaction)
+                    if (Database.CurrentTransaction != null)
+                    {
+                        Database.CurrentTransaction.Dispose();
+
+                        foreach (var dbContextCache in _dbContextCaches)
+                        {
+                            dbContextCache.Value.Database.UseTransaction(null);
+                        }
+                    }
+
+            }
+            return i;
+        }
+#endif
 
         public override void Dispose()
         {
@@ -537,6 +639,7 @@ namespace ShardingCore.Sharding
             base.Dispose();
         }
 
+#if !EFCORE2
         public override async ValueTask DisposeAsync()
         {
             foreach (var dbContextCache in _dbContextCaches)
@@ -553,6 +656,7 @@ namespace ShardingCore.Sharding
 
             await base.DisposeAsync();
         }
+#endif
 
     }
 }
