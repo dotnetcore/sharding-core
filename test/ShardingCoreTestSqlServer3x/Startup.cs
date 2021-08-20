@@ -7,11 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShardingCore;
-using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
-using ShardingCore.SqlServer;
 using ShardingCoreTestSqlServer3x.Domain.Entities;
-using ShardingCoreTestSqlServer3x.Shardings;
 
 namespace ShardingCoreTestSqlServer3x
 {
@@ -39,21 +35,21 @@ namespace ShardingCoreTestSqlServer3x
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingSqlServer(o =>
-            {
-                o.EnsureCreatedWithOutShardingTable = true;
-                o.CreateShardingTableOnStart = true;
-                o.UseShardingDbContext<DefaultDbContext>(dbConfig =>
-                {
-                    dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                });
-                //o.AddDataSourceVirtualRoute<>();
-
-            });
-            services.AddDbContext<DefaultDbContext>(o => 
-                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                    .UseShardingSqlServerUpdateSqlGenerator());
+            // services.AddShardingSqlServer(o =>
+            // {
+            //     o.EnsureCreatedWithOutShardingTable = true;
+            //     o.CreateShardingTableOnStart = true;
+            //     o.UseShardingDbContext<DefaultDbContext>(dbConfig =>
+            //     {
+            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+            //     });
+            //     //o.AddDataSourceVirtualRoute<>();
+            //
+            // });
+            // services.AddDbContext<DefaultDbContext>(o => 
+            //     o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+            //         .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
@@ -75,7 +71,7 @@ namespace ShardingCoreTestSqlServer3x
             using (var scope = serviceProvider.CreateScope())
             {
                 var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
-                if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
+                if (!await virtualDbContext.Set<SysUserMod>().AnyAsync(o => true))
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();

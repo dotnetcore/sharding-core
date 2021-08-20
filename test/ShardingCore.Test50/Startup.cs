@@ -48,17 +48,14 @@ namespace ShardingCore.Test50
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
 
-            services.AddDbContext<DefaultDbContext>(o =>
-                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]));
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o =>
-                o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]), op =>
+           
+            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+                ,op =>
                 {
-
                     op.EnsureCreatedWithOutShardingTable = true;
                     op.CreateShardingTableOnStart = true;
                     op.UseShardingDbContextOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                 });
         }
 
@@ -68,7 +65,7 @@ namespace ShardingCore.Test50
             var shardingBootstrapper = serviceProvider.GetService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
             // 有一些测试数据要初始化可以放在这里
-            //InitData(serviceProvider).GetAwaiter().GetResult();
+            InitData(serviceProvider).GetAwaiter().GetResult();
         }
 
         /// <summary>

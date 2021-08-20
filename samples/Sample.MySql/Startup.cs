@@ -4,15 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Sample.MySql.DbContexts;
-using Sample.MySql.Shardings;
-using ShardingCore.MySql;
 
 namespace Sample.MySql
 {
@@ -29,24 +20,24 @@ namespace Sample.MySql
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddShardingMySql(o =>
-            {
-                o.EnsureCreatedWithOutShardingTable = true;
-                o.CreateShardingTableOnStart = true;
-                o.UseShardingDbContext<DefaultTableDbContext>( dbConfig =>
-                {
-                    dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    dbConfig.AddShardingTableRoute<SysUserLogByMonthRoute>();
-                });
-                //o.AddDataSourceVirtualRoute<>();
-                o.IgnoreCreateTableError = true;
-
-            });
-            services.AddDbContext<DefaultTableDbContext>(o => o.UseMySql("server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", o =>
-            {
-                o.ServerVersion("5.7.13");
-            }).UseShardingMySqlUpdateSqlGenerator());
-            services.AddLogging(b => b.AddConsole());
+            // services.AddShardingMySql(o =>
+            // {
+            //     o.EnsureCreatedWithOutShardingTable = true;
+            //     o.CreateShardingTableOnStart = true;
+            //     o.UseShardingDbContext<DefaultTableDbContext>( dbConfig =>
+            //     {
+            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         dbConfig.AddShardingTableRoute<SysUserLogByMonthRoute>();
+            //     });
+            //     //o.AddDataSourceVirtualRoute<>();
+            //     o.IgnoreCreateTableError = true;
+            //
+            // });
+            // services.AddDbContext<DefaultTableDbContext>(o => o.UseMySql("server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", o =>
+            // {
+            //     o.ServerVersion("5.7.13");
+            // }).UseShardingMySqlUpdateSqlGenerator());
+            // services.AddLogging(b => b.AddConsole());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

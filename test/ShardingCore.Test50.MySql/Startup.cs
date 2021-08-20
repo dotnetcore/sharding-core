@@ -10,8 +10,6 @@ using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 using ShardingCore.Test50.MySql.Domain.Entities;
 
-using ShardingCore.MySql;
-using ShardingCore.Test50.MySql.Shardings;
 
 namespace ShardingCore.Test50.MySql
 {
@@ -40,23 +38,23 @@ namespace ShardingCore.Test50.MySql
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
            
-            services.AddShardingMySql(o =>
-            {
-                o.EnsureCreatedWithOutShardingTable = false;
-                o.CreateShardingTableOnStart = false;
-                // o.AddShardingTable<DefaultDbContext>("conn1", "server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
-                o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
-                {
-                    dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                });
-                //o.AddDataSourceVirtualRoute<>();
-                o.IgnoreCreateTableError = true;
-                o.ServerVersion = new MySqlServerVersion("5.7.15");
-            });
-            services.AddDbContext<DefaultDbContext>(o=>
-                o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
-                    .UseShardingMySqlUpdateSqlGenerator());
+            // services.AddShardingMySql(o =>
+            // {
+            //     o.EnsureCreatedWithOutShardingTable = false;
+            //     o.CreateShardingTableOnStart = false;
+            //     // o.AddShardingTable<DefaultDbContext>("conn1", "server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
+            //     o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
+            //     {
+            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+            //     });
+            //     //o.AddDataSourceVirtualRoute<>();
+            //     o.IgnoreCreateTableError = true;
+            //     o.ServerVersion = new MySqlServerVersion("5.7.15");
+            // });
+            // services.AddDbContext<DefaultDbContext>(o=>
+            //     o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
+            //         .UseShardingMySqlUpdateSqlGenerator());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
@@ -79,7 +77,7 @@ namespace ShardingCore.Test50.MySql
             {
                 var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
                 
-                if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
+                if (!await virtualDbContext.Set<SysUserMod>().AnyAsync(o => true))
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();

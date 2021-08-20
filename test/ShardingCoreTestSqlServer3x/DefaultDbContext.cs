@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCoreTestSqlServer3x.Domain.Maps;
 
 namespace ShardingCoreTestSqlServer3x

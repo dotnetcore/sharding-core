@@ -12,8 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Samples.AutoByDate.SqlServer.Shardings;
-using ShardingCore.SqlServer;
 
 namespace Samples.AutoByDate.SqlServer
 {

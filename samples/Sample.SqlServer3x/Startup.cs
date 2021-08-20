@@ -11,11 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Entities;
-using Sample.SqlServer3x.Shardings;
 using ShardingCore;
-using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
-using ShardingCore.SqlServer;
 
 namespace Sample.SqlServer3x
 {
@@ -32,19 +28,19 @@ namespace Sample.SqlServer3x
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddShardingSqlServer(o =>
-            {
-                o.EnsureCreatedWithOutShardingTable = true;
-                o.CreateShardingTableOnStart = true;
-                o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
-                {
-                    dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                });
-                //o.AddDataSourceVirtualRoute<>();
-
-            });
-            services.AddDbContext<DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True")
-                .UseShardingSqlServerUpdateSqlGenerator());
+            // services.AddShardingSqlServer(o =>
+            // {
+            //     o.EnsureCreatedWithOutShardingTable = true;
+            //     o.CreateShardingTableOnStart = true;
+            //     o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
+            //     {
+            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //     });
+            //     //o.AddDataSourceVirtualRoute<>();
+            //
+            // });
+            // services.AddDbContext<DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True")
+            //     .UseShardingSqlServerUpdateSqlGenerator());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -80,7 +76,7 @@ namespace Sample.SqlServer3x
         using (var scope = serviceProvider.CreateScope())
         {
             var virtualDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
-            if (!await virtualDbContext.Set<SysUserMod>().ShardingAnyAsync(o => true))
+            if (!await virtualDbContext.Set<SysUserMod>().AnyAsync(o => true))
             {
                 var ids = Enumerable.Range(1, 1000);
                 var userMods = new List<SysUserMod>();

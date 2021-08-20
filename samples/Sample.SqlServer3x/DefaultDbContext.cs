@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Maps;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.SqlServer3x
 {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCoreTestBatch.Domain.Maps;
 
 namespace ShardingCoreTestBatch

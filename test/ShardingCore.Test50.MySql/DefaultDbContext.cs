@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Test50.MySql.Domain.Maps;
 
 namespace ShardingCore.Test50.MySql
