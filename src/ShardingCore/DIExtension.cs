@@ -43,7 +43,7 @@ namespace ShardingCore
 
 
             //添加创建TActualDbContext 的 创建者
-            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.ShardingDbContextOptionsCreator);
+            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.ShardingDbContextConnectionOptionsCreator,shardingConfigOptions.ShardingDbContextStringOptionsCreator);
             services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp=> config);
 
             //添加创建TActualDbContext创建者

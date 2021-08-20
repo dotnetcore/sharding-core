@@ -16,16 +16,26 @@ namespace ShardingCore.Sharding
     */
     public class ShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> shardingDbContextOptionsCreator)
+        public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> shardingDbContextConnectionOptionsCreator,Action<string, DbContextOptionsBuilder> shardingDbContextStringionOptionsCreator)
         {
-            ShardingDbContextOptionsCreator = shardingDbContextOptionsCreator;
+            ShardingDbContextConnectionOptionsCreator = shardingDbContextConnectionOptionsCreator;
+            ShardingDbContextStringOptionsCreator = shardingDbContextStringionOptionsCreator;
         }
-        public Action<DbConnection, DbContextOptionsBuilder> ShardingDbContextOptionsCreator { get; }
+        public Action<DbConnection, DbContextOptionsBuilder> ShardingDbContextConnectionOptionsCreator { get; }
+        public Action<string, DbContextOptionsBuilder> ShardingDbContextStringOptionsCreator { get; }
         public Type ShardingDbContextType => typeof(TShardingDbContext);
+        public bool SupportMARS => ShardingDbContextStringOptionsCreator == null;
 
         public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            ShardingDbContextOptionsCreator(dbConnection, dbContextOptionsBuilder);
+            ShardingDbContextConnectionOptionsCreator(dbConnection, dbContextOptionsBuilder);
+            dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            return dbContextOptionsBuilder;
+        }
+
+        public DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            ShardingDbContextStringOptionsCreator(connectionString, dbContextOptionsBuilder);
             dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
             return dbContextOptionsBuilder;
         }

@@ -15,18 +15,18 @@ namespace ShardingCore.Sharding.Abstractions
     {
         Type ShardingDbContextType { get; }
         /// <summary>
-        /// 真实的DbContext 类型
+        /// 锟斤拷实锟斤拷DbContext 锟斤拷锟斤拷
         /// </summary>
         Type ActualDbContextType {  get;}
         /// <summary>
-        /// 创建DbContext
+        /// 锟斤拷锟斤拷DbContext
         /// </summary>
-        /// <param name="track">true表示创建的dbcontext挂在当前的shardingdbcontext下无需管理生命周期，false需要手动释放，true not care dbcontext life, false need call dispose()</param>
+        /// <param name="track">true锟斤拷示锟斤拷锟斤拷锟斤拷dbcontext锟斤拷锟节碉拷前锟斤拷shardingdbcontext锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷冢锟絝alse锟斤拷要锟街讹拷锟酵放ｏ拷true not care dbcontext life, false need call dispose()</param>
         /// <param name="tail"></param>
         /// <returns></returns>
-        DbContext GetDbContext(bool track,string tail);
+        DbContext GetDbContext(bool isQuery,string tail);
         /// <summary>
-        /// 根据实体创建db context
+        /// 锟斤拷锟斤拷实锟藉创锟斤拷db context
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entity"></param>

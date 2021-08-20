@@ -29,9 +29,19 @@ namespace Sample.SqlServer
                 {
                     op.EnsureCreatedWithOutShardingTable = true;
                     op.CreateShardingTableOnStart = true;
-                    op.UseShardingDbContextOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+                    op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
+            // //不支持MARS不支持追踪的
+            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+            //     ,op =>
+            //     {
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+            //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //     });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

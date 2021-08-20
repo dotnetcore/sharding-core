@@ -16,6 +16,8 @@ namespace ShardingCore
     public interface IShardingDbContextOptionsBuilderConfig
     {
         Type ShardingDbContextType { get; }
+        bool SupportMARS { get; }
         DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
+        DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder);
     }
 }

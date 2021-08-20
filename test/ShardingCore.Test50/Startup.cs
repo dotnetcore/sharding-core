@@ -54,7 +54,7 @@ namespace ShardingCore.Test50
                 {
                     op.EnsureCreatedWithOutShardingTable = true;
                     op.CreateShardingTableOnStart = true;
-                    op.UseShardingDbContextOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+                    op.UseShardingConnStrOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                 });
         }
