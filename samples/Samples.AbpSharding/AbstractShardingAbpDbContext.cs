@@ -19,7 +19,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace Samples.AbpSharding
 {
-    public abstract class AbstractShardingAbpDbContext<T> : AbpDbContext, IShardingTableDbContext<T> where T : DbContext, IShardingTableDbContext
+    public abstract class AbstractShardingAbpDbContext<T> : AbpDbContext, IShardingTableDbContext<T> where T : AbpDbContext, IShardingTableDbContext
     {
         private readonly string EMPTY_SHARDING_TAIL_ID = ShardingConstant.EMPTY_SHARDING_TAIL_ID + Guid.NewGuid().ToString("n");
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
@@ -99,7 +99,8 @@ namespace Samples.AbpSharding
             }
             else
             {
-                return _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                var dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                return dbContext;
             }
         }
 

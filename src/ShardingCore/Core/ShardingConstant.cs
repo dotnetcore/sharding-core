@@ -14,5 +14,6 @@ namespace ShardingCore.Core
     public class ShardingConstant
     {
         public const string EMPTY_SHARDING_TAIL_ID = "EMPTY_SHARDING_TAIL_ID";
+        public const string MULTI_ENTITIES_QUERY = "MULTI_ENTITIES_QUERY";
     }
 }
