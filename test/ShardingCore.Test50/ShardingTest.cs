@@ -20,12 +20,10 @@ namespace ShardingCore.Test50
     public class ShardingTest
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
-        private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext, IRoutingRuleEngineFactory routingRuleEngineFactory)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext)
         {
             _virtualDbContext = virtualDbContext;
-            _routingRuleEngineFactory = routingRuleEngineFactory;
         }
 
         //[Fact]
@@ -72,29 +70,32 @@ namespace ShardingCore.Test50
         //[Fact]
         //public async Task ToList_Join_Test()
         //{
-        //    var list = await (from u in _virtualDbContext.Set<SysUserMod>()
-        //        join salary in _virtualDbContext.Set<SysUserSalary>()
-        //            on u.Id equals salary.UserId
-        //        select new
-        //        {
-        //            Salary = salary.Salary,
-        //            DateOfMonth = salary.DateOfMonth,
-        //            Name = u.Name
-        //        }).ToShardingListAsync();
+        //    var list = await (from u in _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="1" || o.Id=="1000")
+        //                      join salary in _virtualDbContext.Set<SysUserSalary>()
+        //                          on u.Id equals salary.UserId
+        //                      select new
+        //                      {
+        //                          u.Id,
+        //                          u.Age,
+        //                          Salary = salary.Salary,
+        //                          DateOfMonth = salary.DateOfMonth,
+        //                          Name = u.Name
+        //                      }).ToListAsync();
+        //    var list2 = list.OrderBy(o=>o.Age).ToList();
         //    Assert.Equal(24000, list.Count());
         //    Assert.Equal(24, list.Count(o => o.Name == "name_200"));
 
 
         //    var queryable = (from u in _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "300")
-        //        join salary in _virtualDbContext.Set<SysUserSalary>()
-        //            on u.Id equals salary.UserId
-        //        select new
-        //        {
-        //            Salary = salary.Salary,
-        //            DateOfMonth = salary.DateOfMonth,
-        //            Name = u.Name
-        //        });
-        //    var list1 = await queryable.ToShardingListAsync();
+        //                     join salary in _virtualDbContext.Set<SysUserSalary>()
+        //                         on u.Id equals salary.UserId
+        //                     select new
+        //                     {
+        //                         Salary = salary.Salary,
+        //                         DateOfMonth = salary.DateOfMonth,
+        //                         Name = u.Name
+        //                     });
+        //    var list1 = await queryable.ToListAsync();
         //    Assert.Equal(24, list1.Count());
         //    Assert.DoesNotContain(list1, o => o.Name != "name_300");
         //}

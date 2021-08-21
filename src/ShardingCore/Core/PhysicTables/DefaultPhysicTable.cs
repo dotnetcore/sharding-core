@@ -25,7 +25,7 @@ namespace ShardingCore.Core.PhysicTables
         public string OriginalName { get; }
         public string TailPrefix =>VirtualTable.ShardingConfig.TailPrefix;
         public string Tail { get;  }
-        public Type VirtualType => VirtualTable.EntityType;
+        public Type EntityType => VirtualTable.EntityType;
         public IVirtualTable VirtualTable { get; }
     }
 }

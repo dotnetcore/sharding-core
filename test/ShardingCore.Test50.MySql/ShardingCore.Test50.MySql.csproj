@@ -18,14 +18,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\ShardingCore.MySql\ShardingCore.MySql.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="Configs\DbConfig.json">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src3x\ShardingCore.3x\ShardingCore.3x.csproj" />
     </ItemGroup>
 </Project>

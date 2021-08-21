@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src2x\ShardingCore.MySql.2x\ShardingCore.MySql.2x.csproj" />
+    <ProjectReference Include="..\..\src3x\ShardingCore.3x\ShardingCore.3x.csproj" />
   </ItemGroup>
 
 

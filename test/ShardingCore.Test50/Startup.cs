@@ -47,15 +47,15 @@ namespace ShardingCore.Test50
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-
-           
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 ,op =>
                 {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingConnStrOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+                    op.EnsureCreatedWithOutShardingTable = false;
+                    op.CreateShardingTableOnStart = false;
+                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
+                        builder=> builder.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                 });
         }
 
@@ -78,45 +78,48 @@ namespace ShardingCore.Test50
             using (var scope = serviceProvider.CreateScope())
             {
                 var virtualDbContext = scope.ServiceProvider.GetService<ShardingDefaultDbContext>();
-                var ids = Enumerable.Range(1, 1000);
-                var userMods = new List<SysUserMod>();
-                var userSalaries = new List<SysUserSalary>();
-                var beginTime = new DateTime(2020, 1, 1);
-                var endTime = new DateTime(2021, 12, 1);
-                foreach (var id in ids)
+                if (!await virtualDbContext.Set<SysUserMod>().AnyAsync())
                 {
-                    userMods.Add(new SysUserMod()
+                    var ids = Enumerable.Range(1, 1000);
+                    var userMods = new List<SysUserMod>();
+                    var userSalaries = new List<SysUserSalary>();
+                    var beginTime = new DateTime(2020, 1, 1);
+                    var endTime = new DateTime(2021, 12, 1);
+                    foreach (var id in ids)
                     {
-                        Id = id.ToString(),
-                        Age = id,
-                        Name = $"name_{id}",
-                        AgeGroup = Math.Abs(id % 10)
-                    });
-                    var tempTime = beginTime;
-                    var i = 0;
-                    while (tempTime <= endTime)
-                    {
-                        var dateOfMonth = $@"{tempTime:yyyyMM}";
-                        userSalaries.Add(new SysUserSalary()
+                        userMods.Add(new SysUserMod()
                         {
-                            Id = $@"{id}{dateOfMonth}",
-                            UserId = id.ToString(),
-                            DateOfMonth = int.Parse(dateOfMonth),
-                            Salary = 700000 + id * 100 * i,
-                            SalaryLong = 700000 + id * 100 * i,
-                            SalaryDecimal = (700000 + id * 100 * i) / 100m,
-                            SalaryDouble = (700000 + id * 100 * i) / 100d,
-                            SalaryFloat = (700000 + id * 100 * i) / 100f
+                            Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                            AgeGroup = Math.Abs(id % 10)
                         });
-                        tempTime = tempTime.AddMonths(1);
-                        i++;
+                        var tempTime = beginTime;
+                        var i = 0;
+                        while (tempTime <= endTime)
+                        {
+                            var dateOfMonth = $@"{tempTime:yyyyMM}";
+                            userSalaries.Add(new SysUserSalary()
+                            {
+                                Id = $@"{id}{dateOfMonth}",
+                                UserId = id.ToString(),
+                                DateOfMonth = int.Parse(dateOfMonth),
+                                Salary = 700000 + id * 100 * i,
+                                SalaryLong = 700000 + id * 100 * i,
+                                SalaryDecimal = (700000 + id * 100 * i) / 100m,
+                                SalaryDouble = (700000 + id * 100 * i) / 100d,
+                                SalaryFloat = (700000 + id * 100 * i) / 100f
+                            });
+                            tempTime = tempTime.AddMonths(1);
+                            i++;
+                        }
                     }
+
+                    await virtualDbContext.AddRangeAsync(userMods);
+                    await virtualDbContext.AddRangeAsync(userSalaries);
+
+                    await virtualDbContext.SaveChangesAsync();
                 }
-
-                await virtualDbContext.AddRangeAsync(userMods);
-                await virtualDbContext.AddRangeAsync(userSalaries);
-
-                await virtualDbContext.SaveChangesAsync();
             }
         }
     }

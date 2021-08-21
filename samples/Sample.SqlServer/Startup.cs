@@ -25,12 +25,12 @@ namespace Sample.SqlServer
 
 
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
+                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
                 , op =>
                  {
                      op.EnsureCreatedWithOutShardingTable = true;
                      op.CreateShardingTableOnStart = true;
-                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger), builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
             ////不支持MARS不支持追踪的

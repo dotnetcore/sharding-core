@@ -30,7 +30,7 @@ namespace ShardingCore.Core.PhysicTables
         /// <summary>
         /// 映射类类型
         /// </summary>
-        Type VirtualType { get; }
+        Type EntityType { get; }
         IVirtualTable VirtualTable { get; }
 
     }

@@ -190,28 +190,18 @@ Oracle | 支持 | 未测试
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
 //添加shardingdbcontext support life scope
-            services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
-                ,op =>
-                {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
-                    op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                });
                 
-                
-            // //不支持MARS不支持追踪的
-            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-            //     ,op =>
-            //     {
-            //         op.EnsureCreatedWithOutShardingTable = true;
-            //         op.CreateShardingTableOnStart = true;
-            //        //不支持mars额外加一条字符串的
-            //        op.UseShardingOptionsBuilder(
-            //            (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-            //            (connString, builder) => builder.UseSqlServer(connString).UseLoggerFactory(efLogger));
-            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //     });
+             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+                 ,op =>
+                 {
+                     op.EnsureCreatedWithOutShardingTable = true;
+                     op.CreateShardingTableOnStart = true;
+                    //不支持mars额外加一条字符串的
+                    op.UseShardingOptionsBuilder(
+                        (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
+                        builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
+                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                 });
         }
 ```
 
@@ -235,37 +225,25 @@ Oracle | 支持 | 未测试
 
         public async Task ToList_All()
         {
-            //查询list集合
-            var all=await _defaultShardingDbContext.Set<SysUserMod>().ToListAsync();
-            //链接查询
-            var list = await (from u in _defaultShardingDbContext.Set<SysUserMod>()
-                join salary in _defaultShardingDbContext.Set<SysUserSalary>()
-                    on u.Id equals salary.UserId
-                select new
-                {
-                    Salary = salary.Salary,
-                    DateOfMonth = salary.DateOfMonth,
-                    Name = u.Name
-                }).ToListAsync();
-            //聚合查询
-            var ids = new[] {"200", "300"};
-            var dateOfMonths = new[] {202111, 202110};
-            var group = await (from u in _defaultShardingDbContext.Set<SysUserSalary>()
-                    .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
-                group u by new
-                {
-                    UId = u.UserId
-                }
-                into g
-                select new
-                {
-                    GroupUserId = g.Key.UId,
-                    Count = g.Count(),
-                    TotalSalary = g.Sum(o => o.Salary),
-                    AvgSalary = g.Average(o => o.Salary),
-                    MinSalary = g.Min(o => o.Salary),
-                    MaxSalary = g.Max(o => o.Salary)
-                }).ToListAsync();
+            
+            var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
         }
 ```
 更多操作可以参考单元测试
@@ -342,27 +320,12 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 - startup是否已经添加虚拟路由
 - startup是否已经添加bootstrapper.start()
 
-```c#
-            // //不支持MARS不支持追踪的
-            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-            //     ,op =>
-            //     {
-            //         op.EnsureCreatedWithOutShardingTable = true;
-            //         op.CreateShardingTableOnStart = true;
-            //        //不支持mars额外加一条字符串的
-            //        op.UseShardingOptionsBuilder(
-            //            (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-            //            (connString, builder) => builder.UseSqlServer(connString).UseLoggerFactory(efLogger));
-            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //     });
-```
-如果数据库不支持mars但是我又要支持追踪该怎么办
-```c#
+```c#添加追踪
 
             var sresult =  _defaultTableDbContext.Set<SysUserMod>().ToList();
 
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
-            _defaultTableDbContext.Attach(sysUserMod98);
+            _defaultTableDbContext.Attach(sysUserMod98);//添加追踪
             sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";
             await _defaultTableDbContext.SaveChangesAsync();
 --log info

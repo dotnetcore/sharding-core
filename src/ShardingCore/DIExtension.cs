@@ -12,6 +12,8 @@ using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.ShardingAccessors.Abstractions;
 
 namespace ShardingCore
 {
@@ -43,7 +45,7 @@ namespace ShardingCore
 
 
             //添加创建TActualDbContext 的 创建者
-            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure,shardingConfigOptions.NotSupportMARSConfigure);
+            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure,shardingConfigOptions.DefaultQueryConfigure);
             services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp=> config);
 
             //添加创建TActualDbContext创建者
@@ -77,8 +79,8 @@ namespace ShardingCore
             //分表引擎
             services.AddSingleton<IRouteRuleEngine, QueryRouteRuleEngines>();
             //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
-            //services.AddSingleton<IShardingAccessor, ShardingAccessor>();
-            //services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
+            services.AddSingleton<IShardingAccessor, ShardingAccessor>();
+            services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
             return services;
         }
 

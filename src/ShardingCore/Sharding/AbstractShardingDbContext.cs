@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding
     /// <typeparam name="T"></typeparam>
     public abstract class AbstractShardingDbContext<T> : DbContext, IShardingTableDbContext<T> where T : DbContext, IShardingTableDbContext
     {
-        private readonly string EMPTY_SHARDING_TAIL_ID = Guid.NewGuid().ToString("n");
+        private readonly string EMPTY_SHARDING_TAIL_ID = ShardingConstant.EMPTY_SHARDING_TAIL_ID+ Guid.NewGuid().ToString("n");
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
@@ -62,22 +62,21 @@ namespace ShardingCore.Sharding
             return (DbContextOptionsBuilder<T>) Activator.CreateInstance(type);
         }
 
-        private DbContextOptions<T> GetDbContextOptions()
+        private DbContextOptions<T> CreateShareDbContextOptions()
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
             var dbConnection = Database.GetDbConnection();
             _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
-        private DbContextOptions<T> GetParallelDbContextOptions()
+        private DbContextOptions<T> CreateMonopolyDbContextOptions()
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
-            var connectionString = Database.GetDbConnection().ConnectionString;
-            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
+            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
 
-        private ShardingDbContextOptions CreateSameShardingDbContextOptions(string tail)
+        private ShardingDbContextOptions GetShareShardingDbContextOptions(string tail)
         {
             if (_dbContextOptions == null)
             {
@@ -85,26 +84,26 @@ namespace ShardingCore.Sharding
                 {
                     if (_dbContextOptions == null)
                     {
-                        _dbContextOptions = GetDbContextOptions();
+                        _dbContextOptions = CreateShareDbContextOptions();
                     }
                 }
             }
 
             return new ShardingDbContextOptions(_dbContextOptions, tail);
         }
-        private ShardingDbContextOptions CreateParallelShardingDbContextOptions(string tail)
+        private ShardingDbContextOptions CetMonopolyShardingDbContextOptions(string tail)
         {
-            return new ShardingDbContextOptions(GetParallelDbContextOptions(), tail);
+            return new ShardingDbContextOptions(CreateMonopolyDbContextOptions(), tail);
         }
 
 
         public DbContext GetDbContext(bool track, string tail)
         {
-            if (SupportMARS() || track)
+            if (track)
             {
                 if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
                 {
-                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, CreateSameShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
                     _dbContextCaches.TryAdd(tail, dbContext);
                 }
 
@@ -112,7 +111,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                return _shardingDbContextFactory.Create(ShardingDbContextType, CreateParallelShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
+                return _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
             }
         }
 
@@ -129,22 +128,7 @@ namespace ShardingCore.Sharding
 
             return GetDbContext(true, tail);
         }
-
-        public bool SupportMARS()
-        {
-            return _shardingDbContextOptionsBuilderConfig.SupportMARS;
-        }
-        public bool TryOpen()
-        {
-            var dbConnection = Database.GetDbConnection();
-            if (dbConnection.State != ConnectionState.Open)
-            {
-                dbConnection.Open();
-                return true;
-            }
-
-            return false;
-        }
+        
 
         public override EntityEntry Add(object entity)
         {

@@ -36,7 +36,7 @@ namespace ShardingCore.DbContexts
             }
             var tail=shardingDbContextOptions.Tail;
             
-            var dbContext = shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
+             var dbContext = shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
             if (!string.IsNullOrWhiteSpace(tail) && dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.SetShardingTableDbContextTail(tail);

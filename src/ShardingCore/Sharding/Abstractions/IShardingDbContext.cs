@@ -32,10 +32,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
-
-
-        bool TryOpen();
-        bool SupportMARS();
+        
 
     }
 
