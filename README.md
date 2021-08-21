@@ -356,6 +356,22 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //     });
 ```
+如果数据库不支持mars但是我又要支持追踪该怎么办
+```c#
+
+            var sresult =  _defaultTableDbContext.Set<SysUserMod>().ToList();
+
+            var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
+            _defaultTableDbContext.Attach(sysUserMod98);
+            sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";
+            await _defaultTableDbContext.SaveChangesAsync();
+--log info
+     info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM [SysUserMod_01] AS [s]
+      WHERE [s].[Age] <= 10
+```
 
 
 # 计划
