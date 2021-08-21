@@ -25,17 +25,18 @@ namespace ShardingCore
     {
         private readonly Dictionary<Type, Type> _virtualRoutes = new Dictionary<Type, Type>();
 
-        public Action<DbConnection, DbContextOptionsBuilder> ShardingDbContextConnectionOptionsCreator { get; set; }
+        public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; set; }
+        public Action<string, DbContextOptionsBuilder> NotSupportMARSConfigure { get; set; }
+        /// <summary>
+        /// 配置如何创建对应的dbcontext来操作数据如果数据库支持mars则仅需配置sameConnectionConfigure无需配置notSupportMARSConfigure如果配置了notSupportMARSConfigure则表示数据库不支持MARS则查询将无法正常追踪需要手动attach
+        /// </summary>
+        /// <param name="sameConnectionConfigure">dbconnection下如何配置</param>
+        /// <param name="notSupportMARSConfigure">链接字符串下如何配置</param>
 
-        public void UseShardingConnOptions(Action<DbConnection, DbContextOptionsBuilder> shardingDbContextOptionsCreator)
+        public void UseShardingOptionsBuilder(Action<DbConnection, DbContextOptionsBuilder> sameConnectionConfigure, Action<string, DbContextOptionsBuilder> notSupportMARSConfigure = null)
         {
-            ShardingDbContextConnectionOptionsCreator = shardingDbContextOptionsCreator ?? throw new ArgumentNullException(nameof(shardingDbContextOptionsCreator));
-        }
-        public Action<string, DbContextOptionsBuilder> ShardingDbContextStringOptionsCreator { get; set; }
-
-        public void UseShardingConnStrOptions(Action<string, DbContextOptionsBuilder> shardingDbContextOptionsCreator)
-        {
-            ShardingDbContextStringOptionsCreator = shardingDbContextOptionsCreator ?? throw new ArgumentNullException(nameof(shardingDbContextOptionsCreator));
+            SameConnectionConfigure = sameConnectionConfigure??throw new ArgumentNullException(nameof(sameConnectionConfigure));
+            NotSupportMARSConfigure = notSupportMARSConfigure;
         }
 
 

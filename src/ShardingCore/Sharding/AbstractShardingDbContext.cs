@@ -100,7 +100,7 @@ namespace ShardingCore.Sharding
 
         public DbContext GetDbContext(bool track, string tail)
         {
-            if (SupportMARS() || !track)
+            if (SupportMARS() || track)
             {
                 if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
                 {

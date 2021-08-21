@@ -26,24 +26,26 @@ namespace Sample.SqlServer
 
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;MultipleActiveResultSets=True;")
-                ,op =>
-                {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
-                    op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                });
-            // //不支持MARS不支持追踪的
-            // services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-            //     ,op =>
-            //     {
-            //         op.EnsureCreatedWithOutShardingTable = true;
-            //         op.CreateShardingTableOnStart = true;
-            //         op.UseShardingConnOptions((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
-            //         //不支持mars额外加一条字符串的
-            //         op.UseShardingConnStrOptions((connstr, builder) => builder.UseSqlServer(connstr).UseLoggerFactory(efLogger));
-            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //     });
+                , op =>
+                 {
+                     op.EnsureCreatedWithOutShardingTable = true;
+                     op.CreateShardingTableOnStart = true;
+                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger));
+                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                 });
+            ////不支持MARS不支持追踪的
+            //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+            //    , op =>
+            //    {
+            //        op.EnsureCreatedWithOutShardingTable = true;
+            //        op.CreateShardingTableOnStart = true;
+            //        //不支持mars额外加一条字符串的
+            //        op.UseShardingOptionsBuilder(
+            //            (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
+            //            (connString, builder) => builder.UseSqlServer(connString).UseLoggerFactory(efLogger));
+
+            //        op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
