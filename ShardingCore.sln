@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.MySql", "samples\Sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.SqlServer3x", "samples\Sample.SqlServer3x\Sample.SqlServer3x.csproj", "{447D5357-F095-45DE-9DA5-2D9997237366}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.AbpSharding", "samples\Samples.AbpSharding\Samples.AbpSharding.csproj", "{1136B8C9-3539-42FA-97FD-CAA6F146FCF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{447D5357-F095-45DE-9DA5-2D9997237366}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{447D5357-F095-45DE-9DA5-2D9997237366}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{447D5357-F095-45DE-9DA5-2D9997237366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1136B8C9-3539-42FA-97FD-CAA6F146FCF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1136B8C9-3539-42FA-97FD-CAA6F146FCF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1136B8C9-3539-42FA-97FD-CAA6F146FCF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1136B8C9-3539-42FA-97FD-CAA6F146FCF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{C34FCF48-1A98-4268-BFEE-6C9BFC7FD539} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{90675788-D5C3-415A-9C18-FF159A75B4D5} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{447D5357-F095-45DE-9DA5-2D9997237366} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
+		{1136B8C9-3539-42FA-97FD-CAA6F146FCF0} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}
