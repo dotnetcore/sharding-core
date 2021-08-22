@@ -22,7 +22,6 @@
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</Content>
 		<None Remove="Configs\MacDbConfig.json" />
-		<Content Include="Configs\MacDbConfig.json" />
 	</ItemGroup>
 
   <ItemGroup>

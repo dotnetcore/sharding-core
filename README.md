@@ -16,7 +16,7 @@ Release  | EF Core | .NET Standard | .NET (Core)
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
-SqlServer | 是 | 80%近乎完美
+SqlServer | 是 | 90%近乎完美
 MySql |支持 | 未测试
 PostgreSql | 支持 | 未测试
 SQLite | 支持 | 未测试
@@ -40,6 +40,7 @@ Oracle | 支持 | 未测试
     - [自动建表](#自动建表)
     - [事务](#事务)
     - [批量操作](#批量操作)
+    - [读写分离](#读写分离)
 - [注意事项](#注意事项)
 - [计划(Future)](#计划)
 - [最后](#最后)
@@ -94,7 +95,11 @@ Oracle | 支持 | 未测试
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore" Version="5.2.0.03" />
+<PackageReference Include="ShardingCore" Version="5.2.0.07" />
+or
+<PackageReference Include="ShardingCore" Version="3.2.0.07" />
+or
+<PackageReference Include="ShardingCore" Version="2.2.0.07" />
 ```
 
 ## 配置
@@ -154,7 +159,7 @@ Oracle | 支持 | 未测试
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
-        public string ModelChangeKey { get; set; }
+        public IRouteTail RouteTail { get; set; }
     }
 ```
 
@@ -196,7 +201,6 @@ Oracle | 支持 | 未测试
                  {
                      op.EnsureCreatedWithOutShardingTable = true;
                      op.CreateShardingTableOnStart = true;
-                    //不支持mars额外加一条字符串的
                     op.UseShardingOptionsBuilder(
                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
                         builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
@@ -307,6 +311,22 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
  await  _defaultShardingDbContext.SaveChangesAsync();
  tran.commit()
            
+```
+## 读写分离
+该框架目前已经支持单node的读写分离,后续框架将支持多node的读
+
+```c#
+
+            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+                ,op =>
+                {
+                    op.EnsureCreatedWithOutShardingTable = true;
+                    op.CreateShardingTableOnStart = true;
+                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer("write db connection string").UseLoggerFactory(efLogger),
+                        (conStr,builder)=> builder.UseSqlServer("read db connection string").UseLoggerFactory(efLogger));
+                    op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+                });
 ```
 
 # 注意事项

@@ -44,10 +44,10 @@ namespace ShardingCore.Test50_3x
             services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 ,op =>
                 {
-                    op.EnsureCreatedWithOutShardingTable = false;
-                    op.CreateShardingTableOnStart = false;
+                    op.EnsureCreatedWithOutShardingTable = true;
+                    op.CreateShardingTableOnStart = true;
                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        builder=> builder.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]).UseLoggerFactory(efLogger));
+                        (conStr,builder)=> builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                 });

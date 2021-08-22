@@ -65,7 +65,8 @@ namespace Samples.AbpSharding
         private DbContextOptions<T> CreateMonopolyDbContextOptions()
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
-            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbContextOptionBuilder);
+            var connectionString = Database.GetConnectionString();
+            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString,dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
 

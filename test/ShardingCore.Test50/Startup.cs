@@ -51,13 +51,23 @@ namespace ShardingCore.Test50
             services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 ,op =>
                 {
-                    op.EnsureCreatedWithOutShardingTable = false;
-                    op.CreateShardingTableOnStart = false;
+                    op.EnsureCreatedWithOutShardingTable = true;
+                    op.CreateShardingTableOnStart = true;
                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        builder=> builder.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]).UseLoggerFactory(efLogger));
+                        (conStr,builder)=> builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                 });
+            // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
+            //     ,op =>
+            //     {
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingOptionsBuilder((connection, builder) => builder.UseMySql(connection,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger),
+            //             (conStr,builder)=> builder.UseMySql(conStr,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger));
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+            //     });
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法

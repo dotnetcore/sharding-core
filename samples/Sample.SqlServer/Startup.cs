@@ -31,7 +31,7 @@ namespace Sample.SqlServer
                      op.EnsureCreatedWithOutShardingTable = true;
                      op.CreateShardingTableOnStart = true;
                      op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                         builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
             ////不支持MARS不支持追踪的

@@ -16,13 +16,13 @@ namespace ShardingCore.Sharding
     */
     public class ShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> sameConnectionDbContextOptionsCreator, Action<DbContextOptionsBuilder> defaultQueryDbContextOptionsCreator)
+        public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> sameConnectionDbContextOptionsCreator, Action<string,DbContextOptionsBuilder> defaultQueryDbContextOptionsCreator)
         {
             SameConnectionDbContextOptionsCreator = sameConnectionDbContextOptionsCreator;
             DefaultQueryDbContextOptionsCreator = defaultQueryDbContextOptionsCreator;
         }
         public Action<DbConnection, DbContextOptionsBuilder> SameConnectionDbContextOptionsCreator { get; }
-        public Action<DbContextOptionsBuilder> DefaultQueryDbContextOptionsCreator { get; }
+        public Action<string,DbContextOptionsBuilder> DefaultQueryDbContextOptionsCreator { get; }
         public Type ShardingDbContextType => typeof(TShardingDbContext);
 
         public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
@@ -32,9 +32,9 @@ namespace ShardingCore.Sharding
             return dbContextOptionsBuilder;
         }
 
-        public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        public DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            DefaultQueryDbContextOptionsCreator(dbContextOptionsBuilder);
+            DefaultQueryDbContextOptionsCreator(connectionString,dbContextOptionsBuilder);
             dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
             return dbContextOptionsBuilder;
         }

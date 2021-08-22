@@ -26,14 +26,14 @@ namespace ShardingCore
         private readonly Dictionary<Type, Type> _virtualRoutes = new Dictionary<Type, Type>();
 
         public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; set; }
-        public Action<DbContextOptionsBuilder> DefaultQueryConfigure { get; set; }
+        public Action<string,DbContextOptionsBuilder> DefaultQueryConfigure { get; set; }
         /// <summary>
         /// 配置数据库分表查询和保存时的DbContext创建方式
         /// </summary>
         /// <param name="sameConnectionConfigure">DbConnection下如何配置因为不同的DbContext支持事务需要使用同一个DbConnection</param>
         /// <param name="defaultBuilderConfigure">默认查询DbContext创建的配置</param>
 
-        public void UseShardingOptionsBuilder(Action<DbConnection, DbContextOptionsBuilder> sameConnectionConfigure, Action<DbContextOptionsBuilder> defaultQueryConfigure = null)
+        public void UseShardingOptionsBuilder(Action<DbConnection, DbContextOptionsBuilder> sameConnectionConfigure, Action<string,DbContextOptionsBuilder> defaultQueryConfigure = null)
         {
             SameConnectionConfigure = sameConnectionConfigure ?? throw new ArgumentNullException(nameof(sameConnectionConfigure));
             DefaultQueryConfigure = defaultQueryConfigure ?? throw new ArgumentNullException(nameof(defaultQueryConfigure));
