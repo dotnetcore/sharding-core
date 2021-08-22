@@ -1,23 +1,16 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using ShardingCore.Test50.Domain.Entities;
-using ShardingCore.Test50.Shardings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ShardingCore.Test50_2x.Domain.Entities;
+using ShardingCore.Test50_2x.Shardings;
 
-#if EFCORE5SQLSERVER
-using ShardingCore.SqlServer;
-#endif
-#if EFCORE5MYSQL
-using ShardingCore.MySql;
-#endif
-
-namespace ShardingCore.Test50
+namespace ShardingCore.Test50_2x
 {
     /*
     * @Author: xjm

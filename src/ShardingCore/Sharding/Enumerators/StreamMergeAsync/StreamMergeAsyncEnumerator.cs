@@ -22,6 +22,16 @@ namespace ShardingCore.Sharding.Enumerators
             _source = source;
             skip = true;
         }
+
+        public bool SkipFirst()
+        {
+            if (skip)
+            {
+                skip = false;
+                return true;
+            }
+            return false;
+        }
 #if !EFCORE2
         public ValueTask DisposeAsync()
         {
@@ -37,7 +47,13 @@ namespace ShardingCore.Sharding.Enumerators
             }
             return await _source.MoveNextAsync();
         }
-        
+        public T Current => skip?default:_source.Current;
+        public T ReallyCurrent => _source.Current;
+        public bool HasElement()
+        {
+            return null != _source.Current;
+        }
+
 #endif
 #if EFCORE2
         public void Dispose()
@@ -45,47 +61,38 @@ namespace ShardingCore.Sharding.Enumerators
              _source.Dispose();
         }
 
-        private bool _canMoveNext=true;
         public async Task<bool> MoveNext(CancellationToken cancellationToken=new CancellationToken())
         {
             if (skip)
             {
                 skip = false;
-                _canMoveNext= null != _source.Current;
-                return _canMoveNext;
+                return null != SourceCurrent();
             }
-            _canMoveNext= await _source.MoveNext(cancellationToken);
-            return _canMoveNext;
+            return await _source.MoveNext(cancellationToken);
+        }
+        public T Current => skip ? default : SourceCurrent();
+        public T ReallyCurrent => SourceCurrent();
+        public bool HasElement()
+        {
+            return null != SourceCurrent();
         }
 
-#endif
-
-        public T Current => skip?default:_source.Current;
-        public bool SkipFirst()
+        private T SourceCurrent()
         {
-            if (skip)
+            try
             {
-                skip = false;
-                return true;
+                if (tryGetCurrentError)
+                    return default;
+                return _source.Current;
+            }catch(Exception e)
+            {
+                tryGetCurrentError = true;
+                return default;
             }
-            return false;
-        }
-#if !EFCORE2
-
-        public bool HasElement()
-        {
-            return null != _source.Current;
-        }
-#endif
-#if EFCORE2
-        public bool HasElement()
-        {
-            if (!_canMoveNext)
-                return false;
-            return null != _source.Current;
         }
 
+        private bool tryGetCurrentError = false;
+
 #endif
-        public T ReallyCurrent => _source.Current;
     }
 }
