@@ -343,4 +343,4 @@ healthchecksdb
 /src/Bd.ShopRent.Api/Properties/launchSettings.json
 /src/Bd.ShopRent.DTO/__autoDTOConfig.json
 /src/Bd.ShopRent.DTO/Bd.ShopRent.Dto.csproj
-Configs/DbConfig.json
+/test/ShardingCore.Test50/Configs/*

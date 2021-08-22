@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
@@ -31,12 +32,13 @@ namespace ShardingCore
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IShardingTableCreator _tableCreator;
         private readonly ILogger<ShardingBootstrapper> _logger;
+        private readonly IRouteTailFactory _routeTailFactory;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
 
         public ShardingBootstrapper(IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions,
             IVirtualTableManager virtualTableManager
             , IShardingTableCreator tableCreator, ILogger<ShardingBootstrapper> logger,
-            IShardingDbContextFactory shardingDbContextFactory)
+            IShardingDbContextFactory shardingDbContextFactory,IRouteTailFactory routeTailFactory)
         {
             ShardingContainer.SetServices(serviceProvider);
             _serviceProvider = serviceProvider;
@@ -44,6 +46,7 @@ namespace ShardingCore
             _virtualTableManager = virtualTableManager;
             _tableCreator = tableCreator;
             _logger = logger;
+            _routeTailFactory = routeTailFactory;
             _shardingDbContextFactory = shardingDbContextFactory;
         }
 
@@ -122,7 +125,7 @@ namespace ShardingCore
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(false,string.Empty);
+                var dbContext = shardingDbContext.GetDbContext(false,_routeTailFactory.Create(string.Empty));
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
                 lock (modelCacheSyncObject)

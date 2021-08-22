@@ -104,9 +104,9 @@ namespace ShardingCore.EFCores
                         case nameof(Enumerable.All):
                             return EnsureMergeExecute<TResult>(typeof(AllAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, default);
                         case nameof(Enumerable.Max):
-                            return GenericMergeExecute<TResult>(typeof(MaxAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, default);
+                            return GenericMergeExecute2<TResult>(typeof(MaxAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, default);
                         case nameof(Enumerable.Min):
-                            return EnsureMergeExecute<TResult>(typeof(MinAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, default);
+                            return GenericMergeExecute2<TResult>(typeof(MinAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, default);
                         case nameof(Enumerable.Sum):
                             return EnsureMergeExecute2<TResult>(typeof(SumAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, default);
                         case nameof(Enumerable.Average):
@@ -177,9 +177,9 @@ namespace ShardingCore.EFCores
                             case nameof(Enumerable.All):
                                 return EnsureMergeExecute<TResult>(typeof(AllAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
                             case nameof(Enumerable.Max):
-                                return GenericMergeExecute<TResult>(typeof(MaxAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
+                                return GenericMergeExecute2<TResult>(typeof(MaxAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, cancellationToken);
                             case nameof(Enumerable.Min):
-                                return EnsureMergeExecute<TResult>(typeof(MinAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
+                                return GenericMergeExecute2<TResult>(typeof(MinAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, cancellationToken);
                             case nameof(Enumerable.Sum):
                                 return EnsureMergeExecute2<TResult>(typeof(SumAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, cancellationToken);
                             case nameof(Enumerable.Average):
@@ -224,13 +224,27 @@ namespace ShardingCore.EFCores
         private TResult GenericMergeExecute<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
         {
             var queryEntityType = query.GetQueryEntityType();
+            var resultEntityType = query.GetResultType();
             streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
             var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
             var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult));
             if (streamEngineMethod == null)
                 throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
             var @params = async ? new object[] { cancellationToken } : new object[0];
-            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamEngine, @params);
+            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { resultEntityType }).Invoke(streamEngine, @params);
+        }
+        private TResult GenericMergeExecute2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
+        {
+            var queryEntityType = query.GetQueryEntityType();
+            var resultType = query.GetResultType();
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType,resultType);
+            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
+            var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult));
+            if (streamEngineMethod == null)
+                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
+            var @params = async ? new object[] { cancellationToken } : new object[0];
+            //typeof(TResult)==?resultType
+            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamEngine, @params);
         }
 
 
@@ -323,6 +337,19 @@ namespace ShardingCore.EFCores
             var @params = async ? new object[] { cancellationToken } : new object[0];
             return (Task<TResult>)streamEngineMethod.Invoke(streamEngine, @params);
         }
+        private Task<TResult> GenericMergeExecuteAsync2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
+        {
+            var queryEntityType = query.GetQueryEntityType();
+            var resultType = query.GetResultType();
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType,resultType);
+            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
+            var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult));
+            if (streamEngineMethod == null)
+                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
+            var @params = async ? new object[] { cancellationToken } : new object[0];
+            return (Task<TResult>)streamEngineMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamEngine, @params);
+        }
+
 
         private Task<TResult> EnsureMergeExecuteAsync2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query,  CancellationToken cancellationToken)
         {
@@ -392,9 +419,9 @@ namespace ShardingCore.EFCores
                         case nameof(Enumerable.All):
                             return EnsureMergeExecuteAsync<TResult>(typeof(AllAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
                         case nameof(Enumerable.Max):
-                            return GenericMergeExecuteAsync<TResult>(typeof(MaxAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
+                            return GenericMergeExecuteAsync2<TResult>(typeof(MaxAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, cancellationToken);
                         case nameof(Enumerable.Min):
-                            return EnsureMergeExecuteAsync<TResult>(typeof(MinAsyncInMemoryMergeEngine<>), shardingDbContext, methodCallExpression, async, cancellationToken);
+                            return GenericMergeExecuteAsync2<TResult>(typeof(MinAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, async, cancellationToken);
                         case nameof(Enumerable.Sum):
                             return EnsureMergeExecuteAsync2<TResult>(typeof(SumAsyncInMemoryMergeEngine<,>), shardingDbContext, methodCallExpression, cancellationToken);
                         case nameof(Enumerable.Average):

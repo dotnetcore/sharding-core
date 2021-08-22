@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer.Domain.Maps;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Sharding.Abstractions;
 
@@ -23,6 +24,6 @@ namespace Sample.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
-        public string ModelChangeKey { get; set; }
+        public IRouteTail RouteTail { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -14,6 +15,6 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IShardingTableDbContext
     {
-        string ModelChangeKey { get; set; }
+        IRouteTail RouteTail { get; set; }
     }
 }

@@ -8,6 +8,8 @@ using ShardingCore.Sharding.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 
 namespace ShardingCore.Sharding
@@ -24,7 +26,7 @@ namespace ShardingCore.Sharding
         private readonly IQueryable<T> _source;
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IRoutingRuleEngineFactory _tableRoutingRuleEngineFactory;
-        private readonly IShardingScopeFactory _shardingScopeFactory;
+        private readonly IRouteTailFactory _routeTailFactory;
 
         private readonly IQueryable<T> _reWriteSource;
         //public IEnumerable<RouteResult> RouteResults { get; }
@@ -36,13 +38,13 @@ namespace ShardingCore.Sharding
         public SelectContext SelectContext { get;}
         public GroupByContext GroupByContext { get; }
 
-        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory, IShardingScopeFactory shardingScopeFactory)
+        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory, IRouteTailFactory routeTailFactory)
         {
             //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;
             _tableRoutingRuleEngineFactory = tableRoutingRuleEngineFactory;
-            _shardingScopeFactory = shardingScopeFactory;
+            _routeTailFactory = routeTailFactory;
             var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
@@ -67,18 +69,19 @@ namespace ShardingCore.Sharding
         //    _reWriteSource = reWriteResult.ReWriteQueryable;
         //}
 
-        public DbContext CreateDbContext(string tail)
+        public DbContext CreateDbContext(RouteResult routeResult)
         {
-            return _shardingDbContext.GetDbContext(false, tail);
+            var routeTail = _routeTailFactory.Create(routeResult);
+            return _shardingDbContext.GetDbContext(false, routeTail);
         }
         public IEnumerable<RouteResult> GetRouteResults()
         {
             return _tableRoutingRuleEngineFactory.Route(_shardingDbContext.GetType(),_source);
         }
 
-        public ShardingScope CreateScope()
+        public IRouteTail Create(RouteResult routeResult)
         {
-            return _shardingScopeFactory.CreateScope();
+            return _routeTailFactory.Create(routeResult);
         }
 
         public IQueryable<T> GetReWriteQueryable()

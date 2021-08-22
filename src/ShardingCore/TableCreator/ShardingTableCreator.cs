@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.Abstractions;
@@ -31,15 +32,17 @@ namespace ShardingCore.TableCreator
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly IEnumerable<IShardingConfigOption> _shardingConfigOptions;
+        private readonly IRouteTailFactory _routeTailFactory;
 
         public ShardingTableCreator(ILogger<ShardingTableCreator> logger, IShardingDbContextFactory shardingDbContextFactory,
-            IVirtualTableManager virtualTableManager, IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions)
+            IVirtualTableManager virtualTableManager, IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions,IRouteTailFactory routeTailFactory)
         {
             _logger = logger;
             _shardingDbContextFactory = shardingDbContextFactory;
             _virtualTableManager = virtualTableManager;
             _serviceProvider = serviceProvider;
             _shardingConfigOptions = shardingConfigOptions;
+            _routeTailFactory = routeTailFactory;
         }
 
         public void CreateTable<TShardingDbContext, T>(string tail) where TShardingDbContext : DbContext, IShardingDbContext where T : class, IShardingTable
@@ -69,7 +72,7 @@ namespace ShardingCore.TableCreator
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingDbContextType, shardingEntityType);
                 var dbContext = (DbContext)serviceScope.ServiceProvider.GetService(shardingDbContextType);
                 var shardingDbContext = (IShardingDbContext)dbContext;
-                var context = shardingDbContext.GetDbContext(false,tail);
+                var context = shardingDbContext.GetDbContext(false,_routeTailFactory.Create(tail));
 
                 var modelCacheSyncObject = context.GetModelCacheSyncObject();
                     

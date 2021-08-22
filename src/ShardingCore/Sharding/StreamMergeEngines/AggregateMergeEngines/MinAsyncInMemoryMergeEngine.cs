@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class MinAsyncInMemoryMergeEngine<TEntity> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity>
+    public class MinAsyncInMemoryMergeEngine<TEntity,TSelect> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TSelect>
     {
         public MinAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {

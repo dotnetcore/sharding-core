@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sample.MySql.Domain.Maps;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Sharding.Abstractions;
 
@@ -21,6 +22,6 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
         }
 
-        public string ModelChangeKey { get; set; }
+        public IRouteTail RouteTail { get; set; }
     }
 }

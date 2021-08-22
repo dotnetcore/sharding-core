@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class MaxAsyncInMemoryMergeEngine<TEntity>: AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity>
+    public class MaxAsyncInMemoryMergeEngine<TEntity,TSelect>: AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TSelect>
     {
         public MaxAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {

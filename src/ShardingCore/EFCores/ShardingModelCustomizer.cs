@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingAccessors.Abstractions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Extensions;
@@ -21,9 +22,10 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingModelCustomizer<TShardingDbContext>: ModelCustomizer where TShardingDbContext:DbContext,IShardingDbContext
+    public class ShardingModelCustomizer<TShardingDbContext> : ModelCustomizer where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private  Type _shardingDbContextType => typeof(TShardingDbContext);
+        private Type _shardingDbContextType => typeof(TShardingDbContext);
+
         public ShardingModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
         {
         }
@@ -33,12 +35,11 @@ namespace ShardingCore.EFCores
             base.Customize(modelBuilder, context);
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
-                var tail = shardingTableDbContext.GetShardingTableDbContextTail();
-                //if (tail.StartsWith("EMPTY_SHARDING_TAIL_ID"))
-                //    tail = null;
-
-                if (!string.IsNullOrWhiteSpace(tail))
+                var isMultiEntityQuery = shardingTableDbContext.RouteTail.IsMultiEntityQuery();
+                if (!isMultiEntityQuery)
                 {
+                    var singleQueryRouteTail = (ISingleQueryRouteTail) shardingTableDbContext.RouteTail;
+                    var tail = singleQueryRouteTail.GetTail();
                     var virtualTableManager = ShardingContainer.Services.GetService<IVirtualTableManager>();
                     var typeMap = virtualTableManager.GetAllVirtualTables(_shardingDbContextType).Where(o => o.GetTaleAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
 
@@ -49,26 +50,24 @@ namespace ShardingCore.EFCores
                         MappingToTable(entityType.ClrType, modelBuilder, tail);
                     }
                 }
-                //else
-                //{
-
-                //    var shardingAccessor = ShardingContainer.Services.GetService<IShardingAccessor>();
-                //    if (shardingAccessor?.ShardingContext != null)
-                //    {
-                //        var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable()).ToArray();
-                //        foreach (var entityType in mutableEntityTypes)
-                //        {
-                //            var queryTail = shardingAccessor.ShardingContext.GetContextQueryTail(entityType.ClrType);
-                //            if (queryTail != null)
-                //            {
-                //                MappingToTable(entityType.ClrType,modelBuilder, queryTail);
-                //            }
-                //        }
-                //    }
-                //}
+                else
+                {
+                    var multiQueryRouteTail = (IMultiQueryRouteTail) shardingTableDbContext.RouteTail;
+                    var entityTypes = multiQueryRouteTail.GetEntityTypes();
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && entityTypes.Contains(o.ClrType)).ToArray();
+                    foreach (var entityType in mutableEntityTypes)
+                    {
+                        var queryTail = multiQueryRouteTail.GetEntityTail(entityType.ClrType);
+                        if (queryTail != null)
+                        {
+                            MappingToTable(entityType.ClrType, modelBuilder, queryTail);
+                        }
+                    }
+                }
             }
         }
-        private void MappingToTable(Type clrType,ModelBuilder modelBuilder,string tail)
+
+        private void MappingToTable(Type clrType, ModelBuilder modelBuilder, string tail)
         {
             var shardingEntityConfig = ShardingKeyUtil.Parse(clrType);
             var shardingEntity = shardingEntityConfig.ShardingEntityType;

@@ -91,8 +91,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             //}
         }
 
-        private bool EnableMultiEntityQuery = false;
-
         public IEnumerable<RouteResult> Route<T>(Type shardingDbContextType, RouteRuleContext<T> routeRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
@@ -100,10 +98,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
 
             var shardingEntities = queryEntities.Where(o => o.IsShardingTable());
-            if (shardingEntities.Count() > 1&& !EnableMultiEntityQuery)
-            {
-                throw new ShardingCoreException("not support multi entity query");
-            }
             foreach (var shardingEntity in shardingEntities)
             {
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingDbContextType, shardingEntity);

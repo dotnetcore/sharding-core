@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -19,12 +21,12 @@ namespace ShardingCore.Sharding.Abstractions
         /// </summary>
         Type ActualDbContextType {  get;}
         /// <summary>
-        /// ����DbContext
+        /// create DbContext
         /// </summary>
         /// <param name="track">true not care dbcontext life, false need call dispose()</param>
-        /// <param name="tail"></param>
+        /// <param name="routeTail"></param>
         /// <returns></returns>
-        DbContext GetDbContext(bool track,string tail);
+        DbContext GetDbContext(bool track,IRouteTail routeTail);
         /// <summary>
         /// ����ʵ�崴��db context
         /// </summary>

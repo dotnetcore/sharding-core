@@ -22,5 +22,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         }
         
         public ISet<IPhysicTable> ReplaceTables { get; }
+        
     }
 }

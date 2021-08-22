@@ -14,6 +14,8 @@ using ShardingCore.TableCreator;
 using System;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.ShardingAccessors.Abstractions;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 namespace ShardingCore
 {
@@ -81,6 +83,7 @@ namespace ShardingCore
             //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
+            services.AddSingleton<IRouteTailFactory, RouteTailFactory>();
             return services;
         }
 

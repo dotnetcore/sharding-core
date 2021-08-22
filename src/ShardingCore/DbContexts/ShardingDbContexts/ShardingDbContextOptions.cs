@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.DbContexts.ShardingDbContexts
 {
@@ -12,13 +14,13 @@ namespace ShardingCore.DbContexts.ShardingDbContexts
     public class ShardingDbContextOptions
     {
 
-        public ShardingDbContextOptions(DbContextOptions dbContextOptions, string tail)
+        public ShardingDbContextOptions(DbContextOptions dbContextOptions, IRouteTail routeTail)
         {
+            RouteTail = routeTail;
             DbContextOptions = dbContextOptions;
-            Tail = tail;
         }
 
+        public  IRouteTail RouteTail{ get; }
         public DbContextOptions DbContextOptions { get; }
-        public string Tail { get; }
     }
 }

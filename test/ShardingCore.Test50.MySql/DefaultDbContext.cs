@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Test50.MySql.Domain.Maps;
@@ -26,6 +27,6 @@ namespace ShardingCore.Test50.MySql
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
 
-        public string ModelChangeKey { get; set; }
+        public IRouteTail RouteTail { get; set; }
     }
 }

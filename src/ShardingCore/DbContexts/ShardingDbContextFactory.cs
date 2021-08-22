@@ -34,12 +34,12 @@ namespace ShardingCore.DbContexts
                 throw new ShardingCoreException(
                     $"{shardingDbContextType.FullName} cant found DefaultShardingDbContextCreatorConfig<{shardingDbContextType.Name}> should use {nameof(DIExtension.AddShardingDbContext)}");
             }
-            var tail=shardingDbContextOptions.Tail;
+            var routeTail=shardingDbContextOptions.RouteTail;
             
              var dbContext = shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
-            if (!string.IsNullOrWhiteSpace(tail) && dbContext is IShardingTableDbContext shardingTableDbContext)
+            if (dbContext is IShardingTableDbContext shardingTableDbContext)
             {
-                shardingTableDbContext.SetShardingTableDbContextTail(tail);
+                shardingTableDbContext.RouteTail = routeTail;
             }
             var dbContextModel = dbContext.Model;
             return dbContext;

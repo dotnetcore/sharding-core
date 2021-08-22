@@ -38,6 +38,7 @@ namespace ShardingCore.Test50
                 .ConfigureAppConfiguration(builder =>
                 {
                     builder.AddJsonFile("Configs/DbConfig.json");
+                    builder.AddJsonFile("Configs/MacDbConfig.json");
                 });
         }
 
@@ -47,13 +48,13 @@ namespace ShardingCore.Test50
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServerMac")["ConnectionString"])
                 ,op =>
                 {
                     op.EnsureCreatedWithOutShardingTable = false;
                     op.CreateShardingTableOnStart = false;
                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        builder=> builder.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]).UseLoggerFactory(efLogger));
+                        builder=> builder.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServerMac")["ConnectionString"]).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                 });

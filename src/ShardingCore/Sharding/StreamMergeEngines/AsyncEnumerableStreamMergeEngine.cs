@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
@@ -26,7 +26,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     public class AsyncEnumerableStreamMergeEngine<T> : IAsyncEnumerable<T>, IEnumerable<T>, IDisposable
     {
-
         private readonly StreamMergeContext<T> _mergeContext;
         private readonly ICollection<DbContext> _parllelDbbContexts;
 
@@ -47,7 +46,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         }
 #endif
 #if EFCORE2
-
         private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
         {
             var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
@@ -64,38 +62,34 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 #endif
 
 #if EFCORE2
-
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
             return GetShardingEnumerator();
         }
 #endif
 
+        private IQueryable<T> CreateAsyncExecuteQueryable(RouteResult routeResult)
+        {
+            var shardingDbContext = _mergeContext.CreateDbContext(routeResult);
+            _parllelDbbContexts.Add(shardingDbContext);
+            var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable()
+                .ReplaceDbContextQueryable(shardingDbContext);
+            return newQueryable;
+        }
+
         private IAsyncEnumerator<T> GetShardingEnumerator()
         {
             var tableResult = _mergeContext.GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
-                if (routeResult.ReplaceTables.Count > 1)
-                    throw new ShardingCoreException("route found more than 1 table name s");
-                var tail = string.Empty;
-                if (routeResult.ReplaceTables.Count == 1)
-                    tail = routeResult.ReplaceTables.First().Tail;
                 return Task.Run(async () =>
                 {
                     try
                     {
-                        //using (var scope = _mergeContext.CreateScope())
-                        //{
-                        //    scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
-                        var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                        _parllelDbbContexts.Add(shardingDbContext);
-                        var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
-                            .ReplaceDbContextQueryable(shardingDbContext);
+                        var newQueryable = CreateAsyncExecuteQueryable(routeResult);
 
                         var asyncEnumerator = await GetAsyncEnumerator(newQueryable);
                         return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
-                        //}
                     }
                     catch (Exception e)
                     {
@@ -126,27 +120,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var tableResult = _mergeContext.GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
-                if (routeResult.ReplaceTables.Count > 1)
-                    throw new ShardingCoreException("route found more than 1 table name s");
-                var tail = string.Empty;
-                if (routeResult.ReplaceTables.Count == 1)
-                    tail = routeResult.ReplaceTables.First().Tail;
                 return Task.Run(() =>
                 {
                     try
                     {
-                        //using (var scope = _mergeContext.CreateScope())
-                        //{
-                        //    scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
-                            var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                            _parllelDbbContexts.Add(shardingDbContext);
+                        var newQueryable = CreateAsyncExecuteQueryable(routeResult);
 
-                            var newQueryable = (IQueryable<T>)_mergeContext.GetReWriteQueryable()
-                                .ReplaceDbContextQueryable(shardingDbContext);
-
-                            var enumerator = GetEnumerator(newQueryable);
-                            return new StreamMergeEnumerator<T>(enumerator);
-                        //}
+                        var enumerator = GetEnumerator(newQueryable);
+                        return new StreamMergeEnumerator<T>(enumerator);
                     }
                     catch (Exception e)
                     {

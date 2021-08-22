@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Maps;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Sharding.Abstractions;
 
@@ -25,6 +26,6 @@ namespace Sample.SqlServer3x
             modelBuilder.ApplyConfiguration(new SysUserModMap());
         }
 
-        public string ModelChangeKey { get; set; }
+        public IRouteTail RouteTail { get; set; }
     }
 }

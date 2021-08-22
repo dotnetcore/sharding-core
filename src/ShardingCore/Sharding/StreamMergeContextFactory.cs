@@ -2,6 +2,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
 using System.Linq;
 using ShardingCore.Core.ShardingAccessors;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.Sharding
 {
@@ -14,17 +15,17 @@ namespace ShardingCore.Sharding
     public class StreamMergeContextFactory:IStreamMergeContextFactory
     {
         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
-        private readonly IShardingScopeFactory _shardingScopeFactory;
+        private readonly IRouteTailFactory _routeTailFactory;
 
         public StreamMergeContextFactory(
-            IRoutingRuleEngineFactory routingRuleEngineFactory,IShardingScopeFactory shardingScopeFactory)
+            IRoutingRuleEngineFactory routingRuleEngineFactory,IRouteTailFactory routeTailFactory)
         {
             _routingRuleEngineFactory = routingRuleEngineFactory;
-            _shardingScopeFactory = shardingScopeFactory;
+            _routeTailFactory = routeTailFactory;
         }
         public StreamMergeContext<T> Create<T>(IQueryable<T> queryable,IShardingDbContext shardingDbContext)
         {
-            return new StreamMergeContext<T>(queryable,shardingDbContext, _routingRuleEngineFactory, _shardingScopeFactory);
+            return new StreamMergeContext<T>(queryable,shardingDbContext, _routingRuleEngineFactory, _routeTailFactory);
         }
     }
 }

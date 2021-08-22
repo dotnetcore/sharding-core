@@ -22,6 +22,8 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
+        <None Remove="Configs\MacDbConfig.json" />
+        <Content Include="Configs\MacDbConfig.json" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\ShardingCore\ShardingCore.csproj" />

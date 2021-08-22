@@ -19,26 +19,32 @@ namespace ShardingCore.Extensions
     public static class ShardingExtension
     {
         private static readonly string ShardingTableDbContextFormat = $"sharding_{Guid.NewGuid():n}_";
-        /// <summary>
-        /// 获取分表的tail
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <returns></returns>
-        public static string GetShardingTableDbContextTail(this IShardingTableDbContext dbContext)
-        {
-            return dbContext.ModelChangeKey?.Replace(ShardingTableDbContextFormat, string.Empty)??string.Empty;
+        // /// <summary>
+        // /// 获取分表的tail
+        // /// </summary>
+        // /// <param name="dbContext"></param>
+        // /// <returns></returns>
+        // public static string GetShardingTableDbContextTail(this IShardingTableDbContext dbContext)
+        // {
+        //     return dbContext.RouteTail?.Replace(ShardingTableDbContextFormat, string.Empty)??string.Empty;
+        //
+        // }
+        // /// <summary>
+        // /// 设置分表的tail
+        // /// </summary>
+        // /// <param name="dbContext"></param>
+        // /// <param name="tail"></param>
+        // public static void SetShardingTableDbContextTail(this IShardingTableDbContext dbContext, string tail)
+        // {
+        //     if (!string.IsNullOrWhiteSpace(dbContext.ModelChangeKey))
+        //         throw new ShardingCoreException($"repeat set ModelChangeKey in {dbContext.GetType().FullName}");
+        //     dbContext.ModelChangeKey = tail.FormatRouteTail();
+        // }
 
-        }
-        /// <summary>
-        /// 设置分表的tail
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="tail"></param>
-        public static void SetShardingTableDbContextTail(this IShardingTableDbContext dbContext, string tail)
+        public static string FormatRouteTail2ModelCacheKey(this string originalTail)
         {
-            if (!string.IsNullOrWhiteSpace(dbContext.ModelChangeKey))
-                throw new ShardingCoreException($"repeat set ModelChangeKey in {dbContext.GetType().FullName}");
-            dbContext.ModelChangeKey = $"{ShardingTableDbContextFormat}{tail}";
+            return $"{ShardingTableDbContextFormat}{originalTail}";
+            ;
         }
     }
 }

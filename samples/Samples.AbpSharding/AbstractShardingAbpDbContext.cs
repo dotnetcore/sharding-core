@@ -10,10 +10,12 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -21,9 +23,11 @@ namespace Samples.AbpSharding
 {
     public abstract class AbstractShardingAbpDbContext<T> : AbpDbContext, IShardingTableDbContext<T> where T : AbpDbContext, IShardingTableDbContext
     {
-        private readonly string EMPTY_SHARDING_TAIL_ID = ShardingConstant.EMPTY_SHARDING_TAIL_ID + Guid.NewGuid().ToString("n");
+
+
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
         private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IRouteTailFactory _routeTailFactory;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private DbContextOptions<T> _dbContextOptions;
@@ -34,6 +38,7 @@ namespace Samples.AbpSharding
         {
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
+            _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer
                 .GetService<IEnumerable<IShardingDbContextOptionsBuilderConfig>>()
                 .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType);
@@ -47,7 +52,7 @@ namespace Samples.AbpSharding
         {
             Type type = typeof(DbContextOptionsBuilder<>);
             type = type.MakeGenericType(ActualDbContextType);
-            return (DbContextOptionsBuilder<T>)Activator.CreateInstance(type);
+            return (DbContextOptionsBuilder<T>) Activator.CreateInstance(type);
         }
 
         private DbContextOptions<T> CreateShareDbContextOptions()
@@ -64,7 +69,7 @@ namespace Samples.AbpSharding
             return dbContextOptionBuilder.Options;
         }
 
-        private ShardingDbContextOptions GetShareShardingDbContextOptions(string tail)
+        private ShardingDbContextOptions GetShareShardingDbContextOptions(IRouteTail routeTail)
         {
             if (_dbContextOptions == null)
             {
@@ -77,30 +82,34 @@ namespace Samples.AbpSharding
                 }
             }
 
-            return new ShardingDbContextOptions(_dbContextOptions, tail);
+            return new ShardingDbContextOptions(_dbContextOptions, routeTail);
         }
-        private ShardingDbContextOptions CetMonopolyShardingDbContextOptions(string tail)
+        private ShardingDbContextOptions CetMonopolyShardingDbContextOptions(IRouteTail routeTail)
         {
-            return new ShardingDbContextOptions(CreateMonopolyDbContextOptions(), tail);
+            return new ShardingDbContextOptions(CreateMonopolyDbContextOptions(), routeTail);
         }
 
 
-        public DbContext GetDbContext(bool track, string tail)
+        public DbContext GetDbContext(bool track, IRouteTail routeTail)
         {
             if (track)
             {
-                if (!_dbContextCaches.TryGetValue(tail, out var dbContext))
+                if (routeTail.IsMultiEntityQuery())
+                    throw new ShardingCoreException("multi route not support track");
+                if(!(routeTail is ISingleQueryRouteTail singleQueryRouteTail))
+                    throw new ShardingCoreException("multi route not support track");
+                var cacheKey = routeTail.GetRouteTailIdenty();
+                if (!_dbContextCaches.TryGetValue(cacheKey, out var dbContext))
                 {
-                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
-                    _dbContextCaches.TryAdd(tail, dbContext);
+                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(routeTail));
+                    _dbContextCaches.TryAdd(cacheKey, dbContext);
                 }
 
                 return dbContext;
             }
             else
             {
-                var dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(tail == EMPTY_SHARDING_TAIL_ID ? string.Empty : tail));
-                return dbContext;
+                return _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(routeTail));
             }
         }
 
@@ -108,17 +117,15 @@ namespace Samples.AbpSharding
 
         public DbContext CreateGenericDbContext<T>(T entity) where T : class
         {
-            var tail = EMPTY_SHARDING_TAIL_ID;
+            var tail = string.Empty;
             if (entity.IsShardingTable())
             {
                 var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
                 tail = physicTable.Tail;
             }
 
-            return GetDbContext(true, tail);
+            return GetDbContext(true, _routeTailFactory.Create(tail));
         }
-
-
         public override EntityEntry Add(object entity)
         {
             return CreateGenericDbContext(entity).Add(entity);

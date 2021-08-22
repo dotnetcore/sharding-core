@@ -6,13 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 {
@@ -52,7 +48,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             {
                 if (methodCallExpression.Arguments.Count == 2)
                 {
-
 #if !EFCORE2
                     throw new InvalidOperationException(methodCallExpression.Print());
 #endif
@@ -68,30 +63,27 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
         protected abstract IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression);
 
+        private IQueryable CreateAsyncExecuteQueryable<TResult>(RouteResult routeResult)
+        {
+            var shardingDbContext = _mergeContext.CreateDbContext(routeResult);
+            _parllelDbbContexts.Add(shardingDbContext);
+            var newQueryable = (IQueryable<TEntity>) GetStreamMergeContext().GetReWriteQueryable()
+                .ReplaceDbContextQueryable(shardingDbContext);
+            var newFilterQueryable = EFQueryAfterFilter<TResult>(newQueryable);
+            return newFilterQueryable;
+        }
+
         public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
             var tableResult = _mergeContext.GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
-                if (routeResult.ReplaceTables.Count > 1)
-                    throw new ShardingCoreException("route found more than 1 table name s");
-                var tail = string.Empty;
-                if (routeResult.ReplaceTables.Count == 1)
-                    tail = routeResult.ReplaceTables.First().Tail;
-
                 return Task.Run(async () =>
                 {
                     try
                     {
-                        //using (var scope = _mergeContext.CreateScope())
-                        //{
-                        //    scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
-                        var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                        _parllelDbbContexts.Add(shardingDbContext);
-                        var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
-                            .ReplaceDbContextQueryable(shardingDbContext);
-                        var newFilterQueryable = EFQueryAfterFilter<TResult>(newQueryable);
-                        return await efQuery(newFilterQueryable);
+                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(routeResult);
+                        return await efQuery(asyncExecuteQueryable);
                         //}
                     }
                     catch (Exception e)
@@ -104,39 +96,26 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
             return (await Task.WhenAll(enumeratorTasks)).ToList();
         }
+
         public List<TResult> Execute<TResult>(Func<IQueryable, TResult> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
             var tableResult = _mergeContext.GetRouteResults();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
-                if (routeResult.ReplaceTables.Count > 1)
-                    throw new ShardingCoreException("route found more than 1 table name s");
-                var tail = string.Empty;
-                if (routeResult.ReplaceTables.Count == 1)
-                    tail = routeResult.ReplaceTables.First().Tail;
-
                 return Task.Run(() =>
-               {
-                   try
-                   {
-                       //using (var scope = _mergeContext.CreateScope())
-                       //{
-                       //    scope.ShardingAccessor.ShardingContext = ShardingContext.Create(routeResult);
-                       var shardingDbContext = _mergeContext.CreateDbContext(tail);
-                       _parllelDbbContexts.Add(shardingDbContext);
-                       var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
-                           .ReplaceDbContextQueryable(shardingDbContext);
-                       var newFilterQueryable = EFQueryAfterFilter<TResult>(newQueryable);
-                       var query = efQuery(newFilterQueryable);
-                       return query;
-                       //}
-                   }
-                   catch (Exception e)
-                   {
-                       Console.WriteLine(e);
-                       throw;
-                   }
-               });
+                {
+                    try
+                    {
+                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(routeResult);
+                        var query = efQuery(asyncExecuteQueryable);
+                        return query;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                });
             }).ToArray();
             return Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult().ToList();
         }
@@ -151,6 +130,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         {
             return _mergeContext;
         }
+
         public IQueryable<TEntity> GetQueryable()
         {
             return _queryable;
@@ -165,6 +145,5 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         {
             return _secondExpression;
         }
-
     }
 }

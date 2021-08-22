@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract  class AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TResult>: AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    public abstract  class AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TResult,TSelect>: AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
 
         protected AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
@@ -26,7 +26,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
             var secondExpression = GetSecondExpression();
             if (secondExpression != null)
             {
-                if (secondExpression is UnaryExpression unaryExpression && unaryExpression.Operand is LambdaExpression lambdaExpression && lambdaExpression is Expression<Func<TEntity, TResult>> selector)
+                if (secondExpression is UnaryExpression unaryExpression && unaryExpression.Operand is LambdaExpression lambdaExpression && lambdaExpression is Expression<Func<TEntity, TSelect>> selector)
                 {
                     return queryable.Select(selector);
                 }
