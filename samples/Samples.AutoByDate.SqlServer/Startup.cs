@@ -7,11 +7,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Samples.AutoByDate.SqlServer.DbContexts;
+using Samples.AutoByDate.SqlServer.Shardings;
+using ShardingCore;
 
 namespace Samples.AutoByDate.SqlServer
 {
@@ -29,17 +33,17 @@ namespace Samples.AutoByDate.SqlServer
         {
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
-            //services.AddShardingSqlServer(o =>
-            //{
-            //    o.ConnectionString = "";
-            //    o.AddSharding<SysUserLogByDayVirtualTableRoute>();
-            //    o.UseShardingCoreConfig((provider, config) => 
-            //    {
-            //        //如果是development就判断并且新建数据库如果不存在的话
-            //        config.EnsureCreated = provider.GetService<IHostEnvironment>().IsDevelopment();
-            //        config.CreateShardingTableOnStart = true;
-            //    });
-            //});
+            
+            services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+                , op =>
+                {
+                    op.EnsureCreatedWithOutShardingTable = true;
+                    op.CreateShardingTableOnStart = true;
+                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection),
+                        (conStr,builder) => builder.UseSqlServer(conStr));
+                    op.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
+                });
             services.AddChronusJob();
         }
 
@@ -54,7 +58,6 @@ namespace Samples.AutoByDate.SqlServer
             }
 
             app.UseShardingCore();
-            app.UseHttpsRedirection();
 
             app.UseRouting();
 
