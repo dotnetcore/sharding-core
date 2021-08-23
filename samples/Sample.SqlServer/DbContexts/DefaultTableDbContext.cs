@@ -21,6 +21,7 @@ namespace Sample.SqlServer.DbContexts
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
+            modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
         public IRouteTail RouteTail { get; set; }
