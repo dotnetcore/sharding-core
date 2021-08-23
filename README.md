@@ -10,9 +10,9 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) 
 --- | --- | --- | --- 
-[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.12.0.03) | >= 5.0.x | 2.1 | 3.0+ 
-[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.03) | 3.1.10 | 2.0 | 2.0+ 
-[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.03) | 2.2.6 | 2.0 | 2.0+ 
+[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.08) | >= 5.0.x | 2.1 | 3.0+ 
+[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.08) | 3.1.10 | 2.0 | 2.0+ 
+[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.08) | 2.2.6 | 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
@@ -95,11 +95,11 @@ Oracle | 支持 | 未测试
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore" Version="5.2.0.07" />
+<PackageReference Include="ShardingCore" Version="5.2.0.08" />
 or
-<PackageReference Include="ShardingCore" Version="3.2.0.07" />
+<PackageReference Include="ShardingCore" Version="3.2.0.08" />
 or
-<PackageReference Include="ShardingCore" Version="2.2.0.07" />
+<PackageReference Include="ShardingCore" Version="2.2.0.08" />
 ```
 
 ## 配置
