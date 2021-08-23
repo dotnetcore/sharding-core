@@ -20,24 +20,16 @@ namespace Sample.MySql
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            // services.AddShardingMySql(o =>
-            // {
-            //     o.EnsureCreatedWithOutShardingTable = true;
-            //     o.CreateShardingTableOnStart = true;
-            //     o.UseShardingDbContext<DefaultTableDbContext>( dbConfig =>
+            // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
+            //     ,op =>
             //     {
-            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //         dbConfig.AddShardingTableRoute<SysUserLogByMonthRoute>();
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingOptionsBuilder((connection, builder) => builder.UseMySql(connection,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger),
+            //             (conStr,builder)=> builder.UseMySql(conStr,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger));
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
-            //     //o.AddDataSourceVirtualRoute<>();
-            //     o.IgnoreCreateTableError = true;
-            //
-            // });
-            // services.AddDbContext<DefaultTableDbContext>(o => o.UseMySql("server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", o =>
-            // {
-            //     o.ServerVersion("5.7.13");
-            // }).UseShardingMySqlUpdateSqlGenerator());
-            // services.AddLogging(b => b.AddConsole());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -38,23 +38,16 @@ namespace ShardingCore.Test50.MySql
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
            
-            // services.AddShardingMySql(o =>
-            // {
-            //     o.EnsureCreatedWithOutShardingTable = false;
-            //     o.CreateShardingTableOnStart = false;
-            //     // o.AddShardingTable<DefaultDbContext>("conn1", "server=xxx;userid=xxx;password=xxx;database=sharding_db123;Charset=utf8;Allow Zero Datetime=True; Pooling=true; Max Pool Size=512;sslmode=none;Allow User Variables=True;", dbConfig =>
-            //     o.UseShardingDbContext<DefaultDbContext>( dbConfig =>
+            // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
+            //     ,op =>
             //     {
-            //         dbConfig.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //         dbConfig.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingOptionsBuilder((connection, builder) => builder.UseMySql(connection,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger),
+            //             (conStr,builder)=> builder.UseMySql(conStr,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger));
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
-            //     //o.AddDataSourceVirtualRoute<>();
-            //     o.IgnoreCreateTableError = true;
-            //     o.ServerVersion = new MySqlServerVersion("5.7.15");
-            // });
-            // services.AddDbContext<DefaultDbContext>(o=>
-            //     o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
-            //         .UseShardingMySqlUpdateSqlGenerator());
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
