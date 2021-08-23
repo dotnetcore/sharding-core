@@ -10,9 +10,9 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) 
 --- | --- | --- | --- 
-[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.08) | >= 5.0.x | 2.1 | 3.0+ 
-[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.08) | 3.1.10 | 2.0 | 2.0+ 
-[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.08) | 2.2.6 | 2.0 | 2.0+ 
+[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.09) | >= 5.0.x | 2.1 | 3.0+ 
+[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.09) | 3.1.10 | 2.0 | 2.0+ 
+[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.09) | 2.2.6 | 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
@@ -89,17 +89,17 @@ Oracle | 支持 | 未测试
 - [针对分页进行优化] 大页数跳转支持低内存流式处理
 
 ## 缺点
-- [暂不支持分库]
+- [暂不支持分库]の
 - [消耗连接]出现分表与分表对象进行join如果条件没法索引到具体表会生成```笛卡尔积```导致连接数爆炸,后期会进行针对该情况的配置
 - [该库比较年轻] 可能会有一系列bug或者单元测试不到位的情况,但是只要你在群里或者提了issues我会尽快解决
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore" Version="5.2.0.08" />
+<PackageReference Include="ShardingCore" Version="5.2.0.09" />
 or
-<PackageReference Include="ShardingCore" Version="3.2.0.08" />
+<PackageReference Include="ShardingCore" Version="3.2.0.09" />
 or
-<PackageReference Include="ShardingCore" Version="2.2.0.08" />
+<PackageReference Include="ShardingCore" Version="2.2.0.09" />
 ```
 
 ## 配置
@@ -349,11 +349,11 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
             sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";
             await _defaultTableDbContext.SaveChangesAsync();
 --log info
-     info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM [SysUserMod_01] AS [s]
-      WHERE [s].[Age] <= 10
+  Executed DbCommand (1ms) [Parameters=[@p1='?' (Size = 128), @p0='?' (Size = 128)], CommandType='Text', CommandTimeout='30']
+      SET NOCOUNT ON;
+      UPDATE [SysUserMod_02] SET [Name] = @p0
+      WHERE [Id] = @p1;
+      SELECT @@ROWCOUNT;
 ```
 
 

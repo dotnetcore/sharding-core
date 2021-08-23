@@ -231,7 +231,7 @@ namespace ShardingCore.EFCores
             if (streamEngineMethod == null)
                 throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
             var @params = async ? new object[] { cancellationToken } : new object[0];
-            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { resultEntityType }).Invoke(streamEngine, @params);
+            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamEngine, @params);
         }
         private TResult GenericMergeExecute2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
         {
