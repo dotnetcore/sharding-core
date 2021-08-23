@@ -3,13 +3,16 @@ using ShardingCore.Core;
 
 namespace Sample.SqlServer.Domain.Entities
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Tuesday, 26 January 2021 12:25:39
-* @Email: 326308290@qq.com
-*/
-    public class SysUserMod:IShardingTable
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Tuesday, 26 January 2021 12:25:39
+    * @Email: 326308290@qq.com
+    */
+    /// <summary>
+    /// 用户表
+    /// </summary>
+    public class SysUserMod : IShardingTable
     {
         /// <summary>
         /// 用户Id用于分表

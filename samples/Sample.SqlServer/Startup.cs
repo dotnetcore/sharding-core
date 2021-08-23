@@ -30,8 +30,9 @@ namespace Sample.SqlServer
                  {
                      op.EnsureCreatedWithOutShardingTable = true;
                      op.CreateShardingTableOnStart = true;
-                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));
+                     op.UseShardingOptionsBuilder(
+                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));//使用链接字符串创建dbcontext
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
             ////不支持MARS不支持追踪的
