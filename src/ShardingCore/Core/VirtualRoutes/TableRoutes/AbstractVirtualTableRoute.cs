@@ -22,6 +22,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         public virtual ShardingRouteContext CurrentShardingRouteContext =>
             ShardingContainer.GetService<IShardingRouteManager>().Current;
         /// <summary>
+        /// 启用提示路由
+        /// </summary>
+        protected virtual bool EnableHintRoute => true;
+        /// <summary>
         /// 跳过表达式路由
         /// </summary>
         protected virtual bool SkipRouteWithPredicate =>
@@ -37,7 +41,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <returns></returns>
         public virtual List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
-            if (SkipRouteWithPredicate)
+            if (EnableHintRoute&&SkipRouteWithPredicate)
             {
                 var tails = CurrentShardingRouteContext.Must[ShardingEntityType];
                 var physicTables = allPhysicTables.Where(o => tails.Contains(o.Tail)).ToList();
