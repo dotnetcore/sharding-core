@@ -11,6 +11,7 @@ namespace ShardingCore.Test50_2x.Shardings
 */
     public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserMod>
     {
+        protected override bool EnableHintRoute => true;
         public SysUserModVirtualTableRoute() : base(2,3)
         {
         }

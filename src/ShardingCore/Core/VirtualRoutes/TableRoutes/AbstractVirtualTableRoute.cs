@@ -24,7 +24,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <summary>
         /// 启用提示路由
         /// </summary>
-        protected virtual bool EnableHintRoute => true;
+        protected virtual bool EnableHintRoute => false;
         /// <summary>
         /// 跳过表达式路由
         /// </summary>
