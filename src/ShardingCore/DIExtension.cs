@@ -12,6 +12,8 @@ using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.Core.QueryRouteManagers;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.ShardingAccessors.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
@@ -84,6 +86,8 @@ namespace ShardingCore
             services.AddSingleton<IShardingAccessor, ShardingAccessor>();
             services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
             services.AddSingleton<IRouteTailFactory, RouteTailFactory>();
+            services.AddSingleton<IShardingRouteManager, ShardingRouteManager>();
+            services.AddSingleton<IShardingRouteAccessor, ShardingRouteAccessor>();
             return services;
         }
 

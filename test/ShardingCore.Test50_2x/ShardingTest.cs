@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Test50_2x.Domain.Entities;
 using Xunit;
 
@@ -15,10 +17,12 @@ namespace ShardingCore.Test50_2x
     public class ShardingTest
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
+        private readonly IShardingRouteManager _shardingRouteManager;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager)
         {
             _virtualDbContext = virtualDbContext;
+            _shardingRouteManager = shardingRouteManager;
         }
 
         //[Fact]
@@ -38,6 +42,38 @@ namespace ShardingCore.Test50_2x
         //    Assert.Equal(2,routeResult2s.SelectMany(o=>o.ReplaceTables).Count());
         //    Assert.Equal(true,routeResult2s.SelectMany(o=>o.ReplaceTables).All(o=>new[]{"0","1"}.Contains(o.Tail)));
         //}
+
+        [Fact]
+        public async Task ToList_All_Route_Test()
+        {
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.Must.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+
+                var mod00s = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+                Assert.Equal(333, mod00s.Count);
+            }
+            var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+        }
+
         [Fact]
         public async Task ToList_All_Test()
         {

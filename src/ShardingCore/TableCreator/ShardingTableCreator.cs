@@ -66,7 +66,7 @@ namespace ShardingCore.TableCreator
             var shardingConfigOptions = _shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == shardingDbContextType);
             if (shardingConfigOptions == null)
                 throw new ShardingCoreException(
-                    "not found sharding config options db context is {shardingDbContextType.FullName}");
+                    $"not found sharding config options db context is {shardingDbContextType.FullName}");
             using (var serviceScope = _serviceProvider.CreateScope())
             {
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingDbContextType, shardingEntityType);

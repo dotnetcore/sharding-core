@@ -23,6 +23,7 @@ namespace ShardingCore.Core.ShardingAccessors
         /// <param name="shardingAccessor"></param>
         public ShardingScope(IShardingAccessor shardingAccessor)
         {
+            shardingAccessor.ShardingContext = null;
             ShardingAccessor = shardingAccessor;
         }
 

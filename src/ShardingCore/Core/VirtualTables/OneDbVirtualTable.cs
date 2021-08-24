@@ -45,9 +45,9 @@ namespace ShardingCore.Core.VirtualTables
         {
             var route = _virtualTableRoute;
             if (tableRouteConfig.UseQueryable())
-                return route.RouteWithWhere(_physicTables, tableRouteConfig.GetQueryable());
+                return route.RouteWithPredicate(_physicTables, tableRouteConfig.GetQueryable());
             if (tableRouteConfig.UsePredicate())
-                return route.RouteWithWhere(_physicTables, new EnumerableQuery<T>((Expression<Func<T, bool>>) tableRouteConfig.GetPredicate()));
+                return route.RouteWithPredicate(_physicTables, new EnumerableQuery<T>((Expression<Func<T, bool>>) tableRouteConfig.GetPredicate()));
             object shardingKeyValue = null;
             if (tableRouteConfig.UseValue())
                 shardingKeyValue = tableRouteConfig.GetShardingKeyValue();

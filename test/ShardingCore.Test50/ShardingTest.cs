@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
@@ -20,10 +22,12 @@ namespace ShardingCore.Test50
     public class ShardingTest
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
+        private readonly IShardingRouteManager _shardingRouteManager;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager)
         {
             _virtualDbContext = virtualDbContext;
+            _shardingRouteManager = shardingRouteManager;
         }
 
         //[Fact]
@@ -43,6 +47,36 @@ namespace ShardingCore.Test50
         //    Assert.Equal(2,routeResult2s.SelectMany(o=>o.ReplaceTables).Count());
         //    Assert.Equal(true,routeResult2s.SelectMany(o=>o.ReplaceTables).All(o=>new[]{"0","1"}.Contains(o.Tail)));
         //}
+        [Fact]
+        public async Task ToList_All_Route_Test()
+        {
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.Must.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+
+                var mod00s = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+                Assert.Equal(333, mod00s.Count);
+            }
+            var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+        }
         [Fact]
         public async Task ToList_All_Test()
         {
@@ -81,6 +115,7 @@ namespace ShardingCore.Test50
                                   DateOfMonth = salary.DateOfMonth,
                                   Name = u.Name
                               }).ToListAsync();
+
             var list2 = list.OrderBy(o=>o.Age).Select(o=>o.Age).Distinct().ToList();
             Assert.Equal(24000, list.Count());
             Assert.Equal(24, list.Count(o => o.Name == "name_200"));

@@ -17,7 +17,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 */
     public abstract class AbstractShardingOperatorVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class, IShardingTable
     {
-        protected override List<IPhysicTable> DoRouteWithWhere(List<IPhysicTable> allPhysicTables, IQueryable queryable)
+        protected override List<IPhysicTable> DoRouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
             var filter = ShardingKeyUtil.GetRouteShardingTableFilter(queryable, ShardingKeyUtil.Parse(typeof(T)), ConvertToShardingKey, GetRouteToFilter);
