@@ -96,6 +96,15 @@ namespace ShardingCore.Test50_2x
                 Assert.Equal(descAge, sysUserMod.Age);
                 descAge--;
             }
+
+            var pageResult = await _virtualDbContext.Set<SysUserMod>().Skip(10).Take(10).OrderByDescending(o => o.Age).ToListAsync();
+            Assert.Equal(10, pageResult.Count);
+            int pageDescAge = 990;
+            foreach (var sysUserMod in pageResult)
+            {
+                Assert.Equal(pageDescAge, sysUserMod.Age);
+                pageDescAge--;
+            }
         }
 
         [Fact]

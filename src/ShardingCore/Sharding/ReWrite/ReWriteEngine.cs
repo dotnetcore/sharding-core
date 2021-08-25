@@ -30,18 +30,18 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             
             //去除分页,获取前Take+Skip数量
             var reWriteQueryable = _queryable;
-            if (take.HasValue)
-            {
-                reWriteQueryable = _queryable.RemoveTake();
-            }
             if (skip.HasValue)
             {
                 reWriteQueryable = _queryable.RemoveSkip();
             }
+            if (take.HasValue&& skip.GetValueOrDefault()>0)
+            {
+                reWriteQueryable = _queryable.RemoveTake();
+            }
 
-            
-            if (take.HasValue)
-                reWriteQueryable = reWriteQueryable.Take(take.Value + skip.GetValueOrDefault());
+
+            //if (take.HasValue)
+            //    reWriteQueryable = reWriteQueryable.Take(take.Value + skip.GetValueOrDefault());
             //包含group by
             if (extraEntry.GroupByContext.GroupExpression != null)
             {

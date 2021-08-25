@@ -68,11 +68,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         }
 #endif
 
-        private IQueryable<T> CreateAsyncExecuteQueryable(RouteResult routeResult)
+        private IQueryable<T> CreateAsyncExecuteQueryable(RouteResult routeResult,int routeCount)
         {
             var shardingDbContext = _mergeContext.CreateDbContext(routeResult);
+            var useOriginal = routeCount>1;
             _parllelDbbContexts.Add(shardingDbContext);
-            var newQueryable = (IQueryable<T>) _mergeContext.GetReWriteQueryable()
+            var newQueryable = (IQueryable<T>)(useOriginal?_mergeContext.GetReWriteQueryable():_mergeContext.GetOriginalQueryable())
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
@@ -80,13 +81,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         private IAsyncEnumerator<T> GetShardingEnumerator()
         {
             var tableResult = _mergeContext.GetRouteResults();
+            var routeCount = tableResult.Count();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 return Task.Run(async () =>
                 {
                     try
                     {
-                        var newQueryable = CreateAsyncExecuteQueryable(routeResult);
+                        var newQueryable = CreateAsyncExecuteQueryable(routeResult, routeCount);
 
                         var asyncEnumerator = await GetAsyncEnumerator(newQueryable);
                         return new StreamMergeAsyncEnumerator<T>(asyncEnumerator);
@@ -100,7 +102,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult();
-            if (_mergeContext.HasSkipTake())
+            if (routeCount>1&&_mergeContext.HasSkipTake())
                 return new PaginationStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
             if (_mergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeAsyncEnumerator<T>(_mergeContext, streamEnumerators);
@@ -118,13 +120,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public IEnumerator<T> GetEnumerator()
         {
             var tableResult = _mergeContext.GetRouteResults();
+            var routeCount = tableResult.Count();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 return Task.Run(() =>
                 {
                     try
                     {
-                        var newQueryable = CreateAsyncExecuteQueryable(routeResult);
+                        var newQueryable = CreateAsyncExecuteQueryable(routeResult, routeCount);
 
                         var enumerator = GetEnumerator(newQueryable);
                         return new StreamMergeEnumerator<T>(enumerator);
@@ -138,7 +141,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult();
-            if (_mergeContext.HasSkipTake())
+            if (routeCount > 1 && _mergeContext.HasSkipTake())
                 return new PaginationStreamMergeEnumerator<T>(_mergeContext, streamEnumerators);
             if (_mergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeEnumerator<T>(_mergeContext, streamEnumerators);

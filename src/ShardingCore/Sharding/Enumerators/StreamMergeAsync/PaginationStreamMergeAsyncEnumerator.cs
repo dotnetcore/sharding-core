@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 if (_take.HasValue)
                 {
                     realTake++;
-                    if (realTake >= _take.Value)
+                    if (realTake > _take.Value)
                         return false;
                 }
             }
