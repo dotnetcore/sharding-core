@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sample.MySql.Domain.Maps;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.MySql.DbContexts

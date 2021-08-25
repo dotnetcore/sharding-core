@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Test50.MySql.Domain.Entities;
 
 namespace ShardingCore.Test50.MySql.Shardings
