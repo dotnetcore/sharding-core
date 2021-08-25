@@ -17,7 +17,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.ShardingAccessors.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore
 {

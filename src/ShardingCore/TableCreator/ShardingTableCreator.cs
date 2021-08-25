@@ -1,30 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
-using ShardingCore.DbContexts.Abstractions;
-using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ShardingCore.TableCreator
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Monday, 21 December 2020 11:23:22
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Monday, 21 December 2020 11:23:22
+    * @Email: 326308290@qq.com
+    */
     public class ShardingTableCreator : IShardingTableCreator
     {
         private readonly ILogger<ShardingTableCreator> _logger;

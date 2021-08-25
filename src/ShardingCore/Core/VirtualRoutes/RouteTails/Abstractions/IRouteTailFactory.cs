@@ -1,7 +1,6 @@
-using System;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 
-namespace ShardingCore.Core.VirtualRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions
 {
 /*
 * @Author: xjm

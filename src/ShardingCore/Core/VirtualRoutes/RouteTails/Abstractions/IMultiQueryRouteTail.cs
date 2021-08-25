@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 
-namespace ShardingCore.Core.VirtualRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Sunday, 22 August 2021 09:44:54
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Sunday, 22 August 2021 09:44:54
+    * @Email: 326308290@qq.com
+    */
     public interface IMultiQueryRouteTail:IRouteTail
     {
         /// <summary>

@@ -1,6 +1,4 @@
-using System;
-
-namespace ShardingCore.Core.VirtualRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions
 {
 /*
 * @Author: xjm

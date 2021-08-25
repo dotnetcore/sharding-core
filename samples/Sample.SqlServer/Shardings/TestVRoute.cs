@@ -7,6 +7,7 @@ using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 
 namespace Sample.SqlServer.Shardings
 {

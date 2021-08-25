@@ -7,7 +7,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
-namespace ShardingCore.Core.VirtualRoutes.TableRoutes
+namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
     /*
     * @Author: xjm

@@ -247,6 +247,7 @@ namespace ShardingCore.Test50
 
             var sysUserModDesc = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Id).FirstOrDefaultAsync();
             Assert.True(sysUserModDesc != null && sysUserModDesc.Id == "999");
+
         }
 
         [Fact]
@@ -255,6 +256,10 @@ namespace ShardingCore.Test50
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefaultAsync();
             Assert.NotNull(sysUserMod);
             Assert.True(sysUserMod.Id == "1");
+            var user198 = await _virtualDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");
+            Assert.True(user198.Id == "198");
+            var userId198 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefaultAsync();
+            Assert.Equal(userId198, "198");
         }
 
         [Fact]

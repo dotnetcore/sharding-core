@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 
@@ -21,10 +23,12 @@ namespace Sample.SqlServer.Controllers
     {
 
         private readonly DefaultShardingDbContext _defaultTableDbContext;
+        private readonly IShardingRouteManager _shardingRouteManager;
 
-        public ValuesController(DefaultShardingDbContext defaultTableDbContext)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext,IShardingRouteManager shardingRouteManager)
         {
             _defaultTableDbContext = defaultTableDbContext;
+            _shardingRouteManager = shardingRouteManager;
         }
 
         [HttpGet]
@@ -56,11 +60,19 @@ namespace Sample.SqlServer.Controllers
             _defaultTableDbContext.Attach(sysUserMod98);
             sysUserMod98.Name = "name_update" + new Random().Next(1, 99) + "_98";
             await _defaultTableDbContext.SaveChangesAsync();
-            var stu = new STU() { Id = "198"};
+            var stu = new STU() { Id = "198" };
             var sresultx111x = _defaultTableDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == stu.Id);
 
             var pageResult = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(10).OrderBy(o => o.Age).ToListAsync();
-            return Ok(sresultx111);
+
+
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.Must.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+
+                var mod00s = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(11).ToListAsync();
+            }
+            return Ok();
         }
     }
 } 
