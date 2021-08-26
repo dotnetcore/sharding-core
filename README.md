@@ -10,9 +10,9 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) 
 --- | --- | --- | --- 
-[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.09) | >= 5.0.x | 2.1 | 3.0+ 
-[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.09) | 3.1.10 | 2.0 | 2.0+ 
-[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.09) | 2.2.6 | 2.0 | 2.0+ 
+[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.13) | >= 5.0.x | 2.1 | 3.0+ 
+[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.13) | 3.1.10 | 2.0 | 2.0+ 
+[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.13) | 2.2.6 | 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
@@ -95,11 +95,11 @@ Oracle | 支持 | 未测试
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore" Version="5.2.0.09" />
+<PackageReference Include="ShardingCore" Version="LastVersion" />
 or
-<PackageReference Include="ShardingCore" Version="3.2.0.09" />
+<PackageReference Include="ShardingCore" Version="LastVersion" />
 or
-<PackageReference Include="ShardingCore" Version="2.2.0.09" />
+<PackageReference Include="ShardingCore" Version="LastVersion" />
 ```
 
 ## 配置
@@ -295,7 +295,30 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 ```
 ## 手动路由
 ```c#
- 后续支出
+ctor inject IShardingRouteManager shardingRouteManager
+
+    public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserMod>
+    {
+        /// <summary>
+        /// 开启提示路由
+        /// </summary>
+        protected override bool EnableHintRoute => true;
+        protected override bool EnableAssertRoute => true;
+
+        public SysUserModVirtualTableRoute() : base(2,3)
+        {
+        }
+    }
+
+
+    
+
+    using (_shardingRouteManager.CreateScope())
+    {
+        _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00");
+
+        var mod00s = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(11).ToListAsync();
+    }
 ```
 
 ## 自动建表
