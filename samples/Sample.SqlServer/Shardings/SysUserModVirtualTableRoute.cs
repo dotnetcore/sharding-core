@@ -17,6 +17,7 @@ namespace Sample.SqlServer.Shardings
     public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserMod>
     {
         protected override bool EnableHintRoute => true;
+        protected override bool EnableAssertRoute => true;
 
         public SysUserModVirtualTableRoute() : base(2,3)
         {

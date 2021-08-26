@@ -18,19 +18,34 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T> where T : class, IShardingTable
     {
         public Type ShardingEntityType => typeof(T);
+        /// <summary>
+        /// 如何将分表字段转成对应的类型
+        /// </summary>
+        /// <param name="shardingKey"></param>
+        /// <returns></returns>
 
         protected abstract TKey ConvertToShardingKey(object shardingKey);
+        /// <summary>
+        /// 如何将分表字段转成后缀
+        /// </summary>
+        /// <param name="shardingKey"></param>
+        /// <returns></returns>
         public abstract string ShardingKeyToTail(object shardingKey);
 
         /// <summary>
-        /// 对外路由方法
+        /// 根据表达式路由
         /// </summary>
         /// <param name="allPhysicTables"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
         public abstract List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable);
         
-
+        /// <summary>
+        /// 根据值路由
+        /// </summary>
+        /// <param name="allPhysicTables"></param>
+        /// <param name="shardingKeyValue"></param>
+        /// <returns></returns>
         public abstract IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKeyValue);
         /// <summary>
         /// 返回数据库现有的尾巴

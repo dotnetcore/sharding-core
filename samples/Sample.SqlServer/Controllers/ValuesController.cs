@@ -68,7 +68,7 @@ namespace Sample.SqlServer.Controllers
 
             using (_shardingRouteManager.CreateScope())
             {
-                _shardingRouteManager.Current.Must.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00");
 
                 var mod00s = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(11).ToListAsync();
             }

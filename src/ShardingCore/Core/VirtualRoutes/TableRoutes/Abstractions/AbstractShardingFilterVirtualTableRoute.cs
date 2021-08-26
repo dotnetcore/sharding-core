@@ -18,6 +18,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    /// <summary>
+    /// 过滤虚拟路由用于处理强制路由、提示路由、路由断言
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
     public abstract class AbstractShardingFilterVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class, IShardingTable
     {
         public  ShardingRouteContext CurrentShardingRouteContext =>

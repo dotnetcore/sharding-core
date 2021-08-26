@@ -25,6 +25,12 @@ namespace ShardingCore.VirtualRoutes.Mods
         protected readonly int Mod;
         protected readonly int TailLength;
         protected readonly char PaddingChar;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tailLength">猴子长度</param>
+        /// <param name="mod">取模被除数</param>
+        /// <param name="paddingChar">当取模后不足tailLength左补什么参数</param>
         protected AbstractSimpleShardingModKeyStringVirtualTableRoute(int tailLength,int mod,char paddingChar='0')
         {
             if(tailLength<1)
@@ -47,15 +53,29 @@ namespace ShardingCore.VirtualRoutes.Mods
             var shardingKeyStr = ConvertToShardingKey(shardingKey);
             return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength,PaddingChar);;
         }
+        /// <summary>
+        /// 将shardingKey转成对应的字符串
+        /// </summary>
+        /// <param name="shardingKey"></param>
+        /// <returns></returns>
         protected override string ConvertToShardingKey(object shardingKey)
         {
             return shardingKey.ToString();
         }
+        /// <summary>
+        /// 获取对应类型在数据库中的所有后缀
+        /// </summary>
+        /// <returns></returns>
         public override List<string> GetAllTails()
         {
             return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }
-
+        /// <summary>
+        /// 路由表达式如何路由到正确的表
+        /// </summary>
+        /// <param name="shardingKey"></param>
+        /// <param name="shardingOperator"></param>
+        /// <returns></returns>
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = ShardingKeyToTail(shardingKey);
