@@ -22,7 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes
         public IRouteTail Create(RouteResult routeResult)
         {
             if (routeResult == null || routeResult.ReplaceTables.IsEmpty())
-                throw new ShardingCoreException("route result null or empty");
+                return new SingleQueryRouteTail(string.Empty);
             if (routeResult.ReplaceTables.Count == 1)
                 return new SingleQueryRouteTail(routeResult);
             return new MultiQueryRouteTail(routeResult);

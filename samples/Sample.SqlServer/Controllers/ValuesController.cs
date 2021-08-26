@@ -34,6 +34,18 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var sql = from ut in _defaultTableDbContext.Set<SysTest>()
+                join u in _defaultTableDbContext.Set<SysUserMod>()
+                    on ut.UserId equals u.Id
+                select new
+                {
+                    ut.Id,
+                    userId=u.Id
+                };
+            var listAsync =await sql.ToListAsync();
+            var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().CountAsync();
+            var resultx112331 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
+            var resultx11233411 =  _defaultTableDbContext.Set<SysUserMod>().Count();
             var resultx11231 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).ContainsAsync("1981");
             var resultx1121 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").SumAsync(o => o.Age);
             var resultx111 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");

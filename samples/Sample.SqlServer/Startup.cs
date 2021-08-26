@@ -25,7 +25,7 @@ namespace Sample.SqlServer
 
 
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
                 , op =>
                  {
                      op.EnsureCreatedWithOutShardingTable = true;

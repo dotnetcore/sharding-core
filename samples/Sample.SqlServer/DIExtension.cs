@@ -32,6 +32,7 @@ namespace Sample.SqlServer
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();
+                    var SysTests = new List<SysTest>();
                     foreach (var id in ids)
                     {
                         userMods.Add(new SysUserMod()
@@ -40,9 +41,15 @@ namespace Sample.SqlServer
                             Age = id,
                             Name = $"name_{id}",
                         });
+                        SysTests.Add(new SysTest()
+                        {
+                            Id = id.ToString(),
+                            UserId = id.ToString()
+                        });
                     }
 
                     virtualDbContext.AddRange(userMods);
+                    virtualDbContext.AddRange(SysTests);
                     virtualDbContext.SaveChanges();
                 }
             }
