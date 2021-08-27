@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,7 +34,9 @@ namespace Sample.SqlServer
                      op.CreateShardingTableOnStart = true;
                      op.UseShardingOptionsBuilder(
                          (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));//使用链接字符串创建dbcontext
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger
+                             //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
+                             ));//使用链接字符串创建dbcontext
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
             ////不支持MARS不支持追踪的
