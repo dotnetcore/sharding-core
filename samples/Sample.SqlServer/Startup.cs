@@ -39,6 +39,7 @@ namespace Sample.SqlServer
                              );//使用链接字符串创建dbcontext
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
+
             ////不支持MARS不支持追踪的
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
             //    , op =>
