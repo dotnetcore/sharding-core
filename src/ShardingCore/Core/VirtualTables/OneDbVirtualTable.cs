@@ -61,7 +61,7 @@ namespace ShardingCore.Core.VirtualTables
                 return new List<IPhysicTable>(1) {routeWithValue};
             }
 
-            throw new NotImplementedException(nameof(TableRouteConfig));
+            throw new ShardingCoreException(" route entity queryable or sharding key value is null ");
         }
 
 
