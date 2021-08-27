@@ -22,27 +22,25 @@ namespace Samples.AutoByDate.SqlServer.Jobs
         /// </summary>
         /// <param name="virtualTableManager"></param>
         /// <param name="tableCreator"></param>
-        [JobRun(Name = "定时创建分表组件",Cron = "0 0 12 * * ?",RunOnceOnStart = true)]
+        [JobRun(Name = "定时创建分表组件", Cron = "0 0 12 * * ?", RunOnceOnStart = true)]
 
         public void AutoCreateTable(IVirtualTableManager virtualTableManager, IShardingTableCreator tableCreator)
         {
-            var allVirtualTables = virtualTableManager.GetAllVirtualTables<DefaultShardingDbContext>();
-            foreach (var virtualTable in allVirtualTables)
+            var virtualTable = virtualTableManager.GetVirtualTable<DefaultShardingDbContext, SysUserLogByDay>();
+            if (virtualTable == null)
             {
-                if (virtualTable.EntityType == typeof(SysUserLogByDay))
-                {
-                    var now = DateTime.Now.Date.AddDays(1);
-                    var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-                    try
-                    {
-                        virtualTableManager.AddPhysicTable<DefaultShardingDbContext>(virtualTable, new DefaultPhysicTable(virtualTable, tail));
-                        tableCreator.CreateTable<DefaultShardingDbContext,SysUserLogByDay>(tail);
-                    }
-                    catch (Exception e)
-                    {
-                        //ignore
-                    }
-                }
+                return;
+            }
+            var now = DateTime.Now.Date.AddDays(1);
+            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
+            try
+            {
+                virtualTableManager.AddPhysicTable<DefaultShardingDbContext>(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+                tableCreator.CreateTable<DefaultShardingDbContext, SysUserLogByDay>(tail);
+            }
+            catch (Exception e)
+            {
+                //ignore
             }
         }
     }

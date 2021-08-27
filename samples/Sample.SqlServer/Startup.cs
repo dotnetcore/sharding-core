@@ -30,13 +30,13 @@ namespace Sample.SqlServer
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
                 , op =>
                  {
-                     op.EnsureCreatedWithOutShardingTable = true;
-                     op.CreateShardingTableOnStart = true;
+                     op.EnsureCreatedWithOutShardingTable = false;
+                     op.CreateShardingTableOnStart = false;
                      op.UseShardingOptionsBuilder(
                          (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                              //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
-                             ));//使用链接字符串创建dbcontext
+                             );//使用链接字符串创建dbcontext
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
             ////不支持MARS不支持追踪的
