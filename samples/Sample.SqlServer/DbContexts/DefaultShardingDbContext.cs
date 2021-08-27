@@ -17,6 +17,7 @@ namespace Sample.SqlServer.DbContexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            //配置默认和DefaultTableDbContext一样
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
         }
