@@ -44,17 +44,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             await enumator.MoveNextAsync();
             return enumator;
         }
-#endif
-#if EFCORE2
-        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
-        {
-            var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
-            await enumator.MoveNext();
-            return enumator;
-        }
-#endif
-#if !EFCORE2
-
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             return GetShardingEnumerator();
@@ -62,6 +51,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 #endif
 
 #if EFCORE2
+        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
+        {
+            var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
+            await enumator.MoveNext();
+            return enumator;
+        }
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
             return GetShardingEnumerator();

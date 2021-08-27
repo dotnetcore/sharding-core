@@ -31,12 +31,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         {
             _methodCallExpression = methodCallExpression;
             var expression = methodCallExpression.Arguments.FirstOrDefault(o => typeof(IQueryable).IsAssignableFrom(o.Type))
-#if !EFCORE2
-                             ?? throw new InvalidOperationException(methodCallExpression.Print());
-#endif
-#if EFCORE2
-                             ?? throw new InvalidOperationException(methodCallExpression.ToString());
-#endif
+                             ?? throw new InvalidOperationException(methodCallExpression.ShardingPrint());
             _queryable = new EnumerableQuery<TEntity>(expression);
             _secondExpression = methodCallExpression.Arguments.FirstOrDefault(o => !typeof(IQueryable).IsAssignableFrom(o.Type));
 
@@ -48,12 +43,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             {
                 if (methodCallExpression.Arguments.Count == 2)
                 {
-#if !EFCORE2
-                    throw new InvalidOperationException(methodCallExpression.Print());
-#endif
-#if EFCORE2
-                    throw new InvalidOperationException(methodCallExpression.ToString());
-#endif
+                    throw new InvalidOperationException(methodCallExpression.ShardingPrint());
                 }
             }
 
