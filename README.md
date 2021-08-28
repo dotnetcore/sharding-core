@@ -203,7 +203,7 @@ or
                      op.CreateShardingTableOnStart = true;
                     op.UseShardingOptionsBuilder(
                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
+                        (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));//conStr不一定需要使用委托参数可以自定义来实现读写分离
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
         }
