@@ -325,14 +325,9 @@ ctor inject IShardingRouteManager shardingRouteManager
 [参考](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
 
 ## 事务
-默认savechanges支持事务如果需要where.update需要手动开启事务
+默认savechanges支持事务
 ```c#
-1.
  await  _defaultShardingDbContext.SaveChangesAsync();
- 2.
-            var tran=_defaultShardingDbContext.BeginTransaction();
- await  _defaultShardingDbContext.SaveChangesAsync();
- tran.commit()
            
 ```
 ## 读写分离
