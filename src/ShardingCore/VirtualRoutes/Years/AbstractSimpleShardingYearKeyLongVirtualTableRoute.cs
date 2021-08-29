@@ -23,7 +23,7 @@ namespace ShardingCore.VirtualRoutes.Years
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp =beginTime.AddYears(1).Date;
+            var nowTimeStamp = DateTime.Now.AddYears(1).Date;
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("起始时间不正确无法生成正确的表名");
             var currentTimeStamp = beginTime;

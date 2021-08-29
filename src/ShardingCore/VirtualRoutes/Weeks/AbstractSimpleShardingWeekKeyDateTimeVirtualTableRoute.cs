@@ -23,7 +23,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp =beginTime.AddDays(7).Date;
+            var nowTimeStamp = DateTime.Now.AddDays(7).Date;
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("起始时间不正确无法生成正确的表名");
             var currentTimeStamp = beginTime;
