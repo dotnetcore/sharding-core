@@ -15,6 +15,8 @@ namespace Samples.AutoByDate.SqlServer.Shardings
     {
         public override DateTime GetBeginTime()
         {
+            //必须返回固定值比如new DateTime(2021,1,1)
+            //如果返回动态值会导致程序重新启动这个值就会变动导致无法获取之前的表
             return DateTime.Now.AddDays(-2);
         }
     }

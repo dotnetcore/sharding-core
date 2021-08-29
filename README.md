@@ -203,7 +203,7 @@ or
                      op.CreateShardingTableOnStart = true;
                     op.UseShardingOptionsBuilder(
                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        builder => builder.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;").UseLoggerFactory(efLogger));
+                        (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));//conStr不一定需要使用委托参数可以自定义来实现读写分离
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                  });
         }
@@ -284,6 +284,7 @@ AbstractSimpleShardingYearKeyDateTimeVirtualTableRoute |按时间 |yyyy | `>,>=,
 AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<,<=,=,contains`
 
 注:`contains`表示为`o=>ids.contains(o.shardingkey)`
+注:使用默认的按时间分表的路由规则会让你重写一个GetBeginTime的方法这个方法必须使用静态值如:new DateTime(2021,1,1)不可以用动态值比如DateTime.Now因为每次重新启动都会调用该方法动态情况下会导致每次都不一致
 
 #高级
 
@@ -325,14 +326,9 @@ ctor inject IShardingRouteManager shardingRouteManager
 [参考](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
 
 ## 事务
-默认savechanges支持事务如果需要where.update需要手动开启事务
+默认savechanges支持事务
 ```c#
-1.
  await  _defaultShardingDbContext.SaveChangesAsync();
- 2.
-            var tran=_defaultShardingDbContext.BeginTransaction();
- await  _defaultShardingDbContext.SaveChangesAsync();
- tran.commit()
            
 ```
 ## 读写分离
