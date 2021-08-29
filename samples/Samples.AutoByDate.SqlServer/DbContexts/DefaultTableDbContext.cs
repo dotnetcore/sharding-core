@@ -16,6 +16,7 @@ namespace Samples.AutoByDate.SqlServer.DbContexts
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserLogByDayMap());
+            modelBuilder.ApplyConfiguration(new TestLogByWeekMap());
         }
 
         public IRouteTail RouteTail { get; set; }

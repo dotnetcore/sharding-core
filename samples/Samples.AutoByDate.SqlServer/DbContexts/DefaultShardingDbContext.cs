@@ -15,6 +15,7 @@ namespace Samples.AutoByDate.SqlServer.DbContexts
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserLogByDayMap());
+            modelBuilder.ApplyConfiguration(new TestLogByWeekMap());
         }
 
         public override Type ShardingDbContextType => this.GetType();
