@@ -35,7 +35,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
             }
             _constantItem = (TEntity)constantExpression.Value;
         }
-        protected override IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression)
+        protected override IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression)
         {
             if (!(secondExpression is ConstantExpression))
             {

@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -24,16 +24,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override int MergeResult()
         {
-            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).Count());
-
-            return result.Sum();
+            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
-            return result.Sum();
+            return result.Sum(o=>o.QueryResult);
         }
 
     }

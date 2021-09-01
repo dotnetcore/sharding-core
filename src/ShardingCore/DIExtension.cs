@@ -18,6 +18,7 @@ using ShardingCore.Core.ShardingAccessors;
 using ShardingCore.Core.ShardingAccessors.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.ShardingQueryExecutors;
 
 namespace ShardingCore
 {
@@ -88,6 +89,7 @@ namespace ShardingCore
             services.AddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.AddSingleton<IShardingRouteManager, ShardingRouteManager>();
             services.AddSingleton<IShardingRouteAccessor, ShardingRouteAccessor>();
+            services.AddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
             return services;
         }
 

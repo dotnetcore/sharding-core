@@ -30,28 +30,43 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
         {
             _methodCallExpression = methodCallExpression;
-            var expression = methodCallExpression.Arguments.FirstOrDefault(o => typeof(IQueryable).IsAssignableFrom(o.Type))
-                             ?? throw new InvalidOperationException(methodCallExpression.ShardingPrint());
-            _queryable = new EnumerableQuery<TEntity>(expression);
-            _secondExpression = methodCallExpression.Arguments.FirstOrDefault(o => !typeof(IQueryable).IsAssignableFrom(o.Type));
-
-            if (_secondExpression != null)
+            if (methodCallExpression.Arguments.Count < 1 || methodCallExpression.Arguments.Count > 2)
+                throw new ArgumentException($"argument count must 1 or 2 :[{methodCallExpression.ShardingPrint()}]");
+            for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
             {
-                _queryable = ProcessSecondExpression(_queryable, _secondExpression);
-            }
-            else
-            {
-                if (methodCallExpression.Arguments.Count == 2)
+                var expression = methodCallExpression.Arguments[i];
+                if (typeof(IQueryable).IsAssignableFrom(expression.Type))
                 {
-                    throw new InvalidOperationException(methodCallExpression.ShardingPrint());
+                    if (_queryable != null)
+                        throw new ArgumentException(
+                            $"argument found more 1 IQueryable :[{methodCallExpression.ShardingPrint()}]");
+                    _queryable = new EnumerableQuery<TEntity>(expression);
+                }
+                else
+                {
+                    _secondExpression = expression;
                 }
             }
+            if(_queryable==null)
+                throw new ArgumentException($"argument not found IQueryable :[{methodCallExpression.ShardingPrint()}]");
+            if (methodCallExpression.Arguments.Count ==2)
+            {
+                if(_secondExpression == null)
+                    throw new InvalidOperationException(methodCallExpression.ShardingPrint());
+                _queryable = CombineQueryable(_queryable, _secondExpression);
+            }
+
 
             _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);
             _parllelDbbContexts = new List<DbContext>();
         }
-
-        protected abstract IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression);
+        /// <summary>
+        /// 合并queryable
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="secondExpression"></param>
+        /// <returns></returns>
+        protected abstract IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression);
 
         private IQueryable CreateAsyncExecuteQueryable<TResult>(RouteResult routeResult)
         {
@@ -59,13 +74,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             _parllelDbbContexts.Add(shardingDbContext);
             var newQueryable = (IQueryable<TEntity>) GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
-            var newFilterQueryable = EFQueryAfterFilter<TResult>(newQueryable);
-            return newFilterQueryable;
+            var newCombineQueryable= DoCombineQueryable<TResult>(newQueryable);
+            return newCombineQueryable
+;
         }
 
-        public async Task<List<TResult>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = _mergeContext.GetRouteResults();
+            var tableResult = _mergeContext.RouteResults;
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 return Task.Run(async () =>
@@ -73,7 +89,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
                     try
                     {
                         var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(routeResult);
-                        return await efQuery(asyncExecuteQueryable);
+                        var queryResult= await efQuery(asyncExecuteQueryable);
+                        return new RouteQueryResult<TResult>(routeResult, queryResult);
                         //}
                     }
                     catch (Exception e)
@@ -111,7 +128,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         }
 
 
-        public virtual IQueryable EFQueryAfterFilter<TResult>(IQueryable<TEntity> queryable)
+        public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {
             return queryable;
         }
