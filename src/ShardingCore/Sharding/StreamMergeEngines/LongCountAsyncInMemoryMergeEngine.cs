@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
@@ -30,10 +31,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override long MergeResult()
         {
-
-            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).LongCount());
-
-            return result.Sum();
+            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         public override async Task<long> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -41,7 +39,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LongCountAsync(cancellationToken), cancellationToken);
 
-            return result.Sum();
+            return result.Sum(o=>o.QueryResult);
         }
     }
 }
