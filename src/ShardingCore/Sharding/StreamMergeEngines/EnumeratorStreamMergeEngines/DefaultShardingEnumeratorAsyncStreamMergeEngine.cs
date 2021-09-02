@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,26 +18,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class NormalEnumeratorAsyncStreamMergeEngine<TEntity>:AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
+    public class DefaultShardingEnumeratorAsyncStreamMergeEngine<TEntity>:AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly bool _multiRouteQuery;
-        public NormalEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public DefaultShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
-            _multiRouteQuery = streamMergeContext.RouteResults.Count() > 1;
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
         {
             var tableResult = StreamMergeContext.RouteResults;
-            var routeCount = tableResult.Count();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
+                var newQueryable = CreateAsyncExecuteQueryable(routeResult);
                 return Task.Run(async () =>
                 {
                     try
                     {
-                        var newQueryable = CreateAsyncExecuteQueryable(routeResult, routeCount);
-
                         var asyncEnumerator = await DoGetAsyncEnumerator(newQueryable);
                         return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
                     }
@@ -49,22 +45,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
                 });
             }).ToArray();
 
-            var streamEnumerators = Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult();
+            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
             return streamEnumerators;
         }
 
-        public override IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult, int routeCount)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult)
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
             DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
-            var newQueryable = (IQueryable<TEntity>)(_multiRouteQuery ? StreamMergeContext.GetReWriteQueryable() : StreamMergeContext.GetOriginalQueryable())
+            var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity> GetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
-            if (_multiRouteQuery && StreamMergeContext.HasSkipTake())
+            if (StreamMergeContext.HasSkipTake())
                 return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
             if (StreamMergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);

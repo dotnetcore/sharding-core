@@ -42,15 +42,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             await enumator.MoveNextAsync();
             return enumator;
         }
-        public virtual IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult, int routeCount)
-        {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
-            var useOriginal = routeCount > 1;
-            DbContextQueryStore.TryAdd(routeResult,shardingDbContext);
-            var newQueryable = (IQueryable<TEntity>)(useOriginal ? StreamMergeContext.GetReWriteQueryable() : StreamMergeContext.GetOriginalQueryable())
-                .ReplaceDbContextQueryable(shardingDbContext);
-            return newQueryable;
-        }
+        // public virtual IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult)
+        // {
+        //     var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
+        //     var useOriginal = StreamMergeContext > 1;
+        //     DbContextQueryStore.TryAdd(routeResult,shardingDbContext);
+        //     var newQueryable = (IQueryable<TEntity>)(useOriginal ? StreamMergeContext.GetReWriteQueryable() : StreamMergeContext.GetOriginalQueryable())
+        //         .ReplaceDbContextQueryable(shardingDbContext);
+        //     return newQueryable;
+        // }
 
         public override IEnumerator<TEntity> GetEnumerator()
         {
