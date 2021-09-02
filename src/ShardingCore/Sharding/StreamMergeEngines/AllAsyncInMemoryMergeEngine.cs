@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).AnyAsync(cancellationToken), cancellationToken);
 
-            return result.All(o => o);
+            return result.All(o => o.QueryResult);
         }
     }
 }

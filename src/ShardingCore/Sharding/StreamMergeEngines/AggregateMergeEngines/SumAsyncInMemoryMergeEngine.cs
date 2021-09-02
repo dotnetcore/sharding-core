@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines;
@@ -30,94 +31,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 
         public override TEnsureResult MergeResult()
         {
-            if (typeof(decimal) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<decimal>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(decimal?) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<decimal?>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(int) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<int>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(int?) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<int?>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(long) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<long>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(long?) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<long?>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(double) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<double>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(double?) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<double?>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(float) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<float>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-            if (typeof(float?) == typeof(TEnsureResult))
-            {
-                var result = base.Execute(queryable => ((IQueryable<float?>)queryable).Sum());
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum();
-                return ConvertSum(sum);
-            }
-#if !EFCORE2
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
-#endif
-#if EFCORE2
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
-#endif
+
+            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -127,7 +42,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o=>o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(decimal?) == typeof(TEnsureResult))
@@ -135,7 +50,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o=>o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(int) == typeof(TEnsureResult))
@@ -143,7 +58,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<int>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o=>o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(int?) == typeof(TEnsureResult))
@@ -151,7 +66,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<int?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(long) == typeof(TEnsureResult))
@@ -159,7 +74,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<long>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(long?) == typeof(TEnsureResult))
@@ -167,7 +82,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<long?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(double) == typeof(TEnsureResult))
@@ -175,7 +90,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<double>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(double?) == typeof(TEnsureResult))
@@ -183,7 +98,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<double?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(float) == typeof(TEnsureResult))
@@ -191,7 +106,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<float>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
             if (typeof(float?) == typeof(TEnsureResult))
@@ -199,18 +114,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 var result = await base.ExecuteAsync(queryable => ((IQueryable<float?>)queryable).SumAsync(cancellationToken), cancellationToken);
                 if (result.IsEmpty())
                     return default;
-                var sum = result.Sum();
+                var sum = result.Sum(o => o.QueryResult);
                 return ConvertSum(sum);
             }
 
-#if !EFCORE2
             throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression().Print()} result {typeof(TEnsureResult)}");
-#endif
-#if EFCORE2
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression()} result {typeof(TEnsureResult)}");
-#endif
+                $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(TEnsureResult)}");
         }
         private TEnsureResult ConvertSum<TNumber>(TNumber number)
         {

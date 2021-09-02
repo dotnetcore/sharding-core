@@ -75,7 +75,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         private IAsyncEnumerator<T> GetShardingEnumerator()
         {
-            var tableResult = _mergeContext.GetRouteResults();
+            var tableResult = _mergeContext.RouteResults;
             var routeCount = tableResult.Count();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
@@ -114,7 +114,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public IEnumerator<T> GetEnumerator()
         {
-            var tableResult = _mergeContext.GetRouteResults();
+            var tableResult = _mergeContext.RouteResults;
             var routeCount = tableResult.Count();
             var enumeratorTasks = tableResult.Select(routeResult =>
             {

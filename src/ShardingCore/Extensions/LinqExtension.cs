@@ -61,6 +61,29 @@ namespace ShardingCore.Extensions
                 func(item);
             }
         }
-        
+
+        /// <summary>
+        /// 是否有差异
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static bool HasDifference<T>(this IEnumerable<T> source)
+        {
+            return source.Distinct().Count() > 1;
+        }
+        /// <summary>
+        /// 是否有差异
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="keySelector"></param>
+        /// <returns></returns>
+        public static bool HasDifference<T,TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
+        {
+            return source.Select(keySelector).Distinct().Count() > 1;
+        }
+
     }
 }

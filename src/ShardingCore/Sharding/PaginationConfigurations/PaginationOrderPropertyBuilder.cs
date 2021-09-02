@@ -1,28 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ShardingCore.Sharding.PaginationConfigurations
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 01 September 2021 21:32:53
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 01 September 2021 21:32:53
+    * @Email: 326308290@qq.com
+    */
     public class PaginationOrderPropertyBuilder
     {
-        private readonly LambdaExpression _orderPropertyExpression;
-        private IComparer<string> _tailComparer;
-        private PaginationMatchEnum _paginationMatchEnum;
-        private PropertyInfo _orderPropertyInfo;
+        private readonly PaginationConfig _paginationConfig;
 
-        public PaginationOrderPropertyBuilder(LambdaExpression orderPropertyExpression)
+        public PaginationOrderPropertyBuilder(LambdaExpression orderPropertyExpression,PaginationMetadata metadata)
         {
-            _orderPropertyExpression = orderPropertyExpression;
-            _orderPropertyInfo = orderPropertyExpression.GetPropertyAccess();
+            _paginationConfig = new PaginationConfig(orderPropertyExpression);
+            metadata.PaginationConfigs.Add(_paginationConfig);
         }
 
         /// <summary>
@@ -32,7 +27,8 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <returns></returns>
         public PaginationOrderPropertyBuilder UseTailCompare(IComparer<string> tailComparer)
         {
-            _tailComparer = tailComparer ?? throw new ArgumentException(nameof(tailComparer));
+
+            _paginationConfig.TailComparer= tailComparer ?? throw new ArgumentException(nameof(tailComparer));
             return this;
         }
         /// <summary>
@@ -42,7 +38,16 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <returns></returns>
         public PaginationOrderPropertyBuilder UseQueryMatch(PaginationMatchEnum paginationMatchEnum)
         {
-            _paginationMatchEnum = paginationMatchEnum;
+            _paginationConfig.PaginationMatchEnum = paginationMatchEnum;
+            return this;
+        }
+        /// <summary>
+        /// 如果查询没发现排序就将当前配置追加上去
+        /// </summary>
+        /// <returns></returns>
+        public PaginationOrderPropertyBuilder UseAppendIfOrderNone()
+        {
+            _paginationConfig.AppendIfOrderNone = true;
             return this;
         }
     }

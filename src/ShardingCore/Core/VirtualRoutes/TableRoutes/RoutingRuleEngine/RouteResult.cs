@@ -22,6 +22,23 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         }
         
         public ISet<IPhysicTable> ReplaceTables { get; }
-        
+
+        protected bool Equals(RouteResult other)
+        {
+            return Equals(ReplaceTables, other.ReplaceTables);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((RouteResult) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (ReplaceTables != null ? ReplaceTables.GetHashCode() : 0);
+        }
     }
 }

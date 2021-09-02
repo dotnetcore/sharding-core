@@ -8,6 +8,7 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Core.VirtualTables
@@ -28,12 +29,22 @@ namespace ShardingCore.Core.VirtualTables
 
         public Type EntityType => typeof(T);
         public ShardingTableConfig ShardingConfig { get; }
+
+        public PaginationMetadata PaginationMetadata { get; }
+
         private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
 
         public OneDbVirtualTable(IVirtualTableRoute<T> virtualTableRoute)
         {
             _virtualTableRoute = virtualTableRoute;
             ShardingConfig = ShardingKeyUtil.Parse(EntityType);
+            var paginationConfiguration = virtualTableRoute.CreatePaginationConfiguration();
+            if (paginationConfiguration != null)
+            {
+                PaginationMetadata = new PaginationMetadata();
+                var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
+                paginationConfiguration.Configure(paginationBuilder);
+            }
         }
 
         public List<IPhysicTable> GetAllPhysicTables()

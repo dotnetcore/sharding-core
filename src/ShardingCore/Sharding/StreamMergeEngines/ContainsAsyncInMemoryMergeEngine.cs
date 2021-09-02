@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines;
@@ -25,16 +26,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override bool MergeResult()
         {
-            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).Contains(GetConstantItem()));
-
-            return result.Any(o => o);
+            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).ContainsAsync(GetConstantItem(), cancellationToken), cancellationToken);
 
-            return result.Any(o => o);
+            return result.Any(o => o.QueryResult);
         }
 
     }

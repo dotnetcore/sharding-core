@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 {
@@ -44,5 +45,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 
     public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class, IShardingTable
     {
+        /// <summary>
+        /// 返回null就是表示不开启分页配置
+        /// </summary>
+        /// <returns></returns>
+        IPaginationConfiguration<T> CreatePaginationConfiguration();
     }
 }

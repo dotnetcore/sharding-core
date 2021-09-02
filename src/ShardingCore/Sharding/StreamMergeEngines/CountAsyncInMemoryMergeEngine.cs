@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines;
 
@@ -18,8 +19,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     public class CountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity,int>
     {
+        private readonly IShardingPageManager _shardingPageManager;
         public CountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
+            _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
         }
 
         public override int MergeResult()
@@ -31,6 +34,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
+            if (_shardingPageManager.Current != null)
+            {
+                foreach (var routeQueryResult in result)
+                {
+                    _shardingPageManager.Current.RouteQueryResults.Add(new RouteQueryResult<long>(routeQueryResult.RouteResult, routeQueryResult.QueryResult));
+                }
+            }
             return result.Sum(o=>o.QueryResult);
         }
 

@@ -16,6 +16,12 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     */
     public class PaginationBuilder<TEntity> where TEntity:class,IShardingTable
     {
+        private readonly PaginationMetadata  _metadata;
+
+        public PaginationBuilder(PaginationMetadata metadata)
+        {
+            _metadata = metadata;
+        }
         /// <summary>
         /// 分页顺序
         /// </summary>
@@ -23,7 +29,27 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <typeparam name="TProperty"></typeparam>
         public PaginationOrderPropertyBuilder PaginationSequence<TProperty>(Expression<Func<TEntity, TProperty>> orderPropertyExpression)
         {
-            return new PaginationOrderPropertyBuilder(orderPropertyExpression);
+            return new PaginationOrderPropertyBuilder(orderPropertyExpression, _metadata);
+        }
+        /// <summary>
+        /// 配置当跳过多少条后开始启用只能分页
+        /// </summary>
+        /// <param name="skip"></param>
+        /// <returns></returns>
+        public PaginationBuilder<TEntity> ConfigUseShardingPageIfGeSkip(long skip)
+        {
+            _metadata.UseShardingPageIfGeSkipAvg = skip;
+            return this;
+        }
+        /// <summary>
+        /// 配置当分表数目小于多少后直接取到内存不在流式处理
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public PaginationBuilder<TEntity> ConfigTakeInMemoryCountIfLe(int count)
+        {
+            _metadata.TakeInMemoryCountIfLe = count;
+            return this;
         }
     }
 }

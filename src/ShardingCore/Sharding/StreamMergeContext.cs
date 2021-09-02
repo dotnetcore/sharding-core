@@ -104,5 +104,10 @@ namespace ShardingCore.Sharding
             return this.SelectContext.SelectProperties.Any(o => o.IsAggregateMethod);
         }
 
+        public IShardingDbContext GetShardingDbContext()
+        {
+            return _shardingDbContext;
+        }
+
     }
 }
