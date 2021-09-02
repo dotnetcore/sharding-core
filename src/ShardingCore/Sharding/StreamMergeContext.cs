@@ -94,6 +94,12 @@ namespace ShardingCore.Sharding
             return Skip.HasValue || Take.HasValue;
         }
 
+        public bool IsPaginationQuery()
+        {
+            return Skip.GetValueOrDefault() > 0 || Take.GetValueOrDefault() > 0;
+        }
+        
+
         public bool HasGroupQuery()
         {
             return this.GroupByContext.GroupExpression != null;
