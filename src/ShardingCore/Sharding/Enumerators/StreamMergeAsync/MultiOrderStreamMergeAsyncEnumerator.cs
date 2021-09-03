@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -80,6 +81,30 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             _currentEnumerator = _queue.Peek();
             return true;
         }
+        public bool MoveNext()
+        {
+            if (_queue.IsEmpty())
+                return false;
+            if (skipFirst)
+            {
+                skipFirst = false;
+                return true;
+            }
+
+            var first = _queue.Poll();
+            if (first.MoveNext())
+            {
+                _queue.Offer(first);
+            }
+
+            if (_queue.IsEmpty())
+            {
+                return false;
+            }
+
+            _currentEnumerator = _queue.Peek();
+            return true;
+        }
 
 
         public bool SkipFirst()
@@ -98,6 +123,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         }
 
         public T ReallyCurrent => _queue.IsEmpty() ? default(T) : _queue.Peek().ReallyCurrent;
+        public T GetCurrent()
+        {
+            return _currentEnumerator.GetCurrent();
+        }
 
 #if !EFCORE2
 
@@ -121,6 +150,18 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 #endif
 
 
-        public T Current => skipFirst ? default : _currentEnumerator.Current;
+
+        public void Reset()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
+
+        public T Current => skipFirst ? default : _currentEnumerator.GetCurrent();
+        public void Dispose()
+        {
+            _currentEnumerator.Dispose();
+        }
     }
 }

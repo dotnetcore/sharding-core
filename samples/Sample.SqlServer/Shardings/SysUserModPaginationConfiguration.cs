@@ -11,8 +11,9 @@ namespace Sample.SqlServer.Shardings
     {
         public void Configure(PaginationBuilder<SysUserMod> builder)
         {
-            builder.PaginationSequence(o => o.Id)
-                .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
+            //builder.PaginationSequence(o => o.Age)
+            //    .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
+            builder.ConfigReverseShardingPage(reverseTotalGe:900);
         }
     }
 }

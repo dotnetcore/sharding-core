@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +73,40 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return next;
         }
 
-        public T Current => _enumerator.Current;
+        public bool MoveNext()
+        {
+            //如果合并数据的时候不需要跳过也没有take多少那么就是直接next
+            while (_skip.GetValueOrDefault() > this.realSkip)
+            {
+                var has = _enumerator.MoveNext();
+                realSkip++;
+                if (!has)
+                    return false;
+            }
+
+            var next = _enumerator.MoveNext();
+
+            if (next)
+            {
+                if (_take.HasValue)
+                {
+                    realTake++;
+                    if (realTake > _take.Value)
+                        return false;
+                }
+            }
+
+            return next;
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
+
+        public T Current => _enumerator.GetCurrent();
         public bool SkipFirst()
         {
             return _enumerator.SkipFirst();
@@ -84,6 +118,14 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         }
 
         public T ReallyCurrent => _enumerator.ReallyCurrent;
+        public T GetCurrent()
+        {
+            return _enumerator.GetCurrent();
+        }
+        public void Dispose()
+        {
+            _enumerator.Dispose();
+        }
 #if !EFCORE2
 
         public ValueTask DisposeAsync()

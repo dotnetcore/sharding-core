@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -58,15 +59,15 @@ namespace Sample.SqlServer.Controllers
 
 
 
-            //var sresultx11231 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).Contains("1981");
-            //var sresultx1121 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Sum(o => o.Age);
-            //var sresultx111 = _defaultTableDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
-            //var sresultx2 = _defaultTableDbContext.Set<SysUserMod>().Count(o => o.Age <= 10);
-            //var sresultx = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefault();
-            //var sresultx33 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
-            //var sresultxc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).ToList();
-            //var sresultxasdc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").ToList();
-            //var sresult = _defaultTableDbContext.Set<SysUserMod>().ToList();
+            var sresultx11231 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).Contains("1981");
+            var sresultx1121 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Sum(o => o.Age);
+            var sresultx111 = _defaultTableDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
+            var sresultx2 = _defaultTableDbContext.Set<SysUserMod>().Count(o => o.Age <= 10);
+            var sresultx = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").FirstOrDefault();
+            var sresultx33 = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
+            var sresultxc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).ToList();
+            var sresultxasdc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").ToList();
+            var sresult = _defaultTableDbContext.Set<SysUserMod>().ToList();
 
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
             _defaultTableDbContext.Attach(sysUserMod98);
@@ -89,8 +90,28 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get1([FromQuery] int p,[FromQuery]int s)
         {
-            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).ToShardingPageAsync(p, s);
-            return Ok(shardingPageResultAsync);
+            Stopwatch sp = new Stopwatch();
+            sp.Start();
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingPageAsync(p, s);
+            sp.Stop();
+            return Ok(new
+            {
+                sp.ElapsedMilliseconds,
+                shardingPageResultAsync
+            });
+        }
+        [HttpGet]
+        public IActionResult Get2([FromQuery] int p,[FromQuery]int s)
+        {
+            Stopwatch sp = new Stopwatch();
+            sp.Start();
+            var shardingPageResultAsync =  _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingPage(p, s);
+            sp.Stop();
+            return Ok(new
+            {
+                sp.ElapsedMilliseconds,
+                shardingPageResultAsync
+            });
         }
     }
 } 

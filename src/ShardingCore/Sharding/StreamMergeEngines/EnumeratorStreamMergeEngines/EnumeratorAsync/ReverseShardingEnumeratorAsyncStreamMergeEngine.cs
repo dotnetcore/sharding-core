@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
@@ -10,7 +9,7 @@ using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
     /*
     * @Author: xjm
@@ -30,7 +29,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
             _total = total;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
 
             var noPaginationNoOrderQueryable = _primaryOrder.IsAsc ? StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveOrderBy(): StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveOrderByDescending();
@@ -38,26 +37,17 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
             var take = StreamMergeContext.Take.GetValueOrDefault();
             var realSkip = _total- take- skip;
             var tableResult = StreamMergeContext.RouteResults;
-            var reverseOrderQueryable = noPaginationNoOrderQueryable.Skip((int)realSkip).Take((int)realSkip+take).OrderWithExpression(new List<PropertyOrder>()
+            StreamMergeContext.ReSetSkip((int)realSkip);
+            var propertyOrders = new List<PropertyOrder>()
             {
                 new PropertyOrder( _primaryOrder.PropertyExpression,!_primaryOrder.IsAsc)
-            });
+            };
+            StreamMergeContext.ReSetOrders(propertyOrders);
+            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+take).OrderWithExpression(propertyOrders);
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(reverseOrderQueryable,routeResult);
-                return Task.Run(async () =>
-                {
-                    try
-                    {
-                        var asyncEnumerator = await DoGetAsyncEnumerator(newQueryable);
-                        return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
+                return AsyncQueryEnumerator(newQueryable,async);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

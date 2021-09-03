@@ -29,7 +29,7 @@ namespace ShardingCore.Sharding
         private readonly IQueryable<T> _reWriteSource;
         //public IEnumerable<RouteResult> RouteResults { get; }
         //public DataSourceRoutingResult RoutingResult { get; }
-        public int? Skip { get;}
+        public int? Skip { get; private set; }
         public int? Take { get; }
         public IEnumerable<PropertyOrder> Orders { get; private set; }
         
@@ -71,6 +71,11 @@ namespace ShardingCore.Sharding
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
         {
             Orders = orders;
+        }
+
+        public void ReSetSkip(int? skip)
+        {
+            Skip = skip;
         }
         public DbContext CreateDbContext(RouteResult routeResult)
         {

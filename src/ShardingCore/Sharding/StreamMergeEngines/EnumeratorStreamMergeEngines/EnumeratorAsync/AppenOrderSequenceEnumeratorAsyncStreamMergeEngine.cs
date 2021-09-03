@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.ShardingPage.Abstractions;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
@@ -15,7 +12,7 @@ using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Base;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
     /*
     * @Author: xjm
@@ -28,17 +25,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
     {
         private readonly PaginationConfig _appendPaginationConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
-        private IShardingPageManager _shardingPageManager;
-        private IVirtualTableManager _virtualTableManager;
         public AppenOrderSequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationConfig appendPaginationConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext)
         {
             _appendPaginationConfig = appendPaginationConfig;
             _routeQueryResults = routeQueryResults;
-            _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
-            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
             var noPaginationQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
             var skip = StreamMergeContext.Skip.GetValueOrDefault();
@@ -58,23 +51,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o=>o.RouteQueryResult)).Skip(skip).Take(take).ToList();
      
-            StreamMergeContext.ReSetOrders(new PropertyOrder[] { new PropertyOrder(_appendPaginationConfig.PropertyName, true) });
+            StreamMergeContext.ReSetOrders(new [] { new PropertyOrder(_appendPaginationConfig.PropertyName, true) });
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
-                return Task.Run(async () =>
-                {
-                    try
-                    {
-                        var asyncEnumerator = await DoGetAsyncEnumerator(newQueryable);
-                        return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
+                return AsyncQueryEnumerator(newQueryable,async);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

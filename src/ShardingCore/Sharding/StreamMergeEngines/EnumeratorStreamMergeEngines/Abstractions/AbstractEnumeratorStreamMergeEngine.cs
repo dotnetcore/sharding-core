@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions
 {
@@ -28,10 +29,19 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             DbContextQueryStore = new ConcurrentDictionary<RouteResult, DbContext>();
         }
 
-        public abstract IAsyncEnumerator<TEntity> GetAsyncEnumerator(
+        public abstract IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
             CancellationToken cancellationToken = new CancellationToken());
 
-        public abstract IEnumerator<TEntity> GetEnumerator();
+        public  IAsyncEnumerator<TEntity> GetAsyncEnumerator(
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            return GetShardingAsyncEnumerator(true,cancellationToken);
+        }
+
+        public  IEnumerator<TEntity> GetEnumerator()
+        {
+            return GetShardingAsyncEnumerator(false);
+        }
 
         IEnumerator IEnumerable.GetEnumerator()
         {

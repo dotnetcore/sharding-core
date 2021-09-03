@@ -32,12 +32,12 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             var reWriteQueryable = _queryable;
             if (take.HasValue)
             {
-                reWriteQueryable = _queryable.RemoveTake();
+                reWriteQueryable = reWriteQueryable.RemoveTake();
             }
 
             if (skip.HasValue)
             {
-                reWriteQueryable = _queryable.RemoveSkip();
+                reWriteQueryable = reWriteQueryable.RemoveSkip();
             }
 
             if (take.HasValue)

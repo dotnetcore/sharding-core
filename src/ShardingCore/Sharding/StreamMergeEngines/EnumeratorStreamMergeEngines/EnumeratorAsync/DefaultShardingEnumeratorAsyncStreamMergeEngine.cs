@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions;
@@ -9,7 +7,7 @@ using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
     /*
     * @Author: xjm
@@ -24,25 +22,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
             var tableResult = StreamMergeContext.RouteResults;
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(routeResult);
-                return Task.Run(async () =>
-                {
-                    try
-                    {
-                        var asyncEnumerator = await DoGetAsyncEnumerator(newQueryable);
-                        return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
+                return AsyncQueryEnumerator(newQueryable, async);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

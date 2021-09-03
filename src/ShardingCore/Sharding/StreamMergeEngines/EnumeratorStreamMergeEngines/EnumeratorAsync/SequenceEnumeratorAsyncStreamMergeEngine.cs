@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.ShardingPage.Abstractions;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
@@ -16,7 +11,7 @@ using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Base;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
     /*
     * @Author: xjm
@@ -37,7 +32,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
             _isAsc = isAsc;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
             var noPaginationQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
             var skip = StreamMergeContext.Skip.GetValueOrDefault();
@@ -60,19 +55,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
-                return Task.Run(async () =>
-                {
-                    try
-                    {
-                        var asyncEnumerator = await DoGetAsyncEnumerator(newQueryable);
-                        return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
+                return AsyncQueryEnumerator(newQueryable, async);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +14,11 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class InMemoryReverseStreamMergeAsyncEnumerator<T>:IStreamMergeAsyncEnumerator<T>
+    public class InMemoryReverseStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
         private readonly IStreamMergeAsyncEnumerator<T> _inMemoryStreamMergeAsyncEnumerator;
         private bool _first = true;
-        private IEnumerator<T> _reverseEnumerator = Enumerable.Empty<T>().GetEnumerator();
+        private IEnumerator<T> _reverseEnumerator;
         public InMemoryReverseStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> inMemoryStreamMergeAsyncEnumerator)
         {
             _inMemoryStreamMergeAsyncEnumerator = inMemoryStreamMergeAsyncEnumerator;
@@ -32,20 +33,44 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             if (_first)
             {
-                ICollection<T> _reverseCollection = new LinkedList<T>();
-                while(await _inMemoryStreamMergeAsyncEnumerator.MoveNextAsync())
+                LinkedList<T> _reverseCollection = new LinkedList<T>();
+                while (await _inMemoryStreamMergeAsyncEnumerator.MoveNextAsync())
                 {
-                    _reverseCollection.Add(_inMemoryStreamMergeAsyncEnumerator.Current);
+                    _reverseCollection.AddFirst(_inMemoryStreamMergeAsyncEnumerator.GetCurrent());
                 }
 
-                _reverseEnumerator = _reverseCollection.Reverse().GetEnumerator();
+                _reverseEnumerator = _reverseCollection.GetEnumerator();
                 _first = false;
             }
 
             return _reverseEnumerator.MoveNext();
         }
 
-        public T Current => _reverseEnumerator.Current;
+        public bool MoveNext()
+        {
+            if (_first)
+            {
+                LinkedList<T> _reverseCollection = new LinkedList<T>();
+                while ( _inMemoryStreamMergeAsyncEnumerator.MoveNext())
+                {
+                    _reverseCollection.AddFirst(_inMemoryStreamMergeAsyncEnumerator.GetCurrent());
+                }
+
+                _reverseEnumerator = _reverseCollection.GetEnumerator();
+                _first = false;
+            }
+
+            return _reverseEnumerator.MoveNext();
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
+
+        public T Current => GetCurrent();
         public bool SkipFirst()
         {
             throw new NotImplementedException();
@@ -57,5 +82,15 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         }
 
         public T ReallyCurrent => Current;
+        public T GetCurrent()
+        {
+            return _reverseEnumerator == null ? default : _reverseEnumerator.Current;
+        }
+
+        public void Dispose()
+        {
+             _inMemoryStreamMergeAsyncEnumerator.Dispose();
+            _reverseEnumerator.Dispose();
+        }
     }
 }

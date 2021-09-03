@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -55,7 +56,26 @@ namespace ShardingCore.Sharding.Enumerators
         }
 
 
-        public T Current => _enumerator.Current;
+        public bool MoveNext()
+        {
+            var has = _enumerator.MoveNext();
+            SetOrderValues();
+            return has;
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
+
+        public T Current => GetCurrent();
+
+        public void Dispose()
+        {
+            _enumerator.Dispose();
+        }
 
         public bool SkipFirst()
         {
@@ -68,6 +88,10 @@ namespace ShardingCore.Sharding.Enumerators
         }
 
         public T ReallyCurrent => _enumerator.ReallyCurrent;
+        public T GetCurrent()
+        {
+            return _enumerator.GetCurrent();
+        }
 
         private List<IComparable> GetCurrentOrderValues()
         {

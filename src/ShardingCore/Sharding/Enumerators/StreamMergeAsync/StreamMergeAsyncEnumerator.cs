@@ -6,20 +6,31 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.Sharding.Enumerators
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 14 August 2021 21:25:50
-* @Email: 326308290@qq.com
-*/
-    public class StreamMergeAsyncEnumerator<T>:IStreamMergeAsyncEnumerator<T>
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 14 August 2021 21:25:50
+    * @Email: 326308290@qq.com
+    */
+    public class StreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
-        private readonly IAsyncEnumerator<T> _source;
+        private readonly IAsyncEnumerator<T> _asyncSource;
+        private readonly IEnumerator<T> _syncSource;
         private bool skip;
 
-        public StreamMergeAsyncEnumerator(IAsyncEnumerator<T> source)
+        public StreamMergeAsyncEnumerator(IAsyncEnumerator<T> asyncSource)
         {
-            _source = source;
+            if (_syncSource != null)
+                throw new ArgumentNullException(nameof(_syncSource));
+            _asyncSource = asyncSource;
+            skip = true;
+        }
+
+        public StreamMergeAsyncEnumerator(IEnumerator<T> syncSource)
+        {
+            if (_asyncSource != null)
+                throw new ArgumentNullException(nameof(_asyncSource));
+            _syncSource = syncSource;
             skip = true;
         }
 
@@ -33,9 +44,10 @@ namespace ShardingCore.Sharding.Enumerators
             return false;
         }
 #if !EFCORE2
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return _source.DisposeAsync();
+            if (_asyncSource != null)
+                await _asyncSource.DisposeAsync();
         }
 
         public async ValueTask<bool> MoveNextAsync()
@@ -43,22 +55,61 @@ namespace ShardingCore.Sharding.Enumerators
             if (skip)
             {
                 skip = false;
-                return null!=_source.Current;
+                return null != _asyncSource.Current;
             }
-            return await _source.MoveNextAsync();
+            return await _asyncSource.MoveNextAsync();
         }
-        public T Current => skip?default:_source.Current;
-        public T ReallyCurrent => _source.Current;
+
+        public bool MoveNext()
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != _syncSource.Current;
+            }
+            return _syncSource.MoveNext();
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
+
+        public T Current => GetCurrent();
+        public T ReallyCurrent => GetReallyCurrent();
         public bool HasElement()
         {
-            return null != _source.Current;
+            if (_asyncSource != null) return null != _asyncSource.Current;
+            if (_syncSource != null) return null != _syncSource.Current;
+            return false;
+        }
+        public void Dispose()
+        {
+            _syncSource?.Dispose();
+        }
+
+        public T GetCurrent()
+        {
+            if (skip)
+                return default;
+            if (_asyncSource != null) return _asyncSource.Current;
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
+        }
+        public T GetReallyCurrent()
+        {
+            if (_asyncSource != null) return _asyncSource.Current;
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
         }
 
 #endif
 #if EFCORE2
         public void Dispose()
         {
-             _source.Dispose();
+             _asyncSource.Dispose();
         }
 
         public async Task<bool> MoveNext(CancellationToken cancellationToken=new CancellationToken())
@@ -68,7 +119,7 @@ namespace ShardingCore.Sharding.Enumerators
                 skip = false;
                 return null != SourceCurrent();
             }
-            return await _source.MoveNext(cancellationToken);
+            return await _asyncSource.MoveNext(cancellationToken);
         }
         public T Current => skip ? default : SourceCurrent();
         public T ReallyCurrent => SourceCurrent();
@@ -83,7 +134,7 @@ namespace ShardingCore.Sharding.Enumerators
             {
                 if (tryGetCurrentError)
                     return default;
-                return _source.Current;
+                return _asyncSource.Current;
             }catch(Exception e)
             {
                 tryGetCurrentError = true;

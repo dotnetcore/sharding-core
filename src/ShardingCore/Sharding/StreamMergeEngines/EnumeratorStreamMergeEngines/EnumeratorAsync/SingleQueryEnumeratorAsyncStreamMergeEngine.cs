@@ -1,13 +1,11 @@
-using System;
 using System.Linq;
-using System.Threading.Tasks;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
+namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
 /*
 * @Author: xjm
@@ -21,21 +19,30 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
             var routeResult = StreamMergeContext.RouteResults.First();
             var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
             DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
-
-            var asyncEnumerator = DoGetAsyncEnumerator(newQueryable).WaitAndUnwrapException();
-            return new[] {new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator)};
+            if (async)
+            {
+                var asyncEnumerator = DoGetAsyncEnumerator(newQueryable).WaitAndUnwrapException();
+                return new[] { new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator) };
+            }
+            else
+            {
+                var enumerator = DoGetEnumerator(newQueryable);
+                return new[] { new StreamMergeAsyncEnumerator<TEntity>(enumerator) };
+            }
         }
 
 
         public override IStreamMergeAsyncEnumerator<TEntity> GetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
-            return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
+            if (streamsAsyncEnumerators.Length != 1)
+                throw new ShardingCoreException($"{nameof(SingleQueryEnumeratorAsyncStreamMergeEngine<TEntity>)} has more {nameof(IStreamMergeAsyncEnumerator<TEntity>)}");
+            return streamsAsyncEnumerators[0];
         }
     }
 }

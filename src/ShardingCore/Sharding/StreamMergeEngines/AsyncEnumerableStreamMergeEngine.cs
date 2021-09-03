@@ -1,17 +1,7 @@
-using System;
+using ShardingCore.Sharding.ShardingQueryExecutors;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
-using ShardingCore.Sharding.Enumerators.StreamMergeSync;
-using ShardingCore.Sharding.ShardingQueryExecutors;
 
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -36,13 +26,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
 
 #if !EFCORE2
-
-        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
-        {
-            var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
-            await enumator.MoveNextAsync();
-            return enumator;
-        }
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             return new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync(cancellationToken)
@@ -63,14 +46,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         }
 #endif
         
-
-
-        private IEnumerator<T> GetEnumerator(IQueryable<T> newQueryable)
-        {
-            var enumator = newQueryable.AsEnumerable().GetEnumerator();
-            enumator.MoveNext();
-            return enumator;
-        }
 
         public IEnumerator<T> GetEnumerator()
         {

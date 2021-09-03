@@ -31,7 +31,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <summary>
         /// 是否已开启反向排序 仅支持单排序
         /// </summary>
-        public bool EnableReverseShardingPage => ReverseFactor > 0 && ReverseFactor < 1 && ReverseTotalGe >= 1000;
+        public bool EnableReverseShardingPage => ReverseFactor > 0 && ReverseFactor < 1 && ReverseTotalGe >= 500;
         /// <summary>
         /// 分表发现如果少于多少条后直接取到内存 LESS THAN OR EQUAL
         /// </summary>

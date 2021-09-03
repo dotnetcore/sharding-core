@@ -20,26 +20,51 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractEnumeratorAsyncStreamMergeEngine<TEntity>: AbstractEnumeratorStreamMergeEngine<TEntity>
+    public abstract class AbstractEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
     {
         public AbstractEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        public override IAsyncEnumerator<TEntity> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
-        {
-            var dbStreamMergeAsyncEnumerators = GetDbStreamMergeAsyncEnumerators();
-            if (dbStreamMergeAsyncEnumerators.IsEmpty())
-                throw new ShardingCoreException("GetDbStreamMergeAsyncEnumerators empty");
-            return GetStreamMergeAsyncEnumerator(dbStreamMergeAsyncEnumerators);
-        }
 
-        public abstract IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators();
+        public abstract IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async);
         public abstract IStreamMergeAsyncEnumerator<TEntity> GetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
+
+        public Task<StreamMergeAsyncEnumerator<TEntity>> AsyncQueryEnumerator(IQueryable<TEntity> queryable,bool async)
+        {
+            return Task.Run(async () =>
+            {
+                try
+                {
+                    if (async)
+                    {
+                        var asyncEnumerator = await DoGetAsyncEnumerator(queryable);
+                        return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+                    }
+                    else
+                    {
+                        var enumerator =  DoGetEnumerator(queryable);
+                        return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            });
+        }
         public async Task<IAsyncEnumerator<TEntity>> DoGetAsyncEnumerator(IQueryable<TEntity> newQueryable)
         {
             var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
             await enumator.MoveNextAsync();
+            return enumator;
+        }
+        public IEnumerator<TEntity> DoGetEnumerator(IQueryable<TEntity> newQueryable)
+        {
+            var enumator = newQueryable.AsEnumerable().GetEnumerator();
+             enumator.MoveNext();
             return enumator;
         }
         // public virtual IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult)
@@ -51,10 +76,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         //         .ReplaceDbContextQueryable(shardingDbContext);
         //     return newQueryable;
         // }
-
-        public override IEnumerator<TEntity> GetEnumerator()
+        
+        public override IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var dbStreamMergeAsyncEnumerators = GetDbStreamMergeAsyncEnumerators(async);
+            if (dbStreamMergeAsyncEnumerators.IsEmpty())
+                throw new ShardingCoreException("GetDbStreamMergeAsyncEnumerators empty");
+            return GetStreamMergeAsyncEnumerator(dbStreamMergeAsyncEnumerators);
         }
     }
 }

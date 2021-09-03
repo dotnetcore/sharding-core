@@ -13,6 +13,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync;
 
 namespace ShardingCore.Sharding.ShardingQueryExecutors
 {
