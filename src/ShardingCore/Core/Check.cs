@@ -11,7 +11,13 @@ namespace ShardingCore.Core
     public class Check
     {
         private Check(){}
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <returns></returns>
         public static T NotNull<T>(T value,string parameterName)
         {
             if(value==null)
