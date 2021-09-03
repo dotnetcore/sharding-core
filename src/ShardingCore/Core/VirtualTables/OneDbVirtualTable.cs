@@ -31,6 +31,7 @@ namespace ShardingCore.Core.VirtualTables
         public ShardingTableConfig ShardingConfig { get; }
 
         public PaginationMetadata PaginationMetadata { get; }
+        public bool EnablePagination => PaginationMetadata != null;
 
         private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
 

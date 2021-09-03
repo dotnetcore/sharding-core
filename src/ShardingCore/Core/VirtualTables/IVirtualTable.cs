@@ -30,7 +30,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 是否启用分页配置
         /// </summary>
-        bool EnablePagination => PaginationMetadata != null;
+        bool EnablePagination { get; } 
 
         /// <summary>
         /// 获取所有的物理表

@@ -34,15 +34,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 #endif
 
 #if EFCORE2
-        private async Task<IAsyncEnumerator<T>> GetAsyncEnumerator(IQueryable<T> newQueryable)
-        {
-            var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
-            await enumator.MoveNext();
-            return enumator;
-        }
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
-            return GetShardingEnumerator();
+            return ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync())
+                .GetEnumerator();
         }
 #endif
         
@@ -50,7 +45,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public IEnumerator<T> GetEnumerator()
         {
 
-            return new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync()
+            return ((IEnumerable<T>)new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
         }
 

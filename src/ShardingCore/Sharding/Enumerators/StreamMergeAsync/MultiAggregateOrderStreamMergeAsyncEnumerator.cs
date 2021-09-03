@@ -233,15 +233,6 @@ namespace ShardingCore.Sharding.Enumerators
             }
         }
 #endif
-#if EFCORE2
-        public void Dispose()
-        {
-            foreach (var enumerator in _enumerators)
-            {
-                 enumerator.Dispose();
-            }
-        }
-#endif
 
 
         public void Reset()

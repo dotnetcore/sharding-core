@@ -133,12 +133,5 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return _enumerator.DisposeAsync();
         }
 #endif
-#if EFCORE2
-
-        public void Dispose()
-        {
-            _enumerator.Dispose();
-        }
-#endif
     }
 }

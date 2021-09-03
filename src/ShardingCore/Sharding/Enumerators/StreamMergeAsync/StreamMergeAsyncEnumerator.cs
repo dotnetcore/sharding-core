@@ -60,23 +60,6 @@ namespace ShardingCore.Sharding.Enumerators
             return await _asyncSource.MoveNextAsync();
         }
 
-        public bool MoveNext()
-        {
-            if (skip)
-            {
-                skip = false;
-                return null != _syncSource.Current;
-            }
-            return _syncSource.MoveNext();
-        }
-
-        public void Reset()
-        {
-            throw new NotImplementedException();
-        }
-
-        object IEnumerator.Current => Current;
-
         public T Current => GetCurrent();
         public T ReallyCurrent => GetReallyCurrent();
         public bool HasElement()
@@ -89,7 +72,6 @@ namespace ShardingCore.Sharding.Enumerators
         {
             _syncSource?.Dispose();
         }
-
         public T GetCurrent()
         {
             if (skip)
@@ -104,8 +86,26 @@ namespace ShardingCore.Sharding.Enumerators
             if (_syncSource != null) return _syncSource.Current;
             return default;
         }
+        public bool MoveNext()
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != _syncSource.Current;
+            }
+            return _syncSource.MoveNext();
+        }
 
 #endif
+
+
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        object IEnumerator.Current => Current;
 #if EFCORE2
         public void Dispose()
         {
@@ -121,8 +121,8 @@ namespace ShardingCore.Sharding.Enumerators
             }
             return await _asyncSource.MoveNext(cancellationToken);
         }
-        public T Current => skip ? default : SourceCurrent();
-        public T ReallyCurrent => SourceCurrent();
+        public T Current => GetCurrent();
+        public T ReallyCurrent => GetReallyCurrent();
         public bool HasElement()
         {
             return null != SourceCurrent();
@@ -143,6 +143,30 @@ namespace ShardingCore.Sharding.Enumerators
         }
 
         private bool tryGetCurrentError = false;
+
+        public T GetCurrent()
+        {
+            if (skip)
+                return default;
+            if (_asyncSource != null) return SourceCurrent();
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
+        }
+        public T GetReallyCurrent()
+        {
+            if (_asyncSource != null) return SourceCurrent();
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
+        }
+        public bool MoveNext()
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != _syncSource.Current;
+            }
+            return _syncSource.MoveNext();
+        }
 
 #endif
     }

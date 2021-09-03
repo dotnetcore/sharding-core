@@ -70,102 +70,10 @@ namespace ShardingCore.EFCores
 
 #if EFCORE2
 
-        private IAsyncEnumerable<TResult> AsyncEnumerableExecute<TResult>(IShardingDbContext shardingDbContext, Expression query)
-        {
-            Type queryEntityType = query.Type.GetSequenceType();
-            Type type = typeof(EnumerableQuery<>);
-            type = type.MakeGenericType(queryEntityType);
-            var queryable = Activator.CreateInstance(type, query);
-
-            var streamMergeContextMethod = _streamMergeContextFactory.GetType().GetMethod("Create");
-            if (streamMergeContextMethod == null)
-                throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
-            var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(_streamMergeContextFactory, new[] { queryable, shardingDbContext });
-
-
-            Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<>);
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
-            return (IAsyncEnumerable<TResult>)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
-        }
-        private Task<TResult> EnumerableExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query, bool async)
-        {
-            Type queryEntityType;
-            if (async)
-                queryEntityType = typeof(TResult).GetGenericArguments()[0];
-            else
-            {
-                queryEntityType = query.Type.GetSequenceType();
-            }
-            Type type = typeof(EnumerableQuery<>);
-            type = type.MakeGenericType(queryEntityType);
-            var queryable = Activator.CreateInstance(type, query);
-
-            var streamMergeContextMethod = _streamMergeContextFactory.GetType().GetMethod("Create");
-            if (streamMergeContextMethod == null)
-                throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
-            var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(_streamMergeContextFactory, new[] { queryable, shardingDbContext });
-
-
-            Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<>);
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
-            return (Task<TResult>)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
-        }
-        private Task<TResult> GenericMergeExecuteAsync<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
-        {
-            var queryEntityType = query.GetQueryEntityType();
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
-            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
-            var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult));
-            if (streamEngineMethod == null)
-                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
-            var @params = async ? new object[] { cancellationToken } : new object[0];
-            return (Task<TResult>)streamEngineMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamEngine, @params);
-        }
-
-
-        private Task<TResult> EnsureMergeExecuteAsync<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
-        {
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(query.GetQueryEntityType());
-            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
-            var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IEnsureMergeResult<object>.MergeResultAsync) : nameof(IEnsureMergeResult<object>.MergeResult));
-            if (streamEngineMethod == null)
-                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
-            var @params = async ? new object[] { cancellationToken } : new object[0];
-            return (Task<TResult>)streamEngineMethod.Invoke(streamEngine, @params);
-        }
-        private Task<TResult> GenericMergeExecuteAsync2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
-        {
-            var queryEntityType = query.GetQueryEntityType();
-            var resultType = query.GetResultType();
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType,resultType);
-            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
-            var streamEngineMethod = streamMergeEngineType.GetMethod(async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult));
-            if (streamEngineMethod == null)
-                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
-            var @params = async ? new object[] { cancellationToken } : new object[0];
-            return (Task<TResult>)streamEngineMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamEngine, @params);
-        }
-
-
-        private Task<TResult> EnsureMergeExecuteAsync2<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query,  CancellationToken cancellationToken)
-        {
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(query.GetQueryEntityType(), typeof(TResult));
-            var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
-            var streamEngineMethod = streamMergeEngineType.GetMethod(nameof(IEnsureMergeResult<object>.MergeResultAsync) );
-            if (streamEngineMethod == null)
-                throw new ShardingCoreException("cant found InMemoryAsyncStreamMergeEngine method [DoExecuteAsync]");
-            var @params = new object[] { cancellationToken };
-            return (Task<TResult>)streamEngineMethod.Invoke(streamEngine, @params);
-        }
-
-#endif
-
-#if EFCORE2
-
 
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
-            return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query, cancellationToken);
+            return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query);
         }
 
         public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)

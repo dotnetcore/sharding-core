@@ -138,16 +138,6 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             }
         }
 #endif
-#if EFCORE2
-
-        public void Dispose()
-        {
-            foreach (var enumerator in _enumerators)
-            {
-                enumerator.Dispose();
-            }
-        }
-#endif
 
 
 
@@ -161,7 +151,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         public T Current => skipFirst ? default : _currentEnumerator.GetCurrent();
         public void Dispose()
         {
-            _currentEnumerator.Dispose();
+            foreach (var enumerator in _enumerators)
+            {
+                enumerator.Dispose();
+            }
         }
     }
 }
