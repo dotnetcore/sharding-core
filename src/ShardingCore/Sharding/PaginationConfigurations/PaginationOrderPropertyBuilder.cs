@@ -44,10 +44,11 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <summary>
         /// 如果查询没发现排序就将当前配置追加上去
         /// </summary>
+        /// <param name="order">大于等于0生效,越大优先级越高</param>
         /// <returns></returns>
-        public PaginationOrderPropertyBuilder UseAppendIfOrderNone()
+        public PaginationOrderPropertyBuilder UseAppendIfOrderNone(int order=0)
         {
-            _paginationConfig.AppendIfOrderNone = true;
+            _paginationConfig.AppendOrder = order;
             return this;
         }
     }

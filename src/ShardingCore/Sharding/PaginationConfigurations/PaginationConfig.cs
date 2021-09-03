@@ -30,10 +30,15 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         public IComparer<string> TailComparer { get; set; }
         public PaginationMatchEnum PaginationMatchEnum { get; set; }
         public PropertyInfo OrderPropertyInfo { get; set; }
+
         /// <summary>
         /// 如果查询没发现排序就将当前配置追加上去
         /// </summary>
-        public bool AppendIfOrderNone { get; set; }
+        public bool AppendIfOrderNone => AppendOrder >= 0;
+        /// <summary>
+        /// 大于等于0表示需要
+        /// </summary>
+        public int AppendOrder { get; set; } = -1;
         public string PropertyName { get;}
 
 

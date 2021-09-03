@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Sharding.Visitors;
 
 namespace ShardingCore.Extensions
 {
@@ -29,7 +30,8 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         internal static IQueryable<T> RemoveSkip<T>(this IQueryable<T> source)
         {
-            return (IQueryable<T>)source.Provider.CreateQuery(new RemoveSkipVisitor().Visit(source.Expression));
+            var expression = new RemoveSkipVisitor().Visit(source.Expression);
+            return (IQueryable<T>)source.Provider.CreateQuery(expression);
         }
 
         /// <summary>
@@ -41,6 +43,17 @@ namespace ShardingCore.Extensions
         internal static IQueryable<T> RemoveTake<T>(this IQueryable<T> source)
         {
             var expression = new RemoveTakeVisitor().Visit(source.Expression);
+            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+        }
+        internal static IQueryable<T> RemoveOrderBy<T>(this IQueryable<T> source)
+        {
+            var expression = new RemoveOrderByVisitor().Visit(source.Expression);
+            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+        }
+        
+        internal static IQueryable<T> RemoveOrderByDescending<T>(this IQueryable<T> source)
+        {
+            var expression = new RemoveOrderByDescendingVisitor().Visit(source.Expression);
             return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
 

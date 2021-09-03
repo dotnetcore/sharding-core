@@ -9,7 +9,6 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -21,20 +20,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
     /*
     * @Author: xjm
     * @Description:
-    * @Date: 2021/9/2 16:29:06
+    * @Date: 2021/9/3 8:09:18
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class SequenceEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
+    public class AppenOrderSequenceEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly PaginationConfig _orderPaginationConfig;
+        private readonly PaginationConfig _appendPaginationConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
-        private readonly bool _isAsc;
-        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationConfig orderPaginationConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext)
+        private IShardingPageManager _shardingPageManager;
+        private IVirtualTableManager _virtualTableManager;
+        public AppenOrderSequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationConfig appendPaginationConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext)
         {
-            _orderPaginationConfig = orderPaginationConfig;
+            _appendPaginationConfig = appendPaginationConfig;
             _routeQueryResults = routeQueryResults;
-            _isAsc = isAsc;
+            _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
+            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators()
@@ -45,18 +46,19 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
                 throw new ShardingCoreException("skip must ge 0");
 
             var take = StreamMergeContext.Take;
-            if (take.HasValue && take.Value <= 0)
+            if (take.HasValue&&take.Value <= 0)
                 throw new ShardingCoreException("take must gt 0");
 
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
                 Tail = o.RouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
-            }).OrderByIf(o => o.Tail, _isAsc, _orderPaginationConfig.TailComparer)
-                .OrderByDescendingIf(o => o.Tail, !_isAsc, _orderPaginationConfig.TailComparer).ToList();
+            }).OrderBy(o => o.Tail, _appendPaginationConfig.TailComparer).ToList();
+            var skipCount = skip;
 
-            var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
-
+            var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o=>o.RouteQueryResult)).Skip(skip).Take(take).ToList();
+     
+            StreamMergeContext.ReSetOrders(new PropertyOrder[] { new PropertyOrder(_appendPaginationConfig.PropertyName, true) });
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
@@ -79,11 +81,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
+        private  IQueryable<TEntity> CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(sequenceResult.RouteResult);
             DbContextQueryStore.TryAdd(sequenceResult.RouteResult, shardingDbContext);
-            var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take))
+            var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(new PropertyOrder[]{new PropertyOrder(_appendPaginationConfig.PropertyName,true)}))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }

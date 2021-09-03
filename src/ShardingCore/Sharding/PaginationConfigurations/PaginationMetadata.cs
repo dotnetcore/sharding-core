@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ShardingCore.Sharding.PaginationConfigurations
@@ -17,10 +18,20 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     public class  PaginationMetadata
     {
         public ISet<PaginationConfig> PaginationConfigs = new HashSet<PaginationConfig>();
+
         /// <summary>
-        /// 配置生效当跳过多少条后  GREATER THAN OR EQUAL
+        /// 反向排序因子
         /// </summary>
-        public long UseShardingPageIfGeSkipAvg { get; set; } = 3000L;
+        public double ReverseFactor { get; set; } = -1;
+
+        /// <summary>
+        /// 当条数大于多少条后采用反向排序
+        /// </summary>
+        public long ReverseTotalGe { get; set; } = 10000L;
+        /// <summary>
+        /// 是否已开启反向排序 仅支持单排序
+        /// </summary>
+        public bool EnableReverseShardingPage => ReverseFactor > 0 && ReverseFactor < 1 && ReverseTotalGe >= 1000;
         /// <summary>
         /// 分表发现如果少于多少条后直接取到内存 LESS THAN OR EQUAL
         /// </summary>

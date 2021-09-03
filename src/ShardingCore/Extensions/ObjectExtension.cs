@@ -72,6 +72,17 @@ namespace ShardingCore.Extensions
                 return null;
             }
         }
+        /// <summary>
+        /// 类型X是否包含某个属性
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public static bool ContainPropertyName(this Type type, string propertyName)
+        {
+            var property = type.GetProperty(propertyName, _bindingFlags);
+            return property != null;
+        }
 
     }
 }

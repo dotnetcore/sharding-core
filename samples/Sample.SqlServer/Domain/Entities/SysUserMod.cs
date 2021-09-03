@@ -27,5 +27,6 @@ namespace Sample.SqlServer.Domain.Entities
         /// 用户姓名
         /// </summary>
         public int Age { get; set; }
+        public int AgeGroup { get; set; }
     }
 }

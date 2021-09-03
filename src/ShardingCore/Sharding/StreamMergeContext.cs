@@ -31,7 +31,7 @@ namespace ShardingCore.Sharding
         //public DataSourceRoutingResult RoutingResult { get; }
         public int? Skip { get;}
         public int? Take { get; }
-        public IEnumerable<PropertyOrder> Orders { get;}
+        public IEnumerable<PropertyOrder> Orders { get; private set; }
         
         public SelectContext SelectContext { get;}
         public GroupByContext GroupByContext { get; }
@@ -68,7 +68,10 @@ namespace ShardingCore.Sharding
         //    GroupByContext = reWriteResult.GroupByContext;
         //    _reWriteSource = reWriteResult.ReWriteQueryable;
         //}
-
+        public void ReSetOrders(IEnumerable<PropertyOrder> orders)
+        {
+            Orders = orders;
+        }
         public DbContext CreateDbContext(RouteResult routeResult)
         {
             var routeTail = _routeTailFactory.Create(routeResult);

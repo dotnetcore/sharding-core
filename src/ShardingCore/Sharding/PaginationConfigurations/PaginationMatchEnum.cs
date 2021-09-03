@@ -22,6 +22,6 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <summary>
         /// 仅第一个匹配就可以了
         /// </summary>
-        FirstMatch = 1 << 2
+        PrimaryMatch = 1 << 2
     }
 }

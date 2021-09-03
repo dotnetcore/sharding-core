@@ -38,6 +38,7 @@ namespace Sample.SqlServer
                              //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
                              );//使用链接字符串创建dbcontext
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                  });
 
             ////不支持MARS不支持追踪的

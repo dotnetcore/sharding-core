@@ -48,11 +48,11 @@ namespace ShardingCore.Core.Internal.Visitors
                     var method = methodCallExpression.Method;
                     if (method.Name == nameof(Queryable.Count) || method.Name == nameof(Queryable.Sum) || method.Name == nameof(Queryable.Max) || method.Name == nameof(Queryable.Min) || method.Name == nameof(Queryable.Average))
                     {
-                        _selectContext.SelectProperties.Add(new SelectProperty(node.Members[i].Name,true,method.Name));
+                        _selectContext.SelectProperties.Add(new SelectProperty(node.Members[i].DeclaringType, node.Members[i].Name,true,method.Name));
                         continue;
                     }
                 }
-                _selectContext.SelectProperties.Add(new SelectProperty(node.Members[i].Name,false,string.Empty));
+                _selectContext.SelectProperties.Add(new SelectProperty(node.Members[i].DeclaringType, node.Members[i].Name,false,string.Empty));
             }
             return base.VisitNew(node);
         }

@@ -12,7 +12,7 @@ namespace Sample.SqlServer.Shardings
         public void Configure(PaginationBuilder<SysUserMod> builder)
         {
             builder.PaginationSequence(o => o.Id)
-                .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.FirstMatch);
+                .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
         }
     }
 }

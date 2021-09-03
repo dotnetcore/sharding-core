@@ -32,13 +32,15 @@ namespace ShardingCore.Sharding.PaginationConfigurations
             return new PaginationOrderPropertyBuilder(orderPropertyExpression, _metadata);
         }
         /// <summary>
-        /// 配置当跳过多少条后开始启用只能分页
+        /// 配置反向排序 仅支持单排序 当skip>= reverseTotalGe*reverseFactor使用反向排序
         /// </summary>
-        /// <param name="skip"></param>
+        /// <param name="reverseFactor"></param>
+        /// <param name="reverseTotalGe"></param>
         /// <returns></returns>
-        public PaginationBuilder<TEntity> ConfigUseShardingPageIfGeSkip(long skip)
+        public PaginationBuilder<TEntity> ConfigReverseShardingPage(double reverseFactor=0.5,long reverseTotalGe=10000L)
         {
-            _metadata.UseShardingPageIfGeSkipAvg = skip;
+            _metadata.ReverseFactor = reverseFactor;
+            _metadata.ReverseTotalGe = reverseTotalGe;
             return this;
         }
         /// <summary>

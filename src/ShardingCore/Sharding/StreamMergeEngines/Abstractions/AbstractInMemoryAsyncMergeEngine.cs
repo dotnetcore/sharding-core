@@ -106,7 +106,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
         public List<TResult> Execute<TResult>(Func<IQueryable, TResult> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = _mergeContext.GetRouteResults();
+            var tableResult = _mergeContext.RouteResults;
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 return Task.Run(() =>
