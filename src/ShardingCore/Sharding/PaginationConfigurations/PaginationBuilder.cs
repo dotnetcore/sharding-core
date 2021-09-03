@@ -43,15 +43,15 @@ namespace ShardingCore.Sharding.PaginationConfigurations
             _metadata.ReverseTotalGe = reverseTotalGe;
             return this;
         }
-        /// <summary>
-        /// 配置当分表数目小于多少后直接取到内存不在流式处理
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public PaginationBuilder<TEntity> ConfigTakeInMemoryCountIfLe(int count)
-        {
-            _metadata.TakeInMemoryCountIfLe = count;
-            return this;
-        }
+        ///// <summary>
+        ///// 配置当分表数目小于多少后直接取到内存不在流式处理
+        ///// </summary>
+        ///// <param name="count"></param>
+        ///// <returns></returns>
+        //public PaginationBuilder<TEntity> ConfigTakeInMemoryCountIfLe(int count)
+        //{
+        //    _metadata.TakeInMemoryCountIfLe = count;
+        //    return this;
+        //}
     }
 }

@@ -14,8 +14,6 @@ using ShardingCore.TableCreator;
 using System;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
-using ShardingCore.Core.ShardingAccessors;
-using ShardingCore.Core.ShardingAccessors.Abstractions;
 using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
@@ -69,7 +67,43 @@ namespace ShardingCore
 
 
 
-            services.AddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+            return services;
+        }
+        public static IServiceCollection AddShardingDbContext<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
+            Action<IServiceProvider,DbContextOptionsBuilder> optionsAction = null,
+            Action<ShardingConfigOption<TShardingDbContext,TActualDbContext>> configure=null,
+            ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
+            ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+            where TActualDbContext : DbContext, IShardingTableDbContext
+            where TShardingDbContext : DbContext, IShardingTableDbContext<TActualDbContext>
+        {
+            if (configure == null)
+                throw new ArgumentNullException($"AddShardingDbContext params is null :{nameof(configure)}");
+
+            ShardingCoreHelper.CheckContextConstructors<TActualDbContext>();
+            var shardingConfigOptions = new ShardingConfigOption<TShardingDbContext,TActualDbContext>();
+            configure?.Invoke(shardingConfigOptions);
+            services.AddSingleton<IShardingConfigOption, ShardingConfigOption<TShardingDbContext, TActualDbContext>>(sp=> shardingConfigOptions);
+
+
+            //添加创建TActualDbContext 的 创建者
+            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure,shardingConfigOptions.DefaultQueryConfigure);
+            services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp=> config);
+
+            //添加创建TActualDbContext创建者
+            services.AddSingleton<IShardingDbContextCreatorConfig,DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>>(sp=> new DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>(typeof(TActualDbContext)));
+
+
+            Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
+            {
+                optionsAction?.Invoke(sp,option);
+                option.UseSharding();
+            };
+            services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
+            services.AddInternalShardingCore();
+
+
+
             return services;
         }
 
@@ -85,9 +119,6 @@ namespace ShardingCore
             services.AddSingleton<IRoutingRuleEngineFactory, RoutingRuleEngineFactory>();
             //分表引擎
             services.AddSingleton<IRouteRuleEngine, QueryRouteRuleEngines>();
-            //services.AddSingleton(typeof(IVirtualTable<>), typeof(OneDbVirtualTable<>));
-            services.AddSingleton<IShardingAccessor, ShardingAccessor>();
-            services.AddSingleton<IShardingScopeFactory, ShardingScopeFactory>();
             services.AddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.AddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
 
@@ -98,6 +129,7 @@ namespace ShardingCore
             //sharding page
             services.AddSingleton<IShardingPageManager, ShardingPageManager>();
             services.AddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
+            services.AddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
 
