@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -44,7 +46,17 @@ namespace ShardingCore.Extensions
         public static string FormatRouteTail2ModelCacheKey(this string originalTail)
         {
             return $"{ShardingTableDbContextFormat}{originalTail}";
-            ;
+        }
+
+        public static string ShardingPrint(this Expression expression)
+        {
+
+#if !EFCORE2
+           return expression.Print();
+#endif
+#if EFCORE2
+                return expression.ToString();
+#endif
         }
     }
 }

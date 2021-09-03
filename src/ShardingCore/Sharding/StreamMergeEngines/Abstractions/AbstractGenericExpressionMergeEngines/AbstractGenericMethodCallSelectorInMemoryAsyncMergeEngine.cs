@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericE
         {
         }
 
-        public override IQueryable EFQueryAfterFilter<TResult>(IQueryable<TEntity> queryable)
+        public override IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {
             var secondExpression = GetSecondExpression();
             if (secondExpression != null)
@@ -41,7 +41,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericE
             return queryable;
         }
 
-        protected override IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> _queryable, Expression secondExpression)
+        protected override IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> _queryable, Expression secondExpression)
         {
             return _queryable;
         }

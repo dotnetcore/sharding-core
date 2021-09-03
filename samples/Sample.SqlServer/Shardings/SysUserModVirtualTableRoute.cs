@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.VirtualRoutes;
 using ShardingCore.VirtualRoutes.Mods;
 
@@ -24,6 +25,11 @@ namespace Sample.SqlServer.Shardings
 
         public SysUserModVirtualTableRoute() : base(2,3)
         {
+        }
+
+        public override IPaginationConfiguration<SysUserMod> CreatePaginationConfiguration()
+        {
+            return new SysUserModPaginationConfiguration();
         }
     }
 }

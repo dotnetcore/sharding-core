@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -22,6 +23,14 @@ namespace ShardingCore.Core.VirtualTables
         /// 分表配置
         /// </summary>
         ShardingTableConfig ShardingConfig { get; }
+        /// <summary>
+        /// 分页配置
+        /// </summary>
+        PaginationMetadata PaginationMetadata { get; }
+        /// <summary>
+        /// 是否启用分页配置
+        /// </summary>
+        bool EnablePagination => PaginationMetadata != null;
 
         /// <summary>
         /// 获取所有的物理表

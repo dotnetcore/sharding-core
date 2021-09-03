@@ -10,13 +10,14 @@ namespace ShardingCore.Core.Internal.Visitors.Selects
     */
     public class SelectProperty
     {
-        public SelectProperty(string propertyName,bool isAggregateMethod,string aggregateMethod)
+        public SelectProperty( Type ownerType,string propertyName,bool isAggregateMethod,string aggregateMethod)
         {
+            OwnerType = ownerType;
             PropertyName = propertyName;
             IsAggregateMethod = isAggregateMethod;
             AggregateMethod = aggregateMethod;
         }
-
+        public Type OwnerType { get; }
         public string PropertyName { get; }
         public bool IsAggregateMethod { get; }
         public string AggregateMethod { get; }

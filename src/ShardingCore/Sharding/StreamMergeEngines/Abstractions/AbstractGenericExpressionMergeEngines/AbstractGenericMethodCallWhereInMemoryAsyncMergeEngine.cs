@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractGenericE
             _methodCallExpression = methodCallExpression;
         }
 
-        protected override IQueryable<TEntity> ProcessSecondExpression(IQueryable<TEntity> queryable, Expression secondExpression)
+        protected override IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression)
         {
             if (secondExpression is UnaryExpression where)
             {

@@ -7,7 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Exceptions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
@@ -24,16 +26,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     public class LongCountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity,long>
     {
+        private readonly IShardingPageManager _shardingPageManager;
         public LongCountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
+            _shardingPageManager= ShardingContainer.GetService<IShardingPageManager>();
         }
 
         public override long MergeResult()
         {
-
-            var result =  base.Execute( queryable =>  ((IQueryable<TEntity>)queryable).LongCount());
-
-            return result.Sum();
+            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         public override async Task<long> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -41,7 +42,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LongCountAsync(cancellationToken), cancellationToken);
 
-            return result.Sum();
+            if (_shardingPageManager.Current != null)
+            {
+                foreach (var routeQueryResult in result)
+                {
+                    _shardingPageManager.Current.RouteQueryResults.Add(routeQueryResult);
+                }
+            }
+
+            return result.Sum(o=>o.QueryResult);
         }
     }
 }

@@ -31,10 +31,11 @@ namespace ShardingCore.Sharding
         //public DataSourceRoutingResult RoutingResult { get; }
         public int? Skip { get;}
         public int? Take { get; }
-        public IEnumerable<PropertyOrder> Orders { get;}
+        public IEnumerable<PropertyOrder> Orders { get; private set; }
         
         public SelectContext SelectContext { get;}
         public GroupByContext GroupByContext { get; }
+        public IEnumerable<RouteResult> RouteResults { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,IRoutingRuleEngineFactory tableRoutingRuleEngineFactory, IRouteTailFactory routeTailFactory)
         {
@@ -50,6 +51,7 @@ namespace ShardingCore.Sharding
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
+            RouteResults = _tableRoutingRuleEngineFactory.Route(_shardingDbContext.GetType(), _source);
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<RouteResult> routeResults,
         //    IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
@@ -66,15 +68,14 @@ namespace ShardingCore.Sharding
         //    GroupByContext = reWriteResult.GroupByContext;
         //    _reWriteSource = reWriteResult.ReWriteQueryable;
         //}
-
+        public void ReSetOrders(IEnumerable<PropertyOrder> orders)
+        {
+            Orders = orders;
+        }
         public DbContext CreateDbContext(RouteResult routeResult)
         {
             var routeTail = _routeTailFactory.Create(routeResult);
             return _shardingDbContext.GetDbContext(false, routeTail);
-        }
-        public IEnumerable<RouteResult> GetRouteResults()
-        {
-            return _tableRoutingRuleEngineFactory.Route(_shardingDbContext.GetType(),_source);
         }
 
         public IRouteTail Create(RouteResult routeResult)
@@ -96,6 +97,12 @@ namespace ShardingCore.Sharding
             return Skip.HasValue || Take.HasValue;
         }
 
+        public bool IsPaginationQuery()
+        {
+            return Skip.GetValueOrDefault() > 0 || Take.GetValueOrDefault() > 0;
+        }
+        
+
         public bool HasGroupQuery()
         {
             return this.GroupByContext.GroupExpression != null;
@@ -104,6 +111,11 @@ namespace ShardingCore.Sharding
         public bool HasAggregateQuery()
         {
             return this.SelectContext.SelectProperties.Any(o => o.IsAggregateMethod);
+        }
+
+        public IShardingDbContext GetShardingDbContext()
+        {
+            return _shardingDbContext;
         }
 
     }

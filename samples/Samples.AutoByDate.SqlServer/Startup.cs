@@ -43,6 +43,7 @@ namespace Samples.AutoByDate.SqlServer
                     op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection),
                         (conStr,builder) => builder.UseSqlServer(conStr));
                     op.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
+                    op.AddShardingTableRoute<TestLogWeekVirtualRoute>();
                 });
             services.AddChronusJob();
         }

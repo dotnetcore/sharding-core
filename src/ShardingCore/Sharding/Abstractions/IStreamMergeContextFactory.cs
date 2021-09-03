@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -10,6 +11,6 @@ namespace ShardingCore.Sharding.Abstractions
 */
     public  interface IStreamMergeContextFactory
     {
-        StreamMergeContext<T> Create<T>(IQueryable<T> queryable,IShardingDbContext shardingDbContext);
+        StreamMergeContext<T> Create<T>(IQueryable<T> queryable, IShardingDbContext shardingDbContext);
     }
 }

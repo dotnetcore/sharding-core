@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
@@ -31,20 +32,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override TResult MergeResult<TResult>()
         {
-            var result =  base.Execute( queryable =>  ((IQueryable<TResult>)queryable).FirstOrDefault());
-            var q = result.Where(o => o != null).AsQueryable();
-
-            var streamMergeContext = GetStreamMergeContext();
-            if (streamMergeContext.Orders.Any())
-                return q.OrderWithExpression(streamMergeContext.Orders).FirstOrDefault();
-
-            return q.FirstOrDefault();
+            return AsyncHelper.RunSync(() => MergeResultAsync<TResult>());
         }
 
         public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TResult>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
-            var q = result.Where(o => o != null).AsQueryable();
+            var q = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).AsQueryable();
 
             var streamMergeContext = GetStreamMergeContext();
             if (streamMergeContext.Orders.Any())

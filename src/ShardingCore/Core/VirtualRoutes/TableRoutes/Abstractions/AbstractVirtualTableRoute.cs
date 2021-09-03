@@ -6,6 +6,7 @@ using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
@@ -17,6 +18,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     */
     public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T> where T : class, IShardingTable
     {
+        public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
+        {
+            return null;
+        }
+
         public Type ShardingEntityType => typeof(T);
         /// <summary>
         /// 如何将分表字段转成对应的类型

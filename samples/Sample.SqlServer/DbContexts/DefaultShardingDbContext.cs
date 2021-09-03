@@ -20,6 +20,7 @@ namespace Sample.SqlServer.DbContexts
             //配置默认和DefaultTableDbContext一样
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
+            modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
 
         public override Type ShardingDbContextType => this.GetType();
