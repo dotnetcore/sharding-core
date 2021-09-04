@@ -56,6 +56,11 @@ namespace ShardingCore.Extensions
             var expression = new RemoveOrderByDescendingVisitor().Visit(source.Expression);
             return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
+        internal static IQueryable<T> RemoveAnyOrderBy<T>(this IQueryable<T> source)
+        {
+            var expression = new RemoveAnyOrderVisitor().Visit(source.Expression);
+            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+        }
 
         /// <summary>
         /// 切换数据源,保留原数据源中的Expression

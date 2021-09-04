@@ -32,10 +32,15 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// 是否已开启反向排序 仅支持单排序
         /// </summary>
         public bool EnableReverseShardingPage => ReverseFactor > 0 && ReverseFactor < 1 && ReverseTotalGe >= 500;
-        /// <summary>
-        /// 分表发现如果少于多少条后直接取到内存 LESS THAN OR EQUAL
-        /// </summary>
-        public int TakeInMemoryCountIfLe { get; set; } = 100;
+        // /// <summary>
+        // /// 当出现N张表分页需要跳过X条数据,获取Y条数据除了total条数最多的那张表以外的其他表和小于TakeInMemoryMaxRangeSkip那么就启用
+        // /// </summary>
+        // public int TakeInMemoryMaxRangeSkip { get; set; } = 1000;
+        //
+        // public bool EnableTakeInMemory(int skip)
+        // {
+        //     return skip > TakeInMemoryMaxRangeSkip && TakeInMemoryMaxRangeSkip > 500;
+        // }
 
     }
 }

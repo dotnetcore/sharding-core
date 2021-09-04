@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
@@ -20,30 +21,28 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     */
     public class ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly PropertyOrder _primaryOrder;
+        private readonly IEnumerable<PropertyOrder> _primaryOrders;
         private readonly long _total;
 
-        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PropertyOrder primaryOrder, long total) : base(streamMergeContext)
+        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, IEnumerable<PropertyOrder> primaryOrders, long total) : base(streamMergeContext)
         {
-            _primaryOrder = primaryOrder;
+            _primaryOrders = primaryOrders;
             _total = total;
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
-
-            var noPaginationNoOrderQueryable = _primaryOrder.IsAsc ? StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveOrderBy(): StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveOrderByDescending();
+            var noPaginationNoOrderQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy();
             var skip = StreamMergeContext.Skip.GetValueOrDefault();
-            var take = StreamMergeContext.Take.GetValueOrDefault();
+            var take = StreamMergeContext.Take.HasValue?StreamMergeContext.Take.Value:(_total-skip);
+            if (take > int.MaxValue)
+                throw new ShardingCoreException($"not support take more than {int.MaxValue}");
             var realSkip = _total- take- skip;
             var tableResult = StreamMergeContext.RouteResults;
             StreamMergeContext.ReSetSkip((int)realSkip);
-            var propertyOrders = new List<PropertyOrder>()
-            {
-                new PropertyOrder( _primaryOrder.PropertyExpression,!_primaryOrder.IsAsc)
-            };
+            var propertyOrders =_primaryOrders.Select(o=>new PropertyOrder( o.PropertyExpression,!o.IsAsc)).ToArray();
             StreamMergeContext.ReSetOrders(propertyOrders);
-            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+take).OrderWithExpression(propertyOrders);
+            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
             var enumeratorTasks = tableResult.Select(routeResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(reverseOrderQueryable,routeResult);

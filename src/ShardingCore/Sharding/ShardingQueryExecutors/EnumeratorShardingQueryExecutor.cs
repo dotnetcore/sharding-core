@@ -36,6 +36,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
         }
+
         public IEnumeratorStreamMergeEngine<TEntity> ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             //操作单表
@@ -43,8 +44,9 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             {
                 return new SingleQueryEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext);
             }
+
             //未开启系统分表或者本次查询涉及多张分表
-            if (_streamMergeContext.IsPaginationQuery()&&_streamMergeContext.IsSingleShardingTableQuery()&&_shardingPageManager.Current != null)
+            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingTableQuery() && _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
                 var shardingEntityType = _streamMergeContext.RouteResults.First().ReplaceTables.First().EntityType;
@@ -56,8 +58,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     if (_streamMergeContext.Orders.IsEmpty())
                     {
                         //除了判断属性名还要判断所属关系
-                        var appendPaginationConfig = paginationMetadata.PaginationConfigs.OrderByDescending(o=>o.AppendOrder)
-                            .FirstOrDefault(o => o.AppendIfOrderNone&&typeof(TEntity).ContainPropertyName(o.PropertyName)&& PaginationMatch(o));
+                        var appendPaginationConfig = paginationMetadata.PaginationConfigs.OrderByDescending(o => o.AppendOrder)
+                            .FirstOrDefault(o => o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName) && PaginationMatch(o));
                         if (appendPaginationConfig != null)
                         {
                             return new AppenOrderSequenceEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext, appendPaginationConfig, _shardingPageManager.Current.RouteQueryResults);
@@ -65,23 +67,31 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     }
                     else
                     {
+                        var orderCount = _streamMergeContext.Orders.Count();
                         var primaryOrder = _streamMergeContext.Orders.First();
-                        var appendPaginationConfig = paginationMetadata.PaginationConfigs.FirstOrDefault(o => PaginationMatch(o,primaryOrder));
-                        if (appendPaginationConfig != null)
+                        if (orderCount == 1)
                         {
-                            return new SequenceEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext, appendPaginationConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
-                        }
-                        if (_streamMergeContext.Orders.Count() == 1)
-                        {
-                            //skip过大reserve skip
-                            if (paginationMetadata.EnableReverseShardingPage &&_streamMergeContext.Take.GetValueOrDefault()>0)
+                            var sequenceFullMatchOrderConfig = paginationMetadata.PaginationConfigs.Where(o => !o.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch)).FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
+                            if (sequenceFullMatchOrderConfig != null)
                             {
-                                var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
-                                if (paginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(), total))
-                                {
-                                    return new ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity>(
-                                        _streamMergeContext, primaryOrder, total);
-                                }
+                                return new SequenceEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext, sequenceFullMatchOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                            }
+                        }
+
+                        var sequencePrimaryMatchOrderConfig = paginationMetadata.PaginationConfigs.Where(o => o.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch)).FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
+                        if (sequencePrimaryMatchOrderConfig != null)
+                        {
+                            return new SequenceEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext, sequencePrimaryMatchOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                        }
+
+                        //skip过大reserve skip
+                        if (paginationMetadata.EnableReverseShardingPage && _streamMergeContext.Take.GetValueOrDefault() > 0)
+                        {
+                            var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
+                            if (paginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(), total))
+                            {
+                                return new ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity>(
+                                    _streamMergeContext,  _streamMergeContext.Orders, total);
                             }
                         }
                     }
@@ -94,27 +104,21 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
         private bool PaginationMatch(PaginationConfig paginationConfig)
         {
-            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner)&& !paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
                 return typeof(TEntity) == paginationConfig.OrderPropertyInfo.DeclaringType;
-      
+
             return false;
         }
-        private bool PaginationMatch(PaginationConfig paginationConfig,PropertyOrder propertyOrder)
-        {
-            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch))
-            {
-                if (!propertyOrder.PropertyExpression.StartsWith(paginationConfig.PropertyName))
-                    return false;
-            }
 
+        private bool PaginationPrimaryMatch(PaginationConfig paginationConfig, PropertyOrder propertyOrder)
+        {
             if (propertyOrder.PropertyExpression != paginationConfig.PropertyName)
                 return false;
 
-            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner)&&!paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
                 return typeof(TEntity) == paginationConfig.OrderPropertyInfo.DeclaringType;
 
             return false;
         }
-
     }
 }

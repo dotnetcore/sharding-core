@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Base
 {
@@ -25,11 +26,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         }
         public SequencePaginationList Skip(long? skip)
         {
+            if (skip > int.MaxValue)
+                throw new ShardingCoreException($"not support skip more than {int.MaxValue}");
             _skip = skip;
             return this;
         }
         public SequencePaginationList Take(long? take)
         {
+            if (take > int.MaxValue)
+                throw new ShardingCoreException($"not support take more than {int.MaxValue}");
             _take = take;
             return this;
         }
