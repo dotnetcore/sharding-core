@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             {
                 if (!stopSkip)
                 {
-                    if (routeQueryResult.QueryResult >= currentSkip)
+                    if (routeQueryResult.QueryResult > currentSkip)
                     {
                         stopSkip = true;
                     }
