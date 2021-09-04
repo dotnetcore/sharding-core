@@ -22,12 +22,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     */
     public class SequenceEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly PaginationConfig _orderPaginationConfig;
+        private readonly PaginationSequenceConfig _orderPaginationSequenceConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
         private readonly bool _isAsc;
-        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationConfig orderPaginationConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext)
+        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig orderPaginationSequenceConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext)
         {
-            _orderPaginationConfig = orderPaginationConfig;
+            _orderPaginationSequenceConfig = orderPaginationSequenceConfig;
             _routeQueryResults = routeQueryResults;
             _isAsc = isAsc;
         }
@@ -47,8 +47,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             {
                 Tail = o.RouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
-            }).OrderByIf(o => o.Tail, _isAsc, _orderPaginationConfig.TailComparer)
-                .OrderByDescendingIf(o => o.Tail, !_isAsc, _orderPaginationConfig.TailComparer).ToList();
+            }).OrderByIf(o => o.Tail, _isAsc, _orderPaginationSequenceConfig.TailComparer)
+                .OrderByDescendingIf(o => o.Tail, !_isAsc, _orderPaginationSequenceConfig.TailComparer).ToList();
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
 

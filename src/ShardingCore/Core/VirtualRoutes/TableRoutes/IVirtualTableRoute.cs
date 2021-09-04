@@ -25,8 +25,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// </summary>
         /// <param name="allPhysicTables"></param>
         /// <param name="queryable"></param>
+        /// <param name="isQuery"></param>
         /// <returns></returns>
-        List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables,IQueryable queryable);
+        List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables,IQueryable queryable,bool isQuery);
 
         /// <summary>
         /// 根据值进行路由

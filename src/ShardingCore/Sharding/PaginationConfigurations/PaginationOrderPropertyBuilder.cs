@@ -12,12 +12,12 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     */
     public class PaginationOrderPropertyBuilder
     {
-        private readonly PaginationConfig _paginationConfig;
+        private readonly PaginationSequenceConfig _paginationSequenceConfig;
 
         public PaginationOrderPropertyBuilder(LambdaExpression orderPropertyExpression,PaginationMetadata metadata)
         {
-            _paginationConfig = new PaginationConfig(orderPropertyExpression);
-            metadata.PaginationConfigs.Add(_paginationConfig);
+            _paginationSequenceConfig = new PaginationSequenceConfig(orderPropertyExpression);
+            metadata.PaginationConfigs.Add(_paginationSequenceConfig);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         public PaginationOrderPropertyBuilder UseTailCompare(IComparer<string> tailComparer)
         {
 
-            _paginationConfig.TailComparer= tailComparer ?? throw new ArgumentException(nameof(tailComparer));
+            _paginationSequenceConfig.TailComparer= tailComparer ?? throw new ArgumentException(nameof(tailComparer));
             return this;
         }
         /// <summary>
@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <returns></returns>
         public PaginationOrderPropertyBuilder UseQueryMatch(PaginationMatchEnum paginationMatchEnum)
         {
-            _paginationConfig.PaginationMatchEnum = paginationMatchEnum;
+            _paginationSequenceConfig.PaginationMatchEnum = paginationMatchEnum;
             return this;
         }
         /// <summary>
@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <returns></returns>
         public PaginationOrderPropertyBuilder UseAppendIfOrderNone(int order=0)
         {
-            _paginationConfig.AppendOrder = order;
+            _paginationSequenceConfig.AppendOrder = order;
             return this;
         }
     }

@@ -102,21 +102,21 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             return new DefaultShardingEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext);
         }
 
-        private bool PaginationMatch(PaginationConfig paginationConfig)
+        private bool PaginationMatch(PaginationSequenceConfig paginationSequenceConfig)
         {
-            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
-                return typeof(TEntity) == paginationConfig.OrderPropertyInfo.DeclaringType;
+            if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+                return typeof(TEntity) == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
 
             return false;
         }
 
-        private bool PaginationPrimaryMatch(PaginationConfig paginationConfig, PropertyOrder propertyOrder)
+        private bool PaginationPrimaryMatch(PaginationSequenceConfig paginationSequenceConfig, PropertyOrder propertyOrder)
         {
-            if (propertyOrder.PropertyExpression != paginationConfig.PropertyName)
+            if (propertyOrder.PropertyExpression != paginationSequenceConfig.PropertyName)
                 return false;
 
-            if (paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
-                return typeof(TEntity) == paginationConfig.OrderPropertyInfo.DeclaringType;
+            if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+                return typeof(TEntity) == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
 
             return false;
         }

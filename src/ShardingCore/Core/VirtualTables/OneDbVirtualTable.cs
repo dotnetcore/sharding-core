@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,7 +34,7 @@ namespace ShardingCore.Core.VirtualTables
         public PaginationMetadata PaginationMetadata { get; }
         public bool EnablePagination => PaginationMetadata != null;
 
-        private readonly List<IPhysicTable> _physicTables = new List<IPhysicTable>();
+        private readonly ConcurrentDictionary<IPhysicTable,object> _physicTables = new ConcurrentDictionary<IPhysicTable,object>();
 
         public OneDbVirtualTable(IVirtualTableRoute<T> virtualTableRoute)
         {
@@ -50,16 +51,16 @@ namespace ShardingCore.Core.VirtualTables
 
         public List<IPhysicTable> GetAllPhysicTables()
         {
-            return _physicTables;
+            return _physicTables.Keys.ToList();
         }
 
         public List<IPhysicTable> RouteTo(TableRouteConfig tableRouteConfig)
         {
             var route = _virtualTableRoute;
             if (tableRouteConfig.UseQueryable())
-                return route.RouteWithPredicate(_physicTables, tableRouteConfig.GetQueryable());
+                return route.RouteWithPredicate(GetAllPhysicTables(), tableRouteConfig.GetQueryable(),true);
             if (tableRouteConfig.UsePredicate())
-                return route.RouteWithPredicate(_physicTables, new EnumerableQuery<T>((Expression<Func<T, bool>>) tableRouteConfig.GetPredicate()));
+                return route.RouteWithPredicate(GetAllPhysicTables(), new EnumerableQuery<T>((Expression<Func<T, bool>>) tableRouteConfig.GetPredicate()),false);
             object shardingKeyValue = null;
             if (tableRouteConfig.UseValue())
                 shardingKeyValue = tableRouteConfig.GetShardingKeyValue();
@@ -69,7 +70,7 @@ namespace ShardingCore.Core.VirtualTables
 
             if (shardingKeyValue != null)
             {
-                var routeWithValue = route.RouteWithValue(_physicTables, shardingKeyValue);
+                var routeWithValue = route.RouteWithValue(GetAllPhysicTables(), shardingKeyValue);
                 return new List<IPhysicTable>(1) {routeWithValue};
             }
 
@@ -79,8 +80,8 @@ namespace ShardingCore.Core.VirtualTables
 
         public void AddPhysicTable(IPhysicTable physicTable)
         {
-            if (_physicTables.All(o => o.Tail != physicTable.Tail))
-                _physicTables.Add(physicTable);
+            if (GetAllPhysicTables().All(o => o.Tail != physicTable.Tail))
+                _physicTables.TryAdd(physicTable,null);
         }
 
         public void SetOriginalTableName(string originalTableName)
@@ -100,7 +101,7 @@ namespace ShardingCore.Core.VirtualTables
 
         public List<string> GetTaleAllTails()
         {
-            return _physicTables.Select(o => o.Tail).ToList();
+            return _physicTables.Keys.Select(o => o.Tail).ToList();
         }
 
         public IVirtualTableRoute<T> GetVirtualRoute()

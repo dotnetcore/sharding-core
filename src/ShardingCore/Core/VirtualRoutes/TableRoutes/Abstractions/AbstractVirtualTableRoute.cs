@@ -43,8 +43,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// </summary>
         /// <param name="allPhysicTables"></param>
         /// <param name="queryable"></param>
+        /// <param name="isQuery"></param>
         /// <returns></returns>
-        public abstract List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable);
+        public abstract List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable,bool isQuery);
         
         /// <summary>
         /// 根据值路由

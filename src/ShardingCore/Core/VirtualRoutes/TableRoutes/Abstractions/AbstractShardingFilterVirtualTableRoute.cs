@@ -35,8 +35,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 启用断言路由
         /// </summary>
         protected virtual bool EnableAssertRoute => false;
-        public override List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
+        public override List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable,bool isQuery)
         {
+            if (!isQuery)
+            {
+                //后拦截器
+                return  AfterPhysicTableFilter(allPhysicTables,DoRouteWithPredicate(allPhysicTables,queryable));
+            }
             //强制路由不经过断言
             if (EnableHintRoute)
             {

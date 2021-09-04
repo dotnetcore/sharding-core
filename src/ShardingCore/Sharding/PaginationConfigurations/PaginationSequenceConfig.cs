@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -15,18 +15,17 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class PaginationConfig
+    public class PaginationSequenceConfig
     {
-        public PaginationConfig(LambdaExpression orderPropertyExpression, PaginationMatchEnum paginationMatchEnum= PaginationMatchEnum.Owner, IComparer<string> tailComparer=null)
+        public PaginationSequenceConfig(LambdaExpression orderPropertyExpression, PaginationMatchEnum paginationMatchEnum= PaginationMatchEnum.Owner, IComparer<string> tailComparer=null)
         {
-            OrderPropertyExpression = orderPropertyExpression;
             OrderPropertyInfo = orderPropertyExpression.GetPropertyAccess();
             PropertyName = OrderPropertyInfo.Name;
             PaginationMatchEnum = paginationMatchEnum;
             TailComparer = tailComparer ?? Comparer<string>.Default;
+            SequenceTails = new HashSet<string>();
         }
 
-        public LambdaExpression OrderPropertyExpression { get; set; }
         public IComparer<string> TailComparer { get; set; }
         public PaginationMatchEnum PaginationMatchEnum { get; set; }
         public PropertyInfo OrderPropertyInfo { get; set; }
@@ -40,9 +39,11 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// </summary>
         public int AppendOrder { get; set; } = -1;
         public string PropertyName { get;}
+        
+        public ISet<string> SequenceTails { get; }
 
 
-        protected bool Equals(PaginationConfig other)
+        protected bool Equals(PaginationSequenceConfig other)
         {
             return PropertyName == other.PropertyName;
         }
@@ -52,7 +53,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((PaginationConfig) obj);
+            return Equals((PaginationSequenceConfig) obj);
         }
 
         public override int GetHashCode()

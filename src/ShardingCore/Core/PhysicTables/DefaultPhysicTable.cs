@@ -21,11 +21,47 @@ namespace ShardingCore.Core.PhysicTables
             OriginalName = virtualTable.GetOriginalTableName();
             Tail = tail;
         }
+
         public string FullName => $"{OriginalName}{TailPrefix}{Tail}";
         public string OriginalName { get; }
         public string TailPrefix =>VirtualTable.ShardingConfig.TailPrefix;
         public string Tail { get;  }
         public Type EntityType => VirtualTable.EntityType;
         public IVirtualTable VirtualTable { get; }
+
+        protected bool Equals(DefaultPhysicTable other)
+        {
+            return OriginalName == other.OriginalName && Tail == other.Tail && Equals(VirtualTable, other.VirtualTable);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((DefaultPhysicTable) obj);
+        }
+
+#if !EFCORE2
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(OriginalName, Tail, VirtualTable);
+        }
+#endif
+
+#if EFCORE2
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (OriginalName != null ? OriginalName.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Tail != null ? Tail.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (VirtualTable != null ? VirtualTable.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+#endif
     }
 }

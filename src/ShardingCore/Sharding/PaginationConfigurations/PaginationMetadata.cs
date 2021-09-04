@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     /// </summary>
     public class  PaginationMetadata
     {
-        public ISet<PaginationConfig> PaginationConfigs = new HashSet<PaginationConfig>();
+        public ISet<PaginationSequenceConfig> PaginationConfigs = new HashSet<PaginationSequenceConfig>();
 
         /// <summary>
         /// 反向排序因子

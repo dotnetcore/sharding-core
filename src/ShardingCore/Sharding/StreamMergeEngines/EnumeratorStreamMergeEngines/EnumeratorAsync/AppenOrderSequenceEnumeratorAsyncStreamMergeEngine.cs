@@ -23,11 +23,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     */
     public class AppenOrderSequenceEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly PaginationConfig _appendPaginationConfig;
+        private readonly PaginationSequenceConfig _appendPaginationSequenceConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
-        public AppenOrderSequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationConfig appendPaginationConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext)
+        public AppenOrderSequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig appendPaginationSequenceConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext)
         {
-            _appendPaginationConfig = appendPaginationConfig;
+            _appendPaginationSequenceConfig = appendPaginationSequenceConfig;
             _routeQueryResults = routeQueryResults;
         }
 
@@ -46,12 +46,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             {
                 Tail = o.RouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
-            }).OrderBy(o => o.Tail, _appendPaginationConfig.TailComparer).ToList();
+            }).OrderBy(o => o.Tail, _appendPaginationSequenceConfig.TailComparer).ToList();
             var skipCount = skip;
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o=>o.RouteQueryResult)).Skip(skip).Take(take).ToList();
      
-            StreamMergeContext.ReSetOrders(new [] { new PropertyOrder(_appendPaginationConfig.PropertyName, true) });
+            StreamMergeContext.ReSetOrders(new [] { new PropertyOrder(_appendPaginationSequenceConfig.PropertyName, true) });
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
@@ -66,7 +66,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(sequenceResult.RouteResult);
             DbContextQueryStore.TryAdd(sequenceResult.RouteResult, shardingDbContext);
-            var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(new PropertyOrder[]{new PropertyOrder(_appendPaginationConfig.PropertyName,true)}))
+            var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(new PropertyOrder[]{new PropertyOrder(_appendPaginationSequenceConfig.PropertyName,true)}))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
