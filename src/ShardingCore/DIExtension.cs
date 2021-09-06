@@ -12,6 +12,7 @@ using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingPage;
@@ -38,7 +39,7 @@ namespace ShardingCore
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
             where TActualDbContext : DbContext, IShardingTableDbContext
-            where TShardingDbContext : DbContext, IShardingTableDbContext<TActualDbContext>
+            where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
         {
             if (configure == null)
                 throw new ArgumentNullException($"AddShardingDbContext params is null :{nameof(configure)}");
@@ -60,7 +61,13 @@ namespace ShardingCore
             Action<DbContextOptionsBuilder> shardingOptionAction = option =>
             {
                 optionsAction?.Invoke(option);
+#if !EFCORE2
                 option.UseSharding();
+
+#endif
+#if EFCORE2
+                option.UseSharding<TShardingDbContext>();
+#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -75,7 +82,7 @@ namespace ShardingCore
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
             where TActualDbContext : DbContext, IShardingTableDbContext
-            where TShardingDbContext : DbContext, IShardingTableDbContext<TActualDbContext>
+            where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
         {
             if (configure == null)
                 throw new ArgumentNullException($"AddShardingDbContext params is null :{nameof(configure)}");
@@ -97,7 +104,13 @@ namespace ShardingCore
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
             {
                 optionsAction?.Invoke(sp,option);
+#if !EFCORE2
                 option.UseSharding();
+
+#endif
+#if EFCORE2
+                option.UseSharding<TShardingDbContext>();
+#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -132,12 +145,25 @@ namespace ShardingCore
             services.AddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
-
+#if !EFCORE2
         internal static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
             return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
         }
+        
+#endif
+#if EFCORE2
+        internal static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
+        }
+        
+#endif
+        
         internal static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
         {
             return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()

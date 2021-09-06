@@ -90,8 +90,15 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
                             if (paginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(), total))
                             {
-                                return new ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity>(
-                                    _streamMergeContext,  _streamMergeContext.Orders, total);
+                                return new ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity>( _streamMergeContext, total);
+                            }
+                        }
+
+                        if (paginationMetadata.EnableUnevenShardingPage)
+                        {
+                            if (paginationMetadata.IsUseUneven(_shardingPageManager.Current.RouteQueryResults, _streamMergeContext.Skip.GetValueOrDefault()))
+                            {
+
                             }
                         }
                     }

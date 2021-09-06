@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ShardingCore.EFCores;
 using ShardingCore.Test50_2x.Domain.Entities;
 using ShardingCore.Test50_2x.Shardings;
 
@@ -41,8 +43,9 @@ namespace ShardingCore.Test50_2x
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
+            services.AddDbContext<DefaultDbContext>();
             services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                ,op =>
+                , op =>
                 {
                     op.EnsureCreatedWithOutShardingTable = true;
                     op.CreateShardingTableOnStart = true;

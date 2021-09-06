@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
@@ -26,7 +28,7 @@ namespace ShardingCore.Extensions
         // /// </summary>
         // /// <param name="dbContext"></param>
         // /// <returns></returns>
-        // public static string GetShardingTableDbContextTail(this IShardingTableDbContext dbContext)
+        // public static string GetShardingTableDbContextTail(this IShardingDbContext dbContext)
         // {
         //     return dbContext.RouteTail?.Replace(ShardingTableDbContextFormat, string.Empty)??string.Empty;
         //
@@ -36,7 +38,7 @@ namespace ShardingCore.Extensions
         // /// </summary>
         // /// <param name="dbContext"></param>
         // /// <param name="tail"></param>
-        // public static void SetShardingTableDbContextTail(this IShardingTableDbContext dbContext, string tail)
+        // public static void SetShardingTableDbContextTail(this IShardingDbContext dbContext, string tail)
         // {
         //     if (!string.IsNullOrWhiteSpace(dbContext.ModelChangeKey))
         //         throw new ShardingCoreException($"repeat set ModelChangeKey in {dbContext.GetType().FullName}");
@@ -57,6 +59,38 @@ namespace ShardingCore.Extensions
 #if EFCORE2
                 return expression.ToString();
 #endif
+        }
+
+        /// <summary>
+        /// 根据对象集合解析
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="shardingDbContext"></param>
+        /// <param name="entities"></param>
+        /// <returns></returns>
+        public static IDictionary<DbContext, IEnumerable<TEntity>> BulkShardingEnumerable<TEntity>(this IShardingDbContext shardingDbContext,
+            IEnumerable<TEntity> entities) where TEntity : class
+        {
+            return entities.Select(o =>
+            {
+                var dbContext = shardingDbContext.CreateGenericDbContext(o);
+                return new
+                {
+                    DbContext = dbContext,
+                    Entity = o
+                };
+            }).GroupBy(g => g.DbContext).ToDictionary(o=>o.Key,o=>o.Select(g=>g.Entity));
+        }
+        /// <summary>
+        /// 根据条件表达式解析
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="shardingDbContext"></param>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static IEnumerable<DbContext> BulkShardingExpression<TEntity>(this IShardingDbContext shardingDbContext, Expression<Func<TEntity, bool>> where) where TEntity : class
+        {
+            return shardingDbContext.CreateExpressionDbContext(where);
         }
     }
 }

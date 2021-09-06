@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ShardingCore.Sharding.PaginationConfigurations;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Extensions.InternalExtensions
 {
@@ -19,7 +21,19 @@ namespace ShardingCore.Extensions.InternalExtensions
             if (total < paginationMetadata.ReverseTotalGe)
                 return false;
 
-            return paginationMetadata.ReverseFactor * total < skip;
+            return skip> paginationMetadata.ReverseFactor * total;
+        }
+        internal static bool IsUseUneven(this PaginationMetadata paginationMetadata,ICollection<RouteQueryResult<long>> routeQueryResults,int skip)
+        {
+            if (routeQueryResults.Count <= 1)
+                return false;
+
+            if (skip < paginationMetadata.UnevenLimit)
+                return false;
+            var total = routeQueryResults.Sum(o => o.QueryResult);
+            if(total* paginationMetadata.UnevenFactorGe < routeQueryResults.First().QueryResult)
+                return false;
+            return true;
         }
     }
 }

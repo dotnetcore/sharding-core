@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
+using ShardingCore.EFCores;
 
 namespace Sample.SqlServer
 {
@@ -30,8 +32,8 @@ namespace Sample.SqlServer
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
                 , op =>
                  {
-                     op.EnsureCreatedWithOutShardingTable = false;
-                     op.CreateShardingTableOnStart = false;
+                     op.EnsureCreatedWithOutShardingTable = true;
+                     op.CreateShardingTableOnStart = true;
                      op.UseShardingOptionsBuilder(
                          (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
                          (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)

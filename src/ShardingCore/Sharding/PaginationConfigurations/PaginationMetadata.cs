@@ -20,27 +20,34 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         public ISet<PaginationSequenceConfig> PaginationConfigs = new HashSet<PaginationSequenceConfig>();
 
         /// <summary>
-        /// 反向排序因子
+        /// 反向排序因子 skip>ReverseFactor * total 
         /// </summary>
         public double ReverseFactor { get; set; } = -1;
 
         /// <summary>
-        /// 当条数大于多少条后采用反向排序
+        /// 当条数大于ReverseTotalGe条后采用反向排序
         /// </summary>
         public long ReverseTotalGe { get; set; } = 10000L;
         /// <summary>
-        /// 是否已开启反向排序 仅支持单排序
+        /// 是否已开启反向排序  skip>ReverseFactor * total  查询条件必须存在 order by
         /// </summary>
         public bool EnableReverseShardingPage => ReverseFactor > 0 && ReverseFactor < 1 && ReverseTotalGe >= 500;
-        // /// <summary>
-        // /// 当出现N张表分页需要跳过X条数据,获取Y条数据除了total条数最多的那张表以外的其他表和小于TakeInMemoryMaxRangeSkip那么就启用
-        // /// </summary>
-        // public int TakeInMemoryMaxRangeSkip { get; set; } = 1000;
-        //
-        // public bool EnableTakeInMemory(int skip)
-        // {
-        //     return skip > TakeInMemoryMaxRangeSkip && TakeInMemoryMaxRangeSkip > 500;
-        // }
+
+        /// <summary>
+        /// 极度不规则分布时当分页最大一页书占全部的(UnevenFactorGe*100)%时启用内存排序
+        /// </summary>
+        [Obsolete]
+        public double UnevenFactorGe { get; set; } = -1;
+        /// <summary>
+        /// 极度不规则分布时除了total最大一张表外的其余表相加不能超过UnevenLimit
+        /// </summary>
+        [Obsolete]
+        public int UnevenLimit { get; set; } = 300;
+        /// <summary>
+        /// 启用不规则分布分页 查询条件必须存在 order by
+        /// </summary>
+        [Obsolete]
+        public bool EnableUnevenShardingPage => UnevenFactorGe > 0 && UnevenFactorGe < 1 && UnevenLimit > 0;
 
     }
 }

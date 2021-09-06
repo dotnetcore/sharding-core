@@ -21,12 +21,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     */
     public class ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
     {
-        private readonly IEnumerable<PropertyOrder> _primaryOrders;
         private readonly long _total;
 
-        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, IEnumerable<PropertyOrder> primaryOrders, long total) : base(streamMergeContext)
+        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, long total) : base(streamMergeContext)
         {
-            _primaryOrders = primaryOrders;
             _total = total;
         }
 
@@ -40,7 +38,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var realSkip = _total- take- skip;
             var tableResult = StreamMergeContext.RouteResults;
             StreamMergeContext.ReSetSkip((int)realSkip);
-            var propertyOrders =_primaryOrders.Select(o=>new PropertyOrder( o.PropertyExpression,!o.IsAsc)).ToArray();
+            var propertyOrders = StreamMergeContext.Orders.Select(o=>new PropertyOrder( o.PropertyExpression,!o.IsAsc)).ToArray();
             StreamMergeContext.ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
             var enumeratorTasks = tableResult.Select(routeResult =>

@@ -48,7 +48,7 @@ namespace ShardingCore.Extensions
         }
 
         /// <summary>
-        /// IShardingTableDbContext
+        /// IShardingDbContext
         /// </summary>
         /// <param name="dbContext"></param>
         /// <returns></returns>
@@ -59,7 +59,7 @@ namespace ShardingCore.Extensions
             return dbContext is IShardingTableDbContext;
         }
         /// <summary>
-        /// IShardingTableDbContext
+        /// IShardingDbContext
         /// </summary>
         /// <param name="dbContextType"></param>
         /// <returns></returns>

@@ -291,9 +291,44 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 
 ## 批量操作
 
-批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如zzz进行批量操作或者batchextension
+批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如[`Z.EntityFramework.Plus.EFCore`](https://github.com/zzzprojects/EntityFramework-Plus) 进行批量操作或者 [`EFCore.BulkExtensions`](https://github.com/borisdj/EFCore.BulkExtensions) ,支持一切三方批量框架
 ```c#
-后期支持
+var list = new List<SysUserMod>();
+///通过集合返回出对应的k-v归集通过事务开启
+            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkInsert(kv.Value);
+                });
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkDelete(kv.Value);
+                });
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkUpdate(kv.Value);
+                });
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
+            
+
+            var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                dbContext2s.ForEach(dbContext =>
+                {
+                    dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
+                    {
+                        AgeGroup = 1000
+                    });
+                });
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
 ```
 ## 手动路由
 ```c#
@@ -327,10 +362,20 @@ ctor inject IShardingRouteManager shardingRouteManager
 [参考](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
 
 ## 事务
-默认savechanges支持事务
+1.默认savechanges支持事务
 ```c#
+
  await  _defaultShardingDbContext.SaveChangesAsync();
-           
+     
+```
+2.手动开启事务 [请参考微软](https://docs.microsoft.com/zh-cn/ef/core/saving/transactions)
+```c#
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                    ........
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
 ```
 ## 读写分离
 该框架目前已经支持单node的读写分离,后续框架将支持多node的读
@@ -398,7 +443,19 @@ var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().Ord
 
 
 # 注意事项
-该库的追踪是基于adonet的MARS(MultipleActiveResultSets=True;)所以基本不支持该特性的无法支持完美追踪
+使用该框架需要注意两点如果你的shardingdbcontext重写了以下服务可能无法使用 如果还想使用需要自己重写扩展[请参考](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/DIExtension.cs)
+1.shardingdbcontext
+```c#
+    return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
+```
+2.defaultdbcontext
+```c#
+return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                .ReplaceService<IModelCustomizer, ShardingModelCustomizer<TShardingDbContext>>();
+
+```
 ,目前框架采用AppDomain.CurrentDomain.GetAssemblies();
 可能会导致程序集未被加载所以尽可能在api层加载所需要的dll
 使用时需要注意

@@ -5,12 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
+using Z.EntityFramework.Plus;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -26,7 +28,7 @@ namespace Sample.SqlServer.Controllers
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
 
-        public ValuesController(DefaultShardingDbContext defaultTableDbContext,IShardingRouteManager shardingRouteManager)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager)
         {
             _defaultTableDbContext = defaultTableDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -36,17 +38,17 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get()
         {
             var sql = from ut in _defaultTableDbContext.Set<SysTest>()
-                join u in _defaultTableDbContext.Set<SysUserMod>()
-                    on ut.UserId equals u.Id
-                select new
-                {
-                    ut.Id,
-                    userId=u.Id
-                };
-            var listAsync =await sql.ToListAsync();
+                      join u in _defaultTableDbContext.Set<SysUserMod>()
+                          on ut.UserId equals u.Id
+                      select new
+                      {
+                          ut.Id,
+                          userId = u.Id
+                      };
+            var listAsync = await sql.ToListAsync();
             var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().CountAsync();
             var resultx112331 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
-            var resultx11233411 =  _defaultTableDbContext.Set<SysUserMod>().Count();
+            var resultx11233411 = _defaultTableDbContext.Set<SysUserMod>().Count();
             var resultx11231 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).ContainsAsync("1981");
             var resultx1121 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").SumAsync(o => o.Age);
             var resultx111 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");
@@ -88,11 +90,11 @@ namespace Sample.SqlServer.Controllers
             return Ok();
         }
         [HttpGet]
-        public async Task<IActionResult> Get1([FromQuery] int p,[FromQuery]int s)
+        public async Task<IActionResult> Get1([FromQuery] int p, [FromQuery] int s)
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
-            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingPageAsync(p, s);
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {
@@ -101,11 +103,11 @@ namespace Sample.SqlServer.Controllers
             });
         }
         [HttpGet]
-        public IActionResult Get2([FromQuery] int p,[FromQuery]int s)
+        public IActionResult Get2([FromQuery] int p, [FromQuery] int s)
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
-            var shardingPageResultAsync =  _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingPage(p, s);
+            var shardingPageResultAsync = _defaultTableDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToShardingPage(p, s);
             sp.Stop();
             return Ok(new
             {
@@ -113,5 +115,47 @@ namespace Sample.SqlServer.Controllers
                 shardingPageResultAsync
             });
         }
+        [HttpGet]
+        public IActionResult Get3()
+        {
+
+            var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                dbContext2s.ForEach(dbContext =>
+                {
+                    dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
+                    {
+                        AgeGroup = 1000
+                    });
+                });
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
+            var list = new List<SysUserMod>();
+            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkInsert(kv.Value);
+                });
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkDelete(kv.Value);
+                });
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkUpdate(kv.Value);
+                });
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
+
+
+            return Ok();
+        }
+
     }
-} 
+}

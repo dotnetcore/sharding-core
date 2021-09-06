@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Abp.EntityFrameworkCore;
@@ -21,7 +23,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace Samples.AbpSharding
 {
-    public abstract class AbstractShardingAbpDbContext<T> : AbpDbContext, IShardingTableDbContext<T> where T : AbpDbContext, IShardingTableDbContext
+    public abstract class AbstractShardingAbpDbContext<T> : AbpDbContext, IShardingDbContext<T> where T : AbpDbContext, IShardingTableDbContext
     {
 
 
@@ -127,6 +129,28 @@ namespace Samples.AbpSharding
 
             return GetDbContext(true, _routeTailFactory.Create(tail));
         }
+
+        public IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
+            where TEntity : class
+        {
+            if (typeof(TEntity).IsShardingTable())
+            {
+                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, typeof(TEntity)).RouteTo(new TableRouteConfig(predicate:where));
+                if (physicTable.IsEmpty())
+                    throw new ShardingCoreException($"{where.ShardingPrint()} cant found any physic table");
+                return physicTable.Select(o => GetDbContext(true, _routeTailFactory.Create(o.Tail)));
+            }
+            else
+            {
+                return new[] {GetDbContext(true, _routeTailFactory.Create(string.Empty))};
+            }
+        }
+
+        public void UseShardingTransaction(DbTransaction transaction)
+        {
+            throw new NotImplementedException();
+        }
+
         public override EntityEntry Add(object entity)
         {
             return CreateGenericDbContext(entity).Add(entity);

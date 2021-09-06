@@ -21,7 +21,7 @@ namespace ShardingCore
     */
     public class ShardingConfigOption<TShardingDbContext, TActualDbContext> : IShardingConfigOption
         where TActualDbContext : DbContext, IShardingTableDbContext
-        where TShardingDbContext : DbContext, IShardingTableDbContext<TActualDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
     {
         private readonly Dictionary<Type, Type> _virtualRoutes = new Dictionary<Type, Type>();
 

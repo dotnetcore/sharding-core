@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq.Expressions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -12,30 +15,44 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IShardingDbContext
     {
+        /// <summary>
+        /// 当前sharding的db context type
+        /// </summary>
         Type ShardingDbContextType { get; }
         /// <summary>
-        /// ��ʵ��DbContext ����
+        /// 真实的db context type
         /// </summary>
         Type ActualDbContextType {  get;}
         /// <summary>
         /// create DbContext
         /// </summary>
-        /// <param name="track">true not care dbcontext life, false need call dispose()</param>
+        /// <param name="track">true not care db context life, false need call dispose()</param>
         /// <param name="routeTail"></param>
         /// <returns></returns>
         DbContext GetDbContext(bool track,IRouteTail routeTail);
         /// <summary>
-        /// ����ʵ�崴��db context
+        /// 创建通用的db context
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
-        
+        /// <summary>
+        /// 根据表达式创建db context
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="where"></param>
+        /// <returns></returns>
+
+        IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
+            where TEntity : class;
+
+
+
 
     }
 
-    public interface IShardingTableDbContext<T> : IShardingDbContext where T : DbContext, IShardingTableDbContext
+    public interface IShardingDbContext<T> : IShardingDbContext where T : DbContext, IShardingTableDbContext
     {
 
     }
