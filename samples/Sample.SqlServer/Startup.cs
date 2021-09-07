@@ -41,11 +41,11 @@ namespace Sample.SqlServer
                          (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                              //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
                              );//使用链接字符串创建dbcontext
-                     op.UseReadWriteConfiguration(sp => new List<string>()
-                     {
-                         "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
-                         "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
-                     }, ReadStrategyEnum.Random);
+                     //op.UseReadWriteConfiguration(sp => new List<string>()
+                     //{
+                     //    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
+                     //    "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
+                     //}, ReadStrategyEnum.Random);
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                      op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                  });
