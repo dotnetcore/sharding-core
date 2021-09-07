@@ -19,6 +19,8 @@ using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 
 namespace ShardingCore
@@ -31,7 +33,6 @@ namespace ShardingCore
     */
     public static class DIExtension
     {
-
 
         public static IServiceCollection AddShardingDbContext<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
             Action<DbContextOptionsBuilder> optionsAction = null,
@@ -49,14 +50,7 @@ namespace ShardingCore
             configure?.Invoke(shardingConfigOptions);
             services.AddSingleton<IShardingConfigOption, ShardingConfigOption<TShardingDbContext, TActualDbContext>>(sp=> shardingConfigOptions);
 
-
-            //添加创建TActualDbContext 的 创建者
-            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure,shardingConfigOptions.DefaultQueryConfigure);
-            services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp=> config);
-
-            //添加创建TActualDbContext创建者
-            services.AddSingleton<IShardingDbContextCreatorConfig,DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>>(sp=> new DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>(typeof(TActualDbContext)));
-
+            services.AddShardingBaseOptions(shardingConfigOptions);
 
             Action<DbContextOptionsBuilder> shardingOptionAction = option =>
             {
@@ -93,12 +87,9 @@ namespace ShardingCore
             services.AddSingleton<IShardingConfigOption, ShardingConfigOption<TShardingDbContext, TActualDbContext>>(sp=> shardingConfigOptions);
 
 
-            //添加创建TActualDbContext 的 创建者
-            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure,shardingConfigOptions.DefaultQueryConfigure);
-            services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp=> config);
 
-            //添加创建TActualDbContext创建者
-            services.AddSingleton<IShardingDbContextCreatorConfig,DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>>(sp=> new DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>(typeof(TActualDbContext)));
+            services.AddShardingBaseOptions(shardingConfigOptions);
+
 
 
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
@@ -118,6 +109,49 @@ namespace ShardingCore
 
 
             return services;
+        }
+        internal static void AddShardingBaseOptions<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
+            ShardingConfigOption<TShardingDbContext, TActualDbContext> shardingConfigOptions)
+            where TActualDbContext : DbContext, IShardingTableDbContext
+            where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+        {
+
+            //添加创建TActualDbContext 的DbContextOptionsBuilder创建者
+            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(shardingConfigOptions.SameConnectionConfigure, shardingConfigOptions.DefaultQueryConfigure);
+            services.AddSingleton<IShardingDbContextOptionsBuilderConfig, ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp => config);
+
+            //添加创建TActualDbContext创建者
+            services.AddSingleton<IShardingDbContextCreatorConfig, DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>>(sp => new DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>(typeof(TActualDbContext)));
+
+            if (!shardingConfigOptions.UseReadWrite)
+            {
+                services.AddTransient<IConnectionStringManager, DefaultConnectionStringManager<TShardingDbContext>>();
+            }
+            else
+            {
+                services.AddTransient<IConnectionStringManager, ReadWriteConnectionStringManager<TShardingDbContext>>();
+
+                services.AddSingleton<IReadWriteOptions, ReadWriteOptions<TShardingDbContext>>(sp=>new ReadWriteOptions<TShardingDbContext>(shardingConfigOptions.ReadWriteDefaultPriority, shardingConfigOptions.ReadWriteDefaultEnable, shardingConfigOptions.ReadConnStringGetStrategy));
+                if (shardingConfigOptions.ReadStrategyEnum == ReadStrategyEnum.Loop)
+                {
+                    services
+                        .AddSingleton<IShardingConnectionStringResolver,
+                            LoopShardingConnectionStringResolver<TShardingDbContext>>(sp =>
+                            new LoopShardingConnectionStringResolver<TShardingDbContext>(
+                                shardingConfigOptions.ReadConnStringConfigure(sp)));
+                }else if (shardingConfigOptions.ReadStrategyEnum == ReadStrategyEnum.Random)
+                {
+                    services
+                        .AddSingleton<IShardingConnectionStringResolver,
+                            RandomShardingConnectionStringResolver<TShardingDbContext>>(sp =>
+                            new RandomShardingConnectionStringResolver<TShardingDbContext>(
+                                shardingConfigOptions.ReadConnStringConfigure(sp)));
+                }
+
+
+                services.AddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
+                services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
+            }
         }
 
         internal static IServiceCollection AddInternalShardingCore(this IServiceCollection services)

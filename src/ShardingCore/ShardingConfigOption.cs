@@ -9,6 +9,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.EFCores;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace ShardingCore
 {
@@ -25,18 +26,42 @@ namespace ShardingCore
     {
         private readonly Dictionary<Type, Type> _virtualRoutes = new Dictionary<Type, Type>();
 
-        public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; set; }
-        public Action<string,DbContextOptionsBuilder> DefaultQueryConfigure { get; set; }
+        public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get;private set; }
+        public Action<string,DbContextOptionsBuilder> DefaultQueryConfigure { get; private set; }
         /// <summary>
         /// 配置数据库分表查询和保存时的DbContext创建方式
         /// </summary>
         /// <param name="sameConnectionConfigure">DbConnection下如何配置因为不同的DbContext支持事务需要使用同一个DbConnection</param>
-        /// <param name="defaultBuilderConfigure">默认查询DbContext创建的配置</param>
+        /// <param name="defaultQueryConfigure">默认查询DbContext创建的配置</param>
 
         public void UseShardingOptionsBuilder(Action<DbConnection, DbContextOptionsBuilder> sameConnectionConfigure, Action<string,DbContextOptionsBuilder> defaultQueryConfigure = null)
         {
             SameConnectionConfigure = sameConnectionConfigure ?? throw new ArgumentNullException(nameof(sameConnectionConfigure));
             DefaultQueryConfigure = defaultQueryConfigure ?? throw new ArgumentNullException(nameof(defaultQueryConfigure));
+        }
+
+        public bool UseReadWrite => ReadConnStringConfigure != null;
+        public Func<IServiceProvider, IEnumerable<string>> ReadConnStringConfigure { get; private set; }
+        public ReadStrategyEnum ReadStrategyEnum { get; private set; }
+        public bool ReadWriteDefaultEnable { get; private set; }
+        public int ReadWriteDefaultPriority { get; private set; }
+        public ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; private set; }
+
+        /// <summary>
+        /// 使用读写分离配置
+        /// </summary>
+        /// <param name="readConnStringConfigure"></param>
+        /// <param name="readStrategyEnum"></param>
+        /// <param name="defaultEnable">考虑到很多时候读写分离的延迟需要马上用到写入的数据所以默认关闭需要的话自己开启或者通过IShardingReadWriteManager,false表示默认不走读写分离除非你自己开启,true表示默认走读写分离除非你禁用,</param>
+        /// <param name="defaultPriority">IShardingReadWriteManager.CreateScope()会判断dbcontext的priority然后判断是否启用readwrite</param>
+        /// <param name="readConnStringGetStrategy">读写分离可能会造成每次查询不一样甚至分表后的分页会有错位问题，因为他不是一个原子操作,所以如果整个请求为一次读写切换大多数更加合适</param>
+        public void UseReadWriteConfiguration(Func<IServiceProvider, IEnumerable<string>> readConnStringConfigure, ReadStrategyEnum readStrategyEnum,bool defaultEnable=false,int defaultPriority=10,ReadConnStringGetStrategyEnum readConnStringGetStrategy= ReadConnStringGetStrategyEnum.LatestFirstTime)
+        {
+            ReadConnStringConfigure = readConnStringConfigure ?? throw new ArgumentNullException(nameof(readConnStringConfigure));
+            ReadStrategyEnum = readStrategyEnum;
+            ReadWriteDefaultEnable = defaultEnable;
+            ReadWriteDefaultPriority = defaultPriority;
+            ReadConnStringGetStrategy = readConnStringGetStrategy;
         }
 
 

@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// </summary>
         /// <param name="tailComparer"></param>
         /// <returns></returns>
-        public PaginationOrderPropertyBuilder UseTailCompare(IComparer<string> tailComparer)
+        public PaginationOrderPropertyBuilder UseTailComparer(IComparer<string> tailComparer)
         {
 
             _paginationSequenceConfig.TailComparer= tailComparer ?? throw new ArgumentException(nameof(tailComparer));

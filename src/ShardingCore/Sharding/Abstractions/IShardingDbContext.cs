@@ -47,7 +47,7 @@ namespace ShardingCore.Sharding.Abstractions
         IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
             where TEntity : class;
 
-
+        string GetConnectionString();
 
 
     }

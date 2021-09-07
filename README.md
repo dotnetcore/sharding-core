@@ -378,20 +378,31 @@ ctor inject IShardingRouteManager shardingRouteManager
             }
 ```
 ## 读写分离
-该框架目前已经支持单node的读写分离,后续框架将支持多node的读
+该框架目前已经支持一主多从的读写分离`UseReadWriteConfiguration`第一个参数返回对应的读数据库链接,默认写数据库链接不会放入其中,并且支持轮询和随机两种读写分离策略,又因为读写分离多链接的时候会导致数据读写不一致,(如分页其实是2步第一步获取count，第二部获取list)会导致数据量在最后几页出现缺量的问题,
+针对这个问题框架目前实现了自定义读链接获取策略`ReadConnStringGetStrategyEnum.LatestEveryTime`表示为每次都是新的(这个情况下会出现上述问题),`ReadConnStringGetStrategyEnum.LatestFirstTime`表示以dbcontext作为单位获取一次(同dbcontext不会出现问题),
+又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否支持读写分离如果false默认选择写字符串去读取`DbContext.ReadWriteSupport`
 
 ```c#
 
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                ,op =>
-                {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        (conStr,builder)=> builder.UseSqlServer("read db connection string").UseLoggerFactory(efLogger));
-                    op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                });
+   services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+                , op =>
+                 {
+                     op.EnsureCreatedWithOutShardingTable = true;
+                     op.CreateShardingTableOnStart = true;
+                     op.UseShardingOptionsBuilder(
+                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                             //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
+                             );//使用链接字符串创建dbcontext
+                     op.UseReadWriteConfiguration(sp => new List<string>()
+                     {
+                         "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
+                         "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
+                     }, ReadStrategyEnum.Random);
+                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+                 });
 ```
 
 ## 高性能分页

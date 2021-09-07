@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
 using ShardingCore.EFCores;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace Sample.SqlServer
 {
@@ -36,9 +38,14 @@ namespace Sample.SqlServer
                      op.CreateShardingTableOnStart = true;
                      op.UseShardingOptionsBuilder(
                          (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
+                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                              //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
                              );//使用链接字符串创建dbcontext
+                     op.UseReadWriteConfiguration(sp => new List<string>()
+                     {
+                         "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
+                         "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
+                     }, ReadStrategyEnum.Random);
                      op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                      op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                  });

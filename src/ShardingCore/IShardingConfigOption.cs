@@ -16,6 +16,7 @@ namespace ShardingCore
     {
         Type ShardingDbContextType { get;}
         Type ActualDbContextType { get;}
+        bool UseReadWrite { get; }
 
         void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute;
         Type GetVirtualRouteType(Type entityType);

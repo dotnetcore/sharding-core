@@ -10,6 +10,8 @@ using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,8 +21,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.EFCores;
 
 namespace ShardingCore.Sharding
 {
@@ -34,17 +34,19 @@ namespace ShardingCore.Sharding
     /// 分表分库的dbcontext
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext<T>, IShardingTransaction where T : DbContext, IShardingTableDbContext
+    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext<T>, IShardingTransaction,IShardingReadWriteSupport where T : DbContext, IShardingTableDbContext
     {
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
+        private readonly IShardingConfigOption shardingConfigOption;
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
+        private readonly IReadWriteOptions _readWriteOptions;
+        private readonly IConnectionStringManager _connectionStringManager;
         private DbContextOptions<T> _dbContextOptions;
 
         private readonly object CREATELOCK = new object();
-        private Guid idid = Guid.NewGuid();
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
@@ -53,7 +55,20 @@ namespace ShardingCore.Sharding
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer
                 .GetService<IEnumerable<IShardingDbContextOptionsBuilderConfig>>()
-                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType);
+                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType)??throw new ArgumentNullException(nameof(IShardingDbContextOptionsBuilderConfig));
+
+            _connectionStringManager = ShardingContainer.GetService<IEnumerable<IConnectionStringManager>>()
+                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType) ?? throw new ArgumentNullException(nameof(IConnectionStringManager));
+
+            shardingConfigOption =ShardingContainer.GetService<IEnumerable<IShardingConfigOption>>().FirstOrDefault(o=>o.ShardingDbContextType==ShardingDbContextType&&o.ActualDbContextType==typeof(T)) ?? throw new ArgumentNullException(nameof(IShardingConfigOption));
+            if (shardingConfigOption.UseReadWrite)
+            {
+                _readWriteOptions = ShardingContainer
+                    .GetService<IEnumerable<IReadWriteOptions>>()
+                    .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType) ?? throw new ArgumentNullException(nameof(IReadWriteOptions));
+                ReadWriteSupport = _readWriteOptions.ReadWriteSupport;
+                ReadWritePriority = _readWriteOptions.ReadWritePriority;
+            }
         }
 
         public abstract Type ShardingDbContextType { get; }
@@ -67,6 +82,23 @@ namespace ShardingCore.Sharding
         //        return _database ?? (_database = new ShardingDatabaseFacade(this));
         //    }
         //}
+
+
+        public int ReadWritePriority { get; set; }
+        public bool ReadWriteSupport { get; set; }
+        public ReadConnStringGetStrategyEnum GetReadConnStringGetStrategy()
+        {
+            return _readWriteOptions.ReadConnStringGetStrategy;
+        }
+
+        public string GetWriteConnectionString()
+        {
+            return GetConnectionString();
+        }
+        public string GetConnectionString()
+        {
+            return Database.GetDbConnection().ConnectionString;
+        }
 
 
         private DbContextOptionsBuilder<T> CreateDbContextOptionBuilder()
@@ -83,10 +115,10 @@ namespace ShardingCore.Sharding
             _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
-        private DbContextOptions<T> CreateMonopolyDbContextOptions()
+        private DbContextOptions<T> CreateParallelDbContextOptions()
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
-            var connectionString = Database.GetDbConnection().ConnectionString;
+            var connectionString = _connectionStringManager.GetConnectionString(this);
             _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
@@ -106,9 +138,9 @@ namespace ShardingCore.Sharding
 
             return new ShardingDbContextOptions(_dbContextOptions, routeTail);
         }
-        private ShardingDbContextOptions CetMonopolyShardingDbContextOptions(IRouteTail routeTail)
+        private ShardingDbContextOptions CetParallelShardingDbContextOptions(IRouteTail routeTail)
         {
-            return new ShardingDbContextOptions(CreateMonopolyDbContextOptions(), routeTail);
+            return new ShardingDbContextOptions(CreateParallelDbContextOptions(), routeTail);
         }
 
 
@@ -133,7 +165,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                return _shardingDbContextFactory.Create(ShardingDbContextType, CetMonopolyShardingDbContextOptions(routeTail));
+                return _shardingDbContextFactory.Create(ShardingDbContextType, CetParallelShardingDbContextOptions(routeTail));
             }
         }
 
@@ -165,6 +197,7 @@ namespace ShardingCore.Sharding
                 return new[] { GetDbContext(true, _routeTailFactory.Create(string.Empty)) };
             }
         }
+
 
         public void UseShardingTransaction(DbTransaction transaction)
         {

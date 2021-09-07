@@ -146,6 +146,11 @@ namespace Samples.AbpSharding
             }
         }
 
+        public string GetConnectionString()
+        {
+            throw new NotImplementedException();
+        }
+
         public void UseShardingTransaction(DbTransaction transaction)
         {
             throw new NotImplementedException();
