@@ -10,15 +10,15 @@
 
 Release  | EF Core | .NET Standard | .NET (Core) 
 --- | --- | --- | --- 
-[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.16) | >= 5.0.7 | 2.1 | 3.0+ 
-[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.16) | 3.1.18 | 2.0 | 2.0+ 
-[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.16) | 2.2.6 | 2.0 | 2.0+ 
+[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.19) | >= 5.0.9 | 2.1 | 3.0+ 
+[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.19) | 3.1.18 | 2.0 | 2.0+ 
+[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.19) | 2.2.6 | 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
-SqlServer | 支持 | 90%近乎完美
-MySql |支持 | 未测试
-PostgreSql | 支持 | 未测试
+SqlServer | 支持 | 支持
+MySql |支持 | 支持
+PostgreSql | 支持 | 支持
 SQLite | 支持 | 未测试
 Oracle | 支持 | 未测试
 其他 | 支持(只要efcore支持) | 未测试
@@ -87,7 +87,7 @@ Oracle | 支持 | 未测试
 - [支持分表下的连表] ```join,group by,max,count,min,avg,sum```
 - [支持针对批处理的使用] [EFCore.BulkExtensions](https://github.com/borisdj/EFCore.BulkExtensions) ...支持efcore的扩展生态
 - [提供多种默认分表规则路由] 按时间,按取模 可自定义
-- [针对分页进行优化] 大页数跳转支持低内存流式处理
+- [针对分页进行优化] 大页数跳转支持低内存流式处理，高性能分页
 
 ## 缺点
 - [暂不支持分库]の
@@ -96,11 +96,11 @@ Oracle | 支持 | 未测试
 
 ## 安装
 ```xml
-<PackageReference Include="ShardingCore" Version="LastVersion" />
+<PackageReference Include="ShardingCore" Version="5.LastVersion" />
 or
-<PackageReference Include="ShardingCore" Version="LastVersion" />
+<PackageReference Include="ShardingCore" Version="3.LastVersion" />
 or
-<PackageReference Include="ShardingCore" Version="LastVersion" />
+<PackageReference Include="ShardingCore" Version="2.LastVersion" />
 ```
 
 ## 配置
