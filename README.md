@@ -273,8 +273,8 @@ or
 
 抽象abstract  | 路由规则 | tail | 索引
 --- |--- |--- |--- 
-AbstractSimpleShardingModKeyIntVirtualTableRoute |取模 |0,1,2... | `=`
-AbstractSimpleShardingModKeyStringVirtualTableRoute |取模 |0,1,2... | `=`
+AbstractSimpleShardingModKeyIntVirtualTableRoute |取模 |0,1,2... | `=,contains`
+AbstractSimpleShardingModKeyStringVirtualTableRoute |取模 |0,1,2... | `=,contains`
 AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute |按时间 |yyyyMMdd | `>,>=,<,<=,=,contains`
 AbstractSimpleShardingDayKeyLongVirtualTableRoute |按时间戳 |yyyyMMdd | `>,>=,<,<=,=,contains`
 AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute |按时间 |yyyyMMdd_dd | `>,>=,<,<=,=,contains`
