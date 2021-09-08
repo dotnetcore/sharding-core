@@ -1,20 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 19 December 2020 19:55:24
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 19 December 2020 19:55:24
+    * @Email: 326308290@qq.com
+    */
     public abstract class AbstractShardingOperatorVirtualTableRoute<T, TKey> : AbstractShardingFilterVirtualTableRoute<T, TKey> where T : class, IShardingTable
     {
 
@@ -37,9 +38,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 
         public override IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey)
         {
-            var filter = GetRouteToFilter(ConvertToShardingKey(shardingKey), ShardingOperatorEnum.Equal).Compile();
+            var shardingKeyToTail = ShardingKeyToTail(ConvertToShardingKey(shardingKey));
 
-            var physicTables = allPhysicTables.Where(o => filter(o.Tail)).ToList();
+            var physicTables = allPhysicTables.Where(o => o.Tail== shardingKeyToTail).ToList();
             if (physicTables.IsEmpty())
             {
                 var routeConfig = ShardingKeyUtil.Parse(typeof(T));

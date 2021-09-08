@@ -17,10 +17,10 @@ namespace ShardingCore.EFCores
     {
         public object Create(DbContext context)
         {
-            if (context is IShardingTableDbContext shardingTableDbContext&&!string.IsNullOrWhiteSpace(shardingTableDbContext.RouteTail.GetRouteTailIdenty()))
+            if (context is IShardingTableDbContext shardingTableDbContext&&!string.IsNullOrWhiteSpace(shardingTableDbContext.RouteTail.GetRouteTailIdentity()))
             {
                 
-                return $"{context.GetType()}_{shardingTableDbContext.RouteTail.GetRouteTailIdenty()}";
+                return $"{context.GetType()}_{shardingTableDbContext.RouteTail.GetRouteTailIdentity()}";
             }
             else
             {

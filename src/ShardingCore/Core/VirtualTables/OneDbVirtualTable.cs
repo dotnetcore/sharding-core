@@ -1,25 +1,23 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Utils;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace ShardingCore.Core.VirtualTables
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Friday, 18 December 2020 14:20:12
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Friday, 18 December 2020 14:20:12
+    * @Email: 326308290@qq.com
+    */
     /// <summary>
     /// 同数据库虚拟表
     /// </summary>

@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     /// 分表分库的dbcontext
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext<T>, IShardingTransaction,IShardingReadWriteSupport where T : DbContext, IShardingTableDbContext
+    public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext<T>, IShardingTransaction, IShardingReadWriteSupport where T : DbContext, IShardingTableDbContext
     {
         private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
         private readonly IShardingConfigOption shardingConfigOption;
@@ -55,12 +55,12 @@ namespace ShardingCore.Sharding
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer
                 .GetService<IEnumerable<IShardingDbContextOptionsBuilderConfig>>()
-                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType)??throw new ArgumentNullException(nameof(IShardingDbContextOptionsBuilderConfig));
+                .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType) ?? throw new ArgumentNullException(nameof(IShardingDbContextOptionsBuilderConfig));
 
             _connectionStringManager = ShardingContainer.GetService<IEnumerable<IConnectionStringManager>>()
                 .FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType) ?? throw new ArgumentNullException(nameof(IConnectionStringManager));
 
-            shardingConfigOption =ShardingContainer.GetService<IEnumerable<IShardingConfigOption>>().FirstOrDefault(o=>o.ShardingDbContextType==ShardingDbContextType&&o.ActualDbContextType==typeof(T)) ?? throw new ArgumentNullException(nameof(IShardingConfigOption));
+            shardingConfigOption = ShardingContainer.GetService<IEnumerable<IShardingConfigOption>>().FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType && o.ActualDbContextType == typeof(T)) ?? throw new ArgumentNullException(nameof(IShardingConfigOption));
             if (shardingConfigOption.UseReadWrite)
             {
                 _readWriteOptions = ShardingContainer
@@ -152,15 +152,15 @@ namespace ShardingCore.Sharding
                     throw new ShardingCoreException("multi route not support track");
                 if (!(routeTail is ISingleQueryRouteTail singleQueryRouteTail))
                     throw new ShardingCoreException("multi route not support track");
-                var cacheKey = routeTail.GetRouteTailIdenty();
+                var cacheKey = routeTail.GetRouteTailIdentity();
                 if (!_dbContextCaches.TryGetValue(cacheKey, out var dbContext))
                 {
                     dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(routeTail));
+                    if (IsBeginTransaction)
+                        dbContext.Database.UseTransaction(Database.CurrentTransaction.GetDbTransaction());
+
                     _dbContextCaches.TryAdd(cacheKey, dbContext);
                 }
-
-                if (IsBeginTransaction)
-                    dbContext.Database.UseTransaction(Database.CurrentTransaction.GetDbTransaction());
                 return dbContext;
             }
             else
@@ -187,7 +187,7 @@ namespace ShardingCore.Sharding
         {
             if (typeof(TEntity).IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, typeof(TEntity)).RouteTo(new TableRouteConfig(predicate:@where));
+                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, typeof(TEntity)).RouteTo(new TableRouteConfig(predicate: @where));
                 if (physicTable.IsEmpty())
                     throw new ShardingCoreException($"{@where.ShardingPrint()} cant found ant physic table");
                 return physicTable.Select(o => GetDbContext(true, _routeTailFactory.Create(o.Tail)));
@@ -472,7 +472,7 @@ namespace ShardingCore.Sharding
             int i = 0;
             if (!isBeginTransaction)
             {
-               using(var tran= Database.BeginTransaction())
+                using (var tran = Database.BeginTransaction())
                 {
 
                     foreach (var dbContextCache in _dbContextCaches)

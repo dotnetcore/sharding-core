@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.VirtualRoutes.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace ShardingCore.VirtualRoutes.Days
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 27 January 2021 08:41:05
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 27 January 2021 08:41:05
+    * @Email: 326308290@qq.com
+    */
     public abstract class AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<T>:AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T:class,IShardingTable
     {
         public abstract DateTime GetBeginTime();
@@ -41,6 +41,7 @@ namespace ShardingCore.VirtualRoutes.Days
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
         {
+
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)
             {
@@ -67,5 +68,6 @@ namespace ShardingCore.VirtualRoutes.Days
                 }
             }
         }
+
     }
 }

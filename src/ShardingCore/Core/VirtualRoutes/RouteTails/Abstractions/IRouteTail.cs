@@ -8,7 +8,7 @@ namespace ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions
 */
     public interface IRouteTail
     {
-        string GetRouteTailIdenty();
+        string GetRouteTailIdentity();
         bool IsMultiEntityQuery();
     }
 }

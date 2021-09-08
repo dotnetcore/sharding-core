@@ -31,7 +31,7 @@ namespace ShardingCore.Core.VirtualRoutes.RouteTails
             _tail= tail;
             _modelCacheKey = _tail.FormatRouteTail2ModelCacheKey();
         }
-        public virtual string GetRouteTailIdenty()
+        public virtual string GetRouteTailIdentity()
         {
             return _modelCacheKey;
         }

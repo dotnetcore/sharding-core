@@ -101,7 +101,7 @@ namespace Samples.AbpSharding
                     throw new ShardingCoreException("multi route not support track");
                 if(!(routeTail is ISingleQueryRouteTail singleQueryRouteTail))
                     throw new ShardingCoreException("multi route not support track");
-                var cacheKey = routeTail.GetRouteTailIdenty();
+                var cacheKey = routeTail.GetRouteTailIdentity();
                 if (!_dbContextCaches.TryGetValue(cacheKey, out var dbContext))
                 {
                     dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(routeTail));

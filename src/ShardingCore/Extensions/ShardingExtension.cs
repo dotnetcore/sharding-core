@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Core;
+using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -54,13 +59,12 @@ namespace ShardingCore.Extensions
         {
 
 #if !EFCORE2
-           return expression.Print();
+            return expression.Print();
 #endif
 #if EFCORE2
                 return expression.ToString();
 #endif
         }
-
 
         /// <summary>
         /// 根据对象集合解析
@@ -72,15 +76,59 @@ namespace ShardingCore.Extensions
         public static IDictionary<DbContext, IEnumerable<TEntity>> BulkShardingEnumerable<TEntity>(this IShardingDbContext shardingDbContext,
             IEnumerable<TEntity> entities) where TEntity : class
         {
-            return entities.Select(o =>
+            var entityType = typeof(TEntity);
+            var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+            if (!entityType.IsShardingTable())
             {
-                var dbContext = shardingDbContext.CreateGenericDbContext(o);
-                return new
+                var routeTail = routeTailFactory.Create(string.Empty);
+                var dbContext = shardingDbContext.GetDbContext(true, routeTail);
+                return new Dictionary<DbContext, IEnumerable<TEntity>>()
                 {
-                    DbContext = dbContext,
-                    Entity = o
+                    {dbContext,entities }
                 };
-            }).GroupBy(g => g.DbContext).ToDictionary(o=>o.Key,o=>o.Select(g=>g.Entity));
+            }
+            else
+            {
+
+                var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
+                var virtualTable = virtualTableManager.GetVirtualTable(shardingDbContext.ShardingDbContextType, entityType);
+
+                var virtualTableRoute = virtualTable.GetVirtualRoute();
+                var hashSet = virtualTableRoute.GetAllTails().ToHashSet();
+                var dic = new Dictionary<string, BulkDicEntry<TEntity>>();
+                foreach (var entity in entities)
+                {
+                    var shardingKey = entity.GetPropertyValue(virtualTable.ShardingConfig.ShardingField);
+                    var tail = virtualTableRoute.ShardingKeyToTail(shardingKey);
+                    if (!hashSet.Contains(tail))
+                        throw new ShardingKeyRouteNotMatchException(
+                            $"Entity:{entityType.FullName},ShardingKey:{shardingKey},ShardingTail:{tail}");
+
+                    var routeTail = routeTailFactory.Create(tail);
+                    var routeTailIdentity = routeTail.GetRouteTailIdentity();
+                    if (!dic.TryGetValue(routeTailIdentity, out var bulkDicEntry))
+                    {
+                        var dbContext = shardingDbContext.GetDbContext(true, routeTail);
+                        bulkDicEntry = new BulkDicEntry<TEntity>(dbContext, new LinkedList<TEntity>());
+                        dic.Add(routeTailIdentity, bulkDicEntry);
+                    }
+
+                    bulkDicEntry.InnerEntities.AddLast(entity);
+                }
+
+                return dic.Values.ToDictionary(o => o.InnerDbContext, o => o.InnerEntities.Select(t => t));
+            }
+        }
+        internal class BulkDicEntry<TEntity>
+        {
+            public BulkDicEntry(DbContext innerDbContext, LinkedList<TEntity> innerEntities)
+            {
+                InnerDbContext = innerDbContext;
+                InnerEntities = innerEntities;
+            }
+
+            public DbContext InnerDbContext { get; }
+            public LinkedList<TEntity> InnerEntities { get; }
         }
         /// <summary>
         /// 根据条件表达式解析

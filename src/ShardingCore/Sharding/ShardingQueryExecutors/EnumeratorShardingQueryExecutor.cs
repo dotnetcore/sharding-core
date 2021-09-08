@@ -94,13 +94,13 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                             }
                         }
 
-                        if (paginationMetadata.EnableUnevenShardingPage)
-                        {
-                            if (paginationMetadata.IsUseUneven(_shardingPageManager.Current.RouteQueryResults, _streamMergeContext.Skip.GetValueOrDefault()))
-                            {
+                        //if (paginationMetadata.EnableUnevenShardingPage)
+                        //{
+                        //    if (paginationMetadata.IsUseUneven(_shardingPageManager.Current.RouteQueryResults, _streamMergeContext.Skip.GetValueOrDefault()))
+                        //    {
 
-                            }
-                        }
+                        //    }
+                        //}
                     }
                 }
             }

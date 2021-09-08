@@ -27,7 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.RouteTails
             _modelCacheKey = RANDOM_MODEL_CACHE_KEY+Guid.NewGuid().ToString("n");
             _entityTypes = routeResult.ReplaceTables.Select(o=>o.EntityType).ToHashSet();
         }
-        public string GetRouteTailIdenty()
+        public string GetRouteTailIdentity()
         {
             return _modelCacheKey;
         }
