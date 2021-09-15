@@ -70,12 +70,7 @@ namespace ShardingCore
                             var virtualTable = CreateVirtualTable(entity.ClrType, virtualRoute);
 
                             //获取ShardingEntity的实际表名
-#if !EFCORE2
                             var tableName = context.Model.FindEntityType(virtualTable.EntityType).GetTableName();
-#endif
-#if EFCORE2
-                        var tableName = context.Model.FindEntityType(virtualTable.EntityType).Relational().TableName;
-#endif
                             virtualTable.SetOriginalTableName(tableName);
                             _virtualTableManager.AddVirtualTable(shardingConfigOption.ShardingDbContextType,virtualTable);
                             CreateDataTable(shardingConfigOption.ShardingDbContextType,virtualTable, shardingConfigOption);

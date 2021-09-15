@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines
@@ -26,12 +27,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
             if (!(secondExpression is ConstantExpression constantExpression))
             {
 
-#if !EFCORE2
-                throw new ShardingCoreException($"not found constant {methodCallExpression.Print()}");  
-#endif
-#if EFCORE2
-                throw new ShardingCoreException($"not found constant {methodCallExpression}");
-#endif
+                throw new ShardingCoreException($"not found constant {methodCallExpression.ShardingPrint()}");  
             }
             _constantItem = (TEntity)constantExpression.Value;
         }
@@ -39,12 +35,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
         {
             if (!(secondExpression is ConstantExpression))
             {
-#if !EFCORE2
-                throw new InvalidOperationException(_methodCallExpression.Print());
-#endif
-#if EFCORE2
-                throw new InvalidOperationException(_methodCallExpression.ToString());
-#endif
+                throw new InvalidOperationException(_methodCallExpression.ShardingPrint());
             }
 
             return queryable;

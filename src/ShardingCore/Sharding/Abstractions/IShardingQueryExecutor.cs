@@ -2,9 +2,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Sharding.Enumerators;
-#if EFCORE2
-using Microsoft.EntityFrameworkCore.Internal;
-#endif
 
 namespace ShardingCore.Sharding.Abstractions
 {

@@ -55,7 +55,6 @@ namespace ShardingCore.EFCores
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-#if !EFCORE2
         public override async ValueTask<EntityEntry<TEntity>> AddAsync(
             TEntity entity,
             CancellationToken cancellationToken = default)
@@ -64,15 +63,6 @@ namespace ShardingCore.EFCores
             return await genericDbContext.AddAsync(entity, cancellationToken);
 
         }
-#endif
-#if EFCORE2
-        public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
-        {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return await genericDbContext.AddAsync(entity, cancellationToken);
-        }
-
-#endif
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

@@ -57,13 +57,7 @@ namespace ShardingCore.Extensions
 
         public static string ShardingPrint(this Expression expression)
         {
-
-#if !EFCORE2
             return expression.Print();
-#endif
-#if EFCORE2
-                return expression.ToString();
-#endif
         }
 
         /// <summary>

@@ -24,7 +24,6 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             _inMemoryStreamMergeAsyncEnumerator = inMemoryStreamMergeAsyncEnumerator;
         }
-#if !EFCORE2
         public async ValueTask DisposeAsync()
         {
             await _inMemoryStreamMergeAsyncEnumerator.DisposeAsync();
@@ -47,25 +46,6 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 
             return _reverseEnumerator.MoveNext();
         }
-#endif
-#if EFCORE2
-        public async Task<bool> MoveNext(CancellationToken cancellationToken)
-        {
-            if (_first)
-            {
-                LinkedList<T> _reverseCollection = new LinkedList<T>();
-                while (await _inMemoryStreamMergeAsyncEnumerator.MoveNext(cancellationToken))
-                {
-                    _reverseCollection.AddFirst(_inMemoryStreamMergeAsyncEnumerator.GetCurrent());
-                }
-
-                _reverseEnumerator = _reverseCollection.GetEnumerator();
-                _first = false;
-            }
-
-            return _reverseEnumerator.MoveNext();
-        }
-#endif
 
         public bool MoveNext()
         {

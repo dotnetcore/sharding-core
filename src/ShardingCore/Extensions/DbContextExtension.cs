@@ -109,18 +109,6 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
             object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
             memoryCache.Remove(key1);
 #endif
-#if EFCORE2
-           
-            var modelSource = serviceScope.ServiceProvider.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as RelationalModelSource;
-            
-            var modelSourceDependencies =
-                modelSourceImpl.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            var models =
-                typeof(ModelSource).GetTypeFieldValue(modelSourceImpl, "_models") as ConcurrentDictionary<object, Lazy<IModel>>;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
-            models.TryRemove(key1,out var del);
-#endif
         }
 
         /// <summary>
@@ -144,9 +132,6 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
 
             var syncObject = modelSourceImpl.GetFieldValue("_syncObject");
             return syncObject;
-#endif
-#if EFCORE2
-            return sLock;
 #endif
 
         }

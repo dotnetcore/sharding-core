@@ -32,21 +32,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public abstract IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
             CancellationToken cancellationToken = new CancellationToken());
 
-#if !EFCORE2
         public IAsyncEnumerator<TEntity> GetAsyncEnumerator(
             CancellationToken cancellationToken = new CancellationToken())
         {
             return GetShardingAsyncEnumerator(true,cancellationToken);
         }
-#endif
-
-#if EFCORE2
-        IAsyncEnumerator<TEntity> IAsyncEnumerable<TEntity>.GetEnumerator()
-        {
-            return GetShardingAsyncEnumerator(true);
-        }
-
-#endif
 
         public  IEnumerator<TEntity> GetEnumerator()
         {

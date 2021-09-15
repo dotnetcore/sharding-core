@@ -17,7 +17,6 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if !EFCORE2
     public class ShardingRelationalTransactionFactory: RelationalTransactionFactory
     {
         private readonly RelationalTransactionFactoryDependencies _dependencies;
@@ -31,23 +30,4 @@ namespace ShardingCore.EFCores
             return new RelationalTransaction(new ShardingRelationalConnection(connection, transaction), transaction, transactionId, logger, transactionOwned);
         }
     }
-#endif
-#if EFCORE2
-
-    public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext:DbContext,IShardingDbContext
-    {
-        private readonly RelationalTransactionFactoryDependencies _dependencies;
-        public ShardingRelationalTransactionFactory(RelationalTransactionFactoryDependencies dependencies) : base(dependencies)
-        {
-            _dependencies = dependencies;
-        }
-        public override RelationalTransaction Create(IRelationalConnection connection, DbTransaction transaction
-            , IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
-            bool transactionOwned)
-        {
-            return new RelationalTransaction(new ShardingRelationalConnection(connection, transaction,typeof(TShardingDbContext)), transaction, logger,
-                transactionOwned);
-        }
-    }
-#endif
 }

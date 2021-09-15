@@ -17,8 +17,9 @@ namespace ShardingCore.Core.QueryRouteManagers
     {
         private static AsyncLocal<ShardingRouteContext> _shardingRouteContext = new AsyncLocal<ShardingRouteContext>();
 
-
-        /// <inheritdoc />
+        /// <summary>
+        /// sharding route context use in using code block
+        /// </summary>
         public ShardingRouteContext ShardingRouteContext
         {
             get => _shardingRouteContext.Value;
