@@ -497,7 +497,7 @@ return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKe
 - [提供官网如果该项目比较成功的话]
 - [开发更完善的文档]
 - [支持分库]
-- [支持更多数据库查询完善]
+- [重构成支持.net其他orm]
 
 # 最后
 该框架借鉴了大部分分表组件的思路,目前提供的接口都已经实现,并且支持跨表查询,基于分页查询该框架也使用了流式查询保证不会再skip大数据的时候内存会爆炸,目前这个库只是一个刚刚成型的库还有很多不完善的地方希望大家多多包涵,如果喜欢的话也希望大家给个star.

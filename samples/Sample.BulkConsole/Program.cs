@@ -74,12 +74,12 @@ namespace Sample.BulkConsole
 
                     Console.WriteLine("ok");
                 }
-                var b = DateTime.Now.Date.AddDays(-2);
+                var b = DateTime.Now.Date.AddDays(-3);
                 var queryable = myShardingDbContext.Set<Order>().Where(o => o.CreateTime >= b).OrderBy(o => o.CreateTime);
                 var startNew1 = Stopwatch.StartNew();
 
                 int skip = 0, take = 10;
-                for (int i = 10000; i < 20000; i++)
+                for (int i = 1000; i < 20000; i++)
                 {
                     skip = take * i;
                     startNew1.Restart();
