@@ -18,7 +18,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
@@ -55,13 +55,8 @@ namespace ShardingCore
             Action<DbContextOptionsBuilder> shardingOptionAction = option =>
             {
                 optionsAction?.Invoke(option);
-#if !EFCORE2
                 option.UseSharding();
 
-#endif
-#if EFCORE2
-                option.UseSharding<TShardingDbContext>();
-#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -95,13 +90,7 @@ namespace ShardingCore
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
             {
                 optionsAction?.Invoke(sp,option);
-#if !EFCORE2
                 option.UseSharding();
-
-#endif
-#if EFCORE2
-                option.UseSharding<TShardingDbContext>();
-#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -161,11 +150,11 @@ namespace ShardingCore
             services.AddSingleton<IShardingDbContextFactory, ShardingDbContextFactory>();
             services.AddSingleton<IShardingTableCreator, ShardingTableCreator>();
             //分表
-            services.AddSingleton<IVirtualTableManager, OneDbVirtualTableManager>();
+            services.AddSingleton<IVirtualTableManager, DefaultVirtualTableManager>();
             //分表引擎工程
-            services.AddSingleton<IRoutingRuleEngineFactory, RoutingRuleEngineFactory>();
+            services.AddSingleton<ITableRouteRuleEngineFactory, TableRouteRuleEngineFactory>();
             //分表引擎
-            services.AddSingleton<IRouteRuleEngine, QueryRouteRuleEngines>();
+            services.AddSingleton<ITableRouteRuleEngine, TableRouteRuleEngines>();
             services.AddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.AddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
 
@@ -179,7 +168,6 @@ namespace ShardingCore
             services.AddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
-#if !EFCORE2
         internal static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
             return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
@@ -187,16 +175,6 @@ namespace ShardingCore
                 .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
         }
         
-#endif
-#if EFCORE2
-        internal static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
-        }
-        
-#endif
         
         internal static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
         {

@@ -14,12 +14,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     public class RouteQueryResult<TResult>
     {
-        public RouteResult RouteResult { get; }
+        public string DSName { get; }
+        public TableRouteResult TableRouteResult { get; }
         public TResult QueryResult { get; }
 
-        public RouteQueryResult(RouteResult routeResult,TResult queryResult)
+        public RouteQueryResult(string dsname,TableRouteResult tableRouteResult,TResult queryResult)
         {
-            RouteResult = routeResult;
+            DSName = dsname;
+            TableRouteResult = tableRouteResult;
             QueryResult = queryResult;
         }
     }

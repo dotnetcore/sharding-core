@@ -44,7 +44,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         List<string> GetAllTails();
     }
 
-    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class, IShardingTable
+    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置

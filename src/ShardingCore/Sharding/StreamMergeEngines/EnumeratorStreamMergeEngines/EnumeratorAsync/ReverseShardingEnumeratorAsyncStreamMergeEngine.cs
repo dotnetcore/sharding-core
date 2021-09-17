@@ -36,25 +36,30 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             if (take > int.MaxValue)
                 throw new ShardingCoreException($"not support take more than {int.MaxValue}");
             var realSkip = _total- take- skip;
-            var tableResult = StreamMergeContext.RouteResults;
             StreamMergeContext.ReSetSkip((int)realSkip);
             var propertyOrders = StreamMergeContext.Orders.Select(o=>new PropertyOrder( o.PropertyExpression,!o.IsAsc)).ToArray();
             StreamMergeContext.ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
-            var enumeratorTasks = tableResult.Select(routeResult =>
+
+            var dataSourceRouteResult = StreamMergeContext.DataSourceRouteResult;
+            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(reverseOrderQueryable,routeResult);
-                return AsyncQueryEnumerator(newQueryable,async);
-            }).ToArray();
+                var dsname = physicDataSource.DSName;
+                return StreamMergeContext.GetTableRouteResults(dsname).Select(routeResult =>
+                {
+                    var newQueryable = CreateAsyncExecuteQueryable(dsname,reverseOrderQueryable, routeResult);
+                    return AsyncQueryEnumerator(newQueryable, async);
+                });
+            }).ToArray();;
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(IQueryable<TEntity> reverseOrderQueryable, RouteResult routeResult)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> reverseOrderQueryable, TableRouteResult tableRouteResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
-            DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
+            DbContextQueryStore.TryAdd(tableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)reverseOrderQueryable
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

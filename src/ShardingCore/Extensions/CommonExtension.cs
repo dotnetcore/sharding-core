@@ -71,29 +71,6 @@ namespace ShardingCore.Extensions
                 return false;
             return typeof(IShardingTableDbContext).IsAssignableFrom(dbContextType);
         }
-        /// <summary>
-        /// 是否基继承至IShardingTable
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        public static bool IsShardingTable(this Type entityType)
-        {
-            if (entityType == null)
-                throw new ArgumentNullException(nameof(entityType));
-            return typeof(IShardingTable).IsAssignableFrom(entityType);
-        }
-
-        /// <summary>
-        /// 是否基继承至IShardingTable
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public static bool IsShardingTable(this object entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-            return entity is IShardingTable;
-        }
         // /// <summary>
         // /// 虚拟表转换成对应的db配置
         // /// </summary>

@@ -14,5 +14,9 @@ namespace ShardingCore.Core
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class ShardingDataSourceKeyAttribute: Attribute
     {
+        /// <summary>
+        /// 是否需要在启动的时候创建表
+        /// </summary>
+        public ShardingKeyAutoCreateDataSourceEnum AutoCreateDataSourceOnStart { get; set; } = ShardingKeyAutoCreateDataSourceEnum.UnKnown;
     }
 }

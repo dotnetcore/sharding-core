@@ -78,7 +78,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                         currentRealTake = currentTake.Value-currentRealTake;
                     }
                 }
-                var sequenceResult = new SequenceResult(currentRealSkip, currentRealTake, routeQueryResult.RouteResult);
+                var sequenceResult = new SequenceResult(currentRealSkip, currentRealTake, routeQueryResult);
                 routeResults.Add(sequenceResult);
 
                 if (needBreak)
@@ -91,16 +91,18 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     }
     public class SequenceResult
     {
-        public SequenceResult(long skip, long take, RouteResult routeResult)
+        public SequenceResult(long skip, long take,RouteQueryResult<long> routeQueryResult)
         {
             Skip = (int)skip;
             Take = (int)take;
-            RouteResult = routeResult;
+            DSName = routeQueryResult.DSName;
+            TableRouteResult = routeQueryResult.TableRouteResult;
         }
 
         public int Skip { get; }
         public int Take { get; }
 
-        public RouteResult RouteResult { get; }
+        public string DSName { get; }
+        public TableRouteResult TableRouteResult { get; }
     }
 }

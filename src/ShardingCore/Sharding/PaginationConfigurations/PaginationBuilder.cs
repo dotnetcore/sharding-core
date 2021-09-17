@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class PaginationBuilder<TEntity> where TEntity:class,IShardingTable
+    public class PaginationBuilder<TEntity> where TEntity:class
     {
         private readonly PaginationMetadata  _metadata;
 
@@ -53,5 +53,14 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         //    _metadata.TakeInMemoryCountIfLe = count;
         //    return this;
         //}
+
+        /// <summary>
+        /// 启用多次查询排序
+        /// </summary>
+        /// <returns></returns>
+        public PaginationBuilder<TEntity> ConfigMultiQueryShardingPage()
+        {
+            return this;
+        }
     }
 }

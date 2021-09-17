@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
 using ShardingCore.Exceptions;
@@ -13,6 +12,7 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.TableCreator
 {

@@ -15,9 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Internal;
 
-#if EFCORE2
-using Microsoft.EntityFrameworkCore.Internal;
-#endif
 
 namespace ShardingCore.EFCores
 {
@@ -44,7 +41,6 @@ namespace ShardingCore.EFCores
             return _shardingQueryExecutor.Execute<TResult>(_currentContext, query);
         }
 
-#if !EFCORE2
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
@@ -66,35 +62,6 @@ namespace ShardingCore.EFCores
             throw new NotImplementedException();
         }
 
-#endif
 
-#if EFCORE2
-
-
-        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
-        {
-            return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query);
-        }
-
-        public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
-        {
-            return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(_currentContext, query, cancellationToken);
-        }
-
-        public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Func<QueryContext, IAsyncEnumerable<TResult>> CreateCompiledAsyncEnumerableQuery<TResult>(Expression query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
-        {
-            throw new NotImplementedException();
-        }
-#endif
     }
 }

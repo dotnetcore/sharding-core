@@ -1,4 +1,4 @@
-﻿using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+﻿using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.Sharding.Abstractions
 {

@@ -68,9 +68,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         /// <returns></returns>
         protected abstract IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression);
 
-        private IQueryable CreateAsyncExecuteQueryable<TResult>(RouteResult routeResult)
+        private IQueryable CreateAsyncExecuteQueryable<TResult>(string dsname,TableRouteResult tableRouteResult)
         {
-            var shardingDbContext = _mergeContext.CreateDbContext(routeResult);
+            var shardingDbContext = _mergeContext.CreateDbContext(dsname,tableRouteResult);
             _parllelDbbContexts.Add(shardingDbContext);
             var newQueryable = (IQueryable<TEntity>) GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
@@ -81,52 +81,35 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var tableResult = _mergeContext.RouteResults;
-            var enumeratorTasks = tableResult.Select(routeResult =>
+            var dataSourceRouteResult = _mergeContext.DataSourceRouteResult;
+
+            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
             {
-                return Task.Run(async () =>
+                var dsname = physicDataSource.DSName;
+                var tableRouteResults = _mergeContext.GetTableRouteResults(dsname);
+                return tableRouteResults.Select(routeResult =>
                 {
-                    try
+                    return Task.Run(async () =>
                     {
-                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(routeResult);
-                        var queryResult= await efQuery(asyncExecuteQueryable);
-                        return new RouteQueryResult<TResult>(routeResult, queryResult);
-                        //}
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
+                        try
+                        {
+                            var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dsname, routeResult);
+                            var queryResult = await efQuery(asyncExecuteQueryable);
+                            return new RouteQueryResult<TResult>(dsname, routeResult, queryResult);
+                            //}
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    });
+
                 });
             }).ToArray();
 
             return (await Task.WhenAll(enumeratorTasks)).ToList();
         }
-
-        public List<TResult> Execute<TResult>(Func<IQueryable, TResult> efQuery, CancellationToken cancellationToken = new CancellationToken())
-        {
-            var tableResult = _mergeContext.RouteResults;
-            var enumeratorTasks = tableResult.Select(routeResult =>
-            {
-                return Task.Run(() =>
-                {
-                    try
-                    {
-                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(routeResult);
-                        var query = efQuery(asyncExecuteQueryable);
-                        return query;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
-            }).ToArray();
-            return Task.WhenAll(enumeratorTasks).GetAwaiter().GetResult().ToList();
-        }
-
 
         public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {

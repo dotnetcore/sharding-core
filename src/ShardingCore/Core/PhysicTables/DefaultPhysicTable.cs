@@ -20,18 +20,19 @@ namespace ShardingCore.Core.PhysicTables
             VirtualTable = virtualTable;
             OriginalName = virtualTable.GetOriginalTableName();
             Tail = tail;
+            EntityType = VirtualTable.EntityType;
         }
+
 
         public string FullName => $"{OriginalName}{TailPrefix}{Tail}";
         public string OriginalName { get; }
         public string TailPrefix =>VirtualTable.ShardingConfig.TailPrefix;
         public string Tail { get;  }
-        public Type EntityType => VirtualTable.EntityType;
+        public Type EntityType { get; }
         public IVirtualTable VirtualTable { get; }
-
         protected bool Equals(DefaultPhysicTable other)
         {
-            return OriginalName == other.OriginalName && Tail == other.Tail && Equals(VirtualTable, other.VirtualTable);
+            return OriginalName == other.OriginalName && Tail == other.Tail && Equals(EntityType, other.EntityType);
         }
 
         public override bool Equals(object obj)
@@ -39,29 +40,13 @@ namespace ShardingCore.Core.PhysicTables
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((DefaultPhysicTable) obj);
+            return Equals((DefaultPhysicTable)obj);
         }
-
-#if !EFCORE2
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(OriginalName, Tail, VirtualTable);
+            return HashCode.Combine(OriginalName, Tail, EntityType);
         }
-#endif
 
-#if EFCORE2
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (OriginalName != null ? OriginalName.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Tail != null ? Tail.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (VirtualTable != null ? VirtualTable.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-#endif
     }
 }

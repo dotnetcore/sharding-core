@@ -7,8 +7,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
@@ -57,13 +57,11 @@ namespace ShardingCore.Extensions
 
         public static string ShardingPrint(this Expression expression)
         {
-
-#if !EFCORE2
             return expression.Print();
-#endif
-#if EFCORE2
-                return expression.ToString();
-#endif
+        }
+        public static string ShardingPrint<T>(this IQueryable<T> queryable)
+        {
+            return queryable.Expression.ShardingPrint();
         }
 
         /// <summary>

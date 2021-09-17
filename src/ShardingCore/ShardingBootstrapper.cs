@@ -8,11 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
-using ShardingCore.DbContexts.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
@@ -70,12 +69,7 @@ namespace ShardingCore
                             var virtualTable = CreateVirtualTable(entity.ClrType, virtualRoute);
 
                             //获取ShardingEntity的实际表名
-#if !EFCORE2
                             var tableName = context.Model.FindEntityType(virtualTable.EntityType).GetTableName();
-#endif
-#if EFCORE2
-                        var tableName = context.Model.FindEntityType(virtualTable.EntityType).Relational().TableName;
-#endif
                             virtualTable.SetOriginalTableName(tableName);
                             _virtualTableManager.AddVirtualTable(shardingConfigOption.ShardingDbContextType,virtualTable);
                             CreateDataTable(shardingConfigOption.ShardingDbContextType,virtualTable, shardingConfigOption);
@@ -115,7 +109,7 @@ namespace ShardingCore
 
         private IVirtualTable CreateVirtualTable(Type entityType, IVirtualTableRoute virtualTableRoute)
         {
-            Type type = typeof(OneDbVirtualTable<>);
+            Type type = typeof(DefaultVirtualTable<>);
             type = type.MakeGenericType(entityType);
             object o = Activator.CreateInstance(type, virtualTableRoute);
             return (IVirtualTable) o;

@@ -1,5 +1,5 @@
-using ShardingCore.Core.VirtualRoutes.RouteTails;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -19,13 +19,13 @@ namespace ShardingCore.Core.VirtualRoutes
             return new SingleQueryRouteTail(tail);
         }
 
-        public IRouteTail Create(RouteResult routeResult)
+        public IRouteTail Create(TableRouteResult tableRouteResult)
         {
-            if (routeResult == null || routeResult.ReplaceTables.IsEmpty())
+            if (tableRouteResult == null || tableRouteResult.ReplaceTables.IsEmpty())
                 return new SingleQueryRouteTail(string.Empty);
-            if (routeResult.ReplaceTables.Count == 1)
-                return new SingleQueryRouteTail(routeResult);
-            return new MultiQueryRouteTail(routeResult);
+            if (tableRouteResult.ReplaceTables.Count == 1)
+                return new SingleQueryRouteTail(tableRouteResult);
+            return new MultiQueryRouteTail(tableRouteResult);
         }
     }
 }

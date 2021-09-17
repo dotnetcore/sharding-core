@@ -1,6 +1,5 @@
 :start
 ::定义版本
-set EFCORE2=2.2.0.20
 set EFCORE3=3.2.0.20
 set EFCORE5=5.2.0.20
 

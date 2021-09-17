@@ -45,7 +45,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
-                Tail = o.RouteResult.ReplaceTables.First().Tail,
+                Tail = o.TableRouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
             }).OrderByIf(o => o.Tail, _isAsc, _orderPaginationSequenceConfig.TailComparer)
                 .OrderByDescendingIf(o => o.Tail, !_isAsc, _orderPaginationSequenceConfig.TailComparer).ToList();
@@ -54,7 +54,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
+                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
                 return AsyncQueryEnumerator(newQueryable, async);
             }).ToArray();
 
@@ -62,10 +62,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(sequenceResult.RouteResult);
-            DbContextQueryStore.TryAdd(sequenceResult.RouteResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,sequenceResult.TableRouteResult);
+            DbContextQueryStore.TryAdd(sequenceResult.TableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

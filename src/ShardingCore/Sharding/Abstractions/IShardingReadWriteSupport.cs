@@ -17,6 +17,6 @@ namespace ShardingCore.Sharding.Abstractions
         int ReadWritePriority { get; set; }
         bool ReadWriteSupport { get; set; }
         ReadConnStringGetStrategyEnum GetReadConnStringGetStrategy();
-        string GetWriteConnectionString();
+        string GetWriteConnectionString(string dsName);
     }
 }

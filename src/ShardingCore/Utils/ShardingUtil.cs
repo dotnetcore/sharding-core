@@ -6,6 +6,7 @@ using System.Reflection;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Extensions;
 
@@ -19,22 +20,22 @@ namespace ShardingCore.Utils
 */
     public class ShardingUtil
     {
-        private static readonly ConcurrentDictionary<Type, ShardingEntityBaseType> _caches = new ConcurrentDictionary<Type, ShardingEntityBaseType>();
+        private static readonly ConcurrentDictionary<Type, ShardingEntityConfig> _caches = new ConcurrentDictionary<Type, ShardingEntityConfig>();
 
         private ShardingUtil()
         {
         }
 
-        public static ShardingEntityBaseType Parse(Type entityType)
+        public static ShardingEntityConfig Parse(Type entityType)
         {
-            if (_caches.TryGetValue(entityType, out var baseType))
+            if (_caches.TryGetValue(entityType, out var entityConfig))
             {
-                return baseType;
+                return entityConfig;
             }
 
             var isShardingTable = entityType.IsShardingTable();
-            var isShardingDataSource = false;
-            baseType = new ShardingEntityBaseType()
+            var isShardingDataSource = entityType.IsShardingDataSource();
+            entityConfig = new ShardingEntityConfig()
             {
                 EntityType = entityType,
                 IsMultiDataSourceMapping = isShardingDataSource,
@@ -42,18 +43,17 @@ namespace ShardingCore.Utils
             };
 
 
-            if (!isShardingDataSource && isShardingTable)
-                throw new NotSupportedException(entityType.ToString());
+            //if (!isShardingDataSource && isShardingTable)
+            //    throw new NotSupportedException(entityType.FullName);
 
             PropertyInfo[] shardingProperties = entityType.GetProperties();
 
-
-            if (isShardingTable)
-            {
-                var shardingTables = shardingProperties.SelectMany(p => p.GetCustomAttributes(true).Where(o => o.GetType() == typeof(ShardingTableKeyAttribute))).ToList();
-                if (shardingTables.Count != 1)
-                    throw new NotSupportedException($"{entityType}  From IShardingTable should use single attribute [ShardingKey]");
-            }
+            //if (isShardingTable)
+            //{
+            //    var shardingTables = shardingProperties.SelectMany(p => p.GetCustomAttributes(true).Where(o => o.GetType() == typeof(ShardingTableKeyAttribute))).ToList();
+            //    if (shardingTables.Count != 1)
+            //        throw new NotSupportedException($"{entityType}  From IShardingTable should use single attribute [{nameof(ShardingTableKeyAttribute)}]");
+            //}
 
             var shardingDataSourceCount = 0;
             var shardingTableCount = 0;
@@ -67,7 +67,8 @@ namespace ShardingCore.Utils
                         if (shardingDataSourceCount > 1)
                             throw new NotSupportedException($"{entityType}  From IShardingDataSource should use single attribute [{nameof(ShardingDataSourceKeyAttribute)}]");
 
-                        baseType.ShardingDataSourceField = shardingProperty.Name;
+                        entityConfig.ShardingDataSourceField = shardingProperty.Name;
+                        entityConfig.AutoCreateDataSource = shardingDataSourceKey.AutoCreateDataSourceOnStart == ShardingKeyAutoCreateDataSourceEnum.UnKnown ? (bool?)null : (shardingDataSourceKey.AutoCreateDataSourceOnStart == ShardingKeyAutoCreateDataSourceEnum.Create);
                         shardingDataSourceCount++;
                     }
                 }
@@ -79,21 +80,21 @@ namespace ShardingCore.Utils
                         if (shardingTableCount > 1)
                             throw new NotSupportedException($"{entityType}  From IShardingTable should use single attribute [{nameof(ShardingTableKeyAttribute)}]");
 
-                        baseType.ShardingTableField = shardingProperty.Name;
-                        baseType.AutoCreateTable = shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.UnKnown ? (bool?) null : (shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.Create);
-                        baseType.TailPrefix = shardingKey.TailPrefix;
+                        entityConfig.ShardingTableField = shardingProperty.Name;
+                        entityConfig.AutoCreateTable = shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.UnKnown ? (bool?) null : (shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.Create);
+                        entityConfig.TailPrefix = shardingKey.TailPrefix;
                         shardingTableCount++;
                     }
                 }
             }
 
-            _caches.TryAdd(entityType, baseType);
+            _caches.TryAdd(entityType, entityConfig);
 
-            return baseType;
+            return entityConfig;
         }
         
         
-        public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
+        public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, ShardingEntityConfig shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
         {
             QueryableRouteShardingDataSourceDiscoverVisitor<TKey> visitor = new QueryableRouteShardingDataSourceDiscoverVisitor<TKey>(shardingEntityBaseType, shardingKeyConvert, keyToTailExpression);
 

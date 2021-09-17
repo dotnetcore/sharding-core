@@ -28,11 +28,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             _shardingReadWriteManager = shardingReadWriteManager;
             _shardingConnectionStringResolver = shardingConnectionStringResolvers.FirstOrDefault(o => o.ShardingDbContextType == ShardingDbContextType) ?? throw new ArgumentNullException($"{ShardingDbContextType.FullName}:{nameof(shardingConnectionStringResolvers)}");
         }
-        public string GetConnectionString(IShardingDbContext shardingDbContext)
+        public string GetConnectionString(string dsName,IShardingDbContext shardingDbContext)
         {
             if (!(shardingDbContext is IShardingReadWriteSupport shardingReadWriteSupport))
             {
-                return shardingDbContext.GetConnectionString();
+                return shardingDbContext.GetConnectionString(dsName);
             }
             var shardingReadWriteContext = _shardingReadWriteManager.GetCurrent(ShardingDbContextType);
             var support = shardingReadWriteSupport.ReadWriteSupport;
@@ -47,7 +47,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             {
                 return GetReadConnectionString0(shardingReadWriteSupport);
             }
-            return shardingReadWriteSupport.GetWriteConnectionString();
+            return shardingReadWriteSupport.GetWriteConnectionString(dsName);
         }
         private string GetReadConnectionString0(IShardingReadWriteSupport shardingReadWriteSupport)
         {

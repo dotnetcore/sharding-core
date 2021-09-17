@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.DbContexts.Abstractions;
 using System;
 using System.Collections.Generic;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;

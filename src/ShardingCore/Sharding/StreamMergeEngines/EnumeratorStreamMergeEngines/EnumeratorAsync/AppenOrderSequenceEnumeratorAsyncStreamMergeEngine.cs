@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
-                Tail = o.RouteResult.ReplaceTables.First().Tail,
+                Tail = o.TableRouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
             }).OrderBy(o => o.Tail, _appendPaginationSequenceConfig.TailComparer).ToList();
             var skipCount = skip;
@@ -54,7 +54,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             StreamMergeContext.ReSetOrders(new [] { new PropertyOrder(_appendPaginationSequenceConfig.PropertyName, true) });
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(noPaginationQueryable, sequenceResult);
+                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName,noPaginationQueryable, sequenceResult);
                 return AsyncQueryEnumerator(newQueryable,async);
             }).ToArray();
 
@@ -62,10 +62,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             return streamEnumerators;
         }
 
-        private  IQueryable<TEntity> CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
+        private  IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(sequenceResult.RouteResult);
-            DbContextQueryStore.TryAdd(sequenceResult.RouteResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,sequenceResult.TableRouteResult);
+            DbContextQueryStore.TryAdd(sequenceResult.TableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(new PropertyOrder[]{new PropertyOrder(_appendPaginationSequenceConfig.PropertyName,true)}))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

@@ -15,6 +15,6 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IConnectionStringManager
     {
         Type ShardingDbContextType { get; }
-        string GetConnectionString(IShardingDbContext shardingDbContext);
+        string GetConnectionString(string dsName,IShardingDbContext shardingDbContext);
     }
 }

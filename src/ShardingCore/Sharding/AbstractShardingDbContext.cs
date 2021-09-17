@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.DbContexts;
@@ -21,6 +20,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.Sharding
 {
@@ -36,21 +37,22 @@ namespace ShardingCore.Sharding
     /// <typeparam name="T"></typeparam>
     public abstract class AbstractShardingDbContext<T> : DbContext, IShardingDbContext<T>, IShardingTransaction, IShardingReadWriteSupport where T : DbContext, IShardingTableDbContext
     {
-        private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
+        //private readonly ConcurrentDictionary<string, DbContext> _dbContextCaches = new ConcurrentDictionary<string, DbContext>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string,DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly IShardingConfigOption shardingConfigOption;
+        private readonly IVirtualDataSourceManager _virtualDataSourceManager;
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IShardingDbContextFactory _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private readonly IReadWriteOptions _readWriteOptions;
         private readonly IConnectionStringManager _connectionStringManager;
-        private DbContextOptions<T> _dbContextOptions;
 
-        private readonly object CREATELOCK = new object();
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory>();
+            _virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer
@@ -91,13 +93,13 @@ namespace ShardingCore.Sharding
             return _readWriteOptions.ReadConnStringGetStrategy;
         }
 
-        public string GetWriteConnectionString()
+        public string GetWriteConnectionString(string dsName)
         {
-            return GetConnectionString();
+            return GetConnectionString(dsName);
         }
-        public string GetConnectionString()
+        public string GetConnectionString(string dsName)
         {
-            return Database.GetDbConnection().ConnectionString;
+            return _virtualDataSourceManager.GetDataSource(dsName).ConnectionString;
         }
 
 
@@ -108,100 +110,126 @@ namespace ShardingCore.Sharding
             return (DbContextOptionsBuilder<T>)Activator.CreateInstance(type);
         }
 
-        private DbContextOptions<T> CreateShareDbContextOptions()
+        private DbContextOptions<T> CreateShareDbContextOptions(string dsName)
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
-            var dbConnection = Database.GetDbConnection();
-            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionBuilder);
+
+            if (!_dbContextCaches.TryGetValue(dsName, out var sameConnectionDbContexts))
+            {
+                sameConnectionDbContexts = new ConcurrentDictionary<string, DbContext>();
+                _dbContextCaches.TryAdd(dsName, sameConnectionDbContexts);
+            }
+            //存在使用相同的connection创建 第一次使用字符串创建
+            if (sameConnectionDbContexts.Any())
+            {
+                var dbConnection = sameConnectionDbContexts.First().Value.Database.GetDbConnection();
+                _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionBuilder);
+            }
+            else
+            {
+                var physicDataSource = _virtualDataSourceManager.GetDataSource(dsName);
+                _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(physicDataSource.ConnectionString, dbContextOptionBuilder);
+            }
+
             return dbContextOptionBuilder.Options;
         }
-        private DbContextOptions<T> CreateParallelDbContextOptions()
+        private ShardingDbContextOptions GetShareShardingDbContextOptions(string dsName,IRouteTail routeTail)
+        {
+            var dbContextOptions=CreateShareDbContextOptions(dsName);
+
+            return new ShardingDbContextOptions(dbContextOptions, routeTail);
+        }
+        private DbContextOptions<T> CreateParallelDbContextOptions(string dsName)
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
-            var connectionString = _connectionStringManager.GetConnectionString(this);
+            var connectionString = _connectionStringManager.GetConnectionString(dsName,this);
             _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
             return dbContextOptionBuilder.Options;
         }
 
-        private ShardingDbContextOptions GetShareShardingDbContextOptions(IRouteTail routeTail)
+        private ShardingDbContextOptions CetParallelShardingDbContextOptions(string dsName, IRouteTail routeTail)
         {
-            if (_dbContextOptions == null)
-            {
-                lock (CREATELOCK)
-                {
-                    if (_dbContextOptions == null)
-                    {
-                        _dbContextOptions = CreateShareDbContextOptions();
-                    }
-                }
-            }
-
-            return new ShardingDbContextOptions(_dbContextOptions, routeTail);
-        }
-        private ShardingDbContextOptions CetParallelShardingDbContextOptions(IRouteTail routeTail)
-        {
-            return new ShardingDbContextOptions(CreateParallelDbContextOptions(), routeTail);
+            return new ShardingDbContextOptions(CreateParallelDbContextOptions(dsName), routeTail);
         }
 
 
-        public DbContext GetDbContext(bool track, IRouteTail routeTail)
+        public DbContext GetDbContext(string dsName,bool track, IRouteTail routeTail)
         {
             if (track)
             {
                 if (routeTail.IsMultiEntityQuery())
-                    throw new ShardingCoreException("multi route not support track");
+                    throw new ShardingCoreNotSupportedException("multi route not support track");
                 if (!(routeTail is ISingleQueryRouteTail singleQueryRouteTail))
-                    throw new ShardingCoreException("multi route not support track");
-                var cacheKey = routeTail.GetRouteTailIdentity();
-                if (!_dbContextCaches.TryGetValue(cacheKey, out var dbContext))
+                    throw new ShardingCoreNotSupportedException("multi route not support track");
+                if (!_dbContextCaches.TryGetValue(dsName, out var tailDbContexts))
                 {
-                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(routeTail));
+                    tailDbContexts = new ConcurrentDictionary<string, DbContext>();
+                    _dbContextCaches.TryAdd(dsName, tailDbContexts);
+                }
+                var cacheKey = routeTail.GetRouteTailIdentity();
+                if (!tailDbContexts.TryGetValue(cacheKey, out var dbContext))
+                {
+                    dbContext = _shardingDbContextFactory.Create(ShardingDbContextType, GetShareShardingDbContextOptions(dsName,routeTail));
                     if (IsBeginTransaction)
                         dbContext.Database.UseTransaction(Database.CurrentTransaction.GetDbTransaction());
 
-                    _dbContextCaches.TryAdd(cacheKey, dbContext);
+                    tailDbContexts.TryAdd(cacheKey, dbContext);
                 }
                 return dbContext;
             }
             else
             {
-                return _shardingDbContextFactory.Create(ShardingDbContextType, CetParallelShardingDbContextOptions(routeTail));
+                return _shardingDbContextFactory.Create(ShardingDbContextType, CetParallelShardingDbContextOptions(dsName,routeTail));
             }
         }
 
         public bool IsBeginTransaction => Database.CurrentTransaction != null;
-
+        /// <summary>
+        /// 根据对象创建通用的dbcontext
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public DbContext CreateGenericDbContext<T>(T entity) where T : class
         {
-            var tail = string.Empty;
-            if (entity.IsShardingTable())
-            {
-                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, entity.GetType()).RouteTo(new TableRouteConfig(null, entity as IShardingTable, null))[0];
-                tail = physicTable.Tail;
-            }
+            var dsname = _virtualDataSourceManager.GetDataSourceName(ShardingDbContextType,entity);
+            var tail = _virtualTableManager.GetTableTail(ShardingDbContextType, dsname,entity);
 
-            return GetDbContext(true, _routeTailFactory.Create(tail));
+            return GetDbContext(dsname,true, _routeTailFactory.Create(tail));
         }
 
         public IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> @where) where TEntity : class
         {
+            var dsNames = _virtualDataSourceManager.GetDataSourceNames(ShardingDbContextType, @where);
+
             if (typeof(TEntity).IsShardingTable())
             {
-                var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, typeof(TEntity)).RouteTo(new TableRouteConfig(predicate: @where));
-                if (physicTable.IsEmpty())
-                    throw new ShardingCoreException($"{@where.ShardingPrint()} cant found ant physic table");
-                return physicTable.Select(o => GetDbContext(true, _routeTailFactory.Create(o.Tail)));
+                var resultDbContexts = new LinkedList<DbContext>();
+                foreach (var dsName in dsNames)
+                {
+                    var physicTable = _virtualTableManager.GetVirtualTable(ShardingDbContextType, dsName, typeof(TEntity)).RouteTo(new ShardingTableRouteConfig(predicate: @where));
+                    if (physicTable.IsEmpty())
+                        throw new ShardingCoreException($"{@where.ShardingPrint()} cant found ant physic table");
+                    var dbContexts = physicTable.Select(o => GetDbContext(dsName, true, _routeTailFactory.Create(o.Tail))).ToList();
+                    foreach (var dbContext in dbContexts)
+                    {
+                        resultDbContexts.AddLast(dbContext);
+                    }
+                }
+
+                return resultDbContexts;
             }
             else
             {
-                return new[] { GetDbContext(true, _routeTailFactory.Create(string.Empty)) };
+                return dsNames.Select(dsName => GetDbContext(dsName, true, _routeTailFactory.Create(string.Empty)));
             }
         }
 
 
         public void UseShardingTransaction(DbTransaction transaction)
         {
-            _dbContextCaches.Values.ForEach(o => o.Database.UseTransaction(transaction));
+            throw new NotImplementedException();
+            //_dbContextCaches.Values.ForEach(o => o.Database.UseTransaction(transaction));
         }
 
 
@@ -215,7 +243,6 @@ namespace ShardingCore.Sharding
             return CreateGenericDbContext(entity).Add(entity);
         }
 
-#if !EFCORE2
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -226,18 +253,6 @@ namespace ShardingCore.Sharding
         {
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
-#endif
-#if EFCORE2
-        public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
-        {
-            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
-        }
-
-        public override Task<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
-        {
-            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
-        }
-#endif
 
         public override void AddRange(params object[] entities)
         {
@@ -466,31 +481,7 @@ namespace ShardingCore.Sharding
 
         public override int SaveChanges()
         {
-            var isBeginTransaction = IsBeginTransaction;
-            //如果是内部开的事务就内部自己消化
-
-            int i = 0;
-            if (!isBeginTransaction)
-            {
-                using (var tran = Database.BeginTransaction())
-                {
-
-                    foreach (var dbContextCache in _dbContextCaches)
-                    {
-                        i += dbContextCache.Value.SaveChanges();
-                    }
-                    tran.Commit();
-                }
-            }
-            else
-            {
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    i += dbContextCache.Value.SaveChanges();
-                }
-            }
-
-            return i;
+            return this.SaveChanges(true);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -520,68 +511,12 @@ namespace ShardingCore.Sharding
 
             return i;
         }
-#if !EFCORE2
 
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override  Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var isBeginTransaction = IsBeginTransaction;
-
-            int i = 0;
-            //如果是内部开的事务就内部自己消化
-            if (!isBeginTransaction)
-            {
-                using (var tran = await Database.BeginTransactionAsync(cancellationToken))
-                {
-
-                    foreach (var dbContextCache in _dbContextCaches)
-                    {
-                        i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
-                    }
-                    await tran.CommitAsync();
-                }
-            }
-            else
-            {
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
-                }
-            }
-
-            return i;
+            return this.SaveChangesAsync(true,cancellationToken);
         }
-#endif
-#if EFCORE2
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-
-            var isBeginTransaction = IsBeginTransaction;
-            int i = 0;
-            //如果是内部开的事务就内部自己消化
-            if (!isBeginTransaction)
-            {
-                using (var tran = await Database.BeginTransactionAsync(cancellationToken))
-                {
-                    foreach (var dbContextCache in _dbContextCaches)
-                    {
-                        i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
-                    }
-                    tran.Commit();
-                }
-            }
-            else
-            {
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    i += await dbContextCache.Value.SaveChangesAsync(cancellationToken);
-                }
-            }
-
-            return i;
-        }
-#endif
-#if !EFCORE2
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -614,37 +549,6 @@ namespace ShardingCore.Sharding
 
             return i;
         }
-#endif
-#if EFCORE2
-        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
-        {
-
-            var isBeginTransaction = IsBeginTransaction;
-            int i = 0;
-            //如果是内部开的事务就内部自己消化
-            if (!isBeginTransaction)
-            {
-                using (var tran = await Database.BeginTransactionAsync(cancellationToken))
-                {
-
-                    foreach (var dbContextCache in _dbContextCaches)
-                    {
-                        i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-                    }
-
-                     tran.Commit();
-                }
-            }
-            else
-            {
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-                }
-            }
-            return i;
-        }
-#endif
 
         public override void Dispose()
         {
@@ -663,7 +567,6 @@ namespace ShardingCore.Sharding
             base.Dispose();
         }
 
-#if !EFCORE2
         public override async ValueTask DisposeAsync()
         {
             foreach (var dbContextCache in _dbContextCaches)
@@ -680,6 +583,5 @@ namespace ShardingCore.Sharding
 
             await base.DisposeAsync();
         }
-#endif
     }
 }

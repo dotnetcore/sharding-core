@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -16,12 +17,12 @@ namespace ShardingCore.Core.Internal.Visitors
 */
     public class QueryableRouteShardingDataSourceDiscoverVisitor<TKey> : ExpressionVisitor
     {
-        private readonly ShardingEntityBaseType _shardingEntityBaseType;
+        private readonly ShardingEntityConfig _shardingEntityBaseType;
         private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToDataSourceWithFilter;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingDataSourceDiscoverVisitor(ShardingEntityBaseType shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToDataSourceWithFilter)
+        public QueryableRouteShardingDataSourceDiscoverVisitor(ShardingEntityConfig shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToDataSourceWithFilter)
         {
             _shardingEntityBaseType = shardingEntityBaseType;
             _shardingKeyConvert = shardingKeyConvert;

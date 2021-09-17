@@ -20,8 +20,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
-            var routeResult = StreamMergeContext.RouteResults.First();
-            var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
+            var physicDataSource = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
+            var routeResult = StreamMergeContext.GetTableRouteResults(physicDataSource.DSName).First();
+            var shardingDbContext = StreamMergeContext.CreateDbContext(physicDataSource.DSName,routeResult);
             DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
             if (async)

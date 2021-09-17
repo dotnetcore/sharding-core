@@ -24,21 +24,27 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async)
         {
-            var tableResult = StreamMergeContext.RouteResults;
-            var enumeratorTasks = tableResult.Select(routeResult =>
+            var dataSourceRouteResult = StreamMergeContext.DataSourceRouteResult;
+            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(routeResult);
-                return AsyncQueryEnumerator(newQueryable, async);
+                var dsname = physicDataSource.DSName;
+                var tableRouteResults = StreamMergeContext.GetTableRouteResults(dsname);
+                return tableRouteResults.Select(routeResult =>
+                {
+                    var newQueryable = CreateAsyncExecuteQueryable(dsname,routeResult);
+                    return AsyncQueryEnumerator(newQueryable, async);
+                });
+
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,TableRouteResult tableRouteResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
-            DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
+            DbContextQueryStore.TryAdd(tableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

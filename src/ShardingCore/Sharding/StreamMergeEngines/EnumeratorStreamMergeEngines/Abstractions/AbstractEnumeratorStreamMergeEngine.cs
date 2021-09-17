@@ -21,32 +21,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     public abstract class AbstractEnumeratorStreamMergeEngine<TEntity>:IEnumeratorStreamMergeEngine<TEntity>
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
-        public ConcurrentDictionary<RouteResult,DbContext> DbContextQueryStore { get; }
+        public ConcurrentDictionary<TableRouteResult,DbContext> DbContextQueryStore { get; }
 
         public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
             StreamMergeContext = streamMergeContext;
-            DbContextQueryStore = new ConcurrentDictionary<RouteResult, DbContext>();
+            DbContextQueryStore = new ConcurrentDictionary<TableRouteResult, DbContext>();
         }
 
         public abstract IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
             CancellationToken cancellationToken = new CancellationToken());
 
-#if !EFCORE2
         public IAsyncEnumerator<TEntity> GetAsyncEnumerator(
             CancellationToken cancellationToken = new CancellationToken())
         {
             return GetShardingAsyncEnumerator(true,cancellationToken);
         }
-#endif
-
-#if EFCORE2
-        IAsyncEnumerator<TEntity> IAsyncEnumerable<TEntity>.GetEnumerator()
-        {
-            return GetShardingAsyncEnumerator(true);
-        }
-
-#endif
 
         public  IEnumerator<TEntity> GetEnumerator()
         {

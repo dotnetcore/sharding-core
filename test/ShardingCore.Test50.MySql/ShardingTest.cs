@@ -17,26 +17,26 @@
 //     public class ShardingTest
 //     {
 //         private readonly DefaultDbContext _virtualDbContext;
-//         private readonly IRoutingRuleEngineFactory _routingRuleEngineFactory;
+//         private readonly ITableRouteRuleEngineFactory _tableRouteRuleEngineFactory;
 //
-//         public ShardingTest(DefaultDbContext virtualDbContext,IRoutingRuleEngineFactory routingRuleEngineFactory)
+//         public ShardingTest(DefaultDbContext virtualDbContext,ITableRouteRuleEngineFactory tableRouteRuleEngineFactory)
 //         {
 //             _virtualDbContext = virtualDbContext;
-//             _routingRuleEngineFactory = routingRuleEngineFactory;
+//             _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
 //         }
 //
 //         //[Fact]
 //         //public async Task Route_TEST()
 //         //{
 //         //    var queryable1 = _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="339");
-//         //    var routeResults1 = _routingRuleEngineFactory.Route(queryable1);
+//         //    var routeResults1 = _tableRouteRuleEngineFactory.Route(queryable1);
 //         //    Assert.Equal(1,routeResults1.Count());
 //         //    Assert.Equal(1,routeResults1.FirstOrDefault().ReplaceTables.Count());
 //         //    Assert.Equal("0",routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().Tail);
 //         //    Assert.Equal(nameof(SysUserMod),routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().OriginalName);
 //         //    var ids = new[] {"339", "124","142"};
 //         //    var queryable2= _virtualDbContext.Set<SysUserMod>().Where(o=>ids.Contains(o.Id));
-//         //    var routeResult2s = _routingRuleEngineFactory.Route(queryable2);
+//         //    var routeResult2s = _tableRouteRuleEngineFactory.Route(queryable2);
 //         //    Assert.Equal(2,routeResult2s.Count());
 //         //    Assert.Equal(1,routeResult2s.FirstOrDefault().ReplaceTables.Count());
 //         //    Assert.Equal(2,routeResult2s.SelectMany(o=>o.ReplaceTables).Count());
