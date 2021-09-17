@@ -12,6 +12,9 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
+#if EFCORE2
+using Microsoft.EntityFrameworkCore.Internal;
+#endif
 
 namespace ShardingCore.Sharding.ShardingQueryExecutors
 {

@@ -74,7 +74,6 @@ namespace Sample.BulkConsole
 
                     Console.WriteLine("ok");
                 }
-
                 var b = DateTime.Now.Date.AddDays(-3);
                 var queryable = myShardingDbContext.Set<Order>().Where(o => o.CreateTime >= b).OrderBy(o => o.CreateTime);
                 var startNew1 = Stopwatch.StartNew();

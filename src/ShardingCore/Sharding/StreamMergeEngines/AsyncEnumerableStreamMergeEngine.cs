@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
+#if EFCORE2
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+#endif
+
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
     /*
@@ -21,11 +25,21 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         }
 
 
+#if !EFCORE2
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             return new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync(cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
         }
+#endif
+
+#if EFCORE2
+        IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
+        {
+            return ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync())
+                .GetEnumerator();
+        }
+#endif
         
 
         public IEnumerator<T> GetEnumerator()

@@ -28,22 +28,36 @@ namespace ShardingCore.EFCores
         private readonly IRelationalConnection _relationalConnection;
 
 
+#if !EFCORE2
         public ShardingRelationalConnection(IRelationalConnection _relationalConnection, DbTransaction transaction)
         {
             this._relationalConnection = _relationalConnection;
             ((IShardingTransaction)Context).UseShardingTransaction(transaction);
         }
 
+#endif
+#if EFCORE2
+        private readonly Type _dbContextType;
+        public ShardingRelationalConnection(IRelationalConnection _relationalConnection,DbTransaction transaction,Type dbContextType)
+        {
+            this._relationalConnection = _relationalConnection;
+            _dbContextType = dbContextType;
+            ((IShardingTransaction)Context).UseShardingTransaction(transaction);
+        }
+#endif
+
         public void ResetState()
         {
             _relationalConnection.ResetState();
         }
 
+#if !EFCORE2
         public Task ResetStateAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             return _relationalConnection.ResetStateAsync(cancellationToken);
         }
 
+#endif
 
         public IDbContextTransaction BeginTransaction()
         {
@@ -122,7 +136,31 @@ namespace ShardingCore.EFCores
         public DbConnection DbConnection => _relationalConnection.DbConnection;
 
         public DbContext Context =>
+#if !EFCORE2
             _relationalConnection.Context;
+#endif
+#if EFCORE2
+            GetDbContext();
+
+        private DbContext GetDbContext()
+        {
+            var namedConnectionStringResolver = ((RelationalConnectionDependencies)_relationalConnection.GetPropertyValue("Dependencies")).ConnectionStringResolver;
+            var serviceProvider = (IServiceProvider)namedConnectionStringResolver.GetPropertyValue("ApplicationServiceProvider");
+            var dbContext = (DbContext)serviceProvider.GetService(_dbContextType);
+            return dbContext;
+        }
+
+
+        public void RegisterBufferable(IBufferable bufferable)
+        {
+            _relationalConnection.RegisterBufferable(bufferable);
+        }
+
+        public Task RegisterBufferableAsync(IBufferable bufferable, CancellationToken cancellationToken)
+        {
+            return _relationalConnection.RegisterBufferableAsync(bufferable, cancellationToken);
+        }
+#endif
         public Guid ConnectionId => _relationalConnection.ConnectionId;
 
         public int? CommandTimeout
@@ -163,6 +201,7 @@ namespace ShardingCore.EFCores
 
 
         public string ConnectionString => _relationalConnection.ConnectionString;
+#if !EFCORE2
 
         public async Task<IDbContextTransaction> UseTransactionAsync(DbTransaction transaction, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -181,5 +220,6 @@ namespace ShardingCore.EFCores
         {
             return _relationalConnection.DisposeAsync();
         }
+#endif
     }
 }

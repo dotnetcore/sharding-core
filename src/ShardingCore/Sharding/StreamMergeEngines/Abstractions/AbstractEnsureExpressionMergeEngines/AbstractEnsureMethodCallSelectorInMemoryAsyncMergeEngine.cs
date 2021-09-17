@@ -3,7 +3,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureExpressionMergeEngines
@@ -32,7 +31,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions.AbstractEnsureEx
                     return queryable.Select(selector);
                 }
 
-                throw new ShardingCoreException($"expression is not selector:{secondExpression.ShardingPrint()}");   
+#if !EFCORE2
+                throw new ShardingCoreException($"expression is not selector:{secondExpression.Print()}");   
+#endif
+#if EFCORE2
+                throw new ShardingCoreException($"expression is not selector:{secondExpression}");   
+#endif
             }
             return queryable;
         }

@@ -42,10 +42,26 @@ namespace ShardingCore.Core.PhysicTables
             return Equals((DefaultPhysicTable) obj);
         }
 
+#if !EFCORE2
 
         public override int GetHashCode()
         {
             return HashCode.Combine(OriginalName, Tail, VirtualTable);
         }
+#endif
+
+#if EFCORE2
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (OriginalName != null ? OriginalName.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Tail != null ? Tail.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (VirtualTable != null ? VirtualTable.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+#endif
     }
 }

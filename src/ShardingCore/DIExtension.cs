@@ -55,8 +55,13 @@ namespace ShardingCore
             Action<DbContextOptionsBuilder> shardingOptionAction = option =>
             {
                 optionsAction?.Invoke(option);
+#if !EFCORE2
                 option.UseSharding();
 
+#endif
+#if EFCORE2
+                option.UseSharding<TShardingDbContext>();
+#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -90,7 +95,13 @@ namespace ShardingCore
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
             {
                 optionsAction?.Invoke(sp,option);
+#if !EFCORE2
                 option.UseSharding();
+
+#endif
+#if EFCORE2
+                option.UseSharding<TShardingDbContext>();
+#endif
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             services.AddInternalShardingCore();
@@ -168,6 +179,7 @@ namespace ShardingCore
             services.AddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
+#if !EFCORE2
         internal static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
             return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
@@ -175,6 +187,16 @@ namespace ShardingCore
                 .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
         }
         
+#endif
+#if EFCORE2
+        internal static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
+        }
+        
+#endif
         
         internal static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
         {

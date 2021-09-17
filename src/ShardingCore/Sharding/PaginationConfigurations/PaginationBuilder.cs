@@ -53,14 +53,5 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         //    _metadata.TakeInMemoryCountIfLe = count;
         //    return this;
         //}
-
-        /// <summary>
-        /// 启用多次查询排序
-        /// </summary>
-        /// <returns></returns>
-        public PaginationBuilder<TEntity> ConfigMultiQueryShardingPage()
-        {
-            return this;
-        }
     }
 }

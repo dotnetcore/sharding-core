@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Version>$(EFCORE2)</Version>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <DefineConstants>TRACE;DEBUG;EFCORE2;</DefineConstants>
+        <LangVersion>8.0</LangVersion>
+        <AssemblyName>ShardingCore</AssemblyName>
+        <RootNamespace>ShardingCore</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.2x.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\src\ShardingCore\**\*.cs" />
+        <Compile Remove="..\..\src\ShardingCore\obj\**" />
+        <Compile Remove="..\..\src\ShardingCore\bin\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
+    </ItemGroup>
+
+</Project>
