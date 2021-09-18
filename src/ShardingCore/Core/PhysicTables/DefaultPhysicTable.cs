@@ -18,7 +18,7 @@ namespace ShardingCore.Core.PhysicTables
         public DefaultPhysicTable(IVirtualTable virtualTable, string tail)
         {
             VirtualTable = virtualTable;
-            OriginalName = virtualTable.GetOriginalTableName();
+            OriginalName = virtualTable.GetVirtualTableName();
             Tail = tail;
             EntityType = VirtualTable.EntityType;
         }

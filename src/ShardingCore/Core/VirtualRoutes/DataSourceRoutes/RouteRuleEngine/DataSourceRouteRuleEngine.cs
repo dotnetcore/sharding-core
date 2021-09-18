@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
-using ShardingCore.Core.VirtualDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -36,11 +36,11 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         {
             if (!shardingDbContextType.IsShardingDataSource())
                 throw new InvalidOperationException($"{shardingDbContextType} must impl {nameof(IShardingDbContext)}");
-            var dataSourceMaps = new Dictionary<Type, ISet<IPhysicDataSource>>();
+            var dataSourceMaps = new Dictionary<Type, ISet<string>>();
             var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !o.IsShardingDataSource());
             //存在不分表的
             if (notShardingDataSourceEntityType != null)
-                dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<IPhysicDataSource>() { _virtualDataSourceManager.GetDefaultDataSource(shardingDbContextType) });
+                dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { _virtualDataSourceManager.GetDefaultDataSourceName(shardingDbContextType) });
 
 
             var queryEntities = routeRuleContext.QueryEntities.Where(o => o.IsShardingDataSource()).ToList();
@@ -48,8 +48,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
                 throw new ShardingCoreNotSupportedException($"{routeRuleContext.Queryable.ShardingPrint()}");
             foreach (var queryEntity in queryEntities)
             {
-                var virtualDataSource = _virtualDataSourceManager.GetVirtualDataSource(queryEntity);
-                var dataSourceConfigs = virtualDataSource.RouteTo(new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
+                var virtualDataSource = _virtualDataSourceManager.GetVirtualDataSource(shardingDbContextType);
+                var dataSourceConfigs = virtualDataSource.RouteTo(queryEntity,new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
                 if (!dataSourceMaps.ContainsKey(queryEntity))
                 {
                     dataSourceMaps.Add(queryEntity, dataSourceConfigs.ToHashSet());

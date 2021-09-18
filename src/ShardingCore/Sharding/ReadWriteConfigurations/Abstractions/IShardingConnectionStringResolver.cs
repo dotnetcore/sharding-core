@@ -15,7 +15,12 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     */
     public interface IShardingConnectionStringResolver
     {
-        Type ShardingDbContextType { get; }
-        string GetConnectionString();
+        string GetConnectionString(string dataSourceName);
+    }
+
+    public interface IShardingConnectionStringResolver<TShardingDbContext> : IShardingConnectionStringResolver
+        where TShardingDbContext : DbContext, IShardingDbContext
+    {
+
     }
 }

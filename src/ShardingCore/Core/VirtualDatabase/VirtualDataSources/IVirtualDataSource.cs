@@ -18,21 +18,29 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     /// </summary>
     public interface IVirtualDataSource
     {
-        Type EntityType{get;}
+        Type ShardingDbContextType{get; }
+        string DefaultDataSourceName { get; }
 
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
-        /// <returns></returns>
-        List<IPhysicDataSource> RouteTo(ShardingDataSourceRouteConfig routeRouteConfig);
+        /// <returns>data source names</returns>
+        List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig);
 
         /// <summary>
         /// 获取当前数据源的路由
         /// </summary>
         /// <returns></returns>
-        IVirtualDataSourceRoute GetRoute();
+        IVirtualDataSourceRoute GetRoute(Type entityType);
 
         ISet<IPhysicDataSource> GetAllPhysicDataSources();
+        IPhysicDataSource GetDefaultDataSource();
+        /// <summary>
+        /// 获取数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        IPhysicDataSource GetPhysicDataSource(string dataSourceName);
 
         /// <summary>
         /// 添加物理表 add physic data source
@@ -41,21 +49,5 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// <returns>是否添加成功</returns>
         bool AddPhysicDataSource(IPhysicDataSource physicDataSource);
 
-        /// <summary>
-        /// add virtual table
-        /// </summary>
-        /// <param name="dsname"></param>
-        /// <param name="virtualTable"></param>
-        /// <returns></returns>
-        bool AddVirtualTable(string dsname, IVirtualTable virtualTable);
-        /// <summary>
-        /// 获取所有的虚拟表
-        /// </summary>
-        /// <returns></returns>
-        ISet<IVirtualTable> GetVirtualTables();
-    }
-    public interface IVirtualDataSource<T> : IVirtualDataSource where T : class
-    {
-        new IVirtualDataSourceRoute<T> GetRoute();
     }
 }

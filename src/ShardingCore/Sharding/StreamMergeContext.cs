@@ -37,7 +37,7 @@ namespace ShardingCore.Sharding
         
         public SelectContext SelectContext { get;}
         public GroupByContext GroupByContext { get; }
-        //public IEnumerable<TableRouteResult> RouteResults { get; }
+        public IEnumerable<TableRouteResult> TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext, IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory, ITableRouteRuleEngineFactory tableTableRouteRuleEngineFactory, IRouteTailFactory routeTailFactory)
@@ -57,6 +57,7 @@ namespace ShardingCore.Sharding
             _reWriteSource = reWriteResult.ReWriteQueryable;
             DataSourceRouteResult =
                 dataSourceRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
+            TableRouteResults= _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
@@ -86,13 +87,13 @@ namespace ShardingCore.Sharding
         /// <summary>
         /// 创建对应的dbcontext
         /// </summary>
-        /// <param name="dsname">data source name</param>
+        /// <param name="dataSourceName">data source name</param>
         /// <param name="tableRouteResult"></param>
         /// <returns></returns>
-        public DbContext CreateDbContext(string dsname,TableRouteResult tableRouteResult)
+        public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            return _shardingDbContext.GetDbContext(dsname,false, routeTail);
+            return _shardingDbContext.GetDbContext(dataSourceName, false, routeTail);
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult)
@@ -133,11 +134,6 @@ namespace ShardingCore.Sharding
         public IShardingDbContext GetShardingDbContext()
         {
             return _shardingDbContext;
-        }
-
-        public IEnumerable<TableRouteResult> GetTableRouteResults(string dsname)
-        {
-            return _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, dsname, _source);
         }
     }
 }

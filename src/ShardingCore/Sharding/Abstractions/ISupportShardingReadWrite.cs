@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace ShardingCore.Sharding.Abstractions
@@ -12,11 +13,9 @@ namespace ShardingCore.Sharding.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IShardingReadWriteSupport
+    public interface ISupportShardingReadWrite
     {
-        int ReadWritePriority { get; set; }
-        bool ReadWriteSupport { get; set; }
-        ReadConnStringGetStrategyEnum GetReadConnStringGetStrategy();
-        string GetWriteConnectionString(string dsName);
+        int ReadWriteSeparationPriority { get; set; }
+        bool ReadWriteSeparation { get; set; }
     }
 }

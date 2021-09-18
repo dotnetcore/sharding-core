@@ -12,6 +12,7 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.TableCreator
@@ -86,7 +87,7 @@ namespace ShardingCore.TableCreator
                             if (!shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                             {
                                 _logger.LogWarning(
-                                    $"create table error maybe table:[{virtualTable.GetOriginalTableName()}{virtualTable.ShardingConfig.TailPrefix}{tail}]");
+                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.ShardingConfig.TailPrefix}{tail}]");
                                 throw new ShardingCreateException(" create table error :", ex);
                             }
                         }

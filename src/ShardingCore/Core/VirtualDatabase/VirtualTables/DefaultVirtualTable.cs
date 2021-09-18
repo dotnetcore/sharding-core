@@ -23,11 +23,10 @@ namespace ShardingCore.Core.VirtualTables
     /// 同数据库虚拟表
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DefaultVirtualTable<T> : IVirtualTable<T> where T : class
+    public class DefaultVirtualTable<T> : IVirtualTable<T> where T : class,IShardingTable
     {
         private readonly IVirtualTableRoute<T> _virtualTableRoute;
-        public string DSName { get; }
-
+          
         /// <summary>
         /// 分表的对象类型
         /// </summary>
@@ -45,17 +44,14 @@ namespace ShardingCore.Core.VirtualTables
         /// </summary>
         public bool EnablePagination => PaginationMetadata != null;
 
-        public IVirtualDataSource VirtualDataSource { get; }
 
         private readonly ConcurrentDictionary<IPhysicTable, object> _physicTables = new ConcurrentDictionary<IPhysicTable, object>();
 
-        public DefaultVirtualTable(string dsname,IVirtualDataSource<T> virtualDataSource,IVirtualTableRoute<T> virtualTableRoute)
+        public DefaultVirtualTable(IVirtualTableRoute<T> virtualTableRoute)
         {
-            DSName = dsname;
                _virtualTableRoute = virtualTableRoute;
             EntityType = typeof(T);
             ShardingConfig = ShardingKeyUtil.Parse(EntityType);
-            VirtualDataSource = virtualDataSource;
             var paginationConfiguration = virtualTableRoute.CreatePaginationConfiguration();
             if (paginationConfiguration != null)
             {
@@ -103,7 +99,7 @@ namespace ShardingCore.Core.VirtualTables
             ShardingConfig.ShardingOriginalTable = originalTableName;
         }
 
-        public string GetOriginalTableName()
+        public string GetVirtualTableName()
         {
             return ShardingConfig.ShardingOriginalTable;
         }

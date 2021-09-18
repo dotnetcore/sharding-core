@@ -19,10 +19,6 @@ namespace ShardingCore.Core.VirtualTables
     public interface IVirtualTable
     {
         /// <summary>
-        /// 数据源名称
-        /// </summary>
-        string DSName { get; }
-        /// <summary>
         /// 分表的类型
         /// </summary>
         Type EntityType { get; }
@@ -38,10 +34,6 @@ namespace ShardingCore.Core.VirtualTables
         /// 是否启用分页配置
         /// </summary>
         bool EnablePagination { get; }
-        /// <summary>
-        /// 所属虚拟数据库
-        /// </summary>
-        IVirtualDataSource VirtualDataSource { get; }
 
         /// <summary>
         /// 获取所有的物理表
@@ -73,7 +65,7 @@ namespace ShardingCore.Core.VirtualTables
         /// 获取原始表名 get original table name
         /// </summary>
         /// <returns></returns>
-        string GetOriginalTableName();
+        string GetVirtualTableName();
         /// <summary>
         /// 获取当前虚拟表的路由 get this virtual table route
         /// </summary>
@@ -87,7 +79,7 @@ namespace ShardingCore.Core.VirtualTables
         List<string> GetTaleAllTails();
     }
 
-    public interface IVirtualTable<T> : IVirtualTable where T : class
+    public interface IVirtualTable<T> : IVirtualTable where T : class,IShardingTable
     {
         new IVirtualTableRoute<T> GetVirtualRoute();
     }

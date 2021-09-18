@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;

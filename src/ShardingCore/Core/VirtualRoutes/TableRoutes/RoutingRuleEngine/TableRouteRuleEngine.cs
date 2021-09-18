@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;

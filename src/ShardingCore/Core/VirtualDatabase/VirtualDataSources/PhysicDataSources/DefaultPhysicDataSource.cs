@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ShardingCore.Core.VirtualDataSources;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
 {
@@ -14,24 +13,23 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
     */
     public class DefaultPhysicDataSource:IPhysicDataSource
     {
-        public DefaultPhysicDataSource(string dsName, string connectionString, IVirtualDataSource virtualDataSource)
+        public DefaultPhysicDataSource(string dsName, string connectionString, bool isDefault)
         {
-            DSName = dsName;
+            DataSourceName = dsName;
             ConnectionString = connectionString;
-            VirtualDataSource = virtualDataSource;
-            EntityType = virtualDataSource.EntityType;
+            IsDefault = isDefault;
         }
 
 
-        public string DSName { get; }
+
+        public string DataSourceName { get; }
         public string ConnectionString { get; }
-        public Type EntityType { get; }
-        public IVirtualDataSource VirtualDataSource { get; }
+        public bool IsDefault { get; }
 
 
         protected bool Equals(DefaultPhysicDataSource other)
         {
-            return DSName == other.DSName;
+            return DataSourceName == other.DataSourceName;
         }
 
         public override bool Equals(object obj)
@@ -44,7 +42,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
 
         public override int GetHashCode()
         {
-            return (DSName != null ? DSName.GetHashCode() : 0);
+            return (DataSourceName != null ? DataSourceName.GetHashCode() : 0);
         }
+
     }
 }

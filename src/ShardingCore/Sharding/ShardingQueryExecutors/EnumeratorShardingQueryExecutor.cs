@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.ShardingPage.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;

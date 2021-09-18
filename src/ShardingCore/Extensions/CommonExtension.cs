@@ -78,7 +78,7 @@ namespace ShardingCore.Extensions
         // /// <returns></returns>
         // public static List<VirtualTableDbContextConfig> GetVirtualTableDbContextConfigs(this List<IVirtualTable> virtualTables)
         // {
-        //     return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetOriginalTableName(), o.ShardingConfigOption.TailPrefix)).ToList();
+        //     return virtualTables.Select(o => new VirtualTableDbContextConfig(o.EntityType, o.GetVirtualTableName(), o.ShardingConfigOption.TailPrefix)).ToList();
         // }
         /// <summary>
         /// 是否是集合contains方法

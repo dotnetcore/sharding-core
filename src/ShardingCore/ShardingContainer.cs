@@ -33,5 +33,15 @@ namespace ShardingCore
         {
             return Services.GetService(serviceType);
         }
+        public static object GetGenericTypeService0(Type genericServiceType,Type genericArg0Type)
+        {
+            var serviceType = genericServiceType.MakeGenericType(genericArg0Type);
+            return GetService(serviceType);
+        }
+        public static object GetGenericTypeService1(Type genericServiceType, Type genericArg0Type, Type genericArg1Type)
+        {
+            var serviceType = genericServiceType.MakeGenericType(genericArg0Type, genericArg1Type);
+            return GetService(serviceType);
+        }
     }
 }

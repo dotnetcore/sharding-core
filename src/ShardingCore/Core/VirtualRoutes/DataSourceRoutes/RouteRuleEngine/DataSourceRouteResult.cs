@@ -14,13 +14,13 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     */
     public class DataSourceRouteResult
     {
-        public DataSourceRouteResult(ISet<IPhysicDataSource> intersectDataSources)
+        public DataSourceRouteResult(ISet<string> intersectDataSources)
         {
             IntersectDataSources = intersectDataSources;
         }
         /// <summary>
         /// 交集
         /// </summary>
-        public ISet<IPhysicDataSource> IntersectDataSources { get; }
+        public ISet<string> IntersectDataSources { get; }
     }
 }

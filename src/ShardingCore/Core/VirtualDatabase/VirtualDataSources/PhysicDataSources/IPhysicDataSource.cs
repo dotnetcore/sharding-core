@@ -1,5 +1,4 @@
 ﻿using System;
-using ShardingCore.Core.VirtualDataSources;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
 {
@@ -15,15 +14,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
         /// <summary>
         /// data source name
         /// </summary>
-        string DSName { get; }
+        string DataSourceName { get; }
         /// <summary>
         /// 数据源链接
         /// </summary>
         string ConnectionString { get; }
-        /// <summary>
-        /// 映射类类型
-        /// </summary>
-        Type EntityType { get; }
-        IVirtualDataSource VirtualDataSource { get; }
+        bool IsDefault { get; }
     }
 }

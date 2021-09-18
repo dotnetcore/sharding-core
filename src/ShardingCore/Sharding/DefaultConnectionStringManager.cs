@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding
@@ -13,13 +11,17 @@ namespace ShardingCore.Sharding
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DefaultConnectionStringManager<TShardingDbContext>:IConnectionStringManager where TShardingDbContext:DbContext,IShardingDbContext
+    public class DefaultConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public Type ShardingDbContextType => typeof(TShardingDbContext);
+        private readonly IVirtualDataSource _virtualDataSource;
 
-        public string GetConnectionString(IShardingDbContext shardingDbContext)
+        public DefaultConnectionStringManager(IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager)
         {
-            return shardingDbContext.GetConnectionString();
+            _virtualDataSource = virtualDataSourceManager.GetVirtualDataSource();
+        }
+        public string GetConnectionString(string dataSourceName)
+        {
+            return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
         }
     }
 }

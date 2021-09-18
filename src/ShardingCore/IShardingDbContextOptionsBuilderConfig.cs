@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {
@@ -15,8 +16,10 @@ namespace ShardingCore
     */
     public interface IShardingDbContextOptionsBuilderConfig
     {
-        Type ShardingDbContextType { get; }
         DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
-        DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,DbContextOptionsBuilder dbContextOptionsBuilder);
+        DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder);
+    }
+    public interface IShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig where TShardingDbContext:DbContext,IShardingDbContext
+    {
     }
 }

@@ -11,7 +11,6 @@ namespace ShardingCore.Core.PhysicTables
 */
     public interface IPhysicTable
     {
-        string DSName { get;}
         /// <summary>
         /// 表全称
         /// </summary>

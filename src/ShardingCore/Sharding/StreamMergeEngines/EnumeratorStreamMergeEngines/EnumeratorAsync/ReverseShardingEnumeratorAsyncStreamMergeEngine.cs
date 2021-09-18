@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var dataSourceRouteResult = StreamMergeContext.DataSourceRouteResult;
             var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
             {
-                var dsname = physicDataSource.DSName;
+                var dsname = physicDataSource.DataSourceName;
                 return StreamMergeContext.GetTableRouteResults(dsname).Select(routeResult =>
                 {
                     var newQueryable = CreateAsyncExecuteQueryable(dsname,reverseOrderQueryable, routeResult);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.Abstractions;
 
@@ -33,14 +34,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         /// <param name="dsname"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public TableRouteRuleContext<T> CreateContext<T>(string dsname,IQueryable<T> queryable)
+        public TableRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
         {
-            return new TableRouteRuleContext<T>(dsname,queryable, _virtualTableManager);
+            return new TableRouteRuleContext<T>(queryable, _virtualTableManager);
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(Type shardingDbContextType, string dsname, IQueryable<T> queryable)
+        public IEnumerable<TableRouteResult> Route<T>(Type shardingDbContextType,  IQueryable<T> queryable)
         {
-            var ruleContext = CreateContext<T>(dsname,queryable);
+            var ruleContext = CreateContext<T>(queryable);
             return _tableRouteRuleEngine.Route(shardingDbContextType,ruleContext);
         }
 

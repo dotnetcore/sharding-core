@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.Sharding.Abstractions
@@ -26,11 +27,11 @@ namespace ShardingCore.Sharding.Abstractions
         /// <summary>
         /// create DbContext
         /// </summary>
-        /// <param name="dsName">data source name</param>
-        /// <param name="track">true not care db context life, false need call dispose()</param>
+        /// <param name="dataSourceName">data source</param>
+        /// <param name="parallelQuery">true not care db context life, false need call dispose()</param>
         /// <param name="routeTail"></param>
         /// <returns></returns>
-        DbContext GetDbContext(string dsName,bool track,IRouteTail routeTail);
+        DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail);
         /// <summary>
         /// 创建通用的db context
         /// </summary>
@@ -48,12 +49,11 @@ namespace ShardingCore.Sharding.Abstractions
         IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
             where TEntity : class;
 
-        string GetConnectionString(string dsName);
 
 
     }
 
-    public interface IShardingDbContext<T> : IShardingDbContext where T : DbContext, IShardingTableDbContext
+    public interface IShardingDbContext<T> : IShardingDbContext where T : DbContext
     {
 
     }

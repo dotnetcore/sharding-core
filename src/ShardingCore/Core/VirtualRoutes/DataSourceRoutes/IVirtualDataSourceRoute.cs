@@ -18,19 +18,19 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <summary>
         /// 根据查询条件路由返回物理数据源
         /// </summary>
-        /// <param name="allPhysicDataSources"></param>
         /// <param name="queryable"></param>
-        /// <returns></returns>
-        List<IPhysicDataSource> RouteWithWhere(ISet<IPhysicDataSource> allPhysicDataSources,IQueryable queryable);
+        /// <returns>data source name</returns>
+        List<string> RouteWithWhere(IQueryable queryable);
 
         /// <summary>
         /// 根据值进行路由
         /// </summary>
-        /// <param name="allPhysicDataSources"></param>
         /// <param name="shardingKeyValue"></param>
-        /// <returns></returns>
-        IPhysicDataSource RouteWithValue(ISet<IPhysicDataSource> allPhysicDataSources, object shardingKeyValue);
-        
+        /// <returns>data source name</returns>
+        string RouteWithValue(object shardingKeyValue);
+
+        ISet<string> GetAllDataSourceNames();
+
     }
     
     public interface IVirtualDataSourceRoute<T> : IVirtualDataSourceRoute where T : class

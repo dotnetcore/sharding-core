@@ -84,5 +84,16 @@ namespace ShardingCore.Extensions
             return property != null;
         }
 
+
+
+        public static Type GetGenericType0(this Type genericType,Type arg0Type)
+        {
+            return genericType.MakeGenericType(arg0Type);
+        }
+        public static Type GetGenericType1(this Type genericType,Type arg0Type, Type arg1Type)
+        {
+            return genericType.MakeGenericType(arg0Type, arg1Type);
+        }
+
     }
 }

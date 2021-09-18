@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -14,7 +15,9 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IConnectionStringManager
     {
-        Type ShardingDbContextType { get; }
-        string GetConnectionString(string dsName,IShardingDbContext shardingDbContext);
+        string GetConnectionString(string dataSourceName);
+    }
+    public interface IConnectionStringManager<TShardingDbContext>: IConnectionStringManager where TShardingDbContext:DbContext,IShardingDbContext
+    {
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
@@ -159,7 +160,7 @@ namespace ShardingCore
                         if (!shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                         {
                             _logger.LogWarning(
-                                $"table :{virtualTable.GetOriginalTableName()}{shardingConfig.TailPrefix}{tail} will created.",e);
+                                $"table :{virtualTable.GetVirtualTableName()}{shardingConfig.TailPrefix}{tail} will created.",e);
                         }
                     }
                 }

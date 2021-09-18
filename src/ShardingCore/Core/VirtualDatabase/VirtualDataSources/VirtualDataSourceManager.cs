@@ -2,12 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Helpers;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
+using ShardingCore.Core.VirtualRoutes;
 
-namespace ShardingCore.Core.VirtualDataSources
+namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
     /*
     * @Author: xjm
@@ -18,10 +16,12 @@ namespace ShardingCore.Core.VirtualDataSources
     public class VirtualDataSourceManager : IVirtualDataSourceManager
     {
         private readonly IServiceProvider _serviceProvider;
+        /// <summary>
+        /// {sharding db context type :{entity type:virtual data source}}
+        /// </summary>
         private readonly ConcurrentDictionary<Type, IVirtualDataSource> _virtualDataSources = new ConcurrentDictionary<Type, IVirtualDataSource>();
 
-        private readonly Dictionary<string, ISet<Type>> _shardingConnectKeys = new Dictionary<string,ISet<Type>>();
-        private readonly Dictionary<Type, ISet<string>> _entityTypeConnectKeyIndex = new Dictionary<Type, ISet<string>>();
+
 
         public VirtualDataSourceManager(IServiceProvider serviceProvider)
         {
@@ -40,67 +40,33 @@ namespace ShardingCore.Core.VirtualDataSources
             //}
         }
 
-        public ISet<string> GetAllShardingConnectKeys()
+        public bool AddPhysicDataSource(Type shardingDbContextType, IPhysicDataSource physicDataSource)
         {
-            return _shardingConnectKeys.Keys.ToHashSet();
+            throw new NotImplementedException();
         }
 
-
-        public List<IVirtualDataSource> GetAllDataSources()
+        public IVirtualDataSource GetVirtualDataSource(Type shardingDbContextType)
         {
-            return _virtualDataSources.Select(o => o.Value).ToList();
+            if (!_virtualDataSources.TryGetValue(shardingDbContextType, out var virtualDataSource))
+                throw new InvalidOperationException($"not found virtual data source sharding db context type:[{shardingDbContextType.FullName}]");
+            return virtualDataSource;
         }
 
-        public void AddConnectEntities(string connectKey, Type entityType)
+        public IPhysicDataSource GetDefaultDataSource(Type shardingDbContextType)
         {
-            if (!_shardingConnectKeys.ContainsKey(connectKey))
-                throw new ShardingCoreException("connectKey not init");
-            _shardingConnectKeys[connectKey].Add(entityType);
-            BuildIndex(connectKey, entityType);
+            var virtualDataSource = GetVirtualDataSource(shardingDbContextType);
+            return virtualDataSource.GetDefaultDataSource();
         }
 
-        private void BuildIndex(string connectKey, Type entityType)
+        public string GetDefaultDataSourceName(Type shardingDbContextType)
         {
-            
-            if (_entityTypeConnectKeyIndex.ContainsKey(entityType))
-            {
-                _entityTypeConnectKeyIndex[entityType].Add(connectKey);
-            }
-            else
-            {
-                _entityTypeConnectKeyIndex.Add(entityType,new HashSet<string>(){ connectKey
-                });
-            }
+            var virtualDataSource = GetVirtualDataSource(shardingDbContextType);
+            return virtualDataSource.DefaultDataSourceName;
         }
 
-        public IVirtualDataSource GetVirtualDataSource(Type shardingEntityType)
+        public IPhysicDataSource GetPhysicDataSource(Type shardingDbContextType, string dataSourceName)
         {
-            if (!_virtualDataSources.TryGetValue(shardingEntityType, out var virtualTable) || virtualTable == null)
-                throw new VirtualDataSourceNotFoundException($"{shardingEntityType}");
-            return virtualTable;
-        }
-
-        public IVirtualDataSource<T> GetVirtualDataSource<T>() where T : class, IShardingDataSource
-        {
-            return (IVirtualDataSource<T>)GetVirtualDataSource(typeof(T));
-        }
-
-        public List<string> GetEntityTypeLinkedConnectKeys(Type shardingEntityType)
-        {
-            if (!_entityTypeConnectKeyIndex.ContainsKey(shardingEntityType))
-                throw new ShardingCoreException($"entity:[{shardingEntityType}] not found");
-            return _entityTypeConnectKeyIndex[shardingEntityType].ToList();
-        }
-
-        public void AddShardingConnectKey(string connectKey)
-        {
-            if (!_shardingConnectKeys.ContainsKey(connectKey))
-                _shardingConnectKeys.Add(connectKey,new HashSet<Type>());
-        }
-
-        public void AddVirtualDataSource(IVirtualDataSource virtualDataSource)
-        {
-            _virtualDataSources.TryAdd(virtualDataSource.EntityType, virtualDataSource);
+            throw new NotImplementedException();
         }
     }
 }

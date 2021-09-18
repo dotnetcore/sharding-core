@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
 {
@@ -13,7 +15,6 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     */
     public interface IReadWriteOptions
     {
-        Type ShardingDbContextType { get; }
         /// <summary>
         /// 默认读写配置优先级
         /// </summary>
@@ -23,5 +24,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
         /// </summary>
         bool ReadWriteSupport { get; }
         ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; }
+    }
+
+    public interface IReadWriteOptions<TShardingDbContext> : IReadWriteOptions
+        where TShardingDbContext : DbContext, IShardingDbContext
+    {
+
     }
 }

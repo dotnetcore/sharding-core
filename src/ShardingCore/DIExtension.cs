@@ -17,6 +17,7 @@ using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;

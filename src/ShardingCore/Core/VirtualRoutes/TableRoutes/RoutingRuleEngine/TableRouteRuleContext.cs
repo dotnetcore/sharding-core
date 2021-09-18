@@ -1,4 +1,5 @@
 using System.Linq;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
@@ -13,14 +14,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     {
         private readonly IVirtualTableManager _virtualTableManager;
 
-        public TableRouteRuleContext(string dsname, IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
+        public TableRouteRuleContext(IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
         {
-            Dsname = dsname;
             Queryable = queryable;
             _virtualTableManager = virtualTableManager;
         }
 
-        public string Dsname { get; }
         public IQueryable<T> Queryable { get; }
 
     }

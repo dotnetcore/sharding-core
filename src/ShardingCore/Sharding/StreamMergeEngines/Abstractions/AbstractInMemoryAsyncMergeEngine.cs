@@ -83,19 +83,17 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         {
             var dataSourceRouteResult = _mergeContext.DataSourceRouteResult;
 
-            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
+            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
             {
-                var dsname = physicDataSource.DSName;
-                var tableRouteResults = _mergeContext.GetTableRouteResults(dsname);
-                return tableRouteResults.Select(routeResult =>
+                return _mergeContext.TableRouteResults.Select(routeResult =>
                 {
                     return Task.Run(async () =>
                     {
                         try
                         {
-                            var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dsname, routeResult);
+                            var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
                             var queryResult = await efQuery(asyncExecuteQueryable);
-                            return new RouteQueryResult<TResult>(dsname, routeResult, queryResult);
+                            return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
                             //}
                         }
                         catch (Exception e)
