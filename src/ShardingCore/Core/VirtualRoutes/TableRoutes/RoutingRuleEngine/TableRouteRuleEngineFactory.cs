@@ -17,15 +17,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     /// <summary>
     /// 表路由规则引擎工厂
     /// </summary>
-    public class TableRouteRuleEngineFactory : ITableRouteRuleEngineFactory
+    public class TableRouteRuleEngineFactory<TShardingDbContext> : ITableRouteRuleEngineFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ITableRouteRuleEngine _tableRouteRuleEngine;
-        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly ITableRouteRuleEngine<TShardingDbContext> _tableRouteRuleEngine;
 
-        public TableRouteRuleEngineFactory(ITableRouteRuleEngine tableRouteRuleEngine, IVirtualTableManager virtualTableManager)
+        public TableRouteRuleEngineFactory(ITableRouteRuleEngine<TShardingDbContext> tableRouteRuleEngine)
         {
             _tableRouteRuleEngine = tableRouteRuleEngine;
-            _virtualTableManager = virtualTableManager;
         }
         /// <summary>
         /// 创建表路由上下文
@@ -36,18 +34,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         /// <returns></returns>
         public TableRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
         {
-            return new TableRouteRuleContext<T>(queryable, _virtualTableManager);
+            return new TableRouteRuleContext<T>(queryable);
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(Type shardingDbContextType,  IQueryable<T> queryable)
+        public IEnumerable<TableRouteResult> Route<T>(IQueryable<T> queryable)
         {
             var ruleContext = CreateContext<T>(queryable);
-            return _tableRouteRuleEngine.Route(shardingDbContextType,ruleContext);
+            return _tableRouteRuleEngine.Route(ruleContext);
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(Type shardingDbContextType, TableRouteRuleContext<T> ruleContext)
+        public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> ruleContext)
         {
-            return _tableRouteRuleEngine.Route(shardingDbContextType,ruleContext);
+            return _tableRouteRuleEngine.Route(ruleContext);
         }
     }
 }

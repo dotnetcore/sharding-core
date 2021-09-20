@@ -15,40 +15,28 @@ namespace ShardingCore.DbContexts
     * @Date: Thursday, 24 December 2020 08:22:48
     * @Email: 326308290@qq.com
     */
-    public class ShardingDbContextFactory:IShardingDbContextFactory
+    public class ShardingDbContextFactory<TShardingDbContext> : IShardingDbContextFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IEnumerable<IShardingDbContextCreatorConfig> _shardingDbContextCreatorConfigs;
+        private readonly IShardingDbContextCreatorConfig _shardingDbContextCreatorConfig;
 
         public ShardingDbContextFactory(IEnumerable<IShardingDbContextCreatorConfig> shardingDbContextCreatorConfigs)
         {
-            _shardingDbContextCreatorConfigs = shardingDbContextCreatorConfigs;
+            _shardingDbContextCreatorConfig = shardingDbContextCreatorConfigs
+                .FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))
+                ??throw new ShardingCoreException(
+                $"{typeof(TShardingDbContext).FullName} cant found DefaultShardingDbContextCreatorConfig<{typeof(TShardingDbContext).Name}> should use {nameof(DIExtension.AddShardingDbContext)}");
         }
-        public DbContext Create(Type shardingDbContextType, ShardingDbContextOptions shardingDbContextOptions)
+        public DbContext Create(ShardingDbContextOptions shardingDbContextOptions)
         {
-            if (!shardingDbContextType.IsShardingDbContext())
-                throw new ShardingCoreException(
-                    $"{shardingDbContextType.FullName} must impl {nameof(IShardingDbContext)}");
-            var shardingDbContextCreatorConfig = _shardingDbContextCreatorConfigs.FirstOrDefault(o=>o.ShardingDbContextType==shardingDbContextType);
-            if (shardingDbContextCreatorConfig == null)
-            {
-                throw new ShardingCoreException(
-                    $"{shardingDbContextType.FullName} cant found DefaultShardingDbContextCreatorConfig<{shardingDbContextType.Name}> should use {nameof(DIExtension.AddShardingDbContext)}");
-            }
             var routeTail=shardingDbContextOptions.RouteTail;
             
-             var dbContext = shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
+             var dbContext = _shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
             if (dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.RouteTail = routeTail;
             }
             var dbContextModel = dbContext.Model;
             return dbContext;
-        }
-
-
-        public DbContext Create<TShardingDbContext>(ShardingDbContextOptions shardingDbContextOptions) where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            return Create(typeof(TShardingDbContext), shardingDbContextOptions);
         }
     }
 }

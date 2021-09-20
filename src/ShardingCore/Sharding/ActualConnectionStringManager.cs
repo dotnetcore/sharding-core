@@ -18,17 +18,17 @@ namespace ShardingCore.Sharding
     */
     public class ActualConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IConnectionStringManager _connectionStringManager;
+        private readonly IConnectionStringManager<TShardingDbContext> _connectionStringManager;
         private readonly IReadWriteOptions<TShardingDbContext> _readWriteOptions;
         private readonly bool _useReadWriteSeparation;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
-        private readonly IVirtualDataSource _virtualDataSource;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         public int ReadWriteSeparationPriority { get; set; }
         public bool ReadWriteSeparation { get; set; }
         private string _cacheConnectionString;
         public ActualConnectionStringManager()
         {
-            _virtualDataSource=ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>().GetVirtualDataSource();
+            _virtualDataSource=ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _connectionStringManager = ShardingContainer.GetService<IConnectionStringManager<TShardingDbContext>>();
             _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
             _shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();

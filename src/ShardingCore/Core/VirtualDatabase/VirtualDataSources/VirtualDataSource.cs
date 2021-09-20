@@ -3,11 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
@@ -18,21 +20,15 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     * @Date: Friday, 05 February 2021 15:21:04
     * @Email: 326308290@qq.com
     */
-    public class VirtualDataSource : IVirtualDataSource
+    public class VirtualDataSource<TShardingDbContext> : IVirtualDataSource<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
 
         private readonly ConcurrentDictionary<string, IPhysicDataSource> _physicDataSources =
             new ConcurrentDictionary<string, IPhysicDataSource>();
 
-        public string DefaultDataSourceName { get; }
-        public Type ShardingDbContextType { get; }
+        public string DefaultDataSourceName { get; private set; }
 
-        public VirtualDataSource(Type shardingDbContextType,string defaultDataSourceName)
-        {
-            ShardingDbContextType = shardingDbContextType;
-            DefaultDataSourceName = defaultDataSourceName??throw new ArgumentNullException(nameof(defaultDataSourceName));
-        }
 
 
 
@@ -93,9 +89,24 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public bool AddPhysicDataSource(IPhysicDataSource physicDataSource)
         {
-            if (physicDataSource.IsDefault && physicDataSource.DataSourceName != DefaultDataSourceName)
-                throw new InvalidOperationException($"default data source name:[{DefaultDataSourceName}],add physic default data source name:[{physicDataSource.DataSourceName}]");
+            if (physicDataSource.IsDefault)
+            {
+                if (!string.IsNullOrWhiteSpace(DefaultDataSourceName))
+                {
+                    throw new InvalidOperationException($"default data source name:[{DefaultDataSourceName}],add physic default data source name:[{physicDataSource.DataSourceName}]");
+                }
+
+                DefaultDataSourceName = physicDataSource.DataSourceName;
+            }
             return _physicDataSources.TryAdd(physicDataSource.DataSourceName, physicDataSource);
+        }
+
+        public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
+        {
+            if (!virtualDataSourceRoute.EntityType.IsShardingDataSource())
+                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityType.FullName} should impl {nameof(IShardingDataSource)}");
+
+            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityType, virtualDataSourceRoute);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
     public interface IVirtualDataSourceRoute
     {
         Type EntityType { get; }
+        string ShardingKeyToDataSourceName(object shardingKeyValue);
 
         /// <summary>
         /// 根据查询条件路由返回物理数据源

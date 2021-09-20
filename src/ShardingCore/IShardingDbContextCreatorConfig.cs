@@ -20,6 +20,5 @@ namespace ShardingCore
         Type ActualDbContextType { get; }
 
         DbContext Creator(ShardingDbContextOptions shardingDbContextOptions);
-
     }
 }

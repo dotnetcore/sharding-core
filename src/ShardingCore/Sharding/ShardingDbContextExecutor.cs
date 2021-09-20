@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
+﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
@@ -18,9 +8,15 @@ using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingTransactions;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ShardingCore.Sharding
 {
@@ -39,9 +35,9 @@ namespace ShardingCore.Sharding
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         public IShardingTransaction CurrentShardingTransaction { get; private set; }
-        private readonly IVirtualDataSourceManager _virtualDataSourceManager;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IVirtualTableManager _virtualTableManager;
-        private readonly IShardingDbContextFactory _shardingDbContextFactory;
+        private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private readonly IRouteTailFactory _routeTailFactory;
 
@@ -63,7 +59,7 @@ namespace ShardingCore.Sharding
 
         public ShardingDbContextExecutor()
         {
-            _virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>();
+            _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory<TShardingDbContext>>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer.GetService<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>>();
@@ -157,7 +153,7 @@ namespace ShardingCore.Sharding
 
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
-            var dataSourceName = _virtualDataSourceManager.GetDataSourceName(entity);
+            var dataSourceName = _virtualDataSource.GetDataSourceName(entity);
             var tail = _virtualTableManager.GetTableTail(entity);
 
             return CreateDbContext(true, dataSourceName, _routeTailFactory.Create(tail));
@@ -167,7 +163,7 @@ namespace ShardingCore.Sharding
         public IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> @where) where TEntity : class
         {
 
-            var dataSourceNames = _virtualDataSourceManager.GetDataSourceNames(where);
+            var dataSourceNames = _virtualDataSource.GetDataSourceNames(where);
 
             if (typeof(TEntity).IsShardingTable())
             {

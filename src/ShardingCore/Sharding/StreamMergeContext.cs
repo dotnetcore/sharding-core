@@ -7,8 +7,10 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Extensions;
 
 
 namespace ShardingCore.Sharding
@@ -24,8 +26,6 @@ namespace ShardingCore.Sharding
         //private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
         private readonly IShardingDbContext _shardingDbContext;
-        private readonly IDataSourceRouteRuleEngineFactory _dataSourceRouteRuleEngineFactory;
-        private readonly ITableRouteRuleEngineFactory _tableTableRouteRuleEngineFactory;
         private readonly IRouteTailFactory _routeTailFactory;
 
         private readonly IQueryable<T> _reWriteSource;
@@ -40,13 +40,14 @@ namespace ShardingCore.Sharding
         public IEnumerable<TableRouteResult> TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
 
-        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext, IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory, ITableRouteRuleEngineFactory tableTableRouteRuleEngineFactory, IRouteTailFactory routeTailFactory)
+        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,
+            DataSourceRouteResult dataSourceRouteResult,
+            IEnumerable<TableRouteResult> tableRouteResults,
+            IRouteTailFactory routeTailFactory)
         {
             //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;
-            _dataSourceRouteRuleEngineFactory = dataSourceRouteRuleEngineFactory;
-            _tableTableRouteRuleEngineFactory = tableTableRouteRuleEngineFactory;
             _routeTailFactory = routeTailFactory;
             var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
             Skip = reWriteResult.Skip;
@@ -55,9 +56,8 @@ namespace ShardingCore.Sharding
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
-            DataSourceRouteResult =
-                dataSourceRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
-            TableRouteResults= _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
+            DataSourceRouteResult = dataSourceRouteResult;
+            TableRouteResults= tableRouteResults;
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
@@ -135,5 +135,6 @@ namespace ShardingCore.Sharding
         {
             return _shardingDbContext;
         }
+
     }
 }

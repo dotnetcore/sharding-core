@@ -15,7 +15,7 @@ namespace ShardingCore
     */
     public class DefaultShardingDbContextCreatorConfig<TShardingDbContext,TActualDbContext> : IShardingDbContextCreatorConfig
         where TShardingDbContext : DbContext, IShardingDbContext
-        where TActualDbContext : DbContext, IShardingTableDbContext
+        where TActualDbContext : DbContext
     {
         private readonly Func<ShardingDbContextOptions, DbContext> _creator;
         public DefaultShardingDbContextCreatorConfig(Type actualDbContextType)

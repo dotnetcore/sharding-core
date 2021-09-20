@@ -15,7 +15,12 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     */
     public interface IDataSourceRouteRuleEngine
     {
-        DataSourceRouteResult Route<T,TShardingDbContext>(DataSourceRouteRuleContext<T> routeRuleContext) where TShardingDbContext:DbContext,IShardingDbContext;
-        DataSourceRouteResult Route<T>(Type shardingDbContextType, DataSourceRouteRuleContext<T> routeRuleContext);
+        DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> routeRuleContext);
+    }
+
+    public interface IDataSourceRouteRuleEngine<TShardingDbContext> : IDataSourceRouteRuleEngine
+        where TShardingDbContext : DbContext, IShardingDbContext
+    {
+
     }
 }

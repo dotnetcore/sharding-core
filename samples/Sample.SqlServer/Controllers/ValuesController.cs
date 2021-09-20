@@ -116,47 +116,47 @@ namespace Sample.SqlServer.Controllers
                 shardingPageResultAsync
             });
         }
-        [HttpGet]
-        public IActionResult Get3()
-        {
+        //[HttpGet]
+        //public IActionResult Get3()
+        //{
 
-            var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
-            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                dbContext2s.ForEach(dbContext =>
-                {
-                    dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
-                    {
-                        AgeGroup = 1000
-                    });
-                });
-                _defaultTableDbContext.SaveChanges();
-                tran.Commit();
-            }
-            var list = new List<SysUserMod>();
-            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+        //    var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
+        //    using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+        //    {
+        //        dbContext2s.ForEach(dbContext =>
+        //        {
+        //            dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
+        //            {
+        //                AgeGroup = 1000
+        //            });
+        //        });
+        //        _defaultTableDbContext.SaveChanges();
+        //        tran.Commit();
+        //    }
+        //    var list = new List<SysUserMod>();
+        //    var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
 
-            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkInsert(kv.Value);
-                });
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkDelete(kv.Value);
-                });
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkUpdate(kv.Value);
-                });
-                _defaultTableDbContext.SaveChanges();
-                tran.Commit();
-            }
+        //    using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+        //    {
+        //        dbContexts.ForEach(kv =>
+        //        {
+        //            kv.Key.BulkInsert(kv.Value);
+        //        });
+        //        dbContexts.ForEach(kv =>
+        //        {
+        //            kv.Key.BulkDelete(kv.Value);
+        //        });
+        //        dbContexts.ForEach(kv =>
+        //        {
+        //            kv.Key.BulkUpdate(kv.Value);
+        //        });
+        //        _defaultTableDbContext.SaveChanges();
+        //        tran.Commit();
+        //    }
 
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
     }
 }

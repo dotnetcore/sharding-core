@@ -19,11 +19,10 @@ namespace ShardingCore.Extensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public static class VirtualDataSourceManagerExtension
+    public static class VirtualDataSourceExtension
     {
-        public static string GetDataSourceName<TEntity>(this IVirtualDataSourceManager virtualDataSourceManager,TEntity entity) where TEntity : class
+        public static string GetDataSourceName<TShardingDbContext,TEntity>(this IVirtualDataSource<TShardingDbContext> virtualDataSource,TEntity entity) where TShardingDbContext : DbContext, IShardingDbContext where TEntity : class
         {
-            var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource();
             if (!entity.IsShardingDataSource())
                 return virtualDataSource.DefaultDataSourceName;
 
@@ -31,10 +30,10 @@ namespace ShardingCore.Extensions
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity as IShardingDataSource))[0];
         }
 
-        public static List<string> GetDataSourceNames<TEntity>(this IVirtualDataSourceManager virtualDataSourceManager,Expression<Func<TEntity, bool>> where)
+        public static List<string> GetDataSourceNames<TShardingDbContext, TEntity>(this IVirtualDataSource<TShardingDbContext> virtualDataSource, Expression<Func<TEntity, bool>> where)
+            where TShardingDbContext : DbContext, IShardingDbContext
             where TEntity : class
         {
-            var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource();
             return virtualDataSource.RouteTo(typeof(TEntity),new ShardingDataSourceRouteConfig(predicate: where))
                 .ToList();
         }

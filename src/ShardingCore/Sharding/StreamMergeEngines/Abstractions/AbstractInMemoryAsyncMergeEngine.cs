@@ -57,7 +57,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             }
 
 
-            _mergeContext = ShardingContainer.GetService<IStreamMergeContextFactory>().Create(_queryable, shardingDbContext);
+            _mergeContext = ((IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(shardingDbContext.GetType()))).Create(_queryable, shardingDbContext);
             _parllelDbbContexts = new List<DbContext>();
         }
         /// <summary>

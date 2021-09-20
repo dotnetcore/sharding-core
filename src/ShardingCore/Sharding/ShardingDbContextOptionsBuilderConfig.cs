@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> sameConnectionDbContextOptionsCreator, Action<string,DbContextOptionsBuilder> defaultQueryDbContextOptionsCreator)
         {

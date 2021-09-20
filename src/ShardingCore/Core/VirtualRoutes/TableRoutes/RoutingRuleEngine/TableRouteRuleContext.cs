@@ -12,12 +12,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 */
     public class TableRouteRuleContext<T>
     {
-        private readonly IVirtualTableManager _virtualTableManager;
 
-        public TableRouteRuleContext(IQueryable<T> queryable, IVirtualTableManager virtualTableManager)
+        public TableRouteRuleContext(IQueryable<T> queryable)
         {
             Queryable = queryable;
-            _virtualTableManager = virtualTableManager;
         }
 
         public IQueryable<T> Queryable { get; }

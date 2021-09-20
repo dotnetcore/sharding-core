@@ -35,7 +35,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
-            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager>();
+            _virtualTableManager = streamMergeContext.GetVirtualTableManager();
         }
 
         public IEnumeratorStreamMergeEngine<TEntity> ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -50,8 +50,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingTableQuery() && _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
-                var shardingEntityType = _streamMergeContext.RouteResults.First().ReplaceTables.First().EntityType;
-                var virtualTable = _virtualTableManager.GetVirtualTable(_streamMergeContext.GetShardingDbContext().ShardingDbContextType, shardingEntityType);
+                var shardingEntityType = _streamMergeContext.TableRouteResults.First().ReplaceTables.First().EntityType;
+                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntityType);
                 if (virtualTable.EnablePagination)
                 {
                     var paginationMetadata = virtualTable.PaginationMetadata;

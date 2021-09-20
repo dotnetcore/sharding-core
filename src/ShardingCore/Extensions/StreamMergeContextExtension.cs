@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Sharding;
 
 namespace ShardingCore.Extensions
@@ -20,11 +21,17 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static bool IsShardingQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
         {
-            return streamMergeContext.RouteResults.Count() > 1;
+            return streamMergeContext.TableRouteResults.Count() > 1;
         }
         public static bool IsSingleShardingTableQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
         {
-            return streamMergeContext.RouteResults.First().ReplaceTables.Count(o => o.EntityType.IsShardingTable()) == 1;
+            return streamMergeContext.TableRouteResults.First().ReplaceTables.Count(o => o.EntityType.IsShardingTable()) == 1;
+        }
+
+        public static IVirtualTableManager GetVirtualTableManager<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
+        {
+            return (IVirtualTableManager)ShardingContainer.GetService(
+                typeof(IVirtualTableManager<>).GetGenericType0(streamMergeContext.GetShardingDbContext().GetType()));
         }
     }
 }

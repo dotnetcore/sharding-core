@@ -29,6 +29,5 @@ namespace Sample.BulkConsole.DbContexts
                 entity.ToTable(nameof(Order));
             });
         }
-        public override Type ShardingDbContextType => this.GetType();
     }
 }

@@ -1,6 +1,7 @@
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
@@ -12,14 +13,14 @@ namespace ShardingCore.Sharding
     * @Date: Thursday, 28 January 2021 16:52:43
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContextFactory:IStreamMergeContextFactory
+    public class StreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        private readonly IDataSourceRouteRuleEngineFactory _dataSourceRouteRuleEngineFactory;
-        private readonly ITableRouteRuleEngineFactory _tableRouteRuleEngineFactory;
+        private readonly IDataSourceRouteRuleEngineFactory<TShardingDbContext> _dataSourceRouteRuleEngineFactory;
+        private readonly ITableRouteRuleEngineFactory<TShardingDbContext> _tableRouteRuleEngineFactory;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public StreamMergeContextFactory(IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory,
-            ITableRouteRuleEngineFactory tableRouteRuleEngineFactory,IRouteTailFactory routeTailFactory)
+        public StreamMergeContextFactory(IDataSourceRouteRuleEngineFactory<TShardingDbContext> dataSourceRouteRuleEngineFactory,
+            ITableRouteRuleEngineFactory<TShardingDbContext> tableRouteRuleEngineFactory,IRouteTailFactory routeTailFactory)
         {
             _dataSourceRouteRuleEngineFactory = dataSourceRouteRuleEngineFactory;
             _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
@@ -27,7 +28,9 @@ namespace ShardingCore.Sharding
         }
         public StreamMergeContext<T> Create<T>(IQueryable<T> queryable,IShardingDbContext shardingDbContext)
         {
-            return new StreamMergeContext<T>(queryable,shardingDbContext, _dataSourceRouteRuleEngineFactory, _tableRouteRuleEngineFactory, _routeTailFactory);
+            var dataSourceRouteResult = _dataSourceRouteRuleEngineFactory.Route(queryable);
+            var tableRouteResults = _tableRouteRuleEngineFactory.Route(queryable);
+            return new StreamMergeContext<T>(queryable,shardingDbContext, dataSourceRouteResult, tableRouteResults, _routeTailFactory);
         }
     }
 }

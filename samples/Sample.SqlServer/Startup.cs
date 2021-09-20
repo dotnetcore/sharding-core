@@ -29,26 +29,41 @@ namespace Sample.SqlServer
             services.AddControllers();
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
-
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
-                , op =>
-                 {
-                     op.EnsureCreatedWithOutShardingTable = true;
-                     op.CreateShardingTableOnStart = true;
-                     op.UseShardingOptionsBuilder(
-                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                             //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
-                             );//使用链接字符串创建dbcontext
-                     //op.UseReadWriteConfiguration(sp => new List<string>()
-                     //{
-                     //    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
-                     //    "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
-                     //}, ReadStrategyEnum.Random);
-                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                 });
+                    o => o.UseSqlServer(
+                        "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+                ).Begin(true)
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
+                .AddDefaultDataSource("ds0",
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+                .AddShardingTable(o =>
+                {
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+                }).End();
+
+            //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+            //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+            //    , op =>
+            //     {
+            //         op.EnsureCreatedWithOutShardingTable = true;
+            //         op.CreateShardingTableOnStart = true;
+            //         op.UseShardingOptionsBuilder(
+            //             (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
+            //             (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            //                 //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
+            //                 );//使用链接字符串创建dbcontext
+            //         //op.UseReadWriteConfiguration(sp => new List<string>()
+            //         //{
+            //         //    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
+            //         //    "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
+            //         //}, ReadStrategyEnum.Random);
+            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+            //     });
             
         }
 

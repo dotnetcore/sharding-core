@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
 {
@@ -12,10 +14,12 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IDataSourceRouteRuleEngineFactory
+
+    public interface IDataSourceRouteRuleEngineFactory<TShardingDbContext> 
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
         DataSourceRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable);
-        DataSourceRouteResult Route<T>(Type shardingDbContextType, IQueryable<T> queryable);
-        DataSourceRouteResult Route<T>(Type shardingDbContextType, DataSourceRouteRuleContext<T> ruleContext);
+        DataSourceRouteResult Route<T>(IQueryable<T> queryable);
+        DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> ruleContext);
     }
 }

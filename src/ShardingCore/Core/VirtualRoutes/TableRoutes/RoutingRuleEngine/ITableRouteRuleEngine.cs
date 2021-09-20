@@ -11,9 +11,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:25:22
 * @Email: 326308290@qq.com
 */
-    public interface ITableRouteRuleEngine
+
+    public interface ITableRouteRuleEngine<TShardingDbContext> 
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        IEnumerable<TableRouteResult> Route<T,TShardingDbContext>(TableRouteRuleContext<T> tableRouteRuleContext) where TShardingDbContext:DbContext,IShardingDbContext;
-        IEnumerable<TableRouteResult> Route<T>(Type shardingDbContextType,TableRouteRuleContext<T> tableRouteRuleContext);
+        IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext);
     }
 }

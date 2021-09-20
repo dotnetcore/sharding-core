@@ -17,10 +17,6 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IShardingDbContext
     {
         /// <summary>
-        /// 当前sharding的db context type
-        /// </summary>
-        Type ShardingDbContextType { get; }
-        /// <summary>
         /// 真实的db context type
         /// </summary>
         Type ActualDbContextType {  get;}

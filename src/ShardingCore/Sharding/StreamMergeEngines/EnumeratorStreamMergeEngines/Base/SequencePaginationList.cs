@@ -95,7 +95,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         {
             Skip = (int)skip;
             Take = (int)take;
-            DSName = routeQueryResult.DSName;
+            DSName = routeQueryResult.DataSourceName;
             TableRouteResult = routeQueryResult.TableRouteResult;
         }
 

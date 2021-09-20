@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,22 +17,26 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class RandomShardingConnectionStringResolver<TShardingDbContext> :IShardingConnectionStringResolver
+    public class RandomShardingConnectionStringResolver<TShardingDbContext> : IShardingConnectionStringResolver<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public Type ShardingDbContextType => typeof(TShardingDbContext);
-
-        private readonly string[] _connectionStrings;
-        private readonly int _length;
-        public RandomShardingConnectionStringResolver(IEnumerable<string> connectionStrings)
+        private readonly ConcurrentDictionary<string, ReadWriteRandomConnector> _connectors =
+            new ConcurrentDictionary<string, ReadWriteRandomConnector>();
+        public RandomShardingConnectionStringResolver(IEnumerable<ReadWriteRandomConnector> connectors)
         {
-            _connectionStrings = connectionStrings.ToArray();
-            _length = _connectionStrings.Length;
+            var enumerator = connectors.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var currentConnector = enumerator.Current;
+                if (currentConnector != null)
+                    _connectors.TryAdd(currentConnector.DataSourceName, currentConnector);
+            }
         }
-        public string GetConnectionString()
-        {
-            var next = RandomHelper.Next(0, _length);
-            return _connectionStrings[next];
 
+        public string GetConnectionString(string dataSourceName)
+        {
+            if (!_connectors.TryGetValue(dataSourceName, out var connector))
+                throw new InvalidOperationException($"read write connector not found, data source name:[{dataSourceName}]");
+            return connector.GetConnectionString();
         }
     }
 }

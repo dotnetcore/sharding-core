@@ -1,5 +1,11 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {
@@ -33,15 +39,6 @@ namespace ShardingCore
         {
             return Services.GetService(serviceType);
         }
-        public static object GetGenericTypeService0(Type genericServiceType,Type genericArg0Type)
-        {
-            var serviceType = genericServiceType.MakeGenericType(genericArg0Type);
-            return GetService(serviceType);
-        }
-        public static object GetGenericTypeService1(Type genericServiceType, Type genericArg0Type, Type genericArg1Type)
-        {
-            var serviceType = genericServiceType.MakeGenericType(genericArg0Type, genericArg1Type);
-            return GetService(serviceType);
-        }
+        
     }
 }

@@ -42,12 +42,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
 
             var dataSourceRouteResult = StreamMergeContext.DataSourceRouteResult;
-            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(physicDataSource =>
+            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
             {
-                var dsname = physicDataSource.DataSourceName;
-                return StreamMergeContext.GetTableRouteResults(dsname).Select(routeResult =>
+                return StreamMergeContext.TableRouteResults.Select(routeResult =>
                 {
-                    var newQueryable = CreateAsyncExecuteQueryable(dsname,reverseOrderQueryable, routeResult);
+                    var newQueryable = CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult);
                     return AsyncQueryEnumerator(newQueryable, async);
                 });
             }).ToArray();;

@@ -13,11 +13,11 @@ namespace ShardingCore.Sharding
     */
     public class DefaultConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IVirtualDataSource _virtualDataSource;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
 
-        public DefaultConnectionStringManager(IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager)
+        public DefaultConnectionStringManager(IVirtualDataSource<TShardingDbContext> virtualDataSource)
         {
-            _virtualDataSource = virtualDataSourceManager.GetVirtualDataSource();
+            _virtualDataSource = virtualDataSource;
         }
         public string GetConnectionString(string dataSourceName)
         {

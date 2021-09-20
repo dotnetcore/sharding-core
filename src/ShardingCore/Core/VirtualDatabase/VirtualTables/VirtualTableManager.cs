@@ -20,7 +20,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
     /// <summary>
     /// 同一个数据库下的虚拟表管理者
     /// </summary>
-    public class DefaultVirtualTableManager<TShardingDbContext> : IVirtualTableManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualTableManager<TShardingDbContext> : IVirtualTableManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         ///// </summary>
         //private readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, IVirtualTable>> _shardingVirtualTables = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, IVirtualTable>>();
         //private readonly ConcurrentDictionary<Type, ConcurrentDictionary<string, IVirtualTable>> _shardingVirtualTaleVirtualTables = new ConcurrentDictionary<Type, ConcurrentDictionary<string, IVirtualTable>>();
-        //public DefaultVirtualTableManager()
+        //public VirtualTableManager()
         //{
 
         //}

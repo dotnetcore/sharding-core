@@ -19,6 +19,5 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
         }
 
-        public override Type ShardingDbContextType => this.GetType();
     }
 }

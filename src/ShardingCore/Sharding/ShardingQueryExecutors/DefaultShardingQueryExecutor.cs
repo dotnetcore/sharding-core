@@ -24,12 +24,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
     */
     public class DefaultShardingQueryExecutor : IShardingQueryExecutor
     {
-        private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
-        public DefaultShardingQueryExecutor(IStreamMergeContextFactory streamMergeContextFactory)
-        {
-            _streamMergeContextFactory = streamMergeContextFactory;
-        }
         public TResult Execute<TResult>(ICurrentDbContext currentContext, Expression query)
         {
             var currentDbContext = currentContext.Context;
@@ -129,10 +124,15 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             type = type.MakeGenericType(queryEntityType);
             var queryable = Activator.CreateInstance(type, query);
 
-            var streamMergeContextMethod = _streamMergeContextFactory.GetType().GetMethod("Create");
+            var streamMergeContextFactory = (IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(shardingDbContext.GetType()));
+
+            // private readonly IStreamMergeContextFactory _streamMergeContextFactory;
+
+
+        var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod("Create");
             if (streamMergeContextMethod == null)
                 throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
-            var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(_streamMergeContextFactory, new[] { queryable, shardingDbContext });
+            var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamMergeContextFactory, new[] { queryable, shardingDbContext });
 
 
             Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<>);

@@ -45,16 +45,14 @@ namespace ShardingCore.Sharding
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
-            ShardingDbContextType = this.GetType();
             ActualDbContextType = typeof(TDbContext);
 
             _shardingDbContextExecutor =
                 (IShardingDbContextExecutor)Activator.CreateInstance(
-                    typeof(ShardingDbContextExecutor<,>).GetGenericType1(ShardingDbContextType, ActualDbContextType));
+                    typeof(ShardingDbContextExecutor<,>).GetGenericType1(this.GetType(), ActualDbContextType));
 
         }
 
-        public Type ShardingDbContextType { get; }
         public Type ActualDbContextType { get; }
         /// <summary>
         /// 读写分离优先级

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {
@@ -15,11 +17,13 @@ namespace ShardingCore
     public interface IShardingConfigOption
     {
         Type ShardingDbContextType { get;}
-        Type ActualDbContextType { get;}
         bool UseReadWrite { get; }
 
-        void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute;
-        Type GetVirtualRouteType(Type entityType);
+        Type GetVirtualTableRouteType(Type entityType);
+        Type GetVirtualDataSourceRouteType(Type entityType);
+
+
+        IDictionary<string, string> GetDataSources();
 
 
         /// <summary>
@@ -34,5 +38,13 @@ namespace ShardingCore
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }
+
+        public string DefaultDataSourceName { get; set; }
+        public string DefaultConnectionString { get; set; }
+    }
+
+    public interface IShardingConfigOption<TShardingDbContext>: IShardingConfigOption where TShardingDbContext : DbContext, IShardingDbContext
+    {
+
     }
 }

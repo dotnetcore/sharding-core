@@ -48,16 +48,17 @@ namespace ShardingCore.Test50
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                ,op =>
+            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o =>
+                    o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]))
+                .Begin(true)
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
+                .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
+                .AddDefaultDataSource("ds0",hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+                .AddShardingTable(op =>
                 {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        (conStr,builder)=> builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                });
+                }).End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
             //     {

@@ -21,6 +21,12 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     {
         private readonly ConcurrentDictionary<Type, IShardingReadWriteAccessor> _shardingReadWriteAccessors;
 
+
+        public ShardingReadWriteManager(IEnumerable<IShardingReadWriteAccessor> shardingReadWriteAccessors)
+        {
+
+            _shardingReadWriteAccessors = new ConcurrentDictionary<Type, IShardingReadWriteAccessor>(shardingReadWriteAccessors.ToDictionary(o => o.ShardingDbContextType, o => o));
+        }
         public ShardingReadWriteContext GetCurrent<TShardingDbContext>() where TShardingDbContext : DbContext, IShardingDbContext
         {
             return GetCurrent(typeof(TShardingDbContext));
@@ -34,12 +40,6 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             if (_shardingReadWriteAccessors.TryGetValue(shardingDbContextType, out var accessor))
                 return accessor.ShardingReadWriteContext;
             throw new InvalidOperationException(shardingDbContextType.FullName);
-        }
-
-        public ShardingReadWriteManager(IEnumerable<IShardingReadWriteAccessor> shardingReadWriteAccessors)
-        {
-            
-            _shardingReadWriteAccessors = new ConcurrentDictionary<Type,IShardingReadWriteAccessor>(shardingReadWriteAccessors.ToDictionary(o => o.ShardingDbContextType, o => o));
         }
 
         public ShardingReadWriteScope<TShardingDbContext> CreateScope<TShardingDbContext>() where TShardingDbContext : DbContext, IShardingDbContext

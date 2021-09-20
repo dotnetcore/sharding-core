@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
@@ -16,16 +18,16 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     /// <summary>
     /// 虚拟数据源 连接所有的实际数据源
     /// </summary>
-    public interface IVirtualDataSource
+    public interface IVirtualDataSource<TShardingDbContext> 
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        Type ShardingDbContextType{get; }
         string DefaultDataSourceName { get; }
 
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
         /// <returns>data source names</returns>
-        List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig);
+        List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig);
 
         /// <summary>
         /// 获取当前数据源的路由
@@ -49,5 +51,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// <returns>是否添加成功</returns>
         bool AddPhysicDataSource(IPhysicDataSource physicDataSource);
 
+        bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
     }
 }

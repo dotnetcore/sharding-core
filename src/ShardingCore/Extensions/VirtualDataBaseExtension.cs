@@ -7,6 +7,7 @@ using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 
@@ -73,10 +74,22 @@ namespace ShardingCore.Extensions
         public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,
             TEntity entity) where TEntity : class
         {
-            if (entity.IsShardingTable())
+            if (!entity.IsShardingTable())
                 return string.Empty;
             var physicTable = virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new ShardingTableRouteConfig(null, entity as IShardingTable, null))[0];
             return physicTable.Tail;
+        }
+        public static bool IsVirtualDataSourceRoute(this Type routeType)
+        {
+            if (routeType == null)
+                throw new ArgumentNullException(nameof(routeType));
+            return typeof(IVirtualDataSourceRoute).IsAssignableFrom(routeType);
+        }
+        public static bool IsIVirtualTableRoute(this Type routeType)
+        {
+            if (routeType == null)
+                throw new ArgumentNullException(nameof(routeType));
+            return typeof(IVirtualTableRoute).IsAssignableFrom(routeType);
         }
     }
 }

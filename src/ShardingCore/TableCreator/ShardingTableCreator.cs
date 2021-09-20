@@ -23,54 +23,47 @@ namespace ShardingCore.TableCreator
     * @Date: Monday, 21 December 2020 11:23:22
     * @Email: 326308290@qq.com
     */
-    public class ShardingTableCreator : IShardingTableCreator
+    public class ShardingTableCreator<TShardingDbContext> : IShardingTableCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ILogger<ShardingTableCreator> _logger;
-        private readonly IShardingDbContextFactory _shardingDbContextFactory;
-        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger;
+        private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
+        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IEnumerable<IShardingConfigOption> _shardingConfigOptions;
+        private readonly IShardingConfigOption _shardingConfigOption;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator> logger, IShardingDbContextFactory shardingDbContextFactory,
-            IVirtualTableManager virtualTableManager, IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions,IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger, IShardingDbContextFactory<TShardingDbContext> shardingDbContextFactory,
+            IVirtualTableManager<TShardingDbContext> virtualTableManager, IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions,IRouteTailFactory routeTailFactory)
         {
             _logger = logger;
             _shardingDbContextFactory = shardingDbContextFactory;
             _virtualTableManager = virtualTableManager;
             _serviceProvider = serviceProvider;
-            _shardingConfigOptions = shardingConfigOptions;
+            _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))
+                                     ??throw new ArgumentNullException(typeof(TShardingDbContext).FullName);
             _routeTailFactory = routeTailFactory;
         }
 
-        public void CreateTable<TShardingDbContext, T>(string tail) where TShardingDbContext : DbContext, IShardingDbContext where T : class, IShardingTable
+        public void CreateTable< T>(string dataSourceName, string tail) where T : class, IShardingTable
         {
-             CreateTable(typeof(TShardingDbContext),typeof(T), tail);
+             CreateTable(dataSourceName,typeof(T), tail);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="shardingDbContextType"></param>
+        /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        public void CreateTable(Type shardingDbContextType,Type shardingEntityType, string tail)
+        public void CreateTable(string dataSourceName,Type shardingEntityType, string tail)
         {
-            if (!shardingDbContextType.IsShardingDbContext())
-                throw new ShardingCoreException(
-                    $"{shardingDbContextType.FullName} must impl {nameof(IShardingDbContext)}");
-
-            var shardingConfigOptions = _shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == shardingDbContextType);
-            if (shardingConfigOptions == null)
-                throw new ShardingCoreException(
-                    $"not found sharding config options db context is {shardingDbContextType.FullName}");
             using (var serviceScope = _serviceProvider.CreateScope())
             {
-                var virtualTable = _virtualTableManager.GetVirtualTable(shardingDbContextType, shardingEntityType);
-                var dbContext = (DbContext)serviceScope.ServiceProvider.GetService(shardingDbContextType);
+                var virtualTable = _virtualTableManager.GetVirtualTable( shardingEntityType);
+                var dbContext = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                 var shardingDbContext = (IShardingDbContext)dbContext;
-                var context = shardingDbContext.GetDbContext(false,_routeTailFactory.Create(tail));
+                var context = shardingDbContext.GetDbContext(dataSourceName,false, _routeTailFactory.Create(tail));
 
                 var modelCacheSyncObject = context.GetModelCacheSyncObject();
                     
@@ -84,7 +77,7 @@ namespace ShardingCore.TableCreator
                         }
                         catch (Exception ex)
                         {
-                            if (!shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                            if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                             {
                                 _logger.LogWarning(
                                     $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.ShardingConfig.TailPrefix}{tail}]");

@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             {
                 foreach (var routeQueryResult in result)
                 {
-                    _shardingPageManager.Current.RouteQueryResults.Add(new RouteQueryResult<long>(routeQueryResult.TableRouteResult, routeQueryResult.QueryResult));
+                    _shardingPageManager.Current.RouteQueryResults.Add(new RouteQueryResult<long>(routeQueryResult.DataSourceName, routeQueryResult.TableRouteResult, routeQueryResult.QueryResult));
                 }
             }
             return result.Sum(o=>o.QueryResult);

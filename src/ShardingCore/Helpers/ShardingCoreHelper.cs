@@ -106,7 +106,7 @@ namespace ShardingCore.Helpers
             //}
 
         }
-        public static Func<ShardingDbContextOptions, DbContext> CreateActivator<TContext>() where TContext : DbContext, IShardingTableDbContext
+        public static Func<ShardingDbContextOptions, DbContext> CreateActivator<TContext>() where TContext : DbContext
         {
             var constructors
                 = typeof(TContext).GetTypeInfo().DeclaredConstructors
@@ -149,7 +149,7 @@ namespace ShardingCore.Helpers
         /// <param name="constructor"></param>
         /// <param name="paramType"></param>
         /// <returns></returns>
-        private static Func<ShardingDbContextOptions, DbContext> CreateShardingDbContextOptionsActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext, IShardingTableDbContext
+        private static Func<ShardingDbContextOptions, DbContext> CreateShardingDbContextOptionsActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext
         {
             var po = Expression.Parameter(paramType, "o");
             var newExpression = Expression.New(constructor, po);
@@ -168,7 +168,7 @@ namespace ShardingCore.Helpers
         /// <param name="constructor"></param>
         /// <param name="paramType"></param>
         /// <returns></returns>
-        private static Func<ShardingDbContextOptions, DbContext> CreateDbContextOptionsGenericActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext, IShardingTableDbContext
+        private static Func<ShardingDbContextOptions, DbContext> CreateDbContextOptionsGenericActivator<TContext>(ConstructorInfo constructor, Type paramType) where TContext : DbContext
         {
             var parameterExpression = Expression.Parameter(typeof(ShardingDbContextOptions), "o");
             //o.DbContextOptions
