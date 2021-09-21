@@ -35,16 +35,20 @@ namespace Samples.AutoByDate.SqlServer
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
             
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-                , op =>
+                    o => o.UseSqlServer(
+                        "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+                ).Begin(true)
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr)
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
+                .AddDefaultDataSource("ds0",
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+                .AddShardingTable(o =>
                 {
-                    op.EnsureCreatedWithOutShardingTable = true;
-                    op.CreateShardingTableOnStart = true;
-                    op.UseShardingOptionsBuilder((connection, builder) => builder.UseSqlServer(connection),
-                        (conStr,builder) => builder.UseSqlServer(conStr));
-                    op.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
-                    op.AddShardingTableRoute<TestLogWeekVirtualRoute>();
-                });
+                    o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
+                    o.AddShardingTableRoute<TestLogWeekVirtualRoute>();
+                }).End();
             services.AddChronusJob();
         }
 

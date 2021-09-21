@@ -18,6 +18,5 @@ namespace Samples.AutoByDate.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new TestLogByWeekMap());
         }
 
-        public override Type ShardingDbContextType => this.GetType();
     }
 }

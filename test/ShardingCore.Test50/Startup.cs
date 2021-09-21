@@ -50,7 +50,7 @@ namespace ShardingCore.Test50
         {
             services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o =>
                     o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]))
-                .Begin(true)
+                .Begin(true,true)
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
                 .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])

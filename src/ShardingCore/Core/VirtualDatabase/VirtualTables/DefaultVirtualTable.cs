@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
 namespace ShardingCore.Core.VirtualTables
@@ -34,7 +35,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 分表的配置
         /// </summary>
-        public ShardingTableConfig ShardingConfig { get; }
+        public ShardingEntityConfig ShardingConfig { get; }
         /// <summary>
         /// 分库配置
         /// </summary>
@@ -51,7 +52,7 @@ namespace ShardingCore.Core.VirtualTables
         {
                _virtualTableRoute = virtualTableRoute;
             EntityType = typeof(T);
-            ShardingConfig = ShardingKeyUtil.Parse(EntityType);
+            ShardingConfig = ShardingUtil.Parse(EntityType);
             var paginationConfiguration = virtualTableRoute.CreatePaginationConfiguration();
             if (paginationConfiguration != null)
             {
@@ -78,7 +79,7 @@ namespace ShardingCore.Core.VirtualTables
                 shardingKeyValue = tableRouteConfig.GetShardingKeyValue();
 
             if (tableRouteConfig.UseEntity())
-                shardingKeyValue = tableRouteConfig.GetShardingEntity().GetPropertyValue(ShardingConfig.ShardingField);
+                shardingKeyValue = tableRouteConfig.GetShardingEntity().GetPropertyValue(ShardingConfig.ShardingTableField);
 
             if (shardingKeyValue == null)
                 throw new ShardingCoreException(" route entity queryable or sharding key value is null ");
@@ -94,14 +95,14 @@ namespace ShardingCore.Core.VirtualTables
             return _physicTables.TryAdd(physicTable, null);
         }
 
-        public void SetOriginalTableName(string originalTableName)
+        public void SetVirtualTableName(string originalTableName)
         {
-            ShardingConfig.ShardingOriginalTable = originalTableName;
+            ShardingConfig.VirtualTableName = originalTableName;
         }
 
         public string GetVirtualTableName()
         {
-            return ShardingConfig.ShardingOriginalTable;
+            return ShardingConfig.VirtualTableName;
         }
 
         IVirtualTableRoute IVirtualTable.GetVirtualRoute()

@@ -226,7 +226,12 @@ namespace ShardingCore.Sharding
             {
                 foreach (var keyValuePair in dbContextCache.Value)
                 {
+#if EFCORE2
+                    keyValuePair.Value.Database.UseTransaction(null);
+#endif
+#if !EFCORE2
                     await keyValuePair.Value.Database.UseTransactionAsync(null, cancellationToken);
+#endif
                 }
             }
             this.CurrentShardingTransaction = null;
@@ -274,6 +279,7 @@ namespace ShardingCore.Sharding
             }
 
         }
+#if !EFCORE2
 
         public async ValueTask DisposeAsync()
         {
@@ -285,5 +291,6 @@ namespace ShardingCore.Sharding
                 }
             }
         }
+#endif
     }
 }

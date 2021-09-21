@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.ShardingTransactions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingTransaction: IShardingTransaction
+    public class ShardingTransaction : IShardingTransaction
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
 
@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.ShardingTransactions
 
         private IsolationLevel isolationLevel = IsolationLevel.Unspecified;
 
-        private bool _isBeginTransaction=false;
+        private bool _isBeginTransaction = false;
 
         public ShardingTransaction(IShardingDbContextExecutor shardingDbContextExecutor)
         {
@@ -84,22 +84,6 @@ namespace ShardingCore.Sharding.ShardingTransactions
             this._shardingDbContextExecutor.ClearTransaction();
         }
 
-        public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            foreach (var dbContextTransaction in _dbContextTransactions)
-            {
-                try
-                {
-                    await dbContextTransaction.Value.RollbackAsync(cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"rollback error:[{e}]");
-                }
-            }
-            await this._shardingDbContextExecutor.ClearTransactionAsync(cancellationToken);
-        }
-
         public void Commit()
         {
             foreach (var dbContextTransaction in _dbContextTransactions)
@@ -116,7 +100,24 @@ namespace ShardingCore.Sharding.ShardingTransactions
             this._shardingDbContextExecutor.ClearTransaction();
         }
 
-        public async  Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
+#if !EFCORE2
+
+        public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            foreach (var dbContextTransaction in _dbContextTransactions)
+            {
+                try
+                {
+                    await dbContextTransaction.Value.RollbackAsync(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"rollback error:[{e}]");
+                }
+            }
+            await this._shardingDbContextExecutor.ClearTransactionAsync(cancellationToken);
+        }
+        public async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             foreach (var dbContextTransaction in _dbContextTransactions)
             {
@@ -131,24 +132,6 @@ namespace ShardingCore.Sharding.ShardingTransactions
             }
             await this._shardingDbContextExecutor.ClearTransactionAsync(cancellationToken);
         }
-
-        public void Dispose()
-        {
-            
-            foreach (var dbContextTransaction in _dbContextTransactions)
-            {
-                try
-                {
-                     dbContextTransaction.Value.Dispose();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"dispose error:[{e}]");
-                }
-            }
-            _dbContextTransactions.Clear();
-        }
-
         public async ValueTask DisposeAsync()
         {
             foreach (var dbContextTransaction in _dbContextTransactions)
@@ -164,5 +147,24 @@ namespace ShardingCore.Sharding.ShardingTransactions
             }
             _dbContextTransactions.Clear();
         }
+#endif
+
+        public void Dispose()
+        {
+
+            foreach (var dbContextTransaction in _dbContextTransactions)
+            {
+                try
+                {
+                    dbContextTransaction.Value.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"dispose error:[{e}]");
+                }
+            }
+            _dbContextTransactions.Clear();
+        }
+
     }
 }

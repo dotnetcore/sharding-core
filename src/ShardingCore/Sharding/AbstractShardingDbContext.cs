@@ -104,6 +104,9 @@ namespace ShardingCore.Sharding
         }
 
 
+
+#if !EFCORE2
+
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
@@ -113,6 +116,18 @@ namespace ShardingCore.Sharding
         {
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
+#endif
+#if EFCORE2
+        public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
+        }
+
+        public override Task<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
+        }
+#endif
 
         public override void AddRange(params object[] entities)
         {
@@ -410,7 +425,12 @@ namespace ShardingCore.Sharding
                 using(var tran= _shardingDbContextExecutor.BeginTransaction())
                 {
                      i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-                     await tran.CommitAsync(cancellationToken);
+#if EFCORE2
+                     tran.Commit();
+#endif
+#if !EFCORE2
+                    await tran.CommitAsync(cancellationToken);
+#endif
                 }
             }
             else
@@ -427,6 +447,7 @@ namespace ShardingCore.Sharding
             _shardingDbContextExecutor.Dispose();
             base.Dispose();
         }
+#if !EFCORE2
 
         public override async ValueTask DisposeAsync()
         {
@@ -434,6 +455,7 @@ namespace ShardingCore.Sharding
 
             await base.DisposeAsync();
         }
+#endif
 
         public IShardingTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {

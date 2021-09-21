@@ -43,7 +43,7 @@ namespace ShardingCore.Core.VirtualDatabase
         /// <summary>
         /// 分表的原表名 original table name in db exclude tail
         /// </summary>
-        public string OriginalTableName { get; set; }
+        public string VirtualTableName { get; set; }
 
         /// <summary>
         /// 启动时是否建表 auto create table when start app

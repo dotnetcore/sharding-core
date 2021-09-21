@@ -30,7 +30,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// <returns>data source name</returns>
         string RouteWithValue(object shardingKeyValue);
 
-        ISet<string> GetAllDataSourceNames();
+        List<string> GetAllDataSourceNames();
 
     }
     

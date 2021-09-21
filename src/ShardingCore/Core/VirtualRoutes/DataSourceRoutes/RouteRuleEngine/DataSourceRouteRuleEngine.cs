@@ -30,7 +30,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         {
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
             var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !o.IsShardingDataSource());
-            //存在不分表的
+            //存在不分库的
             if (notShardingDataSourceEntityType != null)
                 dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { _virtualDataSource.DefaultDataSourceName });
 

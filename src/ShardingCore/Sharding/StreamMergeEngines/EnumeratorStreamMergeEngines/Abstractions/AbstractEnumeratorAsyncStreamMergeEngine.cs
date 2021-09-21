@@ -10,6 +10,9 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+#if EFCORE2
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+#endif
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Abstractions
 {
@@ -30,7 +33,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public abstract IStreamMergeAsyncEnumerator<TEntity>[] GetDbStreamMergeAsyncEnumerators(bool async);
         public abstract IStreamMergeAsyncEnumerator<TEntity> GetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
 
-        public Task<StreamMergeAsyncEnumerator<TEntity>> AsyncQueryEnumerator(IQueryable<TEntity> queryable,bool async)
+        public Task<StreamMergeAsyncEnumerator<TEntity>> AsyncQueryEnumerator(IQueryable<TEntity> queryable, bool async)
         {
             return Task.Run(async () =>
             {
@@ -43,7 +46,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                     }
                     else
                     {
-                        var enumerator =  DoGetEnumerator(queryable);
+                        var enumerator = DoGetEnumerator(queryable);
                         return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
 
                     }
@@ -57,26 +60,33 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         }
         public async Task<IAsyncEnumerator<TEntity>> DoGetAsyncEnumerator(IQueryable<TEntity> newQueryable)
         {
+#if !EFCORE2
             var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
             await enumator.MoveNextAsync();
             return enumator;
+#endif
+#if EFCORE2
+            var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
+            await enumator.MoveNext();
+            return enumator;
+#endif
         }
         public IEnumerator<TEntity> DoGetEnumerator(IQueryable<TEntity> newQueryable)
         {
             var enumator = newQueryable.AsEnumerable().GetEnumerator();
-             enumator.MoveNext();
+            enumator.MoveNext();
             return enumator;
         }
-        // public virtual IQueryable<TEntity> CreateAsyncExecuteQueryable(TableRouteResult tableRouteResult)
+        // public virtual IQueryable<TEntity> CreateAsyncExecuteQueryable(RouteResult routeResult)
         // {
-        //     var shardingDbContext = StreamMergeContext.CreateDbContext(tableRouteResult);
+        //     var shardingDbContext = StreamMergeContext.CreateDbContext(routeResult);
         //     var useOriginal = StreamMergeContext > 1;
-        //     DbContextQueryStore.TryAdd(tableRouteResult,shardingDbContext);
+        //     DbContextQueryStore.TryAdd(routeResult,shardingDbContext);
         //     var newQueryable = (IQueryable<TEntity>)(useOriginal ? StreamMergeContext.GetReWriteQueryable() : StreamMergeContext.GetOriginalQueryable())
         //         .ReplaceDbContextQueryable(shardingDbContext);
         //     return newQueryable;
         // }
-        
+
         public override IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
             CancellationToken cancellationToken = new CancellationToken())
         {

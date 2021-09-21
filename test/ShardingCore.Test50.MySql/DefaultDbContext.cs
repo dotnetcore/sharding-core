@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Test50.MySql.Domain.Maps;
 

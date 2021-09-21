@@ -69,11 +69,11 @@ namespace ShardingCore.EFCores
 
         private void MappingToTable(Type clrType, ModelBuilder modelBuilder, string tail)
         {
-            var shardingEntityConfig = ShardingKeyUtil.Parse(clrType);
-            var shardingEntity = shardingEntityConfig.ShardingEntityType;
+            var shardingEntityConfig = ShardingUtil.Parse(clrType);
+            var shardingEntity = shardingEntityConfig.EntityType;
             var tailPrefix = shardingEntityConfig.TailPrefix;
             var entity = modelBuilder.Entity(shardingEntity);
-            var tableName = shardingEntityConfig.ShardingOriginalTable;
+            var tableName = shardingEntityConfig.VirtualTableName;
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
 #if DEBUG

@@ -93,7 +93,7 @@ namespace ShardingCore.Extensions
 
         public static ISet<Type> ParseQueryableRoute(this IQueryable queryable)
         {
-            return ShardingKeyUtil.GetQueryEntitiesFilter(queryable);
+            return ShardingUtil.GetQueryEntitiesFilter(queryable);
         }
 
         public static T IfDo<T>(this T t, bool @if,Func<T,T> build)

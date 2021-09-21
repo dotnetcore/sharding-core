@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
@@ -85,8 +86,13 @@ namespace ShardingCore
                             var virtualTable = CreateVirtualTable(entityType, virtualRoute);
 
                             //获取ShardingEntity的实际表名
+#if !EFCORE2
                             var tableName = context.Model.FindEntityType(virtualTable.EntityType).GetTableName();
-                            virtualTable.SetOriginalTableName(tableName);
+#endif
+#if EFCORE2
+                            var tableName = context.Model.FindEntityType(virtualTable.EntityType).Relational().TableName;
+#endif
+                            virtualTable.SetVirtualTableName(tableName);
                             _virtualTableManager.AddVirtualTable(virtualTable);
                             CreateDataTable(dataSourceName,virtualTable);
                         }
@@ -174,7 +180,7 @@ namespace ShardingCore
             return (IVirtualTable)o;
         }
 
-        private bool NeedCreateTable(ShardingTableConfig config)
+        private bool NeedCreateTable(ShardingEntityConfig config)
         {
             if (config.AutoCreateTable.HasValue)
             {

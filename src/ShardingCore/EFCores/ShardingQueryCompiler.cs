@@ -42,6 +42,8 @@ namespace ShardingCore.EFCores
         }
 
 
+#if !EFCORE2
+
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
@@ -62,6 +64,36 @@ namespace ShardingCore.EFCores
             throw new NotImplementedException();
         }
 
+#endif
+
+#if EFCORE2
+
+
+        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
+        {
+            return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query);
+        }
+
+        public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
+        {
+            return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(_currentContext, query, cancellationToken);
+        }
+
+        public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Func<QueryContext, IAsyncEnumerable<TResult>> CreateCompiledAsyncEnumerableQuery<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
+        {
+            throw new NotImplementedException();
+        }
+#endif
 
     }
 }

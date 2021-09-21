@@ -25,7 +25,7 @@ namespace Sample.BulkConsole
             services.AddLogging();
             services.AddShardingDbContext<MyShardingDbContext, MyDbContext>(
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;"))
-                .Begin(true)
+                .Begin(true,true)
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;")
@@ -64,7 +64,11 @@ namespace Sample.BulkConsole
                     startNew.Restart();
                     foreach (var keyValuePair in bulkShardingEnumerable)
                     {
-                        keyValuePair.Key.BulkInsert(keyValuePair.Value.ToList());
+                        foreach (var valuePair in keyValuePair.Value)
+                        {
+                            valuePair.Key.BulkInsert(valuePair.Value.ToList());
+                        }
+
                     }
                     startNew.Stop();
                     Console.WriteLine($"订单总数:{i}条,myShardingDbContext.BulkInsert(orders)用时:{startNew.ElapsedMilliseconds}毫秒");

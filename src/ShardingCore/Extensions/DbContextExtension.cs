@@ -133,6 +133,9 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
             var syncObject = modelSourceImpl.GetFieldValue("_syncObject");
             return syncObject;
 #endif
+#if EFCORE2
+            return sLock;
+#endif
 
         }
 

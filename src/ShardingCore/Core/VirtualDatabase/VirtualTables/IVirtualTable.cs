@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -25,7 +26,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 分表配置
         /// </summary>
-        ShardingTableConfig ShardingConfig { get; }
+        ShardingEntityConfig ShardingConfig { get; }
         /// <summary>
         /// 分页配置
         /// </summary>
@@ -60,7 +61,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <see cref="ShardingBootstrapper"/>
         /// </summary>
         /// <param name="originalTableName"></param>
-        void SetOriginalTableName(string originalTableName);
+        void SetVirtualTableName(string originalTableName);
         /// <summary>
         /// 获取原始表名 get original table name
         /// </summary>

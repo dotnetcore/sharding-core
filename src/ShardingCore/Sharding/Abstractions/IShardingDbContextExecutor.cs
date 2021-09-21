@@ -21,7 +21,11 @@ namespace ShardingCore.Sharding.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IShardingDbContextExecutor:IDisposable,IAsyncDisposable
+    public interface IShardingDbContextExecutor : IDisposable
+#if !EFCORE2
+        , IAsyncDisposable
+
+#endif
     {
         IShardingTransaction CurrentShardingTransaction { get; }
         bool IsBeginTransaction { get; }
@@ -46,7 +50,7 @@ namespace ShardingCore.Sharding.Abstractions
         IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
             where TEntity : class;
 
-        IShardingTransaction BeginTransaction(IsolationLevel isolationLevel=IsolationLevel.Unspecified);
+        IShardingTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified);
 
 
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,

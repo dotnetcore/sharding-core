@@ -43,6 +43,7 @@ namespace ShardingCore.Sharding.Enumerators
             }
             return false;
         }
+#if !EFCORE2
         public async ValueTask DisposeAsync()
         {
             if (_asyncSource != null)
@@ -95,6 +96,7 @@ namespace ShardingCore.Sharding.Enumerators
             return _syncSource.MoveNext();
         }
 
+#endif
 
 
 
@@ -104,5 +106,69 @@ namespace ShardingCore.Sharding.Enumerators
         }
 
         object IEnumerator.Current => Current;
+#if EFCORE2
+        public void Dispose()
+        {
+            _asyncSource.Dispose();
+        }
+
+        public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != SourceCurrent();
+            }
+            return await _asyncSource.MoveNext(cancellationToken);
+        }
+        public T Current => GetCurrent();
+        public T ReallyCurrent => GetReallyCurrent();
+        public bool HasElement()
+        {
+            return null != SourceCurrent();
+        }
+
+        private T SourceCurrent()
+        {
+            try
+            {
+                if (tryGetCurrentError)
+                    return default;
+                return _asyncSource.Current;
+            }
+            catch (Exception e)
+            {
+                tryGetCurrentError = true;
+                return default;
+            }
+        }
+
+        private bool tryGetCurrentError = false;
+
+        public T GetCurrent()
+        {
+            if (skip)
+                return default;
+            if (_asyncSource != null) return SourceCurrent();
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
+        }
+        public T GetReallyCurrent()
+        {
+            if (_asyncSource != null) return SourceCurrent();
+            if (_syncSource != null) return _syncSource.Current;
+            return default;
+        }
+        public bool MoveNext()
+        {
+            if (skip)
+            {
+                skip = false;
+                return null != _syncSource.Current;
+            }
+            return _syncSource.MoveNext();
+        }
+
+#endif
     }
 }

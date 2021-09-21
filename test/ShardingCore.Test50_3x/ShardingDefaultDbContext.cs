@@ -25,6 +25,5 @@ namespace ShardingCore.Test50_3x
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
 
-        public override Type ShardingDbContextType => this.GetType();
     }
 }

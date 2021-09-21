@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
@@ -17,12 +18,12 @@ namespace ShardingCore.Core.Internal.Visitors
 */
     public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
     {
-        private readonly ShardingTableConfig _shardingConfig;
+        private readonly ShardingEntityConfig _shardingConfig;
         private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(ShardingTableConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
+        public QueryableRouteShardingTableDiscoverVisitor(ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
         {
             _shardingConfig = shardingConfig;
             _shardingKeyConvert = shardingKeyConvert;
@@ -37,8 +38,8 @@ namespace ShardingCore.Core.Internal.Visitors
         private bool IsShardingKey(Expression expression)
         {
             return expression is MemberExpression member
-                   && member.Expression.Type == _shardingConfig.ShardingEntityType
-                   && member.Member.Name == _shardingConfig.ShardingField;
+                   && member.Expression.Type == _shardingConfig.EntityType
+                   && member.Member.Name == _shardingConfig.ShardingTableField;
         }
         /// <summary>
         /// 方法是否包含shardingKey
@@ -52,8 +53,8 @@ namespace ShardingCore.Core.Internal.Visitors
                 for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
                 {
                     var isShardingKey = methodCallExpression.Arguments[i] is MemberExpression member
-                                        && member.Expression.Type == _shardingConfig.ShardingEntityType
-                                        && member.Member.Name == _shardingConfig.ShardingField;
+                                        && member.Expression.Type == _shardingConfig.EntityType
+                                        && member.Member.Name == _shardingConfig.ShardingTableField;
                     if (isShardingKey) return true;
                 }
             }
