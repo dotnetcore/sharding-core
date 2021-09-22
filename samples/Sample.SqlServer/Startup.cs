@@ -30,15 +30,15 @@ namespace Sample.SqlServer
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                    o => o.UseSqlServer(
-                        "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
-                ).Begin(true)
+                    o => 
+                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                ).Begin(true,true)
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTable(o =>
                 {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();

@@ -399,6 +399,7 @@ namespace ShardingCore.Sharding
                 using (var tran = _shardingDbContextExecutor.BeginTransaction())
                 {
                     i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
+                    tran.Commit();
                 }
             }
             else

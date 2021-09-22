@@ -6,10 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="EFCore.BulkExtensions" Version="5.3.8" />
-      <PackageReference Include="EfCore.SqlServer2008Query" Version="1.0.4" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.9" />
-      <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.2.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.10" />
     </ItemGroup>
 
     <ItemGroup>
