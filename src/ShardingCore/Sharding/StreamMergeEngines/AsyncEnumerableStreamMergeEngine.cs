@@ -2,6 +2,8 @@ using ShardingCore.Sharding.ShardingQueryExecutors;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -11,7 +13,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Date: Saturday, 14 August 2021 22:07:28
     * @Email: 326308290@qq.com
     */
-    public class AsyncEnumerableStreamMergeEngine<T> : IAsyncEnumerable<T>, IEnumerable<T>
+    public class AsyncEnumerableStreamMergeEngine<TShardingDbContext,T> : IAsyncEnumerable<T>, IEnumerable<T>
+    where  TShardingDbContext:DbContext,IShardingDbContext
     {
         private readonly StreamMergeContext<T> _mergeContext;
 
@@ -24,7 +27,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 #if !EFCORE2
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
-            return new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync(cancellationToken)
+            return new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync(cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
         }
 #endif
@@ -32,7 +35,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 #if EFCORE2
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
-            return ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync())
+            return ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
         }
 #endif
@@ -41,7 +44,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public IEnumerator<T> GetEnumerator()
         {
 
-            return ((IEnumerable<T>)new EnumeratorShardingQueryExecutor<T>(_mergeContext).ExecuteAsync())
+            return ((IEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
         }
 

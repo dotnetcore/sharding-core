@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Helpers;
 
@@ -20,7 +19,7 @@ namespace ShardingCore.VirtualRoutes.Mods
     /// 分表字段为string的取模分表
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractSimpleShardingModKeyStringVirtualTableRoute<T>:AbstractShardingOperatorVirtualTableRoute<T,string> where T:class,IShardingTable
+    public abstract class AbstractSimpleShardingModKeyStringVirtualTableRoute<T>: AbstractShardingOperatorVirtualTableRoute<T,string> where T:class,IShardingTable
     {
         protected readonly int Mod;
         protected readonly int TailLength;

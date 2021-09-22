@@ -12,7 +12,7 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IPaginationConfiguration<TEntity> where TEntity : class,IShardingTable
+    public interface IPaginationConfiguration<TEntity> where TEntity : class
     {
         void Configure(PaginationBuilder<TEntity> builder);
     }

@@ -12,7 +12,7 @@ namespace Sample.SqlServer.Shardings
         public void Configure(PaginationBuilder<SysUserSalary> builder)
         {
             builder.PaginationSequence(o => o.Id)
-                .UseTailComparer(Comparer<string>.Default)
+                .UseRouteComparer(Comparer<string>.Default)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
             builder.PaginationSequence(o => o.DateOfMonth)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch).UseAppendIfOrderNone(10);

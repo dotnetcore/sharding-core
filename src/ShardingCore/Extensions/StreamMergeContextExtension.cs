@@ -19,19 +19,45 @@ namespace ShardingCore.Extensions
         /// <param name="streamMergeContext"></param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public static bool IsShardingQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
+        public static bool IsNormalQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
         {
-            return streamMergeContext.TableRouteResults.Count() > 1;
+            return streamMergeContext.QueryEntities.Any(o=>!o.IsShardingDataSource()&&!o.IsShardingTable());
         }
+        /// <summary>
+        /// 单路由查询
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="streamMergeContext"></param>
+        /// <returns></returns>
+        public static bool IsSingleRouteQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
+        {
+            return streamMergeContext.DataSourceRouteResult.IntersectDataSources.Count==1&&streamMergeContext.TableRouteResults.Count()==1;
+        }
+        /// <summary>
+        /// 单表查询
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="streamMergeContext"></param>
+        /// <returns></returns>
         public static bool IsSingleShardingTableQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
         {
             return streamMergeContext.TableRouteResults.First().ReplaceTables.Count(o => o.EntityType.IsShardingTable()) == 1;
         }
-
-        public static IVirtualTableManager GetVirtualTableManager<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
+        /// <summary>
+        /// 本次查询仅包含一个对象的分表分库
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="streamMergeContext"></param>
+        /// <returns></returns>
+        public static bool IsSingleShardingQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
         {
-            return (IVirtualTableManager)ShardingContainer.GetService(
-                typeof(IVirtualTableManager<>).GetGenericType0(streamMergeContext.GetShardingDbContext().GetType()));
+            return streamMergeContext.GetOriginalQueryable().ParseQueryableRoute().Count(o=>o.IsShardingTable()||o.IsShardingDataSource())==1;
+        }
+        public static bool IsSupportPaginationQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
+        {
+            var queryEntities = streamMergeContext.GetOriginalQueryable().ParseQueryableRoute();
+            //仅一个对象支持分库或者分表的组合
+            return queryEntities.Count(o=>(o.IsShardingDataSource()&&!o.IsShardingTable()) ||(o.IsShardingDataSource()&& o.IsShardingTable())|| (!o.IsShardingDataSource() && o.IsShardingTable())) ==1;
         }
     }
 }

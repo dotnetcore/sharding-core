@@ -16,23 +16,43 @@ namespace ShardingCore.Core.QueryRouteManagers
     */
     public class ShardingRouteContext
     {
+        #region 分库提示路由
         /// <summary>
         /// 强制路由直接返回对应的后缀表
         /// </summary>
-        public  Dictionary<Type, HashSet<string>> Must { get; }
+        public Dictionary<Type, HashSet<string>> MustDataSource { get; }
         /// <summary>
         /// 提示路由会经过断言的强制路由
         /// </summary>
-        public  Dictionary<Type, HashSet<string>> Hint { get; }
+        public Dictionary<Type, HashSet<string>> HintDataSource { get; }
         /// <summary>
         /// 断言
         /// </summary>
-        public Dictionary<Type, LinkedList<IRouteAssert>> Assert { get; }
+        public Dictionary<Type, LinkedList<IDataSourceRouteAssert>> AssertDataSource { get; }
+        #endregion
+
+        #region 分表提示路由
+        /// <summary>
+        /// 强制路由直接返回对应的后缀表
+        /// </summary>
+        public Dictionary<Type, HashSet<string>> MustTable { get; }
+        /// <summary>
+        /// 提示路由会经过断言的强制路由
+        /// </summary>
+        public Dictionary<Type, HashSet<string>> HintTable { get; }
+        /// <summary>
+        /// 断言
+        /// </summary>
+        public Dictionary<Type, LinkedList<ITableRouteAssert>> AssertTable { get; } 
+        #endregion
         private ShardingRouteContext()
         {
-            Must = new Dictionary<Type, HashSet<string>>();
-            Hint = new Dictionary<Type, HashSet<string>>();
-            Assert = new Dictionary<Type, LinkedList<IRouteAssert>>();
+            MustDataSource = new Dictionary<Type, HashSet<string>>();
+            HintDataSource = new Dictionary<Type, HashSet<string>>();
+            AssertDataSource = new Dictionary<Type, LinkedList<IDataSourceRouteAssert>>();
+            MustTable = new Dictionary<Type, HashSet<string>>();
+            HintTable = new Dictionary<Type, HashSet<string>>();
+            AssertTable = new Dictionary<Type, LinkedList<ITableRouteAssert>>();
         }
 
         public static ShardingRouteContext Create()

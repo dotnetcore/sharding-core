@@ -48,7 +48,7 @@ namespace ShardingCore.Test50_3x
         {
             using (_shardingRouteManager.CreateScope())
             {
-                _shardingRouteManager.Current.Must.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+                _shardingRouteManager.Current.MustTable.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
 
                 var mod00s = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
                 Assert.Equal(333, mod00s.Count);

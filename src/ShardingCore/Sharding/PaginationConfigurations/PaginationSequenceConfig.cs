@@ -17,16 +17,16 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     */
     public class PaginationSequenceConfig
     {
-        public PaginationSequenceConfig(LambdaExpression orderPropertyExpression, PaginationMatchEnum paginationMatchEnum= PaginationMatchEnum.Owner, IComparer<string> tailComparer=null)
+        public PaginationSequenceConfig(LambdaExpression orderPropertyExpression, PaginationMatchEnum paginationMatchEnum= PaginationMatchEnum.Owner, IComparer<string> routeComparer=null)
         {
             OrderPropertyInfo = orderPropertyExpression.GetPropertyAccess();
             PropertyName = OrderPropertyInfo.Name;
             PaginationMatchEnum = paginationMatchEnum;
-            TailComparer = tailComparer ?? Comparer<string>.Default;
+            RouteComparer = routeComparer ?? Comparer<string>.Default;
             SequenceTails = new HashSet<string>();
         }
 
-        public IComparer<string> TailComparer { get; set; }
+        public IComparer<string> RouteComparer { get; set; }
         public PaginationMatchEnum PaginationMatchEnum { get; set; }
         public PropertyInfo OrderPropertyInfo { get; set; }
 
@@ -38,6 +38,8 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// 大于等于0表示需要
         /// </summary>
         public int AppendOrder { get; set; } = -1;
+
+        public bool AppendAsc { get; set; } = true;
         public string PropertyName { get;}
         
         public ISet<string> SequenceTails { get; }

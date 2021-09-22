@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -20,14 +22,17 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class SequenceEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
+    public class SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly PaginationSequenceConfig _orderPaginationSequenceConfig;
+        private readonly PaginationSequenceConfig _dataSourceSequenceMatchOrderConfig;
+        private readonly PaginationSequenceConfig _tableSequenceMatchOrderConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
         private readonly bool _isAsc;
-        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig orderPaginationSequenceConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext)
+        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig dataSourceSequenceMatchOrderConfig, PaginationSequenceConfig tableSequenceMatchOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext)
         {
-            _orderPaginationSequenceConfig = orderPaginationSequenceConfig;
+            _dataSourceSequenceMatchOrderConfig = dataSourceSequenceMatchOrderConfig;
+            _tableSequenceMatchOrderConfig = tableSequenceMatchOrderConfig;
             _routeQueryResults = routeQueryResults;
             _isAsc = isAsc;
         }
@@ -42,13 +47,43 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var take = StreamMergeContext.Take;
             if (take.HasValue && take.Value <= 0)
                 throw new ShardingCoreException("take must gt 0");
-
+            //分库是主要排序
+            var dataSourceOrderMain = _dataSourceSequenceMatchOrderConfig != null;
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
+                DataSourceName=o.DataSourceName,
                 Tail = o.TableRouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
-            }).OrderByIf(o => o.Tail, _isAsc, _orderPaginationSequenceConfig.TailComparer)
-                .OrderByDescendingIf(o => o.Tail, !_isAsc, _orderPaginationSequenceConfig.TailComparer).ToList();
+            });
+            if (dataSourceOrderMain)
+            {
+                //是否有两级排序
+                var useThenBy = dataSourceOrderMain && _tableSequenceMatchOrderConfig != null;
+                if (_isAsc)
+                {
+                    sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
+                        _dataSourceSequenceMatchOrderConfig.RouteComparer).ThenByIf(o=>o.Tail, useThenBy, _tableSequenceMatchOrderConfig.RouteComparer);
+                }
+                else
+                {
+                    sortRouteResults = sortRouteResults.OrderByDescending(o => o.DataSourceName,
+                        _dataSourceSequenceMatchOrderConfig.RouteComparer).ThenByDescendingIf(o => o.Tail, useThenBy, _tableSequenceMatchOrderConfig.RouteComparer);
+                }
+            }
+            else
+            {
+                if (_isAsc)
+                {
+                    sortRouteResults =
+                        sortRouteResults.OrderBy(o => o.Tail, _tableSequenceMatchOrderConfig.RouteComparer);
+                }
+                else
+                {
+                    sortRouteResults =
+                        sortRouteResults.OrderByDescending(o => o.Tail, _tableSequenceMatchOrderConfig.RouteComparer);
+                }
+            }
+
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
 

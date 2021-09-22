@@ -138,8 +138,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamMergeContextFactory, new[] { queryable, shardingDbContext });
 
 
-            Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<>);
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
+            Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<,>);
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(shardingDbContext.GetType(), queryEntityType);
             return (TResult)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
         }
 

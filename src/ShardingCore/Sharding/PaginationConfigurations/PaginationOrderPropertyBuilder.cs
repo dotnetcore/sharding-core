@@ -23,12 +23,12 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// <summary>
         /// 使用哪个后缀比较
         /// </summary>
-        /// <param name="tailComparer"></param>
+        /// <param name="routeComparer"></param>
         /// <returns></returns>
-        public PaginationOrderPropertyBuilder UseTailComparer(IComparer<string> tailComparer)
+        public PaginationOrderPropertyBuilder UseRouteComparer(IComparer<string> routeComparer)
         {
 
-            _paginationSequenceConfig.TailComparer= tailComparer ?? throw new ArgumentException(nameof(tailComparer));
+            _paginationSequenceConfig.RouteComparer= routeComparer ?? throw new ArgumentException(nameof(routeComparer));
             return this;
         }
         /// <summary>
@@ -45,10 +45,12 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// 如果查询没发现排序就将当前配置追加上去
         /// </summary>
         /// <param name="order">大于等于0生效,越大优先级越高</param>
+        /// <param name="defAsc">默认asc还是desc</param>
         /// <returns></returns>
-        public PaginationOrderPropertyBuilder UseAppendIfOrderNone(int order=0)
+        public PaginationOrderPropertyBuilder UseAppendIfOrderNone(int order=0,bool defAsc=true)
         {
             _paginationSequenceConfig.AppendOrder = order;
+            _paginationSequenceConfig.AppendAsc = defAsc;
             return this;
         }
     }

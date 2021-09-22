@@ -1,9 +1,9 @@
-using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ShardingCore.Core;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Days
 {
@@ -15,7 +15,15 @@ namespace ShardingCore.VirtualRoutes.Days
     */
     public abstract class AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<T>:AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T:class,IShardingTable
     {
+        /// <summary>
+        /// begin time use fixed time eg.new DateTime(20xx,xx,xx)
+        /// </summary>
+        /// <returns></returns>
         public abstract DateTime GetBeginTime();
+        /// <summary>
+        /// return all tails in database
+        /// </summary>
+        /// <returns></returns>
         public override List<string> GetAllTails()
         {
             var beginTime = GetBeginTime();
@@ -24,7 +32,7 @@ namespace ShardingCore.VirtualRoutes.Days
             //提前创建表
             var nowTimeStamp = DateTime.Now.AddDays(1).Date;
             if (beginTime > nowTimeStamp)
-                throw new ArgumentException("起始时间不正确无法生成正确的表名");
+                throw new ArgumentException("begin time error");
             var currentTimeStamp = beginTime;
             while (currentTimeStamp <= nowTimeStamp)
             {

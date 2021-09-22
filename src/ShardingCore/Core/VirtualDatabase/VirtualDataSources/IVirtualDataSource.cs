@@ -22,10 +22,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         string DefaultDataSourceName { get; }
-
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
+        /// <param name="entityType"></param>
+        /// <param name="routeRouteConfig"></param>
         /// <returns>data source names</returns>
         List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig);
 

@@ -33,9 +33,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// 根据值进行路由
         /// </summary>
         /// <param name="allPhysicTables"></param>
-        /// <param name="shardingKeyValue"></param>
+        /// <param name="shardingKey"></param>
         /// <returns></returns>
-        IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKeyValue);
+        IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey);
         /// <summary>
         /// 获取所有的目前数据库存在的尾巴
         /// get all tails in the db

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
@@ -39,6 +40,10 @@ namespace ShardingCore.Sharding
         public GroupByContext GroupByContext { get; }
         public IEnumerable<TableRouteResult> TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
+        /// <summary>
+        /// 本次查询涉及的对象
+        /// </summary>
+        public ISet<Type> QueryEntities { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
@@ -56,6 +61,7 @@ namespace ShardingCore.Sharding
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
+            QueryEntities = source.ParseQueryableRoute();
             DataSourceRouteResult = dataSourceRouteResult;
             TableRouteResults= tableRouteResults;
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);

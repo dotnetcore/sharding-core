@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
+using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 {
@@ -13,15 +14,24 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 */
     public interface IVirtualDataSourceRoute
     {
-        Type EntityType { get; }
+        Type ShardingEntityType { get;}
+        /// <summary>
+        /// 分页配置
+        /// </summary>
+        PaginationMetadata PaginationMetadata { get; }
+        /// <summary>
+        /// 是否启用分页配置
+        /// </summary>
+        bool EnablePagination { get; }
         string ShardingKeyToDataSourceName(object shardingKeyValue);
 
         /// <summary>
         /// 根据查询条件路由返回物理数据源
         /// </summary>
         /// <param name="queryable"></param>
+        /// <param name="isQuery"></param>
         /// <returns>data source name</returns>
-        List<string> RouteWithWhere(IQueryable queryable);
+        List<string> RouteWithPredicate(IQueryable queryable, bool isQuery);
 
         /// <summary>
         /// 根据值进行路由
@@ -31,10 +41,25 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         string RouteWithValue(object shardingKeyValue);
 
         List<string> GetAllDataSourceNames();
+        /// <summary>
+        /// 添加数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        bool AddDataSourceName(string dataSourceName);
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        void Init();
 
     }
     
-    public interface IVirtualDataSourceRoute<T> : IVirtualDataSourceRoute where T : class
+    public interface IVirtualDataSourceRoute<T> : IVirtualDataSourceRoute where T : class, IShardingDataSource
     {
+        /// <summary>
+        /// 返回null就是表示不开启分页配置
+        /// </summary>
+        /// <returns></returns>
+        IPaginationConfiguration<T> CreatePaginationConfiguration();
     }
 }

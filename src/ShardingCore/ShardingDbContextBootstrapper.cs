@@ -77,6 +77,7 @@ namespace ShardingCore
                         {
                             var routeType = _shardingConfigOption.GetVirtualDataSourceRouteType(entityType);
                             var virtualRoute = CreateVirtualDataSourceRoute(routeType);
+                            virtualRoute.Init();
                             virtualDataSource.AddVirtualDataSourceRoute(virtualRoute);
                         }
                         if (entityType.IsShardingTable())

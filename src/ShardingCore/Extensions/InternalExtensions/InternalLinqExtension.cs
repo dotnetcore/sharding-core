@@ -25,5 +25,15 @@ namespace ShardingCore.Extensions.InternalExtensions
         {
             return condition ? source.OrderByDescending(keySelector, comparer) : source;
         }
+        public static IOrderedEnumerable<TShource> ThenByIf<TShource, TKey>(this IOrderedEnumerable<TShource> source, Func<TShource, TKey> keySelector, bool condition,
+            IComparer<TKey>? comparer)
+        {
+            return condition ? source.ThenBy(keySelector, comparer) : source;
+        }
+        public static IOrderedEnumerable<TShource> ThenByDescendingIf<TShource, TKey>(this IOrderedEnumerable<TShource> source, Func<TShource, TKey> keySelector, bool condition,
+            IComparer<TKey>? comparer)
+        {
+            return condition ? source.ThenByDescending(keySelector, comparer) : source;
+        }
     }
 }

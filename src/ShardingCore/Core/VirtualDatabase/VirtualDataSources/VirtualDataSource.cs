@@ -38,9 +38,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             var virtualDataSourceRoute = GetRoute( entityType);
 
             if (routeRouteConfig.UseQueryable())
-                return virtualDataSourceRoute.RouteWithWhere(routeRouteConfig.GetQueryable());
+                return virtualDataSourceRoute.RouteWithPredicate(routeRouteConfig.GetQueryable(), true);
             if (routeRouteConfig.UsePredicate())
-                return virtualDataSourceRoute.RouteWithWhere((IQueryable)Activator.CreateInstance(typeof(EnumerableQuery<>).MakeGenericType(entityType), routeRouteConfig.UsePredicate()));
+                return virtualDataSourceRoute.RouteWithPredicate((IQueryable)Activator.CreateInstance(typeof(EnumerableQuery<>).MakeGenericType(entityType), routeRouteConfig.UsePredicate()), false);
             object shardingKeyValue = null;
             if (routeRouteConfig.UseValue())
                 shardingKeyValue = routeRouteConfig.GetShardingKeyValue();
@@ -103,10 +103,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
         {
-            if (!virtualDataSourceRoute.EntityType.IsShardingDataSource())
-                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityType.FullName} should impl {nameof(IShardingDataSource)}");
+            if (!virtualDataSourceRoute.ShardingEntityType.IsShardingDataSource())
+                throw new InvalidOperationException($"{virtualDataSourceRoute.ShardingEntityType.FullName} should impl {nameof(IShardingDataSource)}");
 
-            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityType, virtualDataSourceRoute);
+            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.ShardingEntityType, virtualDataSourceRoute);
         }
     }
 }

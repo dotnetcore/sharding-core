@@ -38,7 +38,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 
         public override IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey)
         {
-            var shardingKeyToTail = ShardingKeyToTail(ConvertToShardingKey(shardingKey));
+            var shardingKeyToTail = ShardingKeyToTail(shardingKey);
 
             var physicTables = allPhysicTables.Where(o => o.Tail== shardingKeyToTail).ToList();
             if (physicTables.IsEmpty())

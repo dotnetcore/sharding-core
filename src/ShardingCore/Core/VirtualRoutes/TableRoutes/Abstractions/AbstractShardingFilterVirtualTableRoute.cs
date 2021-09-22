@@ -81,7 +81,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         {
             if (EnableAssertRoute)
             {
-                if (CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertTail<T>(out ICollection<IRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty())
+                if (CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertTail<T>(out ICollection<ITableRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty())
                 {
                     foreach (var routeAssert in routeAsserts)
                     {

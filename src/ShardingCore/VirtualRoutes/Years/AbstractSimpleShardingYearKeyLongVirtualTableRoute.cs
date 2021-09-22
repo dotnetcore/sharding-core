@@ -25,7 +25,7 @@ namespace ShardingCore.VirtualRoutes.Years
             //提前创建表
             var nowTimeStamp = DateTime.Now.AddYears(1).Date;
             if (beginTime > nowTimeStamp)
-                throw new ArgumentException("起始时间不正确无法生成正确的表名");
+                throw new ArgumentException("begin time error");
             var currentTimeStamp = beginTime;
             while (currentTimeStamp <= nowTimeStamp)
             {

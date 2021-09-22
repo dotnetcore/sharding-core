@@ -40,6 +40,7 @@ namespace ShardingCore.Core.VirtualTables
         /// 分库配置
         /// </summary>
         public PaginationMetadata PaginationMetadata { get; }
+
         /// <summary>
         /// 是否启用智能分页
         /// </summary>
@@ -54,7 +55,7 @@ namespace ShardingCore.Core.VirtualTables
             EntityType = typeof(T);
             ShardingConfig = ShardingUtil.Parse(EntityType);
             var paginationConfiguration = virtualTableRoute.CreatePaginationConfiguration();
-            if (paginationConfiguration != null)
+            if (paginationConfiguration!=null)
             {
                 PaginationMetadata = new PaginationMetadata();
                 var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);

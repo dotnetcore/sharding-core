@@ -51,9 +51,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 根据值路由
         /// </summary>
         /// <param name="allPhysicTables"></param>
-        /// <param name="shardingKeyValue"></param>
+        /// <param name="shardingKey"></param>
         /// <returns></returns>
-        public abstract IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKeyValue);
+        public abstract IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey);
         /// <summary>
         /// 返回数据库现有的尾巴
         /// </summary>
