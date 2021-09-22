@@ -109,10 +109,11 @@ namespace ShardingCore.Sharding.Enumerators
 #if EFCORE2
         public void Dispose()
         {
-             _asyncSource.Dispose();
+            _asyncSource?.Dispose();
+            _syncSource?.Dispose();
         }
 
-        public async Task<bool> MoveNext(CancellationToken cancellationToken=new CancellationToken())
+        public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
         {
             if (skip)
             {
@@ -134,8 +135,13 @@ namespace ShardingCore.Sharding.Enumerators
             {
                 if (tryGetCurrentError)
                     return default;
-                return _asyncSource.Current;
-            }catch(Exception e)
+                if (_asyncSource!= null)
+                    return _asyncSource.Current;
+                if (_syncSource != null)
+                    return _syncSource.Current;
+                return default;
+            }
+            catch (Exception e)
             {
                 tryGetCurrentError = true;
                 return default;
