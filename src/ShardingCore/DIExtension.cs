@@ -42,7 +42,7 @@ namespace ShardingCore
             Action<DbContextOptionsBuilder> optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TActualDbContext : DbContext, IShardingTableDbContext
+            where TActualDbContext : DbContext
             where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
         {
 

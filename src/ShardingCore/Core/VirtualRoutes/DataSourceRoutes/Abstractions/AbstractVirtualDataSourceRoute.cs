@@ -13,8 +13,11 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     */
     public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T> where T : class, IShardingDataSource
     {
+        private bool _inited = false;
         public void Init()
         {
+            if (_inited)
+                throw new InvalidOperationException("already init");
             var paginationConfiguration = CreatePaginationConfiguration();
             if (paginationConfiguration != null)
             {
@@ -22,6 +25,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                 var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
                 paginationConfiguration.Configure(paginationBuilder);
             }
+
+            _inited = true;
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {

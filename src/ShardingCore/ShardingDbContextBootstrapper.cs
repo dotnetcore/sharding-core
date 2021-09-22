@@ -33,7 +33,7 @@ namespace ShardingCore
         void Initialize();
     }
 
-    public class ShardingDbContextBootstrapper<TShardingDbContext>: IShardingDbContextBootstrapper where TShardingDbContext:DbContext,IShardingDbContext
+    public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IShardingConfigOption _shardingConfigOption;
         private readonly IRouteTailFactory _routeTailFactory;
@@ -46,22 +46,23 @@ namespace ShardingCore
             _shardingConfigOption = shardingConfigOption;
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            _tableCreator=ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
+            _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
         }
         public void Initialize()
         {
             var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
-            using (var serviceScope = ShardingContainer.Services.CreateScope())
+            var dataSources = _shardingConfigOption.GetDataSources();
+            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
+            //foreach (var dataSourceKv in dataSources)
+            //{
+            //    virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceKv.Key,
+            //        dataSourceKv.Value, false));
+            //}
+            foreach (var dataSourceKv in dataSources)
             {
-                var dataSources = _shardingConfigOption.GetDataSources();
-                virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString,true));
-                //foreach (var dataSourceKv in dataSources)
-                //{
-                //    virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceKv.Key,
-                //        dataSourceKv.Value, false));
-                //}
-                foreach (var dataSourceKv in dataSources)
+
+                using (var serviceScope = ShardingContainer.Services.CreateScope())
                 {
                     var dataSourceName = dataSourceKv.Key;
                     var connectionString = dataSourceKv.Value;
@@ -95,17 +96,17 @@ namespace ShardingCore
 #endif
                             virtualTable.SetVirtualTableName(tableName);
                             _virtualTableManager.AddVirtualTable(virtualTable);
-                            CreateDataTable(dataSourceName,virtualTable);
+                            CreateDataTable(dataSourceName, virtualTable);
                         }
                     }
                 }
             }
         }
-        private void EnsureCreated(DbContext context,string dataSourceName)
+        private void EnsureCreated(DbContext context, string dataSourceName)
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName,false, _routeTailFactory.Create(string.Empty));
+                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
                 lock (modelCacheSyncObject)
@@ -190,7 +191,7 @@ namespace ShardingCore
 
             return _shardingConfigOption.CreateShardingTableOnStart.GetValueOrDefault();
         }
-        private void CreateDataTable(string dataSourceName,IVirtualTable virtualTable)
+        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable)
         {
             var shardingConfig = virtualTable.ShardingConfig;
             foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
@@ -201,7 +202,7 @@ namespace ShardingCore
                     {
                         //添加物理表
                         virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
-                        _tableCreator.CreateTable(dataSourceName,virtualTable.EntityType, tail);
+                        _tableCreator.CreateTable(dataSourceName, virtualTable.EntityType, tail);
                     }
                     catch (Exception e)
                     {

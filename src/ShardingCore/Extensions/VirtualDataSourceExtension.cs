@@ -26,7 +26,7 @@ namespace ShardingCore.Extensions
             if (!entity.IsShardingDataSource())
                 return virtualDataSource.DefaultDataSourceName;
 
-            return virtualDataSource.RouteTo(typeof(TEntity),
+            return virtualDataSource.RouteTo(entity.GetType(),
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity as IShardingDataSource))[0];
         }
 

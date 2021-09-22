@@ -50,7 +50,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         public override string ShardingKeyToTail(object shardingKey)
         {
             var shardingKeyStr = ConvertToShardingKey(shardingKey);
-            return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength,PaddingChar);;
+            return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength,PaddingChar);
         }
         /// <summary>
         /// 将shardingKey转成对应的字符串

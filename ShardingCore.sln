@@ -35,9 +35,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.BulkConsole", "sampl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src2x", "src2x", "{F91949B0-02D5-4E3B-ACF4-AFA6C99A1E04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.2x", "src2x\ShardingCore.2x\ShardingCore.2x.csproj", "{A07C597D-339D-4378-BE4C-A2AF7473340B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.2x", "src2x\ShardingCore.2x\ShardingCore.2x.csproj", "{A07C597D-339D-4378-BE4C-A2AF7473340B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test50_2x", "test\ShardingCore.Test50_2x\ShardingCore.Test50_2x.csproj", "{E4DAA43A-B64D-45CF-81B8-7B8FD338D686}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test50_2x", "test\ShardingCore.Test50_2x\ShardingCore.Test50_2x.csproj", "{E4DAA43A-B64D-45CF-81B8-7B8FD338D686}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServerShardingDataSource", "samples\Sample.SqlServerShardingDataSource\Sample.SqlServerShardingDataSource.csproj", "{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +99,10 @@ Global
 		{E4DAA43A-B64D-45CF-81B8-7B8FD338D686}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4DAA43A-B64D-45CF-81B8-7B8FD338D686}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4DAA43A-B64D-45CF-81B8-7B8FD338D686}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +121,7 @@ Global
 		{2443CC8B-FB7D-47A7-9663-F3848BB30A36} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{A07C597D-339D-4378-BE4C-A2AF7473340B} = {F91949B0-02D5-4E3B-ACF4-AFA6C99A1E04}
 		{E4DAA43A-B64D-45CF-81B8-7B8FD338D686} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
+		{0193E3CF-F2FD-449A-B2D5-7F68E551FDBF} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}
