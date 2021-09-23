@@ -24,24 +24,14 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
-        public ShardingTableBuilder<TShardingDbContext, TActualDbContext> AddShardingDataBase(Func<IServiceProvider, IDictionary<string, string>> dataSourcesConfigure, Action<ShardingDatabaseOptions> shardingDatabaseConfigure)
+        public ShardingDataSourceRouteBuilder<TShardingDbContext, TActualDbContext> AddShardingDataSource(Func<IServiceProvider, IDictionary<string, string>> dataSourcesConfigure)
         {
-           
             _shardingCoreConfigBuilder.ShardingConfigOption.AddShardingDataSource(dataSourcesConfigure);
-            var shardingDatabaseOptions = new ShardingDatabaseOptions();
-            shardingDatabaseConfigure.Invoke(shardingDatabaseOptions);
-            var shardingDatabaseRoutes = shardingDatabaseOptions.GetShardingDatabaseRoutes();
-            foreach (var shardingDatabaseRoute in shardingDatabaseRoutes)
-            {
-                _shardingCoreConfigBuilder.ShardingConfigOption.AddShardingDataSourceRoute(shardingDatabaseRoute);
-            }
-
-            return new ShardingTableBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
+            return new ShardingDataSourceRouteBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
         }
 
-        public ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext> AddShardingTable(Action<ShardingTableOptions> shardingTableConfigure)
+        public ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext> AddShardingTableRoute(Action<ShardingTableOptions> shardingTableConfigure)
         {
-
             var shardingTableOptions = new ShardingTableOptions();
             shardingTableConfigure.Invoke(shardingTableOptions);
             var shardingTableRoutes = shardingTableOptions.GetShardingTableRoutes();

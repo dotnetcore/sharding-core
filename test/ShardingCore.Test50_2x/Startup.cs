@@ -47,11 +47,15 @@ namespace ShardingCore.Test50_2x
 
             services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o =>
                     o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]))
-                .Begin(true, true)
+                .Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0", hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
-                .AddShardingTable(op =>
+                .AddShardingTableRoute(op =>
                 {
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();

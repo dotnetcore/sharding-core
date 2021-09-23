@@ -1,18 +1,14 @@
 <h1 align="center"> ShardingCore </h1>
 
 
-`ShardingCore`是什么简单来说我认为他是目前最完美的efcore下的分表组件,支持所有的efcore支持的数据库(原则上),针对dbContext进行plus升级实现了无感知开发。
-在使用程度上极大的降低了代码侵入性保证开发时候的无感知使用(和efcore原生dbcontext一样)。
-该框架在分表数据下使用的而架构是流式聚合可以保证内存的稳定,而非内存迭代。
-但是针对efcore下的框架基本上都适用,你以为这就完了吗shardingcore我可以说完美支持abp并且无侵入性。
-最后如果喜欢本项目的话或者本项目对您有帮助的话麻烦[点我star github 地址](https://github.com/xuejmnet/sharding-core) ,也欢迎各位.neter交流。
+`ShardingCore` 易用、简单、高性能、普适性，是一款扩展针对efcore生态下的分表分库的扩展解决方案,支持efcore2+的所有版本,支持efcore2+的所有数据库、支持自定义路由、动态路由、高性能分页、读写分离的一款组件，如果你喜欢这组件或者这个组件对你有帮助请[点我star github 地址](https://github.com/xuejmnet/sharding-core)
 ### 依赖
 
 Release  | EF Core | .NET Standard | .NET (Core) 
 --- | --- | --- | --- 
-[5.2.x.x](https://www.nuget.org/packages/ShardingCore/5.2.0.19) | >= 5.0.9 | 2.1 | 3.0+ 
-[3.2.x.x](https://www.nuget.org/packages/ShardingCore/3.2.0.19) | 3.1.18 | 2.0 | 2.0+ 
-[2.2.x.x](https://www.nuget.org/packages/ShardingCore/2.2.0.19) | 2.2.6 | 2.0 | 2.0+ 
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore/5.3.0.00) | >= 5.0.10 | 2.1 | 3.0+ 
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore/3.3.0.00) | 3.1.18 | 2.0 | 2.0+ 
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore/2.3.0.00) | 2.2.6 | 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
@@ -25,14 +21,15 @@ Oracle | 支持 | 未测试
 
 
 
-- [开始](#开始)
+- [使用介绍](#使用介绍)
     - [简介](#简介)
     - [概念](#概念)
     - [优点](#优点)
     - [缺点](#缺点)
     - [安装](#安装)
-    - [配置](#配置)
-    - [使用](#使用)
+- [开始](#开始)
+    - [分表](#分表)
+    - [分库](#分库)
     - [默认路由](#默认路由)
     - [Api](#Api)
 - [高级配置](#高级配置)
@@ -46,27 +43,31 @@ Oracle | 支持 | 未测试
 - [计划(Future)](#计划)
 - [最后](#最后)
 
-# 开始
+# 使用介绍
 
-以下所有例子都以Sql Server为例 MySql亦如此
+以下所有例子都以Sql Server为例 展示的代码均是分表为例,如果需要分库可以参考[Sample.SqlServerShardingDataSource](https://github.com/xuejmnet/sharding-core/tree/main/samples/Sample.SqlServerShardingDataSource) 其他数据库亦是如此
 
 
 ## 简介
 
-该库从最初```2020年12月初```到现在还处于初期阶段,可能或许会有bug也希望各位多多理解,也是为了给.net生态贡献一下,从最初的仅支持单库分表到现在的多数据库分库分表且支持多表join和流式聚合等操作
-开发该库也给我自己带了了很多新的编程思路,目前该库支持的分库分表可以进行完全的自定义,基本上可以满足95%以上的
-业务需求，唯一的限制就是分表规则必须满足 x+y+z,x表示固定的表名,y表示固定的表名和表后缀之间的联系(可以为空),z表示表后缀,可以按照你自己的任意业务逻辑进行切分,
-如:user_0,user_1或者user202101,user202102...当然该库同样适用于多租户模式下的隔离,该库为了支持之后的分库已经重写了之前的union all查询模式,并且支持多种api,
+简单介绍下这个库,这个库的所有版本都是由对应的efcore版本号为主的版本，第二个版本号如果是2的表示仅支持分库,如果是3+的表示支持分库分表，这个库目前分成两个主要版本一个是main分支一个是shardingTableOnly分支,该库支持分库完全自定义路由适用于95%的业务需求,分表支持x+y+z,x表示固定的表名,y表示固定的表名和表后缀之间的联系(可以为空),z表示表后缀,可以按照你自己的任意业务逻辑进行切分,
+如:user_0,user_1或者user202101,user202102...当然该库同样适用于多租户模式下的隔离
 支持多种查询包括```join,group by,max,count,min,avg,sum``` ...等一系列查询,之后可能会添加更多支持,目前该库的使用非常简单,基本上就是针对IQueryable的扩展，为了保证
-该库的简介目前仅使用该库无法或者说难以实现自动建表,但是只需要配合定时任务该库即可完成24小时无人看管自动管理。该库提供了 [IShardingTableCreator](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/TableCreator/IShardingTableCreator.cs)
-作为建表的依赖,如果需要可以参考 [按天自动建表](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer)
-
-目前所有的demo可以参考 项目源码里面的Sample.SqlServer
+该库的干净零依赖,如果需要实现自动建表需要自己配合定时任务,即可完成24小时无人看管自动管理。该库提供了 [IShardingTableCreator](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/TableCreator/IShardingTableCreator.cs)
+作为建表的依赖,如果需要可以参考 [按天自动建表](https://github.com/xuejmnet/sharding-core/tree/main/samples/Samples.AutoByDate.SqlServer) 该demo是针对分库的动态添加
 
 ## 概念
 
 本库的几个简单的核心概念:
 
+### 分库
+- [DataSourceName]
+  数据源名称用来将对象路由到具体的数据源
+- [IVirtualDataSource]
+  虚拟数据源 [IVirtualDataSource](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualDatabase/VirtualDataSources/IVirtualDataSource.cs)
+- [IVirtualDataSourceRoute]
+  分库路由  [IVirtualDataSourceRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/DataSourceRoutes/IVirtualDataSourceRoute.cs)
+### 分表
 - [Tail]
   尾巴、后缀物理表的后缀
 - [TailPrefix]
@@ -74,25 +75,28 @@ Oracle | 支持 | 未测试
 - [物理表]
   顾名思义就是数据库对应的实际表信息,表名(tablename+ tailprefix+ tail) [IPhysicTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/PhysicTables/IPhysicTable.cs)
 - [虚拟表]
-  虚拟表就是系统将所有的物理表在系统里面进行抽象的一个总表对应到程序就是一个entity[IVirtualTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualTables/IVirtualTable.cs)
+  虚拟表就是系统将所有的物理表在系统里面进行抽象的一个总表对应到程序就是一个entity[IVirtualTable](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualDatabase/VirtualTables/IVirtualTable.cs)
 - [虚拟路由]
-  虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualTableRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/IVirtualRoute.cs)
+  虚拟路由就是联系虚拟表和物理表的中间介质,虚拟表在整个程序中只有一份,那么程序如何知道要查询系统哪一张表呢,最简单的方式就是通过虚拟表对应的路由[IVirtualTableRoute](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/Core/VirtualRoutes/TableRoutes/IVirtualTableRoute.cs)
   ,由于基本上所有的路由都是和业务逻辑相关的所以虚拟路由由用户自己实现,该框架提供一个高级抽象
 
 ## 优点
 
+- [支持自定义分库]
+- [支持读写分离]
+- [支持高性能分页]
+- [支持手动路由]
+- [支持批量操作]
 - [支持自定义分表规则]
 - [支持任意类型分表key]
-- [对dbcontext扩展近乎完美]
+- [对dbcontext学习成本0]
 - [支持分表下的连表] ```join,group by,max,count,min,avg,sum```
 - [支持针对批处理的使用] [EFCore.BulkExtensions](https://github.com/borisdj/EFCore.BulkExtensions) ...支持efcore的扩展生态
 - [提供多种默认分表规则路由] 按时间,按取模 可自定义
 - [针对分页进行优化] 大页数跳转支持低内存流式处理，高性能分页
 
 ## 缺点
-- [暂不支持分库]の
 - [消耗连接]出现分表与分表对象进行join如果条件没法索引到具体表会生成```笛卡尔积```导致连接数爆炸,后期会进行针对该情况的配置
-- [该库比较年轻] 可能会有一系列bug或者单元测试不到位的情况,但是只要你在群里或者提了issues我会尽快解决
 
 ## 安装
 ```xml
@@ -103,14 +107,15 @@ or
 <PackageReference Include="ShardingCore" Version="2.LastVersion" />
 ```
 
-## 配置
+# 开始
+## 分表
 
-配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 可以实现自动建表功能
+我们以用户取模来做例子,配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 
 `IShardingTable`数据库对象必须继承该接口
 `ShardingTableKey`分表字段需要使用该特性
 
 ```c#
-    public class SysUserMod:IShardingTable
+    public class SysUserMod : IShardingTable
     {
         /// <summary>
         /// 用户Id用于分表
@@ -137,12 +142,15 @@ or
 
     public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualRoute<SysUserMod>
     {
+        //2 tail length:00,01,02......99
+        //3 hashcode % 3: [0,1,2]
         public SysUserModVirtualTableRoute() : base(2,3)
         {
         }
     }
 ```
-创建DbContext必须继承IShardingTableDbContext
+
+如果你使用分表必须创建一个继承自```IShardingTableDbContext```接口的DbContext
 
 ```c#
 
@@ -157,7 +165,6 @@ or
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
-            modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
         public IRouteTail RouteTail { get; set; }
@@ -169,7 +176,7 @@ or
 
 ```c#
 
-  
+  //DefaultTableDbContext is acutal execute dbcontext
     public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
@@ -180,10 +187,8 @@ or
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
-            modelBuilder.ApplyConfiguration(new SysTestMap());
         }
 
-        public override Type ShardingDbContextType => this.GetType();
     }
 ```
 `Startup.cs` 下的 `ConfigureServices(IServiceCollection services)`
@@ -193,21 +198,26 @@ or
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
+            //if u want use no sharding operate
+            //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True"));
 
-//添加shardingdbcontext support life scope
+    //add shardingdbcontext support life scope
                 
-             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-                 ,op =>
-                 {
-                     op.EnsureCreatedWithOutShardingTable = true;
-                     op.CreateShardingTableOnStart = true;
-                    op.UseShardingOptionsBuilder(
-                        (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),
-                        (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger));//conStr不一定需要使用委托参数可以自定义来实现读写分离
-                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                 });
-        }
+        services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+                    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                )
+                .Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;//create sharding table
+                    o.EnsureCreatedWithOutShardingTable = true;//create data source with out sharding table
+                })
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
+                .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection))
+                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                .AddShardingTableRoute(o =>
+                {
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                }).End();
 ```
 
 `Startup.cs` 下的 ` Configure(IApplicationBuilder app, IWebHostEnvironment env)` 你也可以自行封装[app.UseShardingCore()](https://github.com/xuejmnet/sharding-core/blob/main/samples/Sample.SqlServer/DIExtension.cs)
@@ -217,8 +227,7 @@ or
             var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
             shardingBootstrapper.Start();
 ```
-
-## 使用
+如何使用
 ```c#
     
         private readonly DefaultShardingDbContext _defaultShardingDbContext;
@@ -228,13 +237,35 @@ or
             _defaultShardingDbContext = defaultShardingDbContext;
         }
 
+        public async Task Insert_1000()
+        {
+            if (!_defaultShardingDbContext.Set<SysUserMod>().Any())
+                {
+                    var ids = Enumerable.Range(1, 1000);
+                    var userMods = new List<SysUserMod>();
+                    foreach (var id in ids)
+                    {
+                        userMods.Add(new SysUserMod()
+                        {
+                            Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                            AgeGroup = Math.Abs(id % 10)
+                        });
+                    }
+
+                    _defaultShardingDbContext.AddRange(userMods);
+
+                   await _defaultShardingDbContext.SaveChangesAsync();
+                }
+        }
         public async Task ToList_All()
         {
             
-            var mods = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
+            var mods = await _defaultShardingDbContext.Set<SysUserMod>().ToListAsync();
             Assert.Equal(1000, mods.Count);
 
-            var modOrders1 = await _virtualDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            var modOrders1 = await _defaultShardingDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
             int ascAge = 1;
             foreach (var sysUserMod in modOrders1)
             {
@@ -242,7 +273,226 @@ or
                 ascAge++;
             }
 
-            var modOrders2 = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            var modOrders2 = await _defaultShardingDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+        }
+```
+## 分库
+
+我们还是以用户取模来做例子,配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 
+`IShardingDataSource`数据库对象必须继承该接口
+`ShardingDataSourceKey`分库字段需要使用该特性
+
+```c#
+    public class SysUserMod : IShardingDataSource
+    {
+        /// <summary>
+        /// 用户Id用于分库
+        /// </summary>
+        [ShardingDataSourceKey]
+        public string Id { get; set; }
+        /// <summary>
+        /// 用户名称
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// 用户姓名
+        /// </summary>
+        public int Age { get; set; }
+    }
+    
+```
+创建virtual route
+实现 `AbstractShardingOperatorVirtualTableRoute<T, TKey>`
+抽象,或者实现系统默认的虚拟路由
+框架默认有提供几个简单的路由 [默认路由](#默认路由)
+
+```c#
+
+    
+    public class SysUserModVirtualDataSourceRoute:AbstractShardingOperatorVirtualDataSourceRoute<SysUserMod,string>
+    {
+        protected readonly int Mod=3;
+        protected readonly int TailLength=1;
+        protected readonly char PaddingChar='0';
+
+        protected override string ConvertToShardingKey(object shardingKey)
+        {
+            return shardingKey.ToString();
+        }
+
+        public override string ShardingKeyToDataSourceName(object shardingKey)
+        {
+            var shardingKeyStr = ConvertToShardingKey(shardingKey);
+            return "ds"+Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength, PaddingChar); ;
+        }
+
+        public override List<string> GetAllDataSourceNames()
+        {
+            return new List<string>()
+            {
+                "ds0",
+                "ds1",
+                "ds2"
+            };
+        }
+
+        public override bool AddDataSourceName(string dataSourceName)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        {
+
+            var t = ShardingKeyToDataSourceName(shardingKey);
+            switch (shardingOperator)
+            {
+                case ShardingOperatorEnum.Equal: return tail => tail == t;
+                default:
+                {
+                    return tail => true;
+                }
+            }
+        }
+    }
+```
+
+如果你使用分库就不需要```IShardingTableDbContext```接口的DbContext
+
+```c#
+
+    public class DefaultTableDbContext: DbContext//,IShardingTableDbContext
+    {
+        public DefaultTableDbContext(DbContextOptions<DefaultTableDbContext> options) :base(options)
+        {
+            
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfiguration(new SysUserModMap());
+        }
+
+        public IRouteTail RouteTail { get; set; }
+    }
+```
+
+创建分表DbContext必须继承AbstractShardingDbContext<DefaultTableDbContext>其中DefaultTableDbContext是你刚才建立的就是如果你分表了你真正获取对象是通过哪个dbcontext
+
+
+```c#
+
+  //DefaultTableDbContext is acutal execute dbcontext
+    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    {
+        public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfiguration(new SysUserModMap());
+        }
+
+    }
+```
+`Startup.cs` 下的 `ConfigureServices(IServiceCollection services)`
+
+```c#
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+
+    //add shardingdbcontext support life scope
+                
+       services.AddShardingDbContext<DefaultShardingDbContext, DefaultDbContext>(
+                    o =>
+                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
+                ).Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
+                .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
+                .AddShardingDataSource(sp =>
+                {
+                    return new Dictionary<string, string>()
+                    {
+                        {"ds1", "Data Source=localhost;Initial Catalog=ShardingCoreDBxx1;Integrated Security=True;"},
+                        {"ds2", "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;"},
+                    };
+                }).AddShardingDataSourceRoute(o =>
+                {
+                    o.AddShardingDatabaseRoute<SysUserModVirtualDataSourceRoute>();
+                }).End();
+```
+
+`Startup.cs` 下的 ` Configure(IApplicationBuilder app, IWebHostEnvironment env)` 你也可以自行封装[app.UseShardingCore()](https://github.com/xuejmnet/sharding-core/blob/main/samples/Sample.SqlServer/DIExtension.cs)
+
+```c#
+
+            var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
+            shardingBootstrapper.Start();
+```
+如何使用
+```c#
+    
+        private readonly DefaultShardingDbContext _defaultShardingDbContext;
+
+        public ctor(DefaultShardingDbContext defaultShardingDbContext)
+        {
+            _defaultShardingDbContext = defaultShardingDbContext;
+        }
+
+        public async Task Insert_1000()
+        {
+            if (!_defaultShardingDbContext.Set<SysUserMod>().Any())
+                {
+                    var ids = Enumerable.Range(1, 1000);
+                    var userMods = new List<SysUserMod>();
+                    foreach (var id in ids)
+                    {
+                        userMods.Add(new SysUserMod()
+                        {
+                            Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                            AgeGroup = Math.Abs(id % 10)
+                        });
+                    }
+
+                    _defaultShardingDbContext.AddRange(userMods);
+
+                   await _defaultShardingDbContext.SaveChangesAsync();
+                }
+        }
+        public async Task ToList_All()
+        {
+            
+            var mods = await _defaultShardingDbContext.Set<SysUserMod>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _defaultShardingDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+            var modOrders2 = await _defaultShardingDbContext.Set<SysUserMod>().OrderByDescending(o => o.Age).ToListAsync();
             int descAge = 1000;
             foreach (var sysUserMod in modOrders2)
             {
@@ -270,7 +520,7 @@ or
 分组 |GroupByAsync |yes 
 
 ## 默认路由
-
+分库提供了默认的路由分表则需要自己去实现,具体实现可以参考分库
 抽象abstract  | 路由规则 | tail | 索引
 --- |--- |--- |--- 
 AbstractSimpleShardingModKeyIntVirtualTableRoute |取模 |0,1,2... | `=,contains`
@@ -297,38 +547,34 @@ var list = new List<SysUserMod>();
 ///通过集合返回出对应的k-v归集通过事务开启
             var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
 
-            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkInsert(kv.Value);
-                });
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkDelete(kv.Value);
-                });
-                dbContexts.ForEach(kv =>
-                {
-                    kv.Key.BulkUpdate(kv.Value);
-                });
-                _defaultTableDbContext.SaveChanges();
-                tran.Commit();
-            }
-            
-
-            var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
-            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                dbContext2s.ForEach(dbContext =>
-                {
-                    dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
+           
+                    foreach (var dataSourceMap in dbContexts)
                     {
-                        AgeGroup = 1000
-                    });
-                });
+                        foreach (var tailMap in dataSourceMap.Value)
+                        {
+                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
+                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
+                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
+                        }
+                    }
+                _defaultTableDbContext.SaveChanges();
+          //or
+            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+            using (var tran = _defaultTableDbContext.BeginTransaction())
+            {
+                    foreach (var dataSourceMap in dbContexts)
+                    {
+                        foreach (var tailMap in dataSourceMap.Value)
+                        {
+                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
+                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
+                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
+                        }
+                    }
                 _defaultTableDbContext.SaveChanges();
                 tran.Commit();
             }
+
 ```
 ## 手动路由
 ```c#
@@ -340,7 +586,6 @@ ctor inject IShardingRouteManager shardingRouteManager
         /// 开启提示路由
         /// </summary>
         protected override bool EnableHintRoute => true;
-        protected override bool EnableAssertRoute => true;
 
         public SysUserModVirtualTableRoute() : base(2,3)
         {
@@ -370,7 +615,7 @@ ctor inject IShardingRouteManager shardingRouteManager
 ```
 2.手动开启事务 [请参考微软](https://docs.microsoft.com/zh-cn/ef/core/saving/transactions)
 ```c#
-            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            using (var tran = _defaultTableDbContext.BeginTransaction())
             {
                     ........
                 _defaultTableDbContext.SaveChanges();
@@ -378,31 +623,43 @@ ctor inject IShardingRouteManager shardingRouteManager
             }
 ```
 ## 读写分离
-该框架目前已经支持一主多从的读写分离`UseReadWriteConfiguration`第一个参数返回对应的读数据库链接,默认写数据库链接不会放入其中,并且支持轮询和随机两种读写分离策略,又因为读写分离多链接的时候会导致数据读写不一致,(如分页其实是2步第一步获取count，第二部获取list)会导致数据量在最后几页出现缺量的问题,
+该框架目前已经支持一主多从的读写分离`AddReadWriteSeparation`,支持轮询 Loop和随机 Random两种读写分离策略,又因为读写分离多链接的时候会导致数据读写不一致,(如分页其实是2步第一步获取count，第二部获取list)会导致数据量在最后几页出现缺量的问题,
 针对这个问题框架目前实现了自定义读链接获取策略`ReadConnStringGetStrategyEnum.LatestEveryTime`表示为每次都是新的(这个情况下会出现上述问题),`ReadConnStringGetStrategyEnum.LatestFirstTime`表示以dbcontext作为单位获取一次(同dbcontext不会出现问题),
-又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否支持读写分离如果false默认选择写字符串去读取`DbContext.ReadWriteSupport`
+又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否使用读写分离如果false默认选择写字符串去读取`_defaultTableDbContext.ReadWriteSeparation=false`
 
 ```c#
+services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+                    o =>
+                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                ).Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
+                .AddDefaultDataSource("ds0",
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                .AddShardingTableRoute(o =>
+                {
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                }).AddReadWriteSeparation(o =>
+                {
+                    return new Dictionary<string, ISet<string>>()
+                    {
+                        {
+                            "ds0", new HashSet<string>(){
+                            "Data Source=localhost;Initial Catalog=ShardingCoreDBReadOnly1;Integrated Security=True;",
+                            "Data Source=localhost;Initial Catalog=ShardingCoreDBReadOnly2;Integrated Security=True;"}
+                        }
+                    };
+                }, ReadStrategyEnum.Loop).End();
 
-   services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
-                , op =>
-                 {
-                     op.EnsureCreatedWithOutShardingTable = true;
-                     op.CreateShardingTableOnStart = true;
-                     op.UseShardingOptionsBuilder(
-                         (connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger),//使用dbconnection创建dbcontext支持事务
-                         (conStr,builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                             //.ReplaceService<IQueryTranslationPostprocessorFactory,SqlServer2008QueryTranslationPostprocessorFactory>()//支持sqlserver2008r2
-                             );//使用链接字符串创建dbcontext
-                     op.UseReadWriteConfiguration(sp => new List<string>()
-                     {
-                         "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;",
-                         "Data Source=localhost;Initial Catalog=ShardingCoreDB2;Integrated Security=True;"
-                     }, ReadStrategyEnum.Random);
-                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-                 });
+                //reslove read write delay data not found
+                _defaultTableDbContext.ReadWriteSeparation=false;
+                //dbcontext use write connection string 
 ```
 
 ## 高性能分页
@@ -419,7 +676,7 @@ sharding-core本身使用流式处理获取数据在普通情况下和单表的�
         public void Configure(PaginationBuilder<SysUserSalary> builder)
         {
             builder.PaginationSequence(o => o.Id)
-                .UseTailCompare(Comparer<string>.Default)
+                .UseRouteCompare(Comparer<string>.Default)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
             builder.PaginationSequence(o => o.DateOfMonth)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch).UseAppendIfOrderNone(10);
@@ -430,7 +687,7 @@ sharding-core本身使用流式处理获取数据在普通情况下和单表的�
     }
 ```
 2.添加配置
-在对应的用户月薪路由中添加配置
+在对应的用户路由中添加配置 [XXXXXXVirtualTableRoute]
 ```c#
         public override IPaginationConfiguration<SysUserSalary> CreatePaginationConfiguration()
         {
@@ -438,7 +695,7 @@ sharding-core本身使用流式处理获取数据在普通情况下和单表的�
         }
 ```
 3.Configure内部为什么意思?
-1) builder.PaginationSequence(o => o.Id) 配置当分页orderby 字段为Id时那么分表所对应的表结构为顺序,顺序的规则通过`UseTailCompare`来设置,其中string为表tail,
+1) builder.PaginationSequence(o => o.Id) 配置当分页orderby 字段为Id时那么分表所对应的表结构为顺序,顺序的规则通过`UseRouteCompare`来设置,其中string为表tail 或 data source name,
 具体什么意思就是说如果本次分页设计3张表分别是table1,table2,table3,如果我没配置id的情况下那么需要查询3张表然后分别进行流式聚合,如果我配置了id的情况下,如果本次sql查询带上了id作为order by字段
    那么就不需要分别查询3张表,可以直接查询table1如果table1的count大于你要跳过的页数,假设分页查询先查询多少条,table1:100条,table2:200条,table3:300条
    如果你要跳过90条获取10条原先的时间就是O(100)现在的时间就是O(10)因为table1跳过了90条还剩余10条;
@@ -450,7 +707,7 @@ skip必须大于分页总total*该因子(0-1的double),第二个参数表示最�
  ```c#
 var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Age).ToShardingPageAsync(pageIndex, pageSize);
 ```
-### 注意:如果你是按时间排序无论何种排序建议开启并且加上时间顺序排序,如果你是取模或者自定义分表,建议将Id作为顺序排序,如果没有特殊情况请使用id排序并且加上反向排序作为性能优化
+### 注意:如果你是按时间排序无论何种排序建议开启并且加上时间顺序排序,如果你是取模或者自定义分表,建议将Id作为顺序排序,如果没有特殊情况请使用id排序并且加上反向排序作为性能优化,如果entity同时支持分表分库并且两个路由都支持同一个属性的顺序排序优先级为先分库后分表
 
 
 # 注意事项
@@ -458,8 +715,7 @@ var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().Ord
 1.shardingdbcontext
 ```c#
     return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
-                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
 ```
 2.defaultdbcontext
 ```c#
@@ -470,8 +726,10 @@ return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKe
 ,目前框架采用AppDomain.CurrentDomain.GetAssemblies();
 可能会导致程序集未被加载所以尽可能在api层加载所需要的dll
 使用时需要注意
-- 实体对象是否继承`IShardingTable`
-- 实体对象是否有`ShardingKey`
+- 分表实体对象是否继承`IShardingTable`
+- 分表实体对象是否有`ShardingKey`
+- 分库实体对象是否继承`IShardingDataSource`
+- 分库实体对象是否有`ShardingDataSourceKey`
 - 实体对象是否已经实现了一个虚拟路由
 - startup是否已经添加虚拟路由
 - startup是否已经添加bootstrapper.start()
@@ -496,7 +754,6 @@ return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKe
 # 计划
 - [提供官网如果该项目比较成功的话]
 - [开发更完善的文档]
-- [支持分库]
 - [重构成支持.net其他orm]
 
 # 最后

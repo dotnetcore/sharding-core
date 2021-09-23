@@ -33,7 +33,7 @@ namespace ShardingCore.Core.VirtualDatabase
         /// <summary>
         /// 启动时是否建表 auto create data source when start app
         /// </summary>
-        public bool? AutoCreateDataSource { get; set; }
+        public bool? AutoCreateDataSourceTable { get; set; }
 
         /// <summary>
         /// 分表字段 sharding table field

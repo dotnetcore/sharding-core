@@ -31,11 +31,13 @@ namespace ShardingCore.DIExtensions
         }
 
 
-        public ShardingQueryBuilder<TShardingDbContext, TActualDbContext> Begin(bool ensureCreatedWithOutShardingTable, bool? createShardingTableOnStart = null,bool? ignoreCreateTableError = null)
+        public ShardingQueryBuilder<TShardingDbContext, TActualDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
         {
-            ShardingConfigOption.EnsureCreatedWithOutShardingTable = ensureCreatedWithOutShardingTable;
-            ShardingConfigOption.CreateShardingTableOnStart = createShardingTableOnStart;
-            ShardingConfigOption.IgnoreCreateTableError = ignoreCreateTableError;
+            var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
+            shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
+            ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
+            ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
+            ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
             return new ShardingQueryBuilder<TShardingDbContext, TActualDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
@@ -54,5 +56,23 @@ namespace ShardingCore.DIExtensions
         //    _dataSources.Add(dataSourceName, connectionString);
         //    return this;
         //}
+    }
+
+    public class ShardingCoreBeginOptions
+    {
+        /// <summary>
+        /// 如果数据库不存在就创建并且创建表除了分表的
+        /// </summary>
+        public bool EnsureCreatedWithOutShardingTable { get; set; }
+
+        /// <summary>
+        /// 是否需要在启动时创建分表
+        /// </summary>
+        public bool? CreateShardingTableOnStart { get; set; }
+
+        /// <summary>
+        /// 忽略建表时的错误
+        /// </summary>
+        public bool? IgnoreCreateTableError { get; set; }
     }
 }

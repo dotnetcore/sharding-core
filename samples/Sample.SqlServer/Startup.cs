@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,16 +31,20 @@ namespace Sample.SqlServer
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
-                    o => 
+                    o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
-                ).Begin(true,true)
+                ).Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",
                     "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
-                .AddShardingTable(o =>
+                .AddShardingTableRoute(o =>
                 {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -64,7 +69,7 @@ namespace Sample.SqlServer
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

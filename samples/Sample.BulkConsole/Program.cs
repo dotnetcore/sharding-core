@@ -25,11 +25,15 @@ namespace Sample.BulkConsole
             services.AddLogging();
             services.AddShardingDbContext<MyShardingDbContext, MyDbContext>(
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;"))
-                .Begin(true,true)
+                .Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;")
-                .AddShardingTable(op=> {
+                .AddShardingTableRoute(op=> {
                     op.AddShardingTableRoute<OrderVirtualRoute>();
                 }).End();
             var serviceProvider = services.BuildServiceProvider();
@@ -62,13 +66,12 @@ namespace Sample.BulkConsole
                     startNew.Stop();
                     Console.WriteLine($"订单总数:{i}条,myShardingDbContext.BulkShardingEnumerable(orders)用时:{startNew.ElapsedMilliseconds}毫秒");
                     startNew.Restart();
-                    foreach (var keyValuePair in bulkShardingEnumerable)
+                    foreach (var dataSourceMap in bulkShardingEnumerable)
                     {
-                        foreach (var valuePair in keyValuePair.Value)
+                        foreach (var tailMap in dataSourceMap.Value)
                         {
-                            valuePair.Key.BulkInsert(valuePair.Value.ToList());
+                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
                         }
-
                     }
                     startNew.Stop();
                     Console.WriteLine($"订单总数:{i}条,myShardingDbContext.BulkInsert(orders)用时:{startNew.ElapsedMilliseconds}毫秒");

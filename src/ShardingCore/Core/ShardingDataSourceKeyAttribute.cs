@@ -17,6 +17,6 @@ namespace ShardingCore.Core
         /// <summary>
         /// 是否需要在启动的时候创建表
         /// </summary>
-        public ShardingKeyAutoCreateDataSourceEnum AutoCreateDataSourceOnStart { get; set; } = ShardingKeyAutoCreateDataSourceEnum.UnKnown;
+        public ShardingKeyAutoCreateTableEnum AutoCreateDataSourceTableOnStart { get; set; } = ShardingKeyAutoCreateTableEnum.UnKnown;
     }
 }

@@ -99,7 +99,7 @@ namespace ShardingCore.DIExtensions
                 //foreach (var dataSourceKv in dataSources)
                 //{
                 //    if (dataSourceKv.Key == _shardingCoreConfigBuilder.DefaultDataSourceName)
-                //        throw new InvalidOperationException($"{nameof(AddShardingDataBase)} include default data source name:{_shardingCoreConfigBuilder.DefaultDataSourceName}");
+                //        throw new InvalidOperationException($"{nameof(AddShardingDataSource)} include default data source name:{_shardingCoreConfigBuilder.DefaultDataSourceName}");
                 //    _shardingCoreConfigBuilder.AddShardingDataSource.Add(dataSourceKv.Key, dataSourceKv.Value);
                 //}
             }

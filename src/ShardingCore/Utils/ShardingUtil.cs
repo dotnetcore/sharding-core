@@ -64,7 +64,7 @@ namespace ShardingCore.Utils
                             throw new NotSupportedException($"{entityType}  impl {nameof(IShardingDataSource)} should use single attribute [{nameof(ShardingDataSourceKeyAttribute)}]");
 
                         entityConfig.ShardingDataSourceField = shardingProperty.Name;
-                        entityConfig.AutoCreateDataSource = shardingDataSourceKey.AutoCreateDataSourceOnStart == ShardingKeyAutoCreateDataSourceEnum.UnKnown ? (bool?)null : (shardingDataSourceKey.AutoCreateDataSourceOnStart == ShardingKeyAutoCreateDataSourceEnum.Create);
+                        entityConfig.AutoCreateDataSourceTable = shardingDataSourceKey.AutoCreateDataSourceTableOnStart == ShardingKeyAutoCreateTableEnum.UnKnown ? (bool?)null : (shardingDataSourceKey.AutoCreateDataSourceTableOnStart == ShardingKeyAutoCreateTableEnum.Create);
                         shardingDataSourceCount++;
                     }
                 }

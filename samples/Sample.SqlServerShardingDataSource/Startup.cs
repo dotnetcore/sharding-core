@@ -39,21 +39,24 @@ namespace Sample.SqlServerShardingDataSource
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultDbContext>(
                     o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
-                ).Begin(true, true)
+                ).Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
-                .AddShardingDataBase(sp =>
+                .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
+                .AddShardingDataSource(sp =>
                 {
                     return new Dictionary<string, string>()
                     {
                         {"ds1", "Data Source=localhost;Initial Catalog=ShardingCoreDBxx1;Integrated Security=True;"},
                         {"ds2", "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;"},
                     };
-                }, o =>
+                }).AddShardingDataSourceRoute(o =>
                 {
                     o.AddShardingDatabaseRoute<SysUserModVirtualDataSourceRoute>();
                 }).End();

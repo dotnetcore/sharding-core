@@ -14,7 +14,7 @@ namespace Sample.SqlServerShardingDataSource.Domain.Entities
     public class SysUserMod : IShardingDataSource
     {
         /// <summary>
-        /// 用户Id用于分表
+        /// 用户Id用于分库
         /// </summary>
         [ShardingDataSourceKey]
         public string Id { get; set; }

@@ -70,7 +70,8 @@ namespace ShardingCore
                         connectionString, false));
                     using var context =
                         (DbContext)serviceScope.ServiceProvider.GetService(_shardingConfigOption.ShardingDbContextType);
-                    EnsureCreated(context, dataSourceName);
+                    if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
+                        EnsureCreated(context, dataSourceName);
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;
@@ -186,7 +187,23 @@ namespace ShardingCore
         {
             if (config.AutoCreateTable.HasValue)
             {
-                return config.AutoCreateTable.Value;
+                if (config.AutoCreateTable.Value)
+                    return config.AutoCreateTable.Value;
+                else
+                {
+                    if (config.AutoCreateDataSourceTable.HasValue)
+                        return config.AutoCreateDataSourceTable.Value;
+                }
+            }
+            if (config.AutoCreateDataSourceTable.HasValue)
+            {
+                if (config.AutoCreateDataSourceTable.Value)
+                    return config.AutoCreateDataSourceTable.Value;
+                else
+                {
+                    if (config.AutoCreateTable.HasValue)
+                        return config.AutoCreateTable.Value;
+                }
             }
 
             return _shardingConfigOption.CreateShardingTableOnStart.GetValueOrDefault();

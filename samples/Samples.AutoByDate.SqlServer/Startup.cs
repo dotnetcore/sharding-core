@@ -37,14 +37,18 @@ namespace Samples.AutoByDate.SqlServer
             services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
                     o => o.UseSqlServer(
                         "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
-                ).Begin(true)
+                ).Begin(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0",
                     "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
-                .AddShardingTable(o =>
+                .AddShardingTableRoute(o =>
                 {
                     o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<TestLogWeekVirtualRoute>();

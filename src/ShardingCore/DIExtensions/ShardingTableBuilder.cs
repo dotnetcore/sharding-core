@@ -24,7 +24,7 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
-        public ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext> AddShardingTable(Action<ShardingTableOptions> shardingTableConfigure)
+        public ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext> AddShardingTableRoute(Action<ShardingTableOptions> shardingTableConfigure)
         {
 
             var shardingTableOptions = new ShardingTableOptions();
