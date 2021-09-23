@@ -35,15 +35,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
-        /// <summary>
-        /// 根据表达式创建db context
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="where"></param>
-        /// <returns></returns>
-
-        IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
-            where TEntity : class;
 
 
 

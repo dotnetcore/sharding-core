@@ -86,11 +86,6 @@ namespace ShardingCore.Sharding
             return _shardingDbContextExecutor.CreateGenericDbContext(entity);
         }
 
-        public IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where) where TEntity : class
-        {
-            return _shardingDbContextExecutor.CreateExpressionDbContext(where);
-        }
-
 
 
         public override EntityEntry Add(object entity)

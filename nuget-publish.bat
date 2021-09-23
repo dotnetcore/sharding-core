@@ -1,7 +1,8 @@
 :start
 ::定义版本
-set EFCORE3=3.2.0.20
-set EFCORE5=5.2.0.20
+set EFCORE2=2.3.0.00-pre1
+set EFCORE3=3.3.0.00-pre1
+set EFCORE5=5.3.0.00-pre1
 
 ::删除所有bin与obj下的文件
 @echo off

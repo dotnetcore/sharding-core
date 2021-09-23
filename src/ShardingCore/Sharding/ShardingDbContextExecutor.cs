@@ -159,34 +159,6 @@ namespace ShardingCore.Sharding
             return CreateDbContext(true, dataSourceName, _routeTailFactory.Create(tail));
         }
 
-
-        public IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> @where) where TEntity : class
-        {
-
-            var dataSourceNames = _virtualDataSource.GetDataSourceNames(where);
-
-            if (typeof(TEntity).IsShardingTable())
-            {
-                var resultDbContexts = new LinkedList<DbContext>();
-                foreach (var dataSourceName in dataSourceNames)
-                {
-                    var physicTables = _virtualTableManager.GetVirtualTable(typeof(TEntity)).RouteTo(new ShardingTableRouteConfig(predicate: where));
-                    if (physicTables.IsEmpty())
-                        throw new ShardingCoreException($"{where.ShardingPrint()} cant found ant physic table");
-                    var dbContexts = physicTables.Select(o => CreateDbContext(true, dataSourceName, _routeTailFactory.Create(o.Tail))).ToList();
-                    foreach (var dbContext in dbContexts)
-                    {
-                        resultDbContexts.AddLast(dbContext);
-                    }
-                }
-
-                return resultDbContexts;
-            }
-            else
-            {
-                return dataSourceNames.Select(dataSourceName => CreateDbContext(true, dataSourceName, _routeTailFactory.Create(string.Empty)));
-            }
-        }
         #endregion
 
         #region transaction

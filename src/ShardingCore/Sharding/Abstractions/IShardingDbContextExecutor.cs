@@ -47,8 +47,6 @@ namespace ShardingCore.Sharding.Abstractions
         DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail);
 
         DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class;
-        IEnumerable<DbContext> CreateExpressionDbContext<TEntity>(Expression<Func<TEntity, bool>> where)
-            where TEntity : class;
 
         IShardingTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified);
 
