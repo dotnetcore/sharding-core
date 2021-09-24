@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using EFCore.BulkExtensions;
+﻿using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sample.BulkConsole.DbContexts;
 using Sample.BulkConsole.Entities;
 using ShardingCore;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
-using ShardingCore.TableCreator;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Sample.BulkConsole
 {
@@ -45,24 +42,6 @@ namespace Sample.BulkConsole
             {
                 var myShardingDbContext = serviceScope.ServiceProvider.GetService<MyShardingDbContext>();
 
-                var virtualTableManager = serviceScope.ServiceProvider.GetService<IVirtualTableManager<MyShardingDbContext>>();
-                var virtualTable = virtualTableManager.GetVirtualTable(typeof(Order));
-                if (virtualTable == null)
-                {
-                    return;
-                }
-                var now1 = DateTime.Now.Date.AddDays(2);
-                var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now1);
-                try
-                {
-                    virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
-                    var tableCreator = serviceProvider.GetService< IShardingTableCreator < MyShardingDbContext >> ();
-                    tableCreator.CreateTable("ds0", typeof(Order), tail);
-                }
-                catch (Exception e)
-                {
-                    //ignore
-                }
                 if (!myShardingDbContext.Set<Order>().Any())
                 {
                     var begin = DateTime.Now.Date.AddDays(-3);
