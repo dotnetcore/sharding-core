@@ -71,9 +71,7 @@ namespace Sample.SqlServer.Controllers
             var sresult = _defaultTableDbContext.Set<SysUserMod>().ToList();
 
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
-            _defaultTableDbContext.Attach(sysUserMod98);
             sysUserMod98.Name = "name_update" + new Random().Next(1, 99) + "_98";
-            _defaultTableDbContext.Attach(sysUserMod98);
             await _defaultTableDbContext.SaveChangesAsync();
             var stu = new STU() { Id = "198" };
             var sresultx111x = _defaultTableDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == stu.Id);

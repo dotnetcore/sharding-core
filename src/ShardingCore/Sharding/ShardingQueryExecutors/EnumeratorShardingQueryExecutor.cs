@@ -44,9 +44,10 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
         }
-
+        
         public IEnumeratorStreamMergeEngine<TEntity> ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             //操作单表或者单分库分表之类的
             if (_streamMergeContext.IsNormalQuery()||_streamMergeContext.IsSingleRouteQuery())
             {

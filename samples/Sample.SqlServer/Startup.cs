@@ -37,6 +37,8 @@ namespace Sample.SqlServer
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
+                    o.AutoTrackEntity = true;
+                    //o.AutoTrackEntity = true;
                 })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))

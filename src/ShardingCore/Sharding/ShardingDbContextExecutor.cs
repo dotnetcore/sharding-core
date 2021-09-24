@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)
         {
 
-            if (parallelQuery)
+            if (!parallelQuery)
             {
                 if (routeTail.IsMultiEntityQuery())
                     throw new ShardingCoreNotSupportedException("multi route not support track");
@@ -156,7 +156,7 @@ namespace ShardingCore.Sharding
             var dataSourceName = _virtualDataSource.GetDataSourceName(entity);
             var tail = _virtualTableManager.GetTableTail(entity);
 
-            return CreateDbContext(true, dataSourceName, _routeTailFactory.Create(tail));
+            return CreateDbContext(false, dataSourceName, _routeTailFactory.Create(tail));
         }
 
         #endregion

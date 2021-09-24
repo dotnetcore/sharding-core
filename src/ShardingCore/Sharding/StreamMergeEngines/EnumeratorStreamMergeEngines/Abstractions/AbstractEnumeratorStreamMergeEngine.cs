@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
         public ConcurrentDictionary<TableRouteResult, DbContext> DbContextQueryStore { get; }
+
 
         public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {

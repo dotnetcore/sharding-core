@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 using Sample.BulkConsole.DbContexts;
 using Sample.BulkConsole.Entities;
 using ShardingCore;
+using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
+using ShardingCore.TableCreator;
 
 namespace Sample.BulkConsole
 {
@@ -41,6 +44,25 @@ namespace Sample.BulkConsole
             using (var serviceScope = serviceProvider.CreateScope())
             {
                 var myShardingDbContext = serviceScope.ServiceProvider.GetService<MyShardingDbContext>();
+
+                var virtualTableManager = serviceScope.ServiceProvider.GetService<IVirtualTableManager<MyShardingDbContext>>();
+                var virtualTable = virtualTableManager.GetVirtualTable(typeof(Order));
+                if (virtualTable == null)
+                {
+                    return;
+                }
+                var now1 = DateTime.Now.Date.AddDays(2);
+                var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now1);
+                try
+                {
+                    virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+                    var tableCreator = serviceProvider.GetService< IShardingTableCreator < MyShardingDbContext >> ();
+                    tableCreator.CreateTable("ds0", typeof(Order), tail);
+                }
+                catch (Exception e)
+                {
+                    //ignore
+                }
                 if (!myShardingDbContext.Set<Order>().Any())
                 {
                     var begin = DateTime.Now.Date.AddDays(-3);
@@ -62,16 +84,13 @@ namespace Sample.BulkConsole
                     }
 
                     var startNew = Stopwatch.StartNew();
-                    var bulkShardingEnumerable = myShardingDbContext.BulkShardingEnumerable(orders);
+                    var bulkShardingEnumerable = myShardingDbContext.BulkShardingTableEnumerable(orders);
                     startNew.Stop();
                     Console.WriteLine($"订单总数:{i}条,myShardingDbContext.BulkShardingEnumerable(orders)用时:{startNew.ElapsedMilliseconds}毫秒");
                     startNew.Restart();
                     foreach (var dataSourceMap in bulkShardingEnumerable)
                     {
-                        foreach (var tailMap in dataSourceMap.Value)
-                        {
-                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
-                        }
+                        dataSourceMap.Key.BulkInsert(dataSourceMap.Value.ToList());
                     }
                     startNew.Stop();
                     Console.WriteLine($"订单总数:{i}条,myShardingDbContext.BulkInsert(orders)用时:{startNew.ElapsedMilliseconds}毫秒");
@@ -84,7 +103,7 @@ namespace Sample.BulkConsole
                 var startNew1 = Stopwatch.StartNew();
 
                 int skip = 0, take = 10;
-                for (int i = 1000; i < 20000; i++)
+                for (int i = 20000; i < 30000; i++)
                 {
                     skip = take * i;
                     startNew1.Restart();

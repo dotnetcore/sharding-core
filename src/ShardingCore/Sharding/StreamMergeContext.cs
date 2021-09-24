@@ -44,6 +44,7 @@ namespace ShardingCore.Sharding
         /// 本次查询涉及的对象
         /// </summary>
         public ISet<Type> QueryEntities { get; }
+        public bool? IsNoTracking { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
@@ -58,6 +59,7 @@ namespace ShardingCore.Sharding
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
             Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
+            IsNoTracking = _source.GetIsNoTracking();
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
@@ -99,7 +101,7 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            return _shardingDbContext.GetDbContext(dataSourceName, false, routeTail);
+            return _shardingDbContext.GetDbContext(dataSourceName, true, routeTail);
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult)

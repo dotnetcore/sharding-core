@@ -3,30 +3,27 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts;
-using ShardingCore.EFCores;
-using ShardingCore.Helpers;
-using ShardingCore.Sharding;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.TableCreator;
-using System;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.DbContexts;
 using ShardingCore.DIExtensions;
-using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.EFCores;
+using ShardingCore.Helpers;
+using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
+using ShardingCore.TableCreator;
+using System;
 
 namespace ShardingCore
 {
@@ -186,6 +183,7 @@ namespace ShardingCore
 
         internal static IServiceCollection AddInternalShardingCore(this IServiceCollection services)
         {
+            services.TryAddSingleton(typeof(ITrackerManager<>),typeof(TrackerManager<>));
             services.TryAddSingleton(typeof(IStreamMergeContextFactory<>),typeof(StreamMergeContextFactory<>));
             services.TryAddSingleton(typeof(IShardingTableCreator<>),typeof(ShardingTableCreator<>));
             //虚拟数据源管理

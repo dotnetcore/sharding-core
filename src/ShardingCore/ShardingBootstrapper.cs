@@ -1,21 +1,6 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.TableCreator;
+using System;
+using System.Collections.Generic;
 
 namespace ShardingCore
 {
@@ -40,7 +25,7 @@ namespace ShardingCore
             foreach (var shardingConfigOption in _shardingConfigOptions)
             {
                 var instance = (IShardingDbContextBootstrapper)Activator.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(shardingConfigOption.ShardingDbContextType), shardingConfigOption);
-                instance.Initialize();
+                instance.Init();
             }
         }
 

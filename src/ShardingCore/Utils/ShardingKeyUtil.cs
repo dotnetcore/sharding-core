@@ -1,72 +1,61 @@
-//using System;
-//using System.Collections.Concurrent;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Linq.Expressions;
-//using System.Reflection;
-//using ShardingCore.Core;
-//using ShardingCore.Core.Internal.Visitors;
-//using ShardingCore.Core.Internal.Visitors.Querys;
-//using ShardingCore.Core.VirtualRoutes;
-//using ShardingCore.Core.VirtualTables;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore.Metadata;
+using ShardingCore.Core;
+using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Core.Internal.Visitors.Querys;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualTables;
+using ShardingCore.Extensions;
 
-//namespace ShardingCore.Utils
-//{
-///*
-//* @Author: xjm
-//* @Description:
-//* @Date: Saturday, 19 December 2020 20:20:29
-//* @Email: 326308290@qq.com
-//*/
-//    public class ShardingKeyUtil
-//    {
-//        private static readonly ConcurrentDictionary<Type, ShardingTableConfig> _caches = new ConcurrentDictionary<Type, ShardingTableConfig>();
+namespace ShardingCore.Utils
+{
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 19 December 2020 20:20:29
+    * @Email: 326308290@qq.com
+    */
+    public class ShardingKeyUtil
+    {
+        private static readonly ConcurrentDictionary<Type, string> _caches = new ConcurrentDictionary<Type, string>();
 
-//        private ShardingKeyUtil()
-//        {
-//        }
+        private ShardingKeyUtil()
+        {
+        }
 
-//        public static ShardingTableConfig Parse(Type entityType)
-//        {
-//            if (!typeof(IShardingTable).IsAssignableFrom(entityType))
-//                throw new NotSupportedException(entityType.ToString());
-//            if (_caches.TryGetValue(entityType, out var shardingEntityConfig))
-//            {
-//                return shardingEntityConfig;
-//            }
+        public static void ParsePrimaryKeyName(IEntityType entityType)
+        {
+            var keyName = entityType.FindPrimaryKey().Properties
+                .Select(x => x.Name).FirstOrDefault();
+            _caches.TryAdd(entityType.ClrType, keyName);
+        }
 
-//            PropertyInfo[] shardingProperties = entityType.GetProperties();
-//            foreach (var shardingProperty in shardingProperties)
-//            {
-//                var attribbutes = shardingProperty.GetCustomAttributes(true);
-//                if (attribbutes.FirstOrDefault(x => x.GetType() == typeof(ShardingTableKeyAttribute)) is ShardingTableKeyAttribute shardingKeyAttribute)
-//                {
-//                    if (shardingEntityConfig != null)
-//                        throw new ArgumentException($"{entityType} found more than one [ShardingKeyAttribute]");
-//                    shardingEntityConfig = new ShardingTableConfig()
-//                    {
-//                        ShardingEntityType = entityType,
-//                        ShardingField = shardingProperty.Name,
-//                        AutoCreateTable = shardingKeyAttribute.AutoCreateTableOnStart==ShardingKeyAutoCreateTableEnum.UnKnown?(bool?)null:(shardingKeyAttribute.AutoCreateTableOnStart==ShardingKeyAutoCreateTableEnum.Create),
-//                        TailPrefix = shardingKeyAttribute.TailPrefix
-//                    };
-//                    _caches.TryAdd(entityType, shardingEntityConfig);
-//                }
-//            }
+        public static object GetPrimaryKeyValue(object entity)
+        {
+            var entityType = entity.GetType();
+            if (!_caches.TryGetValue(entityType, out var keyName))
+            {
+                return null;
+            }
 
-//            return shardingEntityConfig;
-//        }
+            return entity.GetPropertyValue(keyName);
+        }
 
 
 
-//        //public static ISet<Type> GetShardingEntitiesFilter(IQueryable queryable)
-//        //{
-//        //    ShardingEntitiesVisitor visitor = new ShardingEntitiesVisitor();
+        //public static ISet<Type> GetShardingEntitiesFilter(IQueryable queryable)
+        //{
+        //    ShardingEntitiesVisitor visitor = new ShardingEntitiesVisitor();
 
-//        //    visitor.Visit(queryable.Expression);
+        //    visitor.Visit(queryable.Expression);
 
-//        //    return visitor.GetShardingEntities();
-//        //}
+        //    return visitor.GetShardingEntities();
+        //}
 
-//    }
-//}
+    }
+}

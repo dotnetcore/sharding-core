@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
@@ -18,6 +19,7 @@ using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
+using ShardingCore.Utils;
 
 namespace ShardingCore
 {
@@ -30,7 +32,7 @@ namespace ShardingCore
     */
     public interface IShardingDbContextBootstrapper
     {
-        void Initialize();
+        void Init();
     }
 
     public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper where TShardingDbContext : DbContext, IShardingDbContext
@@ -40,6 +42,7 @@ namespace ShardingCore
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly ILogger<ShardingDbContextBootstrapper<TShardingDbContext>> _logger;
+        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
 
         public ShardingDbContextBootstrapper(IShardingConfigOption shardingConfigOption)
         {
@@ -48,8 +51,9 @@ namespace ShardingCore
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
+            _trackerManager=ShardingContainer.GetService<ITrackerManager<TShardingDbContext>>();
         }
-        public void Initialize()
+        public void Init()
         {
             var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             var dataSources = _shardingConfigOption.GetDataSources();
@@ -74,7 +78,10 @@ namespace ShardingCore
                         EnsureCreated(context, dataSourceName);
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
-                        var entityType = entity.ClrType;
+                        ShardingKeyUtil.ParsePrimaryKeyName(entity);
+                         var entityType = entity.ClrType;
+                        //添加追踪模型
+                        _trackerManager.AddDbContextModel(entityType);
                         if (entityType.IsShardingDataSource())
                         {
                             var routeType = _shardingConfigOption.GetVirtualDataSourceRouteType(entityType);

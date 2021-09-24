@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
+using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions
 {
@@ -25,9 +26,9 @@ namespace ShardingCore.Extensions
             var contextModel = dbContext.Model as Model;
 
 #if EFCORE5
-var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
+            var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
- contextModelRelationalModel.Tables.Where(o=>o.Value.EntityTypeMappings.Any(m=>m.EntityType.ClrType.IsShardingTable())).Select(o=>o.Key).ToList();
+ contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => m.EntityType.ClrType.IsShardingTable())).Select(o => o.Key).ToList();
             for (int i = 0; i < valueTuples.Count; i++)
             {
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
@@ -53,7 +54,7 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
             Type shardingType)
         {
             var contextModel = dbContext.Model as Model;
-            
+
 #if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples = contextModelRelationalModel.Tables
@@ -153,6 +154,25 @@ var contextModelRelationalModel = contextModel.RelationalModel as RelationalMode
         }
 
         private static object sLock = new object();
+
+        public static TEntity GetAttachedEntity<TEntity>(this DbContext context, TEntity entity) where TEntity:class
+        {
+            if (entity == null) { throw new ArgumentNullException(nameof(entity)); }
+
+            var primaryKeyValue = ShardingKeyUtil.GetPrimaryKeyValue(entity);
+            if (primaryKeyValue == null)
+                return null;
+            var entry = context.ChangeTracker.Entries<TEntity>().FirstOrDefault(e => primaryKeyValue.Equals(ShardingKeyUtil.GetPrimaryKeyValue(e.Entity)));
+            if (entry != null)
+            {
+                if (entry.State != EntityState.Detached)
+                {
+                    return entry.Entity;
+                }
+            }
+
+            return null;
+        }
 
     }
 }

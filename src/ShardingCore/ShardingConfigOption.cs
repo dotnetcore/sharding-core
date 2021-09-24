@@ -173,6 +173,10 @@ namespace ShardingCore
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }
+        /// <summary>
+        /// 自动追踪实体
+        /// </summary>
+        public bool AutoTrackEntity { get; set; }
 
         public string DefaultDataSourceName { get; set; }
         public string DefaultConnectionString { get; set; }

@@ -36,6 +36,7 @@ namespace ShardingCore.DIExtensions
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
             ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
+            ShardingConfigOption.AutoTrackEntity = shardingCoreBeginOptions.AutoTrackEntity;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
             return new ShardingQueryBuilder<TShardingDbContext, TActualDbContext>(this);
@@ -69,6 +70,10 @@ namespace ShardingCore.DIExtensions
         /// 是否需要在启动时创建分表
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
+        /// <summary>
+        /// 是否自动追踪实体
+        /// </summary>
+        public bool AutoTrackEntity { get; set; }
 
         /// <summary>
         /// 忽略建表时的错误

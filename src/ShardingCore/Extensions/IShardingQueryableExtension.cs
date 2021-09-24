@@ -62,6 +62,13 @@ namespace ShardingCore.Extensions
             return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
 
+        internal static bool? GetIsNoTracking<T>(this IQueryable<T> source)
+        {
+            var queryableTrackingDiscoverVisitor = new QueryableTrackingDiscoverVisitor();
+            queryableTrackingDiscoverVisitor.Visit(source.Expression);
+            return queryableTrackingDiscoverVisitor.IsNoTracking;
+        }
+
         /// <summary>
         /// 切换数据源,保留原数据源中的Expression
         /// </summary>
