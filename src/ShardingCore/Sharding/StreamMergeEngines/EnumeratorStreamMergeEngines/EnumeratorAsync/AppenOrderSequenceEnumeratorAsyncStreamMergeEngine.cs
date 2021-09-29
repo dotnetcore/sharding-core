@@ -24,7 +24,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class AppenOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
+    public class AppenOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorAsyncStreamMergeEngine<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly PaginationSequenceConfig _dataSourceSequenceOrderConfig;
@@ -45,12 +45,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 throw new ShardingCoreException("skip must ge 0");
 
             var take = StreamMergeContext.Take;
-            if (take.HasValue&&take.Value <= 0)
+            if (take.HasValue && take.Value <= 0)
                 throw new ShardingCoreException("take must gt 0");
 
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
-                DataSourceName=o.DataSourceName,
+                DataSourceName = o.DataSourceName,
                 Tail = o.TableRouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
             });
@@ -68,8 +68,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 {
                     sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
                         _dataSourceSequenceOrderConfig.RouteComparer)
-                        .ThenByIf(o => o.Tail, useThenBy&& _tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer)
-                        .ThenByDescendingIf(o => o.Tail, useThenBy&& !_tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer);
+                        .ThenByIf(o => o.Tail, useThenBy && _tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer)
+                        .ThenByDescendingIf(o => o.Tail, useThenBy && !_tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer);
                 }
                 else
                 {
@@ -98,23 +98,24 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 reSetOrders.Add(new PropertyOrder(_tableSequenceOrderConfig.PropertyName, _tableSequenceOrderConfig.AppendAsc));
             }
 
-            var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o=>o.RouteQueryResult)).Skip(skip).Take(take).ToList();
-     
+            var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
+
             StreamMergeContext.ReSetOrders(reSetOrders);
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName,noPaginationQueryable, sequenceResult, reSetOrders);
-                return AsyncQueryEnumerator(newQueryable,async);
+                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult, reSetOrders);
+                return AsyncQueryEnumerator(newQueryable, async);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
             return streamEnumerators;
         }
 
-        private  IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult,IEnumerable<PropertyOrder> reSetOrders)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname, IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult, IEnumerable<PropertyOrder> reSetOrders)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,sequenceResult.TableRouteResult);
-            DbContextQueryStore.TryAdd(sequenceResult.TableRouteResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname, sequenceResult.TableRouteResult);
+            if (StreamMergeContext.IsCrossTable)
+                DbContextQueryStore.TryAdd(sequenceResult.TableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(reSetOrders))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

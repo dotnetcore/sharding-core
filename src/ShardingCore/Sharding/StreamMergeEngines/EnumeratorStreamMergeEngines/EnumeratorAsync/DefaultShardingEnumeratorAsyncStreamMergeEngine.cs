@@ -46,7 +46,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,TableRouteResult tableRouteResult)
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
-            DbContextQueryStore.TryAdd(tableRouteResult, shardingDbContext);
+            if (StreamMergeContext.IsCrossTable)
+                DbContextQueryStore.TryAdd(tableRouteResult, shardingDbContext);
             var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
