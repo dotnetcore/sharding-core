@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
 
         public ShardingReadWriteScope<TShardingDbContext> CreateScope<TShardingDbContext>() where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var shardingPageScope = new ShardingReadWriteScope<TShardingDbContext>(_shardingReadWriteAccessors.Values);
+            var shardingPageScope = new ShardingReadWriteScope<TShardingDbContext>(_shardingReadWriteAccessors.Select(o => o.Value));
             shardingPageScope.ShardingReadWriteAccessor.ShardingReadWriteContext = ShardingReadWriteContext.Create();
             return shardingPageScope;
         }

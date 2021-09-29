@@ -75,7 +75,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
 
         public ISet<IVirtualTable> GetAllVirtualTables()
         {
-            return _shardingVirtualTables.Values.ToHashSet();
+            return _shardingVirtualTables.Select(o => o.Value).ToHashSet();
         }
 
         public bool AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable)

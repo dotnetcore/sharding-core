@@ -71,7 +71,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public ISet<IPhysicDataSource> GetAllPhysicDataSources()
         {
-            return _physicDataSources.Values.ToHashSet();
+            return _physicDataSources.Select(o=>o.Value).ToHashSet();
         }
 
         public IPhysicDataSource GetDefaultDataSource()

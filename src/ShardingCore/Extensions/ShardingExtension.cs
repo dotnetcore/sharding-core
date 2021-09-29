@@ -159,7 +159,7 @@ namespace ShardingCore.Extensions
             }
 
             return dataSourceNames.ToDictionary(o => o.Key,
-                o => o.Value.Values.ToDictionary(v => v.InnerDbContext, v => v.InnerEntities.Select(t => t)));
+                o => o.Value.Select(o => o.Value).ToDictionary(v => v.InnerDbContext, v => v.InnerEntities.Select(t => t)));
         }
 
         private static void BulkShardingTableEnumerable<TShardingDbContext, TEntity>(TShardingDbContext shardingDbContext, string dataSourceName, Dictionary<string, BulkDicEntry<TEntity>> dataSourceBulkDicEntries,
