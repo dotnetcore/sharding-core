@@ -10,6 +10,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif
@@ -66,7 +67,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             return enumator;
 #endif
 #if EFCORE2
-            var enumator = newQueryable.AsAsyncEnumerable().GetEnumerator();
+            var enumator = new EFCore2TryCurrentAsyncEnumerator<TEntity>(newQueryable.AsAsyncEnumerable().GetEnumerator());
             await enumator.MoveNext();
             return enumator;
 #endif
