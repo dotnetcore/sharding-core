@@ -22,7 +22,7 @@ namespace ShardingCore.Utils
     */
     public class ShardingKeyUtil
     {
-        private static readonly ConcurrentDictionary<Type, string> _caches = new ConcurrentDictionary<Type, string>();
+        private static readonly ConcurrentDictionary<Type, IKey> _caches = new ConcurrentDictionary<Type, IKey>();
 
         private ShardingKeyUtil()
         {
@@ -30,20 +30,19 @@ namespace ShardingCore.Utils
 
         public static void ParsePrimaryKeyName(IEntityType entityType)
         {
-            var keyName = entityType.FindPrimaryKey().Properties
-                .Select(x => x.Name).FirstOrDefault();
-            _caches.TryAdd(entityType.ClrType, keyName);
+            var primaryKey = entityType.FindPrimaryKey();
+            _caches.TryAdd(entityType.ClrType, primaryKey);
         }
 
-        public static object GetPrimaryKeyValue(object entity)
+        public static IEnumerable<object> GetPrimaryKeyValues(object entity)
         {
             var entityType = entity.GetType();
-            if (!_caches.TryGetValue(entityType, out var keyName))
+            if (!_caches.TryGetValue(entityType, out var primaryKey))
             {
                 return null;
             }
 
-            return entity.GetPropertyValue(keyName);
+            return primaryKey.Properties.Select(o => entity.GetPropertyValue(o.Name));
         }
 
 
