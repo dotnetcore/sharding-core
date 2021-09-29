@@ -26,11 +26,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         {
             _trackerManager = ShardingContainer.GetService<ITrackerManager<TShardingDbContext>>();
         }
+        /// <summary>
+        /// 手动追踪
+        /// </summary>
+        private bool IsUseManualTrack => GetIsUseManualTrack();
 
-        private bool IsUseTrack => GetIsUseTracker();
-
-        private bool GetIsUseTracker()
+        private bool GetIsUseManualTrack()
         {
+            if (!GetStreamMergeContext().IsCrossTable)
+                return false;
             if (GetStreamMergeContext().IsNoTracking.HasValue)
             {
                 return !GetStreamMergeContext().IsNoTracking.Value;
@@ -46,7 +50,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             var current = DoMergeResult<TResult>();
             if (current != null)
             {
-                if (IsUseTrack && _trackerManager.EntityUseTrack(current.GetType()))
+                if (IsUseManualTrack && _trackerManager.EntityUseTrack(current.GetType()))
                 {
                     var c = (object)current;
                     var genericDbContext = GetStreamMergeContext().GetShardingDbContext().CreateGenericDbContext(c);
@@ -69,7 +73,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             var current = await DoMergeResultAsync<TResult>(cancellationToken);
             if (current != null)
             {
-                if (IsUseTrack && _trackerManager.EntityUseTrack(current.GetType()))
+                if (IsUseManualTrack && _trackerManager.EntityUseTrack(current.GetType()))
                 {
                     var c = (object)current;
                     var genericDbContext = GetStreamMergeContext().GetShardingDbContext().CreateGenericDbContext(c);

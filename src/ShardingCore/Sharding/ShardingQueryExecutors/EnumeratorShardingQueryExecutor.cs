@@ -48,8 +48,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         public IEnumeratorStreamMergeEngine<TEntity> ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            //操作单表或者单分库分表之类的
-            if (_streamMergeContext.IsNormalQuery()||_streamMergeContext.IsSingleRouteQuery())
+            //本次查询没有跨库没有跨表就可以直接执行
+            if (!_streamMergeContext.IsCrossDataSource&&!_streamMergeContext.IsCrossTable)
             {
                 return new SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
             }
@@ -76,15 +76,6 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
                     if (mergeEngine != null)
                         return mergeEngine;
-
-
-                    //if (paginationMetadata.EnableUnevenShardingPage)
-                    //{
-                    //    if (paginationMetadata.IsUseUneven(_shardingPageManager.Current.RouteQueryResults, _streamMergeContext.Skip.GetValueOrDefault()))
-                    //    {
-
-                    //    }
-                    //}
                 }
             }
 

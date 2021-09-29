@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ShardingCore.Sharding.PaginationConfigurations.MultiQueryPagination;
 
 namespace ShardingCore.Sharding.PaginationConfigurations
 {
@@ -48,6 +49,13 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// </summary>
         [Obsolete]
         public bool EnableUnevenShardingPage => UnevenFactorGe > 0 && UnevenFactorGe < 1 && UnevenLimit > 0;
+
+        public IMultiQueryPredicate MultiQueryPredicate { get; set; }
+
+        /// <summary>
+        /// 是否启用多次查询
+        /// </summary>
+        public bool EnableMultiQuery => MultiQueryPredicate != null;
 
     }
 }

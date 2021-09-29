@@ -11,6 +11,9 @@ namespace ShardingCore.Sharding.PaginationConfigurations.ReversePagination
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    /// <summary>
+    /// 反向排序条件
+    /// </summary>
     public interface IReverserPredicate
     {
     }

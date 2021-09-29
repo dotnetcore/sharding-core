@@ -14,26 +14,6 @@ namespace ShardingCore.Extensions
     public static class StreamMergeContextExtension
     {
         /// <summary>
-        /// 本次查询是否涉及到分表
-        /// </summary>
-        /// <param name="streamMergeContext"></param>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        public static bool IsNormalQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
-        {
-            return streamMergeContext.QueryEntities.Any(o=>!o.IsShardingDataSource()&&!o.IsShardingTable());
-        }
-        /// <summary>
-        /// 单路由查询
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="streamMergeContext"></param>
-        /// <returns></returns>
-        public static bool IsSingleRouteQuery<TEntity>(this StreamMergeContext<TEntity> streamMergeContext)
-        {
-            return streamMergeContext.DataSourceRouteResult.IntersectDataSources.Count==1&&streamMergeContext.TableRouteResults.Count()==1;
-        }
-        /// <summary>
         /// 单表查询
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>

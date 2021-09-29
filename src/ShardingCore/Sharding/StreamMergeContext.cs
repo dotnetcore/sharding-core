@@ -44,7 +44,18 @@ namespace ShardingCore.Sharding
         /// 本次查询涉及的对象
         /// </summary>
         public ISet<Type> QueryEntities { get; }
+        /// <summary>
+        /// 本次查询是否包含notracking
+        /// </summary>
         public bool? IsNoTracking { get; }
+        /// <summary>
+        /// 本次查询跨库
+        /// </summary>
+        public bool IsCrossDataSource { get; }
+        /// <summary>
+        /// 本次查询跨表
+        /// </summary>
+        public bool IsCrossTable { get; }
 
         public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
@@ -66,6 +77,8 @@ namespace ShardingCore.Sharding
             QueryEntities = source.ParseQueryableRoute();
             DataSourceRouteResult = dataSourceRouteResult;
             TableRouteResults= tableRouteResults;
+            IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
+            IsCrossTable=tableRouteResults.Count() > 1;
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
@@ -101,7 +114,7 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            return _shardingDbContext.GetDbContext(dataSourceName, true, routeTail);
+            return _shardingDbContext.GetDbContext(dataSourceName, IsCrossTable, routeTail);
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult)

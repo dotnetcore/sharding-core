@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core;
+using ShardingCore.Sharding.PaginationConfigurations.MultiQueryPagination;
 
 namespace ShardingCore.Sharding.PaginationConfigurations
 {
@@ -58,8 +59,9 @@ namespace ShardingCore.Sharding.PaginationConfigurations
         /// 启用多次查询排序
         /// </summary>
         /// <returns></returns>
-        public PaginationBuilder<TEntity> ConfigMultiQueryShardingPage()
+        public PaginationBuilder<TEntity> ConfigMultiQueryShardingPage(IMultiQueryPredicate multiQueryPredicate)
         {
+            _metadata.MultiQueryPredicate = multiQueryPredicate;
             return this;
         }
     }

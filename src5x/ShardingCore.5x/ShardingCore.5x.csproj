@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>ShardingCore</RootNamespace>
+    <AssemblyName>ShardingCore</AssemblyName>
+    <Description>easy sharding for efcore 2.x 3.x 5.x 6.x lib.</Description>
+  </PropertyGroup>
+
+</Project>

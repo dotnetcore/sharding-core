@@ -27,10 +27,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             _trackerManager = ShardingContainer.GetService<ITrackerManager<TShardingDbContext>>();
         }
 
-        private bool IsUseTrack => GetIsUseTracker();
+        private bool IsUseManualTrack => GetIsUseManualTrack();
 
-        private bool GetIsUseTracker()
+        private bool GetIsUseManualTrack()
         {
+            if (!_mergeContext.IsCrossTable)
+                return false;
             if (_mergeContext.IsNoTracking.HasValue)
             {
                 return !_mergeContext.IsNoTracking.Value;
@@ -48,7 +50,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var asyncEnumerator = new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync(cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
 
-            if (IsUseTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
             {
                 return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
             }
@@ -62,7 +64,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             var asyncEnumerator = ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
-            if (IsUseTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
             {
                 return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
             }
@@ -76,7 +78,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var enumerator = ((IEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
 
-            if (IsUseTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
             {
                 return new TrackerEnumerator<T>(_mergeContext, enumerator);
             }
