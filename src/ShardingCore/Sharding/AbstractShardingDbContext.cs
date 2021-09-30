@@ -24,6 +24,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 using ShardingCore.Sharding.ShardingTransactions;
 
 namespace ShardingCore.Sharding
@@ -85,7 +86,19 @@ namespace ShardingCore.Sharding
         {
             return _shardingDbContextExecutor.CreateGenericDbContext(entity);
         }
+        /// <summary>
+        /// 是否启用了读写分离
+        /// </summary>
+        /// <returns></returns>
+        public bool IsUseReadWriteSeparation()
+        {
+            return _shardingDbContextExecutor.IsUseReadWriteSeparation();
+        }
 
+        public bool EnableAutoTrack()
+        {
+            return _shardingDbContextExecutor.EnableAutoTrack();
+        }
 
 
         public override EntityEntry Add(object entity)

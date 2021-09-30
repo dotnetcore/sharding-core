@@ -19,30 +19,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     where  TShardingDbContext:DbContext,IShardingDbContext
     {
         private readonly StreamMergeContext<T> _mergeContext;
-        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
 
         public AsyncEnumerableStreamMergeEngine(StreamMergeContext<T> mergeContext)
         {
             _mergeContext = mergeContext;
-            _trackerManager = ShardingContainer.GetService<ITrackerManager<TShardingDbContext>>();
         }
 
-        private bool IsUseManualTrack => GetIsUseManualTrack();
-
-        private bool GetIsUseManualTrack()
-        {
-            if (!_mergeContext.IsCrossTable)
-                return false;
-            if (_mergeContext.IsNoTracking.HasValue)
-            {
-                return !_mergeContext.IsNoTracking.Value;
-            }
-            else
-            {
-                return ((DbContext) _mergeContext.GetShardingDbContext()).ChangeTracker.QueryTrackingBehavior ==
-                       QueryTrackingBehavior.TrackAll;
-            }
-        }
 
 #if !EFCORE2
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
@@ -50,7 +32,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var asyncEnumerator = new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync(cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
 
-            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
                 return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
             }
@@ -64,7 +46,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             var asyncEnumerator = ((IAsyncEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
-            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
                 return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
             }
@@ -78,7 +60,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var enumerator = ((IEnumerable<T>)new EnumeratorShardingQueryExecutor<TShardingDbContext,T>(_mergeContext).ExecuteAsync())
                 .GetEnumerator();
 
-            if (IsUseManualTrack&&_trackerManager.EntityUseTrack(typeof(T)))
+            if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
                 return new TrackerEnumerator<T>(_mergeContext, enumerator);
             }

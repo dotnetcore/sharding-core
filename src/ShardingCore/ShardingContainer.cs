@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
@@ -34,6 +35,10 @@ namespace ShardingCore
         public static T GetService<T>()
         {
             return Services.GetService<T>();
+        }
+        public static IEnumerable<T> GetServices<T>()
+        {
+            return Services.GetServices<T>();
         }
         public static object GetService(Type serviceType)
         {

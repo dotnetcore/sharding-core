@@ -25,7 +25,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         private readonly StreamMergeContext<TEntity> _mergeContext;
         private readonly IQueryable<TEntity> _queryable;
         private readonly Expression _secondExpression;
-        private readonly ICollection<DbContext> _parllelDbbContexts;
 
         public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
         {
@@ -58,7 +57,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
 
 
             _mergeContext = ((IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(shardingDbContext.GetType()))).Create(_queryable, shardingDbContext);
-            _parllelDbbContexts = new LinkedList<DbContext>();
         }
         /// <summary>
         /// 合并queryable
@@ -71,7 +69,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
         private IQueryable CreateAsyncExecuteQueryable<TResult>(string dsname,TableRouteResult tableRouteResult)
         {
             var shardingDbContext = _mergeContext.CreateDbContext(dsname,tableRouteResult);
-            _parllelDbbContexts.Add(shardingDbContext);
             var newQueryable = (IQueryable<TEntity>) GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
             var newCombineQueryable= DoCombineQueryable<TResult>(newQueryable);

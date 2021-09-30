@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
@@ -8,6 +9,8 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
@@ -22,7 +25,10 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<T>
+    public class StreamMergeContext<T>:IDisposable
+#if !EFCORE2
+        ,IAsyncDisposable
+#endif
     {
         //private readonly IShardingScopeFactory _shardingScopeFactory;
         private readonly IQueryable<T> _source;
@@ -35,8 +41,8 @@ namespace ShardingCore.Sharding
         public int? Skip { get; private set; }
         public int? Take { get; }
         public IEnumerable<PropertyOrder> Orders { get; private set; }
-        
-        public SelectContext SelectContext { get;}
+
+        public SelectContext SelectContext { get; }
         public GroupByContext GroupByContext { get; }
         public IEnumerable<TableRouteResult> TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
@@ -57,7 +63,11 @@ namespace ShardingCore.Sharding
         /// </summary>
         public bool IsCrossTable { get; }
 
-        public StreamMergeContext(IQueryable<T> source,IShardingDbContext shardingDbContext,
+        private readonly ITrackerManager _trackerManager;
+
+        private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts; 
+
+        public StreamMergeContext(IQueryable<T> source, IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
             IEnumerable<TableRouteResult> tableRouteResults,
             IRouteTailFactory routeTailFactory)
@@ -76,9 +86,13 @@ namespace ShardingCore.Sharding
             _reWriteSource = reWriteResult.ReWriteQueryable;
             QueryEntities = source.ParseQueryableRoute();
             DataSourceRouteResult = dataSourceRouteResult;
-            TableRouteResults= tableRouteResults;
+            TableRouteResults = tableRouteResults;
             IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            IsCrossTable=tableRouteResults.Count() > 1;
+            IsCrossTable = tableRouteResults.Count() > 1;
+            _trackerManager =
+                (ITrackerManager)ShardingContainer.GetService(
+                    typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));
+            _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
@@ -114,7 +128,14 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            return _shardingDbContext.GetDbContext(dataSourceName, IsCrossTable, routeTail);
+            //如果开启了读写分离或者本次查询是跨表或者跨库的表示本次查询的dbcontext是不存储的用完后就直接dispose
+            var parallelQuery = IsParallelQuery();
+            var dbContext = _shardingDbContext.GetDbContext(dataSourceName, parallelQuery, routeTail);
+            if (parallelQuery)
+            {
+                _parallelDbContexts.TryAdd(dbContext, null);
+            }
+            return dbContext;
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult)
@@ -140,7 +161,7 @@ namespace ShardingCore.Sharding
         {
             return Skip.GetValueOrDefault() > 0 || Take.GetValueOrDefault() > 0;
         }
-        
+
 
         public bool HasGroupQuery()
         {
@@ -156,6 +177,70 @@ namespace ShardingCore.Sharding
         {
             return _shardingDbContext;
         }
+        /// <summary>
+        /// 是否是跨资源查询
+        /// </summary>
+        /// <returns></returns>
+        private bool IsCrossQuery()
+        {
+            return IsCrossDataSource || IsCrossTable;
+        }
 
+        private bool IsUseReadWriteSeparation()
+        {
+            return _shardingDbContext.IsUseReadWriteSeparation();
+        }
+
+        /// <summary>
+        /// 是否使用并行查询
+        /// </summary>
+        /// <returns></returns>
+        private bool IsParallelQuery()
+        {
+            return !_shardingDbContext.EnableAutoTrack()|| IsCrossQuery() || IsUseReadWriteSeparation();
+        }
+
+        /// <summary>
+        /// 是否使用sharding track
+        /// </summary>
+        /// <returns></returns>
+        public bool IsUseShardingTrack(Type entityType)
+        {
+            //没有跨dbcontext查询并且不是读写分离才可以那么是否追踪之类的由查询的dbcontext自行处理
+            if (!IsParallelQuery())
+                return false;
+            return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
+        }
+        private bool QueryTrack()
+        {
+
+            if (IsNoTracking.HasValue)
+            {
+                return !IsNoTracking.Value;
+            }
+            else
+            {
+                return ((DbContext)_shardingDbContext).ChangeTracker.QueryTrackingBehavior ==
+                       QueryTrackingBehavior.TrackAll;
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var dbContext in _parallelDbContexts.Keys)
+            {
+                dbContext.Dispose();
+            }
+        }
+#if !EFCORE2
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var dbContext in _parallelDbContexts.Keys)
+            {
+                await dbContext.DisposeAsync();
+            }
+        }
+#endif
     }
 }

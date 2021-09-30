@@ -13,9 +13,12 @@ namespace ShardingCore.Core.TrackerManagers
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface ITrackerManager<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+    public interface ITrackerManager
     {
         bool AddDbContextModel(Type entityType);
         bool EntityUseTrack(Type entityType);
+    }
+    public interface ITrackerManager<TShardingDbContext>: ITrackerManager where TShardingDbContext:DbContext,IShardingDbContext
+    {
     }
 }

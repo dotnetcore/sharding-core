@@ -35,6 +35,10 @@ namespace ShardingCore.Sharding
             _useReadWriteSeparation = _connectionStringManager is ReadWriteConnectionStringManager<TShardingDbContext>;
 
         }
+        public bool IsUseReadWriteSeparation()
+        {
+            return _useReadWriteSeparation;
+        }
         public string GetConnectionString(string dataSourceName, bool isWrite)
         {
             if (isWrite)

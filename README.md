@@ -578,16 +578,12 @@ var list = new List<SysUserMod>();
 
 ```
 ## 自动追踪
-默认shardingcore不支持单次查询跨表自动追踪,并且也不建议使用自动追踪,如果你有需要shardingcore也默认提供了自动追踪功能
+默认shardingcore不支持自动追踪,并且也不建议使用自动追踪,如果你有需要shardingcore也默认提供了自动追踪功能
 有两点需要注意
-
-1.如果本次查询不涉及跨表那么支持(跨库也可以)
-
-2.如果设计跨表那么仅支持dbcontext的model的类型的整个查询匿名类型不支持联级查询不支持
-
-3.不跨表的情况下和efcore的自动追踪一样
-
-3.不跨表的情况下tolist等操作会查询数据库返回的时候判断是否已经追踪如果已经追踪则返回缓存里已经追踪了的值
+目前仅支持单主键对象
+1.shardingcore仅支持dbcontext的model的类型的整个查询匿名类型不支持联级查询不支持
+2.shardingcore的单个查询依然走数据库不走缓存如果查询出来的结果缓存里面有就返回缓存里面的而不是数据库的
+3.tolist等操作会查询数据库返回的时候判断是否已经追踪如果已经追踪则返回缓存里已经追踪了的值
 4.支持 `first`,`firstordefault`,`last`,`lastordefault`,`single`,`singleordefault`
 如何开启
 ```c#

@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq.Expressions;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using System;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -35,8 +31,13 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
+        /// <summary>
+        /// 是否启用了读写分离
+        /// </summary>
+        /// <returns></returns>
+        bool IsUseReadWriteSeparation();
 
-
+        bool EnableAutoTrack();
 
     }
 

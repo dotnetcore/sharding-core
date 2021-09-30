@@ -22,13 +22,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     public abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : IEnumeratorStreamMergeEngine<TEntity>
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
-        public ConcurrentDictionary<TableRouteResult, DbContext> DbContextQueryStore { get; }
 
 
         public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
             StreamMergeContext = streamMergeContext;
-            DbContextQueryStore = new ConcurrentDictionary<TableRouteResult, DbContext>();
         }
 
         public abstract IStreamMergeAsyncEnumerator<TEntity> GetShardingAsyncEnumerator(bool async,
@@ -62,13 +60,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
         public void Dispose()
         {
-            if (DbContextQueryStore.IsNotEmpty())
-            {
-                DbContextQueryStore.Values.ForEach(dbContext =>
-                {
-                    dbContext.Dispose();
-                });
-            }
+            StreamMergeContext.Dispose();
         }
 
     }

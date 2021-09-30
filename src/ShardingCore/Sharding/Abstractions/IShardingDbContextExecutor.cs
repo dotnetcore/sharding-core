@@ -34,9 +34,17 @@ namespace ShardingCore.Sharding.Abstractions
         /// </summary>
         int ReadWriteSeparationPriority { get; set; }
         /// <summary>
-        /// 是否开启读写分离
+        /// 当前是否开启读写分离
         /// </summary>
         bool ReadWriteSeparation { get; set; }
+
+        /// <summary>
+        /// 是否使用了读写分离
+        /// </summary>
+        /// <returns></returns>
+        bool IsUseReadWriteSeparation();
+
+        bool EnableAutoTrack();
         /// <summary>
         /// create sharding db context options
         /// </summary>

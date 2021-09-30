@@ -25,9 +25,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         {
             var dataSourceName = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
             var routeResult = StreamMergeContext.TableRouteResults.First();
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName, routeResult);
-            if (StreamMergeContext.IsCrossTable)
-                DbContextQueryStore.TryAdd(routeResult, shardingDbContext);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult);
             var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
             if (async)
             {

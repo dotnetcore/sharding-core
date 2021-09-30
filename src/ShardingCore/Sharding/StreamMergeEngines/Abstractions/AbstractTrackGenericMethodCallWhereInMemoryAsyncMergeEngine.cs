@@ -21,36 +21,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
     */
     public abstract  class AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine<TShardingDbContext,TEntity> : AbstractGenericMethodCallWhereInMemoryAsyncMergeEngine<TEntity> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         protected AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-            _trackerManager = ShardingContainer.GetService<ITrackerManager<TShardingDbContext>>();
-        }
-        /// <summary>
-        /// 手动追踪
-        /// </summary>
-        private bool IsUseManualTrack => GetIsUseManualTrack();
-
-        private bool GetIsUseManualTrack()
-        {
-            if (!GetStreamMergeContext().IsCrossTable)
-                return false;
-            if (GetStreamMergeContext().IsNoTracking.HasValue)
-            {
-                return !GetStreamMergeContext().IsNoTracking.Value;
-            }
-            else
-            {
-                return ((DbContext)GetStreamMergeContext().GetShardingDbContext()).ChangeTracker.QueryTrackingBehavior ==
-                       QueryTrackingBehavior.TrackAll;
-            }
         }
         public override TResult MergeResult<TResult>()
         {
             var current = DoMergeResult<TResult>();
             if (current != null)
             {
-                if (IsUseManualTrack && _trackerManager.EntityUseTrack(current.GetType()))
+                if (GetStreamMergeContext().IsUseShardingTrack(current.GetType()))
                 {
                     var c = (object)current;
                     var genericDbContext = GetStreamMergeContext().GetShardingDbContext().CreateGenericDbContext(c);
@@ -73,7 +52,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.Abstractions
             var current = await DoMergeResultAsync<TResult>(cancellationToken);
             if (current != null)
             {
-                if (IsUseManualTrack && _trackerManager.EntityUseTrack(current.GetType()))
+                if (GetStreamMergeContext().IsUseShardingTrack(current.GetType()))
                 {
                     var c = (object)current;
                     var genericDbContext = GetStreamMergeContext().GetShardingDbContext().CreateGenericDbContext(c);

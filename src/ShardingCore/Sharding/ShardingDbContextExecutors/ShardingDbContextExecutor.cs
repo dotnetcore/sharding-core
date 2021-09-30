@@ -1,7 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
@@ -9,16 +15,8 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingTransactions;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ShardingCore.Sharding
+namespace ShardingCore.Sharding.ShardingDbContextExecutors
 {
     /*
     * @Author: xjm
@@ -40,6 +38,8 @@ namespace ShardingCore.Sharding
         private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private readonly IRouteTailFactory _routeTailFactory;
+        private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
+        private readonly IShardingConfigOption _shardingConfigOption;
 
         public int ReadWriteSeparationPriority
         {
@@ -55,7 +55,6 @@ namespace ShardingCore.Sharding
 
         public bool IsBeginTransaction => CurrentShardingTransaction != null && CurrentShardingTransaction.IsBeginTransaction();
 
-        private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
 
         public ShardingDbContextExecutor()
         {
@@ -66,6 +65,8 @@ namespace ShardingCore.Sharding
 
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _actualConnectionStringManager = new ActualConnectionStringManager<TShardingDbContext>();
+
+            _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>().FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext));
         }
 
         #region create db context
@@ -118,6 +119,17 @@ namespace ShardingCore.Sharding
         {
             return new ShardingDbContextOptions(CreateParallelDbContextOptions(dataSourceName), routeTail);
         }
+
+        public bool IsUseReadWriteSeparation()
+        {
+            return _actualConnectionStringManager.IsUseReadWriteSeparation();
+        }
+
+        public bool EnableAutoTrack()
+        {
+            return _shardingConfigOption.AutoTrackEntity;
+        }
+
         public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)
         {
 
@@ -130,6 +142,7 @@ namespace ShardingCore.Sharding
                 if (!_dbContextCaches.TryGetValue(dataSourceName, out var tailDbContexts))
                 {
                     tailDbContexts = new ConcurrentDictionary<string, DbContext>();
+                    _dbContextCaches.TryAdd(dataSourceName, tailDbContexts);
                 }
                 var cacheKey = routeTail.GetRouteTailIdentity();
                 if (!tailDbContexts.TryGetValue(cacheKey, out var dbContext))
