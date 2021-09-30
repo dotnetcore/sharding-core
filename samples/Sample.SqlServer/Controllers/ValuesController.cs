@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -69,7 +70,6 @@ namespace Sample.SqlServer.Controllers
             var sresultxc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).ToList();
             var sresultxasdc = _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").ToList();
             var sresult = _defaultTableDbContext.Set<SysUserMod>().ToList();
-
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
             sysUserMod98.Name = "name_update" + new Random().Next(1, 99) + "_98";
             await _defaultTableDbContext.SaveChangesAsync();

@@ -130,10 +130,6 @@ namespace ShardingCore.Sharding
                 if (!_dbContextCaches.TryGetValue(dataSourceName, out var tailDbContexts))
                 {
                     tailDbContexts = new ConcurrentDictionary<string, DbContext>();
-                    if(!_dbContextCaches.TryAdd(dataSourceName, tailDbContexts))
-                    {
-                        _dbContextCaches.TryGetValue(dataSourceName, out tailDbContexts);
-                    }
                 }
                 var cacheKey = routeTail.GetRouteTailIdentity();
                 if (!tailDbContexts.TryGetValue(cacheKey, out var dbContext))
