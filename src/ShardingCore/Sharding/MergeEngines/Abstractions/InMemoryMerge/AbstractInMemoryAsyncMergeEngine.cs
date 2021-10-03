@@ -87,7 +87,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
                 {
                     var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
 
-                    return AsyncParallelResultExecuteAsync(asyncExecuteQueryable,dataSourceName,routeResult,efQuery, cancellationToken);
+                    return AsyncParallelResultExecute(asyncExecuteQueryable,dataSourceName,routeResult,efQuery, cancellationToken);
 
                 });
             }).ToArray();
@@ -98,24 +98,23 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         /// <summary>
         /// 异步并发查询
         /// </summary>
+        /// <typeparam name="TResult"></typeparam>
         /// <param name="queryable"></param>
+        /// <param name="dataSourceName"></param>
+        /// <param name="routeResult"></param>
         /// <param name="efQuery"></param>
         /// <param name="cancellationToken"></param>
-        /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>
-        public override async Task<TResult> AsyncParallelResultExecuteAsync0<TResult>(IQueryable queryable, Func<IQueryable, Task<TResult>> efQuery,
+        public Task<RouteQueryResult<TResult>> AsyncParallelResultExecute<TResult>(IQueryable queryable,string dataSourceName,TableRouteResult routeResult, Func<IQueryable, Task<TResult>> efQuery,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var queryResult = await efQuery(queryable);
-            return queryResult;
-        }
+            return AsyncParallelLimitExecuteAsync(async () =>
+            {
+                var queryResult = await efQuery(queryable);
 
-        public override Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumeratorExecuteAsync0(IQueryable<TEntity> queryable, bool async,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            throw new NotImplementedException();
+                return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+            },cancellationToken);
         }
-
 
         public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {

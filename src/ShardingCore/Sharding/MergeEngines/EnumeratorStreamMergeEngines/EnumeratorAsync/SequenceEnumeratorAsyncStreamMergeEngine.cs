@@ -92,7 +92,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
-                return AsyncParallelEnumeratorExecuteAsync(newQueryable, async,cancellationToken);
+                return AsyncParallelEnumerator(newQueryable, async,cancellationToken);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

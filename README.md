@@ -1,7 +1,7 @@
 <h1 align="center"> ShardingCore </h1>
 
 
-`ShardingCore` 易用、简单、高性能、普适性，是一款扩展针对efcore生态下的分表分库的扩展解决方案,支持efcore2+的所有版本,支持efcore2+的所有数据库、支持自定义路由、动态路由、高性能分页、读写分离的一款组件，如果你喜欢这组件或者这个组件对你有帮助请[点我star github 地址](https://github.com/xuejmnet/sharding-core)
+`ShardingCore` 易用、简单、高性能、普适性，是一款扩展针对efcore生态下的分表分库的扩展解决方案,支持efcore2+的所有版本,支持efcore2+的所有数据库、支持自定义路由、动态路由、高性能分页、读写分离的一款组件，如果你喜欢这组件或者这个组件对你有帮助请点击下发star让更多的.neter可以看到使用
 
 ---
 

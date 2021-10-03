@@ -100,25 +100,22 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// <param name="async"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public override async Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumeratorExecuteAsync0(IQueryable<TEntity> queryable, bool async,
+        public  Task<StreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            if (async)
+            return AsyncParallelLimitExecuteAsync(async () =>
             {
-                var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-            }
-            else
-            {
-                var enumerator = GetEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
-            }
-        }
-
-        public override Task<TResult> AsyncParallelResultExecuteAsync0<TResult>(IQueryable queryable, Func<IQueryable, Task<TResult>> efQuery,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            throw new NotImplementedException();
+                if (async)
+                {
+                    var asyncEnumerator = await GetAsyncEnumerator0(queryable);
+                    return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+                }
+                else
+                {
+                    var enumerator = GetEnumerator0(queryable);
+                    return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
+                }
+            }, cancellationToken);
         }
 
         /// <summary>
