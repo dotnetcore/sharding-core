@@ -80,11 +80,6 @@ namespace ShardingCore.Sharding
             return _shardingDbContextExecutor.IsUseReadWriteSeparation();
         }
 
-        public bool EnableAutoTrack()
-        {
-            return _shardingDbContextExecutor.EnableAutoTrack();
-        }
-
 
         public override EntityEntry Add(object entity)
         {

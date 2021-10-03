@@ -60,7 +60,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             if (dataSourceOrderMain)
             {
                 //是否有两级排序
-                var useThenBy = dataSourceOrderMain && _tableSequenceMatchOrderConfig != null;
+                var useThenBy = _tableSequenceMatchOrderConfig != null;
                 if (_isAsc)
                 {
                     sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
@@ -92,7 +92,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
                 var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
-                return AsyncParallelQueryEnumerator(newQueryable, async,cancellationToken);
+                return AsyncParallelEnumeratorExecuteAsync(newQueryable, async,cancellationToken);
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();

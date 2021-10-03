@@ -64,6 +64,7 @@ namespace ShardingCore.Sharding
         public bool IsCrossTable { get; }
 
         private readonly ITrackerManager _trackerManager;
+        private readonly IShardingConfigOption _shardingConfigOption;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts; 
 
@@ -92,6 +93,8 @@ namespace ShardingCore.Sharding
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));
+            _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>()
+                .FirstOrDefault(o => o.ShardingDbContextType == shardingDbContext.GetType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
@@ -177,6 +180,15 @@ namespace ShardingCore.Sharding
         {
             return _shardingDbContext;
         }
+
+        public int GetParallelQueryMaxThreadCount()
+        {
+            return _shardingConfigOption.ParallelQueryMaxThreadCount;
+        }
+        public TimeSpan GetParallelQueryTimeOut()
+        {
+            return _shardingConfigOption.ParallelQueryTimeOut;
+        }
         /// <summary>
         /// 是否是跨资源查询
         /// </summary>
@@ -197,7 +209,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool IsParallelQuery()
         {
-            return !_shardingDbContext.EnableAutoTrack()|| IsCrossQuery() || IsUseReadWriteSeparation();
+            return !_shardingConfigOption.AutoTrackEntity|| IsCrossQuery() || IsUseReadWriteSeparation();
         }
 
         /// <summary>

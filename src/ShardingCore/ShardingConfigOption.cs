@@ -178,6 +178,15 @@ namespace ShardingCore
         /// </summary>
         public bool AutoTrackEntity { get; set; }
 
+        /// <summary>
+        /// 单次查询并发线程数目(-1表示不限制)
+        /// </summary>
+        public int ParallelQueryMaxThreadCount { get; set; } = 65536;
+        /// <summary>
+        /// 默认30秒超时
+        /// </summary>
+        public TimeSpan ParallelQueryTimeOut { get; set; }=TimeSpan.FromSeconds(30);
+
         public string DefaultDataSourceName { get; set; }
         public string DefaultConnectionString { get; set; }
     }

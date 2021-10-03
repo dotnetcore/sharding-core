@@ -22,12 +22,12 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : IEnumeratorStreamMergeEngine<TEntity>
+    public abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IEnumeratorStreamMergeEngine<TEntity>
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
 
 
-        public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
+        public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext):base(streamMergeContext)
         {
             StreamMergeContext = streamMergeContext;
         }
@@ -92,6 +92,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// <param name="streamsAsyncEnumerators"></param>
         /// <returns></returns>
         public abstract IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
+
         /// <summary>
         /// 开启异步线程获取并发迭代器
         /// </summary>
@@ -99,22 +100,27 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// <param name="async"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<StreamMergeAsyncEnumerator<TEntity>> AsyncParallelQueryEnumerator(IQueryable<TEntity> queryable, bool async,CancellationToken cancellationToken=new CancellationToken())
+        public override async Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumeratorExecuteAsync0(IQueryable<TEntity> queryable, bool async,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            return Task.Run(async () =>
+            if (async)
             {
-                if (async)
-                {
-                    var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                    return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                }
-                else
-                {
-                    var enumerator = GetEnumerator0(queryable);
-                    return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
-                }
-            }, cancellationToken);
+                var asyncEnumerator = await GetAsyncEnumerator0(queryable);
+                return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+            }
+            else
+            {
+                var enumerator = GetEnumerator0(queryable);
+                return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
+            }
         }
+
+        public override Task<TResult> AsyncParallelResultExecuteAsync0<TResult>(IQueryable queryable, Func<IQueryable, Task<TResult>> efQuery,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 获取异步迭代器
         /// </summary>

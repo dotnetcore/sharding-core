@@ -39,7 +39,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
-        private readonly IShardingConfigOption _shardingConfigOption;
 
         public int ReadWriteSeparationPriority
         {
@@ -65,8 +64,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _actualConnectionStringManager = new ActualConnectionStringManager<TShardingDbContext>();
-
-            _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>().FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext));
         }
 
         #region create db context
@@ -123,11 +120,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public bool IsUseReadWriteSeparation()
         {
             return _actualConnectionStringManager.IsUseReadWriteSeparation();
-        }
-
-        public bool EnableAutoTrack()
-        {
-            return _shardingConfigOption.AutoTrackEntity;
         }
 
         public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)

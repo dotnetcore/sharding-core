@@ -51,7 +51,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 return StreamMergeContext.TableRouteResults.Select(routeResult =>
                 {
                     var newQueryable = CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult);
-                    return AsyncParallelQueryEnumerator(newQueryable, async,cancellationToken);
+                    return AsyncParallelEnumeratorExecuteAsync(newQueryable, async,cancellationToken);
                 });
             }).ToArray();;
 

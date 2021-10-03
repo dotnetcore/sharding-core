@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
@@ -18,14 +19,14 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : IInMemoryAsyncMergeEngine<TEntity>
+    public abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>,IInMemoryAsyncMergeEngine<TEntity>
     {
         private readonly MethodCallExpression _methodCallExpression;
         private readonly StreamMergeContext<TEntity> _mergeContext;
         private readonly IQueryable<TEntity> _queryable;
         private readonly Expression _secondExpression;
 
-        public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
+        public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext):base(methodCallExpression,shardingDbContext)
         {
             _methodCallExpression = methodCallExpression;
             if (methodCallExpression.Arguments.Count < 1 || methodCallExpression.Arguments.Count > 2)
@@ -86,18 +87,35 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
                 {
                     var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
 
-                    return Task.Run(async () =>
-                    {
-                        var queryResult = await efQuery(asyncExecuteQueryable);
-                        return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-
-                    }, cancellationToken);
+                    return AsyncParallelResultExecuteAsync(asyncExecuteQueryable,dataSourceName,routeResult,efQuery, cancellationToken);
 
                 });
             }).ToArray();
 
             return (await Task.WhenAll(enumeratorTasks)).ToList();
         }
+
+        /// <summary>
+        /// 异步并发查询
+        /// </summary>
+        /// <param name="queryable"></param>
+        /// <param name="efQuery"></param>
+        /// <param name="cancellationToken"></param>
+        /// <typeparam name="TResult"></typeparam>
+        /// <returns></returns>
+        public override async Task<TResult> AsyncParallelResultExecuteAsync0<TResult>(IQueryable queryable, Func<IQueryable, Task<TResult>> efQuery,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            var queryResult = await efQuery(queryable);
+            return queryResult;
+        }
+
+        public override Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumeratorExecuteAsync0(IQueryable<TEntity> queryable, bool async,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            throw new NotImplementedException();
+        }
+
 
         public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {

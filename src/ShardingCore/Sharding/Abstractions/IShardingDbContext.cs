@@ -37,8 +37,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         bool IsUseReadWriteSeparation();
 
-        bool EnableAutoTrack();
-
     }
 
     public interface IShardingDbContext<T> : IShardingDbContext where T : DbContext

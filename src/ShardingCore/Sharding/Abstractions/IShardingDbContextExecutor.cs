@@ -44,7 +44,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         bool IsUseReadWriteSeparation();
 
-        bool EnableAutoTrack();
         /// <summary>
         /// create sharding db context options
         /// </summary>

@@ -37,6 +37,8 @@ namespace ShardingCore.DIExtensions
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
             ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
             ShardingConfigOption.AutoTrackEntity = shardingCoreBeginOptions.AutoTrackEntity;
+            ShardingConfigOption.ParallelQueryMaxThreadCount = shardingCoreBeginOptions.ParallelQueryMaxThreadCount;
+            ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
             return new ShardingQueryBuilder<TShardingDbContext, TActualDbContext>(this);
@@ -74,6 +76,15 @@ namespace ShardingCore.DIExtensions
         /// 是否自动追踪实体
         /// </summary>
         public bool AutoTrackEntity { get; set; }
+
+        /// <summary>
+        /// 单次查询并发线程数目(-1表示不限制)
+        /// </summary>
+        public int ParallelQueryMaxThreadCount { get; set; } = 65536;
+        /// <summary>
+        /// 默认30秒超时
+        /// </summary>
+        public TimeSpan ParallelQueryTimeOut { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// 忽略建表时的错误
