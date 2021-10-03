@@ -179,7 +179,7 @@ namespace ShardingCore
         public bool AutoTrackEntity { get; set; }
 
         /// <summary>
-        /// 单次查询并发线程数目(-1表示不限制)
+        /// 单次查询并发线程数目(最小1)
         /// </summary>
         public int ParallelQueryMaxThreadCount { get; set; } = 65536;
         /// <summary>
