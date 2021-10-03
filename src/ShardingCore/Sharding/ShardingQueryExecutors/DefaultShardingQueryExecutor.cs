@@ -9,8 +9,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines;
-using ShardingCore.Sharding.StreamMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
@@ -46,7 +47,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             throw new ShardingCoreException("db context operator is not IShardingDbContext");
         }
 
-        public TResult ExecuteAsync<TResult>(ICurrentDbContext currentContext, Expression query,CancellationToken cancellationToken = new CancellationToken())
+        public TResult ExecuteAsync<TResult>(ICurrentDbContext currentContext, Expression query, CancellationToken cancellationToken = new CancellationToken())
         {
             var currentDbContext = currentContext.Context;
             if (currentDbContext is IShardingDbContext shardingDbContext)
@@ -70,7 +71,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
             throw new ShardingCoreException("db context operator is not IShardingDbContext");
         }
-        private TResult DoExecute<TResult>(IShardingDbContext shardingDbContext, Expression query,  bool async, CancellationToken cancellationToken = new CancellationToken())
+        private TResult DoExecute<TResult>(IShardingDbContext shardingDbContext, Expression query, bool async, CancellationToken cancellationToken = new CancellationToken())
         {
 
             if (query is MethodCallExpression methodCallExpression)
@@ -132,13 +133,13 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             // private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
 
-        var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod("Create");
+            var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod("Create");
             if (streamMergeContextMethod == null)
                 throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
             var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamMergeContextFactory, new[] { queryable, shardingDbContext });
 
 
-            Type streamMergeEngineType = typeof(AsyncEnumerableStreamMergeEngine<,>);
+            Type streamMergeEngineType = typeof(AsyncEnumeratorStreamMergeEngine<,>);
             streamMergeEngineType = streamMergeEngineType.MakeGenericType(shardingDbContext.GetType(), queryEntityType);
             return (TResult)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
         }
@@ -148,7 +149,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         {
             var queryEntityType = query.GetQueryEntityType();
             var resultEntityType = query.GetResultType();
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(shardingDbContext.GetType(),queryEntityType);
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(shardingDbContext.GetType(), queryEntityType);
             var streamEngine = Activator.CreateInstance(streamMergeEngineType, query, shardingDbContext);
             var methodName = async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult);
             var streamEngineMethod = streamMergeEngineType.GetMethod(methodName);

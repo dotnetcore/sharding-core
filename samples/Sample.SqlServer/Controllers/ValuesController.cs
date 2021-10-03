@@ -13,6 +13,7 @@ using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.ShardingPageExtensions;
 
 namespace Sample.SqlServer.Controllers
 {
