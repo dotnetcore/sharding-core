@@ -35,6 +35,12 @@ namespace ShardingCore.DIExtensions
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
+            if (shardingCoreBeginOptions.ParallelQueryMaxThreadCount <= 0)
+                throw new ArgumentException(
+                    $"{nameof(shardingCoreBeginOptions.ParallelQueryMaxThreadCount)} should greater than zero thread count");
+            if (shardingCoreBeginOptions.ParallelQueryTimeOut.TotalMilliseconds <= 0)
+                throw new ArgumentException(
+                    $"{nameof(shardingCoreBeginOptions.ParallelQueryTimeOut)} should greater than zero milliseconds");
             ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
             ShardingConfigOption.AutoTrackEntity = shardingCoreBeginOptions.AutoTrackEntity;
             ShardingConfigOption.ParallelQueryMaxThreadCount = shardingCoreBeginOptions.ParallelQueryMaxThreadCount;
