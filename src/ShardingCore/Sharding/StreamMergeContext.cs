@@ -197,10 +197,13 @@ namespace ShardingCore.Sharding
         {
             return IsCrossDataSource || IsCrossTable;
         }
-
+        /// <summary>
+        ///  «∑Ò∆Ù”√∂¡–¥∑÷¿Î
+        /// </summary>
+        /// <returns></returns>
         private bool IsUseReadWriteSeparation()
         {
-            return _shardingDbContext.IsUseReadWriteSeparation();
+            return _shardingConfigOption.UseReadWrite;
         }
 
         /// <summary>

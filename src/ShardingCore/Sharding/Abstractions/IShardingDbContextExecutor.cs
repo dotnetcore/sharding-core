@@ -38,11 +38,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// </summary>
         bool ReadWriteSeparation { get; set; }
 
-        /// <summary>
-        /// 是否使用了读写分离
-        /// </summary>
-        /// <returns></returns>
-        bool IsUseReadWriteSeparation();
 
         /// <summary>
         /// create sharding db context options

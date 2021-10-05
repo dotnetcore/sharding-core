@@ -31,11 +31,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
-        /// <summary>
-        /// 是否启用了读写分离
-        /// </summary>
-        /// <returns></returns>
-        bool IsUseReadWriteSeparation();
 
     }
 

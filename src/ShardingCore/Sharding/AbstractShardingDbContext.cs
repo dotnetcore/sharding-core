@@ -38,7 +38,9 @@ namespace ShardingCore.Sharding
                     typeof(ShardingDbContextExecutor<,>).GetGenericType1(this.GetType(), ActualDbContextType));
 
         }
-
+        /// <summary>
+        /// 正真执行的dbcontext类型
+        /// </summary>
         public Type ActualDbContextType { get; }
         /// <summary>
         /// 读写分离优先级
@@ -70,14 +72,6 @@ namespace ShardingCore.Sharding
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
             return _shardingDbContextExecutor.CreateGenericDbContext(entity);
-        }
-        /// <summary>
-        /// 是否启用了读写分离
-        /// </summary>
-        /// <returns></returns>
-        public bool IsUseReadWriteSeparation()
-        {
-            return _shardingDbContextExecutor.IsUseReadWriteSeparation();
         }
 
 

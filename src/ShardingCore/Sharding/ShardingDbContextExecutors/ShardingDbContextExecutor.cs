@@ -117,11 +117,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return new ShardingDbContextOptions(CreateParallelDbContextOptions(dataSourceName), routeTail);
         }
 
-        public bool IsUseReadWriteSeparation()
-        {
-            return _actualConnectionStringManager.IsUseReadWriteSeparation();
-        }
-
         public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)
         {
 
