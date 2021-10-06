@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
@@ -38,6 +39,8 @@ namespace Sample.SqlServer
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
+                    o.ParallelQueryMaxThreadCount = 100;
+                    o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
                 })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))

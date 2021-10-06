@@ -162,16 +162,9 @@ namespace ShardingCore.Extensions
             var primaryKeyValue = ShardingKeyUtil.GetPrimaryKeyValues(entity);
             if (primaryKeyValue.IsEmpty())
                 return null;
-            var entry = context.ChangeTracker.Entries<TEntity>().FirstOrDefault(e => primaryKeyValue.SequenceEqual(ShardingKeyUtil.GetPrimaryKeyValues(e.Entity)));
-            if (entry != null)
-            {
-                if (entry.State != EntityState.Detached)
-                {
-                    return entry.Entity;
-                }
-            }
+            var entry = context.ChangeTracker.Entries<TEntity>().FirstOrDefault(e =>e.State != EntityState.Detached&&primaryKeyValue.SequenceEqual(ShardingKeyUtil.GetPrimaryKeyValues(e.Entity)));
 
-            return null;
+            return entry?.Entity;
         }
 
     }

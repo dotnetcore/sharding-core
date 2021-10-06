@@ -34,7 +34,7 @@
 //         [HttpGet]
 //         public async Task<IActionResult> Get()
 //         {
-//             var taleAllTails = _virtualTableManager.GetVirtualTable(typeof(SysUserLogByMonth)).GetTaleAllTails();
+//             var taleAllTails = _virtualTableManager.GetVirtualTable(typeof(SysUserLogByMonth)).GetTableAllTails();
 //
 //
 //             var result = await _defaultTableDbContext.Set<SysTest>().AnyAsync();

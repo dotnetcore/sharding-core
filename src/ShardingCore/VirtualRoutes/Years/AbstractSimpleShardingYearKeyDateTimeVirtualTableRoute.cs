@@ -18,11 +18,11 @@ namespace ShardingCore.VirtualRoutes.Years
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
-            var beginTime = GetBeginTime();
+            var beginTime = GetBeginTime().Date;
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp = DateTime.Now.AddYears(1).Date;
+            var nowTimeStamp = DateTime.Now.Date;
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("begin time error");
             var currentTimeStamp = beginTime;

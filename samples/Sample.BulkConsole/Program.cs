@@ -82,7 +82,7 @@ namespace Sample.BulkConsole
                 var queryable = myShardingDbContext.Set<Order>().Where(o => o.CreateTime >= b).OrderBy(o => o.CreateTime);
                 var startNew1 = Stopwatch.StartNew();
 
-                int skip = 0, take = 10;
+                int skip = 0, take = 1000;
                 for (int i = 20000; i < 30000; i++)
                 {
                     skip = take * i;

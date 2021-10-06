@@ -34,7 +34,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig)
         {
-            var shardingEntityConfig = ShardingUtil.Parse(entityType);
             var virtualDataSourceRoute = GetRoute( entityType);
 
             if (routeRouteConfig.UseQueryable())
@@ -46,7 +45,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 shardingKeyValue = routeRouteConfig.GetShardingKeyValue();
 
             if (routeRouteConfig.UseEntity())
+            {
+                var shardingEntityConfig = ShardingUtil.Parse(entityType);
                 shardingKeyValue = routeRouteConfig.GetShardingDataSource().GetPropertyValue(shardingEntityConfig.ShardingDataSourceField);
+            }
 
             if (shardingKeyValue != null)
             {

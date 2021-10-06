@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         public IShardingTransaction CurrentShardingTransaction { get; private set; }
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
-        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly IShardingDbContextOptionsBuilderConfig _shardingDbContextOptionsBuilderConfig;
         private readonly IRouteTailFactory _routeTailFactory;

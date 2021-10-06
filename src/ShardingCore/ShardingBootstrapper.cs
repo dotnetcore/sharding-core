@@ -14,10 +14,10 @@ namespace ShardingCore
     {
         private readonly IEnumerable<IShardingConfigOption> _shardingConfigOptions;
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions)
+        public ShardingBootstrapper(IServiceProvider serviceProvider)
         {
             ShardingContainer.SetServices(serviceProvider);
-            _shardingConfigOptions = shardingConfigOptions;
+            _shardingConfigOptions = ShardingContainer.GetServices<IShardingConfigOption>();
         }
 
         public void Start()

@@ -111,7 +111,7 @@ namespace ShardingCore.Core.VirtualTables
             return GetVirtualRoute();
         }
 
-        public List<string> GetTaleAllTails()
+        public List<string> GetTableAllTails()
         {
             return _physicTables.Keys.Select(o => o.Tail).ToList();
         }

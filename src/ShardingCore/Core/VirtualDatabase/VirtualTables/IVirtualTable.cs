@@ -77,7 +77,7 @@ namespace ShardingCore.Core.VirtualTables
         /// <see cref="ShardingBootstrapper"/> CreateDateTables
         /// </summary>
         /// <returns></returns>
-        List<string> GetTaleAllTails();
+        List<string> GetTableAllTails();
     }
 
     public interface IVirtualTable<T> : IVirtualTable where T : class,IShardingTable

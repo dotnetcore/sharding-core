@@ -23,7 +23,7 @@ namespace ShardingCore.VirtualRoutes.Months
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp =ShardingCoreHelper.GetNextMonthFirstDay(DateTime.Now);
+            var nowTimeStamp =ShardingCoreHelper.GetCurrentMonthFirstDay(DateTime.Now);
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("begin time error");
             var currentTimeStamp = beginTime;
