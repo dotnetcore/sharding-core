@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sample.Migrations.EFCores;
 
 namespace Sample.Migrations.Migrations.ShardingMigrations
 {
     [DbContext(typeof(DefaultShardingTableDbContext))]
-    partial class DefaultShardingTableDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211007010210_EFCoreShardingAddTextStr1")]
+    partial class EFCoreShardingAddTextStr1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,13 +84,6 @@ namespace Sample.Migrations.Migrations.ShardingMigrations
                         .HasDefaultValue("");
 
                     b.Property<string>("TextStr1")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)")
-                        .HasDefaultValue("123");
-
-                    b.Property<string>("TextStr2")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)

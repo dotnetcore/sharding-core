@@ -22,8 +22,8 @@ namespace Sample.Migrations
                             .ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>()
                 ).Begin(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.CreateShardingTableOnStart = false;
+                    o.EnsureCreatedWithOutShardingTable = false;
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr)
@@ -45,8 +45,7 @@ namespace Sample.Migrations
 
         public DefaultShardingTableDbContext CreateDbContext(string[] args)
         {
-            var dbContextOptions = new DbContextOptionsBuilder<DefaultShardingTableDbContext>().UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBMigration;Integrated Security=True;").Options;
-            return new DefaultShardingTableDbContext(dbContextOptions);
+            return ShardingContainer.GetService<DefaultShardingTableDbContext>();
         }
     }
 }

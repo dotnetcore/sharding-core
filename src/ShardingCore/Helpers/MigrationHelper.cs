@@ -35,16 +35,20 @@ namespace ShardingCore.Helpers
             List<MigrationCommand> addCmds
             ) where TShardingDContext:DbContext,IShardingDbContext
         {
-
+            var migrationCommands = (List<MigrationCommand>) builder.GetFieldValue("_commands");
             addCmds.ForEach(aAddCmd =>
             {
                 var shardingCmds = BuildShardingCmds<TShardingDContext>(operation, aAddCmd.CommandText, sqlGenerationHelper);
-                //针对builder的原始表进行移除
-                shardingCmds.ForEach(aShardingCmd =>
+                if (shardingCmds.IsNotEmpty())
                 {
-                    builder.Append(aShardingCmd)
-                        .EndCommand();
-                });
+                    migrationCommands.Remove(aAddCmd);
+                    //针对builder的原始表进行移除
+                    shardingCmds.ForEach(aShardingCmd =>
+                    {
+                        builder.Append(aShardingCmd)
+                            .EndCommand();
+                    });
+                }
             });
         }
 
@@ -130,13 +134,15 @@ namespace ShardingCore.Helpers
                 && x.PropertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && typeof(MigrationOperation).IsAssignableFrom(x.PropertyType.GetGenericArguments()[0]);
             //其它
-            operation.GetType().GetProperties()
+            var propertyInfos = operation.GetType().GetProperties()
                 .Where(x => x.Name != "Name"
-                    && x.Name != "Table"
-                    && x.PropertyType != typeof(object)
-                    && (typeof(MigrationOperation).IsAssignableFrom(x.PropertyType) || listPropertyWhere(x))
-                    )
-                .ToList()
+                            && x.Name != "Table"
+                            && x.PropertyType != typeof(object)
+                            && (typeof(MigrationOperation).IsAssignableFrom(x.PropertyType) || listPropertyWhere(x))
+                )
+                .ToList();
+
+            propertyInfos
                 .ForEach(aProperty =>
                 {
                     var propertyValue = aProperty.GetValue(operation);

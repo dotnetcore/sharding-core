@@ -41,6 +41,7 @@ Oracle | 支持 | 未测试
     - [默认路由](#默认路由)
     - [Api](#Api)
 - [高级配置](#高级配置)
+    - [code-first](#code-first)
     - [自动追踪](#自动追踪)
     - [手动路由](#手动路由)
     - [自动建表](#自动建表)
@@ -549,43 +550,9 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 
 # 高级
 
-## 批量操作
+## code-first
+目前`sharding-core`已经支持code first支持代码现行，具体实现可以参考[Migrations](https://github.com/xuejmnet/sharding-core/tree/main/samples/Sample.Migrations/readme.md)
 
-批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如[`Z.EntityFramework.Plus.EFCore`](https://github.com/zzzprojects/EntityFramework-Plus) 进行批量操作或者 [`EFCore.BulkExtensions`](https://github.com/borisdj/EFCore.BulkExtensions) ,支持一切三方批量框架
-```c#
-var list = new List<SysUserMod>();
-///通过集合返回出对应的k-v归集通过事务开启
-            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
-
-           
-                    foreach (var dataSourceMap in dbContexts)
-                    {
-                        foreach (var tailMap in dataSourceMap.Value)
-                        {
-                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
-                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
-                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
-                        }
-                    }
-                _defaultTableDbContext.SaveChanges();
-          //or
-            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
-            using (var tran = _defaultTableDbContext.BeginTransaction())
-            {
-                    foreach (var dataSourceMap in dbContexts)
-                    {
-                        foreach (var tailMap in dataSourceMap.Value)
-                        {
-                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
-                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
-                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
-                        }
-                    }
-                _defaultTableDbContext.SaveChanges();
-                tran.Commit();
-            }
-
-```
 ## 自动追踪
 默认shardingcore不支持自动追踪,并且也不建议使用自动追踪,如果你有需要shardingcore也默认提供了自动追踪功能
 有两点需要注意
@@ -651,6 +618,47 @@ ctor inject IShardingRouteManager shardingRouteManager
                 tran.Commit();
             }
 ```
+
+
+## 批量操作
+
+批量操作将对应的dbcontext和数据进行分离由用户自己选择第三方框架比如[`Z.EntityFramework.Plus.EFCore`](https://github.com/zzzprojects/EntityFramework-Plus) 进行批量操作或者 [`EFCore.BulkExtensions`](https://github.com/borisdj/EFCore.BulkExtensions) ,支持一切三方批量框架
+```c#
+var list = new List<SysUserMod>();
+///通过集合返回出对应的k-v归集通过事务开启
+            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+
+           
+                    foreach (var dataSourceMap in dbContexts)
+                    {
+                        foreach (var tailMap in dataSourceMap.Value)
+                        {
+                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
+                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
+                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
+                        }
+                    }
+                _defaultTableDbContext.SaveChanges();
+          //or
+            var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+            using (var tran = _defaultTableDbContext.BeginTransaction())
+            {
+                    foreach (var dataSourceMap in dbContexts)
+                    {
+                        foreach (var tailMap in dataSourceMap.Value)
+                        {
+                            tailMap.Key.BulkInsert(tailMap.Value.ToList());
+                            //tailMap.Key.BulkDelete(tailMap.Value.ToList());
+                            //tailMap.Key.BulkUpdate(tailMap.Value.ToList());
+                        }
+                    }
+                _defaultTableDbContext.SaveChanges();
+                tran.Commit();
+            }
+
+```
+## code-first
+
 ## 读写分离
 该框架目前已经支持一主多从的读写分离`AddReadWriteSeparation`,支持轮询 Loop和随机 Random两种读写分离策略,又因为读写分离多链接的时候会导致数据读写不一致,(如分页其实是2步第一步获取count，第二部获取list)会导致数据量在最后几页出现缺量的问题,
 针对这个问题框架目前实现了自定义读链接获取策略`ReadConnStringGetStrategyEnum.LatestEveryTime`表示为每次都是新的(这个情况下会出现上述问题),`ReadConnStringGetStrategyEnum.LatestFirstTime`表示以dbcontext作为单位获取一次(同dbcontext不会出现问题),
