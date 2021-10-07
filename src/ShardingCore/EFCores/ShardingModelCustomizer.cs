@@ -33,7 +33,7 @@ namespace ShardingCore.EFCores
         public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
             base.Customize(modelBuilder, context);
-            if (context is IShardingTableDbContext shardingTableDbContext)
+            if (context is IShardingTableDbContext shardingTableDbContext&& shardingTableDbContext.RouteTail.IsShardingTableQuery())
             {
                 var isMultiEntityQuery = shardingTableDbContext.RouteTail.IsMultiEntityQuery();
                 if (!isMultiEntityQuery)
@@ -44,7 +44,7 @@ namespace ShardingCore.EFCores
                     var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTableAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
 
                     //设置分表
-                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && typeMap.Contains(o.ClrType));
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && typeMap.Contains(o.ClrType)).ToArray();
                     foreach (var entityType in mutableEntityTypes)
                     {
                         MappingToTable(entityType.ClrType, modelBuilder, tail);

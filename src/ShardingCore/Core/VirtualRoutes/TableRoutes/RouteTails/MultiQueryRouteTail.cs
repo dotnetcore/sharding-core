@@ -19,6 +19,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
         private readonly TableRouteResult _tableRouteResult;
         private readonly string _modelCacheKey;
         private readonly ISet<Type> _entityTypes;
+        private readonly bool _isShardingTableQuery;
 
         public MultiQueryRouteTail(TableRouteResult tableRouteResult)
         {
@@ -26,6 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
             _tableRouteResult = tableRouteResult;
             _modelCacheKey = RANDOM_MODEL_CACHE_KEY+Guid.NewGuid().ToString("n");
             _entityTypes = tableRouteResult.ReplaceTables.Select(o=>o.EntityType).ToHashSet();
+            _isShardingTableQuery = _entityTypes.Any(o => o.IsShardingTable());
         }
         public string GetRouteTailIdentity()
         {
@@ -35,6 +37,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
         public bool IsMultiEntityQuery()
         {
             return true;
+        }
+
+        public bool IsShardingTableQuery()
+        {
+            return _isShardingTableQuery;
         }
 
         public string GetEntityTail(Type entityType)

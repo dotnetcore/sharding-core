@@ -1,4 +1,4 @@
-﻿本项目迁移参考[efcore.sharding](https://github.com/Coldairarrow/EFCore.Sharding/tree/master/examples/Demo.DbMigrator)
+﻿本项目迁移参考[efcore.sharding](https://github.com/Coldairarrow/EFCore.Sharding/tree/master/examples/Demo.DbMigrator) 后续会不断完善
 ## 迁移步骤
 
     1. 执行迁移命令，但不执行更新命令

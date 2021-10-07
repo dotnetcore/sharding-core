@@ -6,7 +6,7 @@
 ---
 
 <div align="center">
-<p> <a href="https://github.com/xuejmnet/sharding-core">Github Star</a> 助力dotnet 生态 <a href="https://gitee.com/dotnetchina/sharding-core">Gitee Star</a> </p>
+<p> <a href="https://gitee.com/dotnetchina/sharding-core">Gitee Star</a> 助力dotnet 生态 <a href="https://github.com/xuejmnet/sharding-core">Github Star</a> </p>
 </div>
 
 ---

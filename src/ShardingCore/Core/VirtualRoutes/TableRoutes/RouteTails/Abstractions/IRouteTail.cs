@@ -10,5 +10,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions
     {
         string GetRouteTailIdentity();
         bool IsMultiEntityQuery();
+        bool IsShardingTableQuery();
     }
 }
