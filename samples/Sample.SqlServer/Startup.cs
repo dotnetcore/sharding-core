@@ -42,8 +42,7 @@ namespace Sample.SqlServer
                     o.ParallelQueryMaxThreadCount = 100;
                     o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",

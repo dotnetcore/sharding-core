@@ -79,6 +79,7 @@ namespace Sample.SqlServer.Controllers
 
             var pageResult = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(10).OrderBy(o => o.Age).ToListAsync();
 
+            var resuxaasa = await _defaultTableDbContext.Set<SysTest>().ToListAsync();
 
             using (_shardingRouteManager.CreateScope())
             {

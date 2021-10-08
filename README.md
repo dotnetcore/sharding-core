@@ -221,7 +221,7 @@ or
                     o.CreateShardingTableOnStart = true;//create sharding table
                     o.EnsureCreatedWithOutShardingTable = true;//create data source with out sharding table
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
@@ -432,7 +432,7 @@ or
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
@@ -673,8 +673,7 @@ services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior (QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",

@@ -146,7 +146,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
             else
             {
-                return _shardingDbContextFactory.Create(GetParallelShardingDbContextOptions(dataSourceName, routeTail));
+                var dbContext= _shardingDbContextFactory.Create(GetParallelShardingDbContextOptions(dataSourceName, routeTail));
+                dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                return dbContext;
             }
         }
 

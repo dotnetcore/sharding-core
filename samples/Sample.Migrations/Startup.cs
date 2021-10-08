@@ -41,8 +41,7 @@ namespace Sample.Migrations
                     o.EnsureCreatedWithOutShardingTable = false;
                     o.AutoTrackEntity = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr)
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
+                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0",
