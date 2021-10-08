@@ -44,6 +44,16 @@ namespace ShardingCore.Utils
 
             return primaryKey.Properties.Select(o => entity.GetPropertyValue(o.Name));
         }
+        public static IKey GetEntityIKey(object entity)
+        {
+            var entityType = entity.GetType();
+            if (!_caches.TryGetValue(entityType, out var primaryKey))
+            {
+                return null;
+            }
+
+            return primaryKey;
+        }
 
 
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -155,16 +157,38 @@ namespace ShardingCore.Extensions
 
         private static object sLock = new object();
 
+
+        public static IEnumerable<object> GetPrimaryKeyValues<TEntity>(TEntity entity,IKey primaryKey) where TEntity : class
+        {
+            return primaryKey.Properties.Select(o => entity.GetPropertyValue(o.Name));
+        }
+
         public static TEntity GetAttachedEntity<TEntity>(this DbContext context, TEntity entity) where TEntity:class
         {
             if (entity == null) { throw new ArgumentNullException(nameof(entity)); }
-
-            var primaryKeyValue = ShardingKeyUtil.GetPrimaryKeyValues(entity);
+            var entityPrimaryKey = context.Model.FindEntityType(entity.GetType()).FindPrimaryKey();
+            var primaryKeyValue = GetPrimaryKeyValues(entity, entityPrimaryKey).ToArray();
             if (primaryKeyValue.IsEmpty())
                 return null;
-            var entry = context.ChangeTracker.Entries<TEntity>().FirstOrDefault(e =>e.State != EntityState.Detached&&primaryKeyValue.SequenceEqual(ShardingKeyUtil.GetPrimaryKeyValues(e.Entity)));
+            var dbContextDependencies = (IDbContextDependencies)typeof(DbContext).GetTypePropertyValue(context, "DbContextDependencies");
+            var stateManager = dbContextDependencies.StateManager;
+            
+            //var entityIKey = ShardingKeyUtil.GetEntityIKey(entity);
+            var internalEntityEntry = stateManager.TryGetEntry(entityPrimaryKey, primaryKeyValue);
+         
+            if (internalEntityEntry == null)
+                return null;
+            return (TEntity)internalEntityEntry.Entity;
+            //sp.Restart();
 
-            return entry?.Entity;
+            //var entityEntries = context.ChangeTracker.Entries<TEntity>();
+            //sp.Stop();
+            //Console.WriteLine($"ChangeTracker.Entries:{sp.ElapsedMilliseconds}毫秒");
+            //sp.Restart();
+            //var entry = entityEntries.Where(e => e.State != EntityState.Detached && primaryKeyValue.SequenceEqual(ShardingKeyUtil.GetPrimaryKeyValues(e.Entity))).FirstOrDefault();
+            //sp.Stop();
+            //Console.WriteLine($"ChangeTracker.FirstOrDefault:{sp.ElapsedMilliseconds}毫秒");
+            //return entry?.Entity;
         }
 
     }

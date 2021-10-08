@@ -228,14 +228,16 @@ namespace ShardingCore.Sharding
         }
         private bool QueryTrack()
         {
-
+            var shardingDbContext = (DbContext)_shardingDbContext;
+            if (!shardingDbContext.ChangeTracker.AutoDetectChangesEnabled)
+                return false;
             if (IsNoTracking.HasValue)
             {
                 return !IsNoTracking.Value;
             }
             else
             {
-                return ((DbContext)_shardingDbContext).ChangeTracker.QueryTrackingBehavior ==
+                return shardingDbContext.ChangeTracker.QueryTrackingBehavior ==
                        QueryTrackingBehavior.TrackAll;
             }
         }

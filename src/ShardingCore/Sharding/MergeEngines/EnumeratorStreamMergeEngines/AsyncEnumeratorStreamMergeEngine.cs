@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators.TrackerEnumerators;
 using ShardingCore.Sharding.ShardingQueryExecutors;
-using ShardingCore.Sharding.StreamMergeEngines.TrackerEnumerators;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 {

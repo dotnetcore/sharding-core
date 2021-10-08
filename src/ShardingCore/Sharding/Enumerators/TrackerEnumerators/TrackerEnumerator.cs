@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.TrackerEnumerators
+namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 {
     /*
     * @Author: xjm
@@ -51,7 +48,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines.TrackerEnumerators
                 var genericDbContext = _streamMergeContext.GetShardingDbContext().CreateGenericDbContext(c);
                 var attachedEntity = genericDbContext.GetAttachedEntity(c);
                 if (attachedEntity == null)
+                {
                     genericDbContext.Attach(current);
+                }
                 else
                 {
                     return (T)attachedEntity;

@@ -30,6 +30,7 @@ namespace Sample.BulkConsole
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
+                    o.AutoTrackEntity = true;
                 })
                 .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
@@ -80,7 +81,39 @@ namespace Sample.BulkConsole
 
                 var b = DateTime.Now.Date.AddDays(-3);
                 var queryable = myShardingDbContext.Set<Order>().Where(o => o.CreateTime >= b).OrderBy(o => o.CreateTime);
+
                 var startNew1 = Stopwatch.StartNew();
+
+
+                startNew1.Restart();
+                var list2 = queryable.Take(1000).ToList();
+                startNew1.Stop();
+                Console.WriteLine($"获取1000条用时:{startNew1.ElapsedMilliseconds}毫秒");
+
+                startNew1.Restart();
+                var list = queryable.Take(10).ToList();
+                startNew1.Stop();
+                Console.WriteLine($"获取10条用时:{startNew1.ElapsedMilliseconds}毫秒");
+
+
+                startNew1.Restart();
+                var list1 = queryable.Take(100).ToList();
+                startNew1.Stop();
+                Console.WriteLine($"获取100条用时:{startNew1.ElapsedMilliseconds}毫秒");
+
+
+                startNew1.Restart();
+                var list3 = queryable.Take(10000).ToList();
+                startNew1.Stop();
+                Console.WriteLine($"获取100000条用时:{startNew1.ElapsedMilliseconds}毫秒");
+
+
+
+                startNew1.Restart();
+                var list4 = queryable.Take(20000).ToList();
+                startNew1.Stop();
+                Console.WriteLine($"获取20000条用时:{startNew1.ElapsedMilliseconds}毫秒");
+
 
                 int skip = 0, take = 1000;
                 for (int i = 20000; i < 30000; i++)

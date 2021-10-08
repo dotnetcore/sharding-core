@@ -78,7 +78,7 @@ namespace ShardingCore
                         EnsureCreated(context, dataSourceName);
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
-                        ShardingKeyUtil.ParsePrimaryKeyName(entity);
+                        //ShardingKeyUtil.ParsePrimaryKeyName(entity);
                          var entityType = entity.ClrType;
                         //添加追踪模型
                         _trackerManager.AddDbContextModel(entityType);
