@@ -46,7 +46,7 @@ namespace ShardingCore.EFCores
         public override EntityEntry<TEntity> Add(TEntity entity)
         {
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return genericDbContext.Add(entity);
+            return genericDbContext.Set<TEntity>().Add(entity);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace ShardingCore.EFCores
             CancellationToken cancellationToken = default)
         {
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return await genericDbContext.AddAsync(entity, cancellationToken);
+            return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
 
         }
 #endif
@@ -69,7 +69,7 @@ namespace ShardingCore.EFCores
         public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return await genericDbContext.AddAsync(entity, cancellationToken);
+            return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
         }
 
 #endif
@@ -83,7 +83,7 @@ namespace ShardingCore.EFCores
         public override EntityEntry<TEntity> Attach(TEntity entity)
         {
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return genericDbContext.Attach(entity);
+            return genericDbContext.Set<TEntity>().Attach(entity);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace ShardingCore.EFCores
             Check.NotNull(entity, nameof(entity));
 
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return genericDbContext.Remove(entity);
+            return genericDbContext.Set<TEntity>().Remove(entity);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace ShardingCore.EFCores
         public override EntityEntry<TEntity> Update(TEntity entity)
         {
             var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
-            return genericDbContext.Update(entity);
+            return genericDbContext.Set<TEntity>().Update(entity);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.AddRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().AddRange(group.Select(o => o.Entity));
             }
         }
 
@@ -158,7 +158,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
+                await group.Key.Set<TEntity>().AddRangeAsync(group.Select(o => o.Entity));
             }
         }
 
@@ -182,7 +182,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.AttachRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().AttachRange(group.Select(o => o.Entity));
             }
         }
 
@@ -208,7 +208,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().RemoveRange(group.Select(o => o.Entity));
             }
         }
 
@@ -233,7 +233,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().UpdateRange(group.Select(o => o.Entity));
             }
         }
 
@@ -258,7 +258,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.AddRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().AddRange(group.Select(o => o.Entity));
             }
         }
 
@@ -285,7 +285,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
+                await group.Key.Set<TEntity>().AddRangeAsync(group.Select(o => o.Entity));
             }
         }
 
@@ -310,7 +310,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.AttachRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().AttachRange(group.Select(o => o.Entity));
             }
         }
 
@@ -338,7 +338,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().RemoveRange(group.Select(o => o.Entity));
             }
         }
 
@@ -362,7 +362,7 @@ namespace ShardingCore.EFCores
 
             foreach (var group in groups)
             {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
+                group.Key.Set<TEntity>().UpdateRange(group.Select(o => o.Entity));
             }
         }
 
