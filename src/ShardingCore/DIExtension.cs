@@ -214,15 +214,15 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
-        internal static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
+        public static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
             return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
                 //.ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
         }
-        
-        
-        internal static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
+
+
+        public static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
         {
             return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .ReplaceService<IModelCustomizer, ShardingModelCustomizer<TShardingDbContext>>();

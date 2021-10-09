@@ -57,7 +57,8 @@ namespace Samples.AbpSharding
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
-            ((AbpDbContext<TDbContext>) dbContext).LazyServiceProvider = this.LazyServiceProvider;
+            if (!parallelQuery)
+                ((AbpDbContext<TDbContext>)dbContext).LazyServiceProvider = this.LazyServiceProvider;
             return dbContext;
         }
 
