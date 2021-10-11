@@ -13,9 +13,8 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingCoreConfigBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
         public IServiceCollection Services { get; }
 
@@ -31,7 +30,7 @@ namespace ShardingCore.DIExtensions
         }
 
 
-        public ShardingQueryBuilder<TShardingDbContext, TActualDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
+        public ShardingQueryBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
@@ -47,7 +46,7 @@ namespace ShardingCore.DIExtensions
             ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
-            return new ShardingQueryBuilder<TShardingDbContext, TActualDbContext>(this);
+            return new ShardingQueryBuilder<TShardingDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{

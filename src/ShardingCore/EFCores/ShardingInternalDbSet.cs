@@ -22,19 +22,19 @@ namespace ShardingCore.EFCores
     public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
         where TEntity : class
     {
-        private readonly DbContext _context;
+        private readonly IShardingDbContext _context;
 #if EFCORE5
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
-            _context = context;
+            _context = (IShardingDbContext)context;
         }
 #endif
 #if !EFCORE5
 
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
-            _context = context;
+            _context = (IShardingDbContext)context;
         }
 #endif
         /// <summary>
@@ -45,7 +45,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Add(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return genericDbContext.Set<TEntity>().Add(entity);
         }
 
@@ -60,7 +60,7 @@ namespace ShardingCore.EFCores
             TEntity entity,
             CancellationToken cancellationToken = default)
         {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
 
         }
@@ -68,7 +68,7 @@ namespace ShardingCore.EFCores
 #if EFCORE2
         public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
         }
 
@@ -82,7 +82,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Attach(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return genericDbContext.Set<TEntity>().Attach(entity);
         }
 
@@ -96,7 +96,7 @@ namespace ShardingCore.EFCores
         {
             Check.NotNull(entity, nameof(entity));
 
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return genericDbContext.Set<TEntity>().Remove(entity);
         }
 
@@ -108,7 +108,7 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override EntityEntry<TEntity> Update(TEntity entity)
         {
-            var genericDbContext = ((IShardingDbContext)_context).CreateGenericDbContext(entity);
+            var genericDbContext = _context.CreateGenericDbContext(entity);
             return genericDbContext.Set<TEntity>().Update(entity);
         }
 
@@ -123,7 +123,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -148,7 +148,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -172,7 +172,7 @@ namespace ShardingCore.EFCores
         {
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -198,7 +198,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -223,7 +223,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -248,7 +248,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -275,7 +275,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -300,7 +300,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -328,7 +328,7 @@ namespace ShardingCore.EFCores
 
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,
@@ -352,7 +352,7 @@ namespace ShardingCore.EFCores
         {
             var groups = entities.Select(o =>
             {
-                var dbContext = ((IShardingDbContext)_context).CreateGenericDbContext(o);
+                var dbContext = _context.CreateGenericDbContext(o);
                 return new
                 {
                     DbContext = dbContext,

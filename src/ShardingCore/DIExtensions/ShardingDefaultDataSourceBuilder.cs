@@ -13,23 +13,22 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingDefaultDataSourceBuilder<TShardingDbContext, TActualDbContext>: ShardingCoreConfigEndBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingDefaultDataSourceBuilder<TShardingDbContext>: ShardingCoreConfigEndBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> _shardingCoreConfigBuilder;
+        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
 
-        public ShardingDefaultDataSourceBuilder(ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> shardingCoreConfigBuilder):base(shardingCoreConfigBuilder)
+        public ShardingDefaultDataSourceBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder):base(shardingCoreConfigBuilder)
         {
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
-        public ShardingDataBaseOrTableBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
+        public ShardingDataBaseOrTableBuilder<TShardingDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         {
             if (!string.IsNullOrWhiteSpace(_shardingCoreConfigBuilder.ShardingConfigOption.DefaultDataSourceName) || !string.IsNullOrWhiteSpace(_shardingCoreConfigBuilder.ShardingConfigOption.DefaultConnectionString))
                 throw new InvalidOperationException($"{nameof(AddDefaultDataSource)}-{dataSourceName}");
             _shardingCoreConfigBuilder.ShardingConfigOption.DefaultDataSourceName = dataSourceName;
             _shardingCoreConfigBuilder.ShardingConfigOption.DefaultConnectionString = connectionString;
-            return new ShardingDataBaseOrTableBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
+            return new ShardingDataBaseOrTableBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
     }
 }

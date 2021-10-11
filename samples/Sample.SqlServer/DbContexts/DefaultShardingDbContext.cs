@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer.Domain.Maps;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.SqlServer.DbContexts
 {
-    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    public class DefaultShardingDbContext:AbstractShardingDbContext, IShardingTableDbContext
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
@@ -17,11 +19,11 @@ namespace Sample.SqlServer.DbContexts
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            //配置默认和DefaultTableDbContext一样
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
-        
+
+        public IRouteTail RouteTail { get; set; }
     }
 }

@@ -14,20 +14,19 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingTransactionBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingTransactionBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> _shardingCoreConfigBuilder;
+        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
 
-        public ShardingTransactionBuilder(ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> shardingCoreConfigBuilder)
+        public ShardingTransactionBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
         {
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
-        public ShardingDefaultDataSourceBuilder<TShardingDbContext, TActualDbContext> AddShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
+        public ShardingDefaultDataSourceBuilder<TShardingDbContext> AddShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.UseShardingTransaction(transactionConfigure);
-            return new ShardingDefaultDataSourceBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
+            return new ShardingDefaultDataSourceBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
     }
 }

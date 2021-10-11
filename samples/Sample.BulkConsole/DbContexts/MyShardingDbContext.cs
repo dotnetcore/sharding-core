@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Sample.BulkConsole.Entities;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.BulkConsole.DbContexts
 {
@@ -12,7 +14,7 @@ namespace Sample.BulkConsole.DbContexts
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class MyShardingDbContext:AbstractShardingDbContext<MyDbContext>
+    public class MyShardingDbContext:AbstractShardingDbContext, IShardingTableDbContext
     {
         public MyShardingDbContext(DbContextOptions options) : base(options)
         {
@@ -29,5 +31,7 @@ namespace Sample.BulkConsole.DbContexts
                 entity.ToTable(nameof(Order));
             });
         }
+
+        public IRouteTail RouteTail { get; set; }
     }
 }

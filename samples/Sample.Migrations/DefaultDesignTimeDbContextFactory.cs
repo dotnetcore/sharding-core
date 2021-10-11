@@ -16,7 +16,7 @@ namespace Sample.Migrations
         static DefaultDesignTimeDbContextFactory()
         {
             var services = new ServiceCollection();
-            services.AddShardingDbContext<DefaultShardingTableDbContext, DefaultTableDbContext>(
+            services.AddShardingDbContext<DefaultShardingTableDbContext>(
                     o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBMigration;Integrated Security=True;")
                             .ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>()

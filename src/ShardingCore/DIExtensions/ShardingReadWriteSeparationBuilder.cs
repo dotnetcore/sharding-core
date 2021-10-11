@@ -14,18 +14,17 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext> : ShardingCoreConfigEndBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingReadWriteSeparationBuilder<TShardingDbContext> : ShardingCoreConfigEndBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> _shardingCoreConfigBuilder;
+        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
 
-        public ShardingReadWriteSeparationBuilder(ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> shardingCoreConfigBuilder) : base(shardingCoreConfigBuilder)
+        public ShardingReadWriteSeparationBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder) : base(shardingCoreConfigBuilder)
         {
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
-        public ShardingCoreConfigEndBuilder<TShardingDbContext, TActualDbContext> AddReadWriteSeparation(
+        public ShardingCoreConfigEndBuilder<TShardingDbContext> AddReadWriteSeparation(
             Func<IServiceProvider, IDictionary<string, ISet<string>>> readWriteSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
@@ -33,7 +32,7 @@ namespace ShardingCore.DIExtensions
             ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.UseReadWriteConfiguration(readWriteSeparationConfigure,readStrategyEnum, defaultEnable,defaultPriority);
-            return new ShardingCoreConfigEndBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
+            return new ShardingCoreConfigEndBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
     }
 }

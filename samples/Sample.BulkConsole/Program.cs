@@ -24,7 +24,7 @@ namespace Sample.BulkConsole
         {
             var services = new ServiceCollection();
             services.AddLogging();
-            services.AddShardingDbContext<MyShardingDbContext, MyDbContext>(
+            services.AddShardingDbContext<MyShardingDbContext>(
                 o => o.UseSqlServer("Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;"))
                 .Begin(o =>
                 {

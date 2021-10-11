@@ -19,14 +19,13 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingCoreConfigEndBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingCoreConfigEndBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> _shardingCoreConfigBuilder;
+        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
 
         public ShardingCoreConfigEndBuilder(
-            ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> shardingCoreConfigBuilder)
+            ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
         {
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
@@ -49,9 +48,8 @@ namespace ShardingCore.DIExtensions
             //添加创建TActualDbContext创建者
             services
                 .AddSingleton<IShardingDbContextCreatorConfig,
-                    DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>>(sp =>
-                    new DefaultShardingDbContextCreatorConfig<TShardingDbContext, TActualDbContext>(
-                        typeof(TActualDbContext)));
+                    DefaultShardingDbContextCreatorConfig<TShardingDbContext>>(sp =>
+                    new DefaultShardingDbContextCreatorConfig<TShardingDbContext>());
 
             if (!_shardingCoreConfigBuilder.ShardingConfigOption.UseReadWrite)
             {

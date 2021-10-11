@@ -17,7 +17,6 @@ namespace ShardingCore
     public interface IShardingDbContextCreatorConfig
     {
         Type ShardingDbContextType { get; }
-        Type ActualDbContextType { get; }
 
         DbContext Creator(ShardingDbContextOptions shardingDbContextOptions);
     }

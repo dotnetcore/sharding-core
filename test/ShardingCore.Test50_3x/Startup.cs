@@ -41,7 +41,7 @@ namespace ShardingCore.Test50_3x
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o =>
+            services.AddShardingDbContext<ShardingDefaultDbContext>(o =>
                     o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]))
                 .Begin(o =>
                 {

@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Test50_3x.Domain.Maps;
 
 namespace ShardingCore.Test50_3x
@@ -12,7 +14,7 @@ namespace ShardingCore.Test50_3x
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingDefaultDbContext:AbstractShardingDbContext<DefaultDbContext>
+    public class ShardingDefaultDbContext:AbstractShardingDbContext, IShardingTableDbContext
     {
         public ShardingDefaultDbContext(DbContextOptions<ShardingDefaultDbContext> options) : base(options)
         {
@@ -25,5 +27,6 @@ namespace ShardingCore.Test50_3x
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
         }
 
+        public IRouteTail RouteTail { get; set; }
     }
 }

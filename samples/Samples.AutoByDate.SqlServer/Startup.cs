@@ -34,7 +34,7 @@ namespace Samples.AutoByDate.SqlServer
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
             
-            services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+            services.AddShardingDbContext<DefaultShardingDbContext>(
                     o => o.UseSqlServer(
                         "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
                 ).Begin(o =>

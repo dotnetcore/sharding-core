@@ -20,28 +20,23 @@ namespace ShardingCore.Sharding
     * @Date: Saturday, 14 August 2021 09:57:08
     * @Email: 326308290@qq.com
     */
+
     /// <summary>
     /// 分表分库的dbcontext
     /// </summary>
-    /// <typeparam name="TDbContext"></typeparam>
-    public abstract class AbstractShardingDbContext<TDbContext> : DbContext, IShardingDbContext<TDbContext>, ISupportShardingTransaction, ISupportShardingReadWrite where TDbContext : DbContext
+    public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
 
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
-            ActualDbContextType = typeof(TDbContext);
 
             _shardingDbContextExecutor =
                 (IShardingDbContextExecutor)Activator.CreateInstance(
-                    typeof(ShardingDbContextExecutor<,>).GetGenericType1(this.GetType(), ActualDbContextType));
+                    typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()));
 
         }
-        /// <summary>
-        /// 正真执行的dbcontext类型
-        /// </summary>
-        public Type ActualDbContextType { get; }
         /// <summary>
         /// 读写分离优先级
         /// </summary>
@@ -58,6 +53,16 @@ namespace ShardingCore.Sharding
             get => _shardingDbContextExecutor.ReadWriteSeparation;
             set => _shardingDbContextExecutor.ReadWriteSeparation = value;
         }
+        /// <summary>
+        /// 是否是真正的执行者
+        /// </summary>
+        public new bool IsExecutor { get; private set; }
+
+        public void ShardingUpgrade()
+        {
+            IsExecutor = true;
+        }
+
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             return _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
@@ -77,11 +82,15 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry Add(object entity)
         {
+            if (IsExecutor)
+                base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
 
         public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         {
+            if (IsExecutor)
+                return base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
 
@@ -91,28 +100,41 @@ namespace ShardingCore.Sharding
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
         public override ValueTask<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 #endif
 #if EFCORE2
         public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
         public override Task<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 #endif
 
         public override void AddRange(params object[] entities)
         {
+            if (IsExecutor)
+            {
+                base.AddRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -131,6 +153,11 @@ namespace ShardingCore.Sharding
 
         public override void AddRange(IEnumerable<object> entities)
         {
+            if (IsExecutor)
+            {
+                base.AddRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -149,6 +176,11 @@ namespace ShardingCore.Sharding
 
         public override async Task AddRangeAsync(params object[] entities)
         {
+            if (IsExecutor)
+            {
+                await base.AddRangeAsync(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -167,6 +199,11 @@ namespace ShardingCore.Sharding
 
         public override async Task AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+            {
+                await base.AddRangeAsync(entities, cancellationToken);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -185,16 +222,25 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Attach<TEntity>(TEntity entity)
         {
+            if (IsExecutor)
+                return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override EntityEntry Attach(object entity)
         {
+            if (IsExecutor)
+                return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override void AttachRange(params object[] entities)
         {
+            if (IsExecutor)
+            {
+                base.AttachRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -213,6 +259,11 @@ namespace ShardingCore.Sharding
 
         public override void AttachRange(IEnumerable<object> entities)
         {
+            if (IsExecutor)
+            {
+                base.AttachRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -236,26 +287,39 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         {
+            if (IsExecutor)
+                return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry Entry(object entity)
         {
+            if (IsExecutor)
+                return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry<TEntity> Update<TEntity>(TEntity entity)
         {
+            if (IsExecutor)
+                return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override EntityEntry Update(object entity)
         {
+            if (IsExecutor)
+                return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override void UpdateRange(params object[] entities)
         {
+            if (IsExecutor)
+            {
+                base.UpdateRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -274,6 +338,11 @@ namespace ShardingCore.Sharding
 
         public override void UpdateRange(IEnumerable<object> entities)
         {
+            if (IsExecutor)
+            {
+                base.UpdateRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -292,17 +361,26 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
         {
+            if (IsExecutor)
+                return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override EntityEntry Remove(object entity)
         {
+            if (IsExecutor)
+                return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override void RemoveRange(params object[] entities)
         {
-            var groups = entities.Select(o =>
+            if (IsExecutor)
+            {
+                base.RemoveRange(entities);
+                return;
+            }
+                var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
                 return new
@@ -320,6 +398,11 @@ namespace ShardingCore.Sharding
 
         public override void RemoveRange(IEnumerable<object> entities)
         {
+            if (IsExecutor)
+            {
+                base.RemoveRange(entities);
+                return;
+            }
             var groups = entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
@@ -368,11 +451,16 @@ namespace ShardingCore.Sharding
         //}
         public override int SaveChanges()
         {
+
+            if (IsExecutor)
+                return base.SaveChanges();
             return this.SaveChanges(true);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
+            if (IsExecutor)
+                return base.SaveChanges(acceptAllChangesOnSuccess);
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
@@ -395,19 +483,23 @@ namespace ShardingCore.Sharding
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return base.SaveChangesAsync(cancellationToken);
             return this.SaveChangesAsync(true, cancellationToken);
         }
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
+            if (IsExecutor)
+                return await base.SaveChangesAsync(acceptAllChangesOnSuccess,cancellationToken);
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
             if (!_shardingDbContextExecutor.IsBeginTransaction)
             {
-                using(var tran= _shardingDbContextExecutor.BeginTransaction())
+                using (var tran = _shardingDbContextExecutor.BeginTransaction())
                 {
-                     i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                    i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #if EFCORE2
                      tran.Commit();
 #endif
@@ -427,16 +519,31 @@ namespace ShardingCore.Sharding
 
         public override void Dispose()
         {
-            _shardingDbContextExecutor.Dispose();
-            base.Dispose();
+
+            if (IsExecutor)
+            {
+                base.Dispose();
+            }
+            else
+            {
+                _shardingDbContextExecutor.Dispose();
+                base.Dispose();
+            }
         }
 #if !EFCORE2
 
         public override async ValueTask DisposeAsync()
         {
-            await _shardingDbContextExecutor.DisposeAsync();
+            if (IsExecutor)
+            {
+                await base.DisposeAsync();
+            }
+            else
+            {
+                await _shardingDbContextExecutor.DisposeAsync();
 
-            await base.DisposeAsync();
+                await base.DisposeAsync();
+            }
         }
 #endif
 

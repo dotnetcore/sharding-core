@@ -30,7 +30,7 @@ namespace Sample.MySql
         {
             using (var scope=app.ApplicationServices.CreateScope())
             {
-                var virtualDbContext =scope.ServiceProvider.GetService<DefaultTableDbContext>();
+                var virtualDbContext =scope.ServiceProvider.GetService<DefaultShardingDbContext>();
                 if (!virtualDbContext.Set<SysUserMod>().Any())
                 {
                     var ids = Enumerable.Range(1, 1000);

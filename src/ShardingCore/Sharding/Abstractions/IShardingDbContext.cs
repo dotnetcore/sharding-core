@@ -13,9 +13,14 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IShardingDbContext
     {
         /// <summary>
-        /// 真实的db context type
+        /// 是否是执行者
         /// </summary>
-        Type ActualDbContextType {  get;}
+        bool IsExecutor { get; }
+        /// <summary>
+        /// 分片升级为执行者
+        /// </summary>
+        /// <returns></returns>
+        void ShardingUpgrade();
         /// <summary>
         /// create DbContext
         /// </summary>
@@ -31,11 +36,6 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
-
-    }
-
-    public interface IShardingDbContext<T> : IShardingDbContext where T : DbContext
-    {
 
     }
 }

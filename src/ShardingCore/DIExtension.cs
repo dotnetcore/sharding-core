@@ -35,15 +35,14 @@ namespace ShardingCore
     */
     public static class DIExtension
     {
-        public static ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddShardingDbContext<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
+        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
             Action<DbContextOptionsBuilder> optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TActualDbContext : DbContext
-            where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+            where TShardingDbContext : DbContext, IShardingDbContext
         {
 
-            ShardingCoreHelper.CheckContextConstructors<TActualDbContext>(); 
+            ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>(); 
             Action<DbContextOptionsBuilder> shardingOptionAction = option =>
             {
                 optionsAction?.Invoke(option);
@@ -51,17 +50,16 @@ namespace ShardingCore
 
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
-            return new ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext>(services);
+            return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
-        public static ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddShardingDbContext<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
+        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
             Action<IServiceProvider, DbContextOptionsBuilder> optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TActualDbContext : DbContext, IShardingTableDbContext
-            where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+            where TShardingDbContext : DbContext, IShardingDbContext
         {
 
-            ShardingCoreHelper.CheckContextConstructors<TActualDbContext>();
+            ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
 
 
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
@@ -70,7 +68,7 @@ namespace ShardingCore
                 option.UseSharding();
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
-            return new ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext>(services);
+            return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
         //public static IServiceCollection AddShardingDbContext<TShardingDbContext, TActualDbContext>(this IServiceCollection services,
         //    Action<DbContextOptionsBuilder> optionsAction = null,

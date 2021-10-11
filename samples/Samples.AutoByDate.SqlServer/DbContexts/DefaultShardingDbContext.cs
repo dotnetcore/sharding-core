@@ -1,11 +1,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Samples.AutoByDate.SqlServer.Domain.Maps;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 
 namespace Samples.AutoByDate.SqlServer.DbContexts
 {
-    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    public class DefaultShardingDbContext:AbstractShardingDbContext, IShardingTableDbContext
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
@@ -18,5 +20,6 @@ namespace Samples.AutoByDate.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new TestLogByWeekMap());
         }
 
+        public IRouteTail RouteTail { get; set; }
     }
 }

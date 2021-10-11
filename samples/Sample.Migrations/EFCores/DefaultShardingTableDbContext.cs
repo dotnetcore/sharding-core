@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.Migrations.EFCores
 {
-    public class DefaultShardingTableDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    public class DefaultShardingTableDbContext:AbstractShardingDbContext, IShardingTableDbContext
     {
         public DefaultShardingTableDbContext(DbContextOptions options) : base(options)
         {
@@ -20,5 +22,7 @@ namespace Sample.Migrations.EFCores
             modelBuilder.ApplyConfiguration(new ShardingWithModMap());
             modelBuilder.ApplyConfiguration(new ShardingWithDateTimeMap());
         }
+
+        public IRouteTail RouteTail { get; set; }
     }
 }

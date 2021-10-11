@@ -29,7 +29,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// DbContext执行者
     /// </summary>
     /// <typeparam name="TShardingDbContext"></typeparam>
-    public class ShardingDbContextExecutor<TShardingDbContext, TActualDbContext> : IShardingDbContextExecutor where TShardingDbContext : DbContext, IShardingDbContext where TActualDbContext : DbContext
+    public class ShardingDbContextExecutor<TShardingDbContext> : IShardingDbContextExecutor where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         public IShardingTransaction CurrentShardingTransaction { get; private set; }
@@ -68,14 +68,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         #region create db context
 
-        private DbContextOptionsBuilder<TActualDbContext> CreateDbContextOptionBuilder()
+        private DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
         {
             Type type = typeof(DbContextOptionsBuilder<>);
-            type = type.MakeGenericType(typeof(TActualDbContext));
-            return (DbContextOptionsBuilder<TActualDbContext>)Activator.CreateInstance(type);
+            type = type.MakeGenericType(typeof(TShardingDbContext));
+            return (DbContextOptionsBuilder<TShardingDbContext>)Activator.CreateInstance(type);
         }
 
-        private DbContextOptions<TActualDbContext> CreateShareDbContextOptions(string dataSourceName)
+        private DbContextOptions<TShardingDbContext> CreateShareDbContextOptions(string dataSourceName)
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
 
@@ -104,7 +104,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             return new ShardingDbContextOptions(dbContextOptions, routeTail);
         }
-        private DbContextOptions<TActualDbContext> CreateParallelDbContextOptions(string dataSourceName)
+        private DbContextOptions<TShardingDbContext> CreateParallelDbContextOptions(string dataSourceName)
         {
             var dbContextOptionBuilder = CreateDbContextOptionBuilder();
             var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName, false);

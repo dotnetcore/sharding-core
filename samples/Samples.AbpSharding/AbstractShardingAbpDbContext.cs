@@ -21,23 +21,18 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace Samples.AbpSharding
 {
-    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<AbstractShardingAbpDbContext<TDbContext>>, IShardingDbContext<TDbContext>, ISupportShardingTransaction, ISupportShardingReadWrite where TDbContext : DbContext
+    public abstract class AbstractShardingAbpDbContext : AbpDbContext<AbstractShardingAbpDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
-        protected AbstractShardingAbpDbContext(DbContextOptions<AbstractShardingAbpDbContext<TDbContext>> options) : base(options)
+        protected AbstractShardingAbpDbContext(DbContextOptions<AbstractShardingAbpDbContext> options) : base(options)
         {
-            ActualDbContextType = typeof(TDbContext);
 
             _shardingDbContextExecutor =
                 (IShardingDbContextExecutor)Activator.CreateInstance(
-                    typeof(ShardingDbContextExecutor<,>).GetGenericType1(this.GetType(), ActualDbContextType));
+                    typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()));
         }
 
 
-        /// <summary>
-        /// 正真执行的dbcontext类型
-        /// </summary>
-        public Type ActualDbContextType { get; }
         /// <summary>
         /// 读写分离优先级
         /// </summary>
@@ -54,11 +49,19 @@ namespace Samples.AbpSharding
             get => _shardingDbContextExecutor.ReadWriteSeparation;
             set => _shardingDbContextExecutor.ReadWriteSeparation = value;
         }
+
+        public new bool IsExecutor { get; private set; }
+
+        public void ShardingUpgrade()
+        {
+            IsExecutor = true;
+        }
+
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
             if (!parallelQuery)
-                ((AbpDbContext<TDbContext>)dbContext).LazyServiceProvider = this.LazyServiceProvider;
+                ((AbpDbContext<AbstractShardingAbpDbContext>)dbContext).LazyServiceProvider = this.LazyServiceProvider;
             return dbContext;
         }
 

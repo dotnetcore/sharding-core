@@ -13,18 +13,17 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingDataSourceRouteBuilder<TShardingDbContext, TActualDbContext> : ShardingReadWriteSeparationBuilder<TShardingDbContext, TActualDbContext>
-        where TActualDbContext : DbContext
-        where TShardingDbContext : DbContext, IShardingDbContext<TActualDbContext>
+    public class ShardingDataSourceRouteBuilder<TShardingDbContext> : ShardingReadWriteSeparationBuilder<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> _shardingCoreConfigBuilder;
+        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
 
-        public ShardingDataSourceRouteBuilder(ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> shardingCoreConfigBuilder) : base(shardingCoreConfigBuilder)
+        public ShardingDataSourceRouteBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder) : base(shardingCoreConfigBuilder)
         {
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
-        public ShardingTableBuilder<TShardingDbContext, TActualDbContext> AddShardingDataSourceRoute(Action<ShardingDatabaseOptions> shardingDatabaseConfigure)
+        public ShardingTableBuilder<TShardingDbContext> AddShardingDataSourceRoute(Action<ShardingDatabaseOptions> shardingDatabaseConfigure)
         {
 
             var shardingDatabaseOptions = new ShardingDatabaseOptions();
@@ -35,7 +34,7 @@ namespace ShardingCore.DIExtensions
                 _shardingCoreConfigBuilder.ShardingConfigOption.AddShardingDataSourceRoute(shardingDatabaseRoute);
             }
 
-            return new ShardingTableBuilder<TShardingDbContext, TActualDbContext>(_shardingCoreConfigBuilder);
+            return new ShardingTableBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
     }
 }

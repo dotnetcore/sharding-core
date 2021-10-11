@@ -36,7 +36,7 @@ namespace Sample.SqlServerShardingDataSource
             services.AddControllers();
 
 
-            services.AddShardingDbContext<DefaultShardingDbContext, DefaultDbContext>(
+            services.AddShardingDbContext<DefaultShardingDbContext>(
                     o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
                 ).Begin(o =>

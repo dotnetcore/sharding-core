@@ -8,7 +8,7 @@ using ShardingCore.Sharding;
 
 namespace Sample.SqlServerShardingDataSource.DbContexts
 {
-    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultDbContext>
+    public class DefaultShardingDbContext:AbstractShardingDbContext
     {
         public DefaultShardingDbContext(DbContextOptions options) : base(options)
         {
