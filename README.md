@@ -160,34 +160,13 @@ or
     }
 ```
 
-如果你使用分表必须创建一个继承自```IShardingTableDbContext```接口的DbContext
-
-```c#
-
-    public class DefaultTableDbContext: DbContext,IShardingTableDbContext
-    {
-        public DefaultTableDbContext(DbContextOptions<DefaultTableDbContext> options) :base(options)
-        {
-            
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new SysUserModMap());
-        }
-
-        public IRouteTail RouteTail { get; set; }
-    }
-```
-
-创建分表DbContext必须继承AbstractShardingDbContext<DefaultTableDbContext>其中DefaultTableDbContext是你刚才建立的就是如果你分表了你真正获取对象是通过哪个dbcontext
-
+如果你使用分表必须创建一个继承自```IShardingTableDbContext```接口的DbContext,
+必须实现```IShardingDbContext```,默认提供了AbstractShardingDbContext
 
 ```c#
 
   //DefaultTableDbContext is acutal execute dbcontext
-    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    public class DefaultShardingDbContext:AbstractShardingDbContext,IShardingTableDbContext
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
@@ -198,6 +177,7 @@ or
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
         }
+        public IRouteTail RouteTail { get; set; }
 
     }
 ```
@@ -213,7 +193,7 @@ or
 
     //add shardingdbcontext support life scope
                 
-        services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+        services.AddShardingDbContext<DefaultShardingDbContext>(
                     o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 )
                 .Begin(o =>
@@ -374,33 +354,13 @@ or
 ```
 
 如果你使用分库就不需要```IShardingTableDbContext```接口的DbContext
-
-```c#
-
-    public class DefaultTableDbContext: DbContext//,IShardingTableDbContext
-    {
-        public DefaultTableDbContext(DbContextOptions<DefaultTableDbContext> options) :base(options)
-        {
-            
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new SysUserModMap());
-        }
-
-        public IRouteTail RouteTail { get; set; }
-    }
-```
-
-创建分表DbContext必须继承AbstractShardingDbContext<DefaultTableDbContext>其中DefaultTableDbContext是你刚才建立的就是如果你分表了你真正获取对象是通过哪个dbcontext
+创建分表DbContext必须继承AbstractShardingDbContext
 
 
 ```c#
 
   //DefaultTableDbContext is acutal execute dbcontext
-    public class DefaultShardingDbContext:AbstractShardingDbContext<DefaultTableDbContext>
+    public class DefaultShardingDbContext:AbstractShardingDbContext
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
@@ -424,7 +384,7 @@ or
 
     //add shardingdbcontext support life scope
                 
-       services.AddShardingDbContext<DefaultShardingDbContext, DefaultDbContext>(
+       services.AddShardingDbContext<DefaultShardingDbContext>(
                     o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
                 ).Begin(o =>
@@ -665,7 +625,7 @@ var list = new List<SysUserMod>();
 又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否使用读写分离如果false默认选择写字符串去读取`_defaultTableDbContext.ReadWriteSeparation=false`
 
 ```c#
-services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
+services.AddShardingDbContext<DefaultShardingDbContext>(
                     o =>
                         o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 ).Begin(o =>
