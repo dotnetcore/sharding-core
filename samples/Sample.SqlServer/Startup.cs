@@ -32,8 +32,8 @@ namespace Sample.SqlServer
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
             services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o =>
-                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                    (conn, o) =>
+                        o.UseSqlServer(conn).UseLoggerFactory(efLogger)
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
@@ -42,7 +42,7 @@ namespace Sample.SqlServer
                     o.ParallelQueryMaxThreadCount = 100;
                     o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
+                //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",

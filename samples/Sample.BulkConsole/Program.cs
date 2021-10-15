@@ -25,14 +25,13 @@ namespace Sample.BulkConsole
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddShardingDbContext<MyShardingDbContext>(
-                o => o.UseSqlServer("Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;"))
+                    (conn, o) => o.UseSqlServer(conn))
                 .Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;")
                 .AddShardingTableRoute(op=> {

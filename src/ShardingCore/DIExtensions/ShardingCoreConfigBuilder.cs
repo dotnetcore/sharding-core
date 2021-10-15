@@ -23,14 +23,15 @@ namespace ShardingCore.DIExtensions
 
 
 
-        public ShardingCoreConfigBuilder(IServiceCollection services)
+        public ShardingCoreConfigBuilder(IServiceCollection services,Action<string,DbContextOptionsBuilder> queryConfigure)
         {
             Services = services;
             ShardingConfigOption = new ShardingConfigOption<TShardingDbContext>();
+            ShardingConfigOption.UseShardingQuery(queryConfigure);
         }
 
 
-        public ShardingQueryBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
+        public ShardingTransactionBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
@@ -46,7 +47,9 @@ namespace ShardingCore.DIExtensions
             ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
-            return new ShardingQueryBuilder<TShardingDbContext>(this);
+
+            return new ShardingTransactionBuilder<TShardingDbContext>(this);
+            //return new ShardingQueryBuilder<TShardingDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{

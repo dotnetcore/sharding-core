@@ -37,15 +37,13 @@ namespace Sample.SqlServerShardingDataSource
 
 
             services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o =>
-                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
+                    (conn, o) =>
+                        o.UseSqlServer(conn).UseLoggerFactory(efLogger)
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")

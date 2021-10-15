@@ -35,15 +35,12 @@ namespace Samples.AutoByDate.SqlServer
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
             
             services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o => o.UseSqlServer(
-                        "Data Source=localhost;Initial Catalog=ShardingCoreDBxx2;Integrated Security=True;")
+                    (conn, o) => o.UseSqlServer(conn)
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr)
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking))
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0",

@@ -9,6 +9,7 @@
 		<LangVersion>8.0</LangVersion>
 		<AssemblyName>ShardingCore</AssemblyName>
 		<RootNamespace>ShardingCore</RootNamespace>
+		<RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

@@ -41,14 +41,13 @@ namespace ShardingCore.Test50_3x
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingDbContext<ShardingDefaultDbContext>(o =>
-                    o.UseSqlServer(hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"]))
+            services.AddShardingDbContext<ShardingDefaultDbContext>((conn, o) =>
+                    o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
                 .AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0", hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 .AddShardingTableRoute(op =>

@@ -5,6 +5,7 @@
     <RootNamespace>ShardingCore</RootNamespace>
     <AssemblyName>ShardingCore</AssemblyName>
     <Description>easy sharding for efcore 2.x 3.x 5.x 6.x lib.</Description>
+	  <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
