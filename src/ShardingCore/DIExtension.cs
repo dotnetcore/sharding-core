@@ -24,6 +24,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.EFCores.OptionsExtensions;
 
 namespace ShardingCore
 {
@@ -217,11 +218,21 @@ namespace ShardingCore
         }
         public static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
         {
-            return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
+            return optionsBuilder.UseShardingWrapMark().ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
                 //.ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
         }
 
+        public static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)
+        {
+            var extension = optionsBuilder.CreateOrGetExtension();
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+            return optionsBuilder;
+        }
+
+        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.Options.FindExtension<ShardingWrapOptionsExtension>() ??
+               new ShardingWrapOptionsExtension();
 
         public static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext:DbContext,IShardingDbContext
         {

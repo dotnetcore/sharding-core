@@ -33,7 +33,7 @@ namespace ShardingCore.EFCores
         public override void Customize(ModelBuilder modelBuilder, DbContext context)
         {
             base.Customize(modelBuilder, context);
-            if (context is IShardingTableDbContext shardingTableDbContext&& shardingTableDbContext.RouteTail.IsShardingTableQuery())
+            if (context is IShardingTableDbContext shardingTableDbContext&& shardingTableDbContext.RouteTail !=null&& shardingTableDbContext.RouteTail.IsShardingTableQuery())
             {
                 var isMultiEntityQuery = shardingTableDbContext.RouteTail.IsMultiEntityQuery();
                 if (!isMultiEntityQuery)

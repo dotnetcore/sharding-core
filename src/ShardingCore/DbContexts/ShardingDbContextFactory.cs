@@ -36,14 +36,14 @@ namespace ShardingCore.DbContexts
                 shardingTableDbContext.RouteTail = routeTail;
             }
 
-            if (dbContext is IShardingDbContext shardingDbContext)
-            {
-                shardingDbContext.ShardingUpgrade();
-            }
-            else
-            {
-                throw new ShardingCoreException($"{dbContext.GetType().FullName} should implements {nameof(IShardingDbContext)}");
-            }
+            //if (dbContext is IShardingDbContext shardingDbContext)
+            //{
+            //    shardingDbContext.ShardingUpgrade();
+            //}
+            //else
+            //{
+            //    throw new ShardingCoreException($"{dbContext.GetType().FullName} should implements {nameof(IShardingDbContext)}");
+            //}
             var dbContextModel = dbContext.Model;
             return dbContext;
         }

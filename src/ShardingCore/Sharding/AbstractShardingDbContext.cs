@@ -11,6 +11,8 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.EFCores.OptionsExtensions;
 
 namespace ShardingCore.Sharding
 {
@@ -31,11 +33,13 @@ namespace ShardingCore.Sharding
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
-
-            _shardingDbContextExecutor =
-                (IShardingDbContextExecutor)Activator.CreateInstance(
-                    typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()));
-
+            var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
+            if (wrapOptionsExtension != null)
+            {
+                _shardingDbContextExecutor =
+                    (IShardingDbContextExecutor)Activator.CreateInstance(
+                        typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()));
+            }
         }
         /// <summary>
         /// 读写分离优先级
@@ -53,15 +57,16 @@ namespace ShardingCore.Sharding
             get => _shardingDbContextExecutor.ReadWriteSeparation;
             set => _shardingDbContextExecutor.ReadWriteSeparation = value;
         }
+
         /// <summary>
         /// 是否是真正的执行者
         /// </summary>
-        public new bool IsExecutor { get; private set; }
+        public  bool IsExecutor => _shardingDbContextExecutor == null;
 
-        public void ShardingUpgrade()
-        {
-            IsExecutor = true;
-        }
+        //public void ShardingUpgrade()
+        //{
+        //    //IsExecutor = true;
+        //}
 
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {

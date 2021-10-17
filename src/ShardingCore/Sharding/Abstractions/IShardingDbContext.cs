@@ -12,15 +12,15 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IShardingDbContext
     {
-        /// <summary>
-        /// 是否是执行者
-        /// </summary>
-        bool IsExecutor { get; }
-        /// <summary>
-        /// 分片升级为执行者
-        /// </summary>
-        /// <returns></returns>
-        void ShardingUpgrade();
+        ///// <summary>
+        ///// 是否是执行者
+        ///// </summary>
+        //bool IsExecutor { get; }
+        ///// <summary>
+        ///// 分片升级为执行者
+        ///// </summary>
+        ///// <returns></returns>
+        //void ShardingUpgrade();
         /// <summary>
         /// create DbContext
         /// </summary>
