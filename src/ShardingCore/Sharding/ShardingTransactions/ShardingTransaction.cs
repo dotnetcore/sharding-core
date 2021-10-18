@@ -1,14 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Sharding.Abstractions;
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingTransactions
 {
@@ -29,6 +26,10 @@ namespace ShardingCore.Sharding.ShardingTransactions
         private IsolationLevel isolationLevel = IsolationLevel.Unspecified;
 
         private bool _isBeginTransaction = false;
+        /// <summary>
+        /// 是否需要抛出异常
+        /// </summary>
+        private bool _throwException => _dbContextTransactions.Count == 1;
 
         public ShardingTransaction(IShardingDbContextExecutor shardingDbContextExecutor)
         {
@@ -79,6 +80,8 @@ namespace ShardingCore.Sharding.ShardingTransactions
                 catch (Exception e)
                 {
                     Console.WriteLine($"rollback error:[{e}]");
+                    if (_throwException)
+                        throw;
                 }
             }
             this._shardingDbContextExecutor.ClearTransaction();
@@ -95,6 +98,8 @@ namespace ShardingCore.Sharding.ShardingTransactions
                 catch (Exception e)
                 {
                     Console.WriteLine($"commit error:[{e}]");
+                    if (_throwException)
+                        throw;
                 }
             }
             this._shardingDbContextExecutor.ClearTransaction();
@@ -113,6 +118,8 @@ namespace ShardingCore.Sharding.ShardingTransactions
                 catch (Exception e)
                 {
                     Console.WriteLine($"rollback error:[{e}]");
+                    if (_throwException)
+                        throw;
                 }
             }
             await this._shardingDbContextExecutor.ClearTransactionAsync(cancellationToken);
@@ -128,6 +135,8 @@ namespace ShardingCore.Sharding.ShardingTransactions
                 catch (Exception e)
                 {
                     Console.WriteLine($"commit error:[{e}]");
+                    if (_throwException)
+                        throw;
                 }
             }
             await this._shardingDbContextExecutor.ClearTransactionAsync(cancellationToken);
