@@ -194,14 +194,13 @@ or
     //add shardingdbcontext support life scope
                 
         services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                   (conStr, builder) => builder.UseSqlServer(conStr)
                 )
                 .Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;//create sharding table
                     o.EnsureCreatedWithOutShardingTable = true;//create data source with out sharding table
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
@@ -385,14 +384,12 @@ or
     //add shardingdbcontext support life scope
                 
        services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o =>
-                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
+                   (conStr, builder) => builder.UseSqlServer(conStr)
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
@@ -523,7 +520,7 @@ AbstractSimpleShardingYearKeyLongVirtualTableRoute |按时间戳 |yyyy | `>,>=,<
 4.支持 `first`,`firstordefault`,`last`,`lastordefault`,`single`,`singleordefault`
 如何开启
 ```c#
-services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(o =>o.UseSqlServer("..."))
+services.AddShardingDbContext<DefaultShardingDbContext>(.......)
             .Begin(o => {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
@@ -626,14 +623,12 @@ var list = new List<SysUserMod>();
 
 ```c#
 services.AddShardingDbContext<DefaultShardingDbContext>(
-                    o =>
-                        o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                    (conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger)
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior (QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",
