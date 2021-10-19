@@ -67,13 +67,11 @@ namespace ShardingCore.EFCores
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
             return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query);
-
         }
 
         public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(_currentContext, query, cancellationToken);
-
         }
 
         public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
