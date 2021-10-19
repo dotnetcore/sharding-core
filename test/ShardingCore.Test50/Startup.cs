@@ -55,8 +55,6 @@ namespace ShardingCore.Test50
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
-                .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 .AddShardingTableRoute(op =>
                 {

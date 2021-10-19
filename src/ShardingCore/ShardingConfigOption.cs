@@ -25,7 +25,7 @@ namespace ShardingCore
         private readonly Dictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly Dictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
 
-        public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; private set; }
+        //public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; private set; }
         public Action<string, DbContextOptionsBuilder> DefaultQueryConfigure { get; private set; }
 
         public Func<IServiceProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
@@ -34,10 +34,10 @@ namespace ShardingCore
         {
             DefaultQueryConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
         }
-        public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
-        {
-            SameConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
-        }
+        //public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
+        //{
+        //    SameConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
+        //}
 
         public void AddShardingDataSource(Func<IServiceProvider, IDictionary<string, string>> dataSourcesConfigure)
         {

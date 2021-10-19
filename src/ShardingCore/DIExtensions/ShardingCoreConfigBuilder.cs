@@ -31,7 +31,7 @@ namespace ShardingCore.DIExtensions
         }
 
 
-        public ShardingTransactionBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
+        public ShardingDefaultDataSourceBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
@@ -48,7 +48,7 @@ namespace ShardingCore.DIExtensions
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
 
-            return new ShardingTransactionBuilder<TShardingDbContext>(this);
+            return new ShardingDefaultDataSourceBuilder<TShardingDbContext>(this);
             //return new ShardingQueryBuilder<TShardingDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)

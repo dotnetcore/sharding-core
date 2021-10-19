@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
-using ShardingCore.Sharding.ShardingTransactions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -19,6 +18,12 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface ISupportShardingTransaction
     {
-        IShardingTransaction BeginTransaction(IsolationLevel isolationLevel=IsolationLevel.Unspecified);
+        void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction);
+        void Rollback();
+        void Commit();
+#if !EFCORE2
+        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
+        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
+#endif
     }
 }

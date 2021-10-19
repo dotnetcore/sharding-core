@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq.Expressions;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.DbContexts;
-using ShardingCore.Sharding.ShardingTransactions;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -27,8 +20,7 @@ namespace ShardingCore.Sharding.Abstractions
 
 #endif
     {
-        IShardingTransaction CurrentShardingTransaction { get; }
-        bool IsBeginTransaction { get; }
+        IDbContextTransaction CurrentTransaction { get; }
         /// <summary>
         /// 读写分离优先级
         /// </summary>
@@ -50,15 +42,22 @@ namespace ShardingCore.Sharding.Abstractions
 
         DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class;
 
-        IShardingTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified);
 
 
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
             CancellationToken cancellationToken = new CancellationToken());
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
+        void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction);
 
-        void ClearTransaction();
-        Task ClearTransactionAsync(CancellationToken cancellationToken = new CancellationToken());
+
+
+
+        void Rollback();
+        void Commit();
+#if !EFCORE2
+        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
+        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
+#endif
     }
 }

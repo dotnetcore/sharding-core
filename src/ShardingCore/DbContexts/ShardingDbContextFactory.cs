@@ -6,6 +6,7 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.DbContexts
 {
@@ -46,6 +47,11 @@ namespace ShardingCore.DbContexts
             //}
             var dbContextModel = dbContext.Model;
             return dbContext;
+        }
+
+        public DbContext Create(DbContextOptions dbContextOptions, IRouteTail routeTail)
+        {
+            return this.Create(new ShardingDbContextOptions(dbContextOptions, routeTail));
         }
     }
 }

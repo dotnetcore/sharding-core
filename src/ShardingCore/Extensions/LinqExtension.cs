@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,6 +13,8 @@ namespace ShardingCore.Extensions
 */
     public static class LinqExtension
     {
+
+        //public static void ForEach<T>(this IEnumerable<T> source)
 
 #if !EFCORE5
         public static HashSet<TSource> ToHashSet<TSource>(

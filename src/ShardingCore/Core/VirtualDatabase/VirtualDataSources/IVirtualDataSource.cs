@@ -53,5 +53,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         bool AddPhysicDataSource(IPhysicDataSource physicDataSource);
 
         bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
+        bool IsDefault(string dataSourceName);
     }
 }

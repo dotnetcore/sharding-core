@@ -8,6 +8,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
@@ -109,6 +110,16 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 throw new InvalidOperationException($"{virtualDataSourceRoute.ShardingEntityType.FullName} should impl {nameof(IShardingDataSource)}");
 
             return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.ShardingEntityType, virtualDataSourceRoute);
+        }
+
+        public bool IsDefault(string dataSourceName)
+        {
+            if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
+            {
+                throw new ShardingCoreException("virtual data source not inited");
+            }
+
+            return DefaultDataSourceName== dataSourceName;
         }
     }
 }

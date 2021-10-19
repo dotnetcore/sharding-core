@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Sharding.Abstractions;
@@ -16,5 +17,6 @@ namespace ShardingCore.DbContexts
     public interface IShardingDbContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
         DbContext Create(ShardingDbContextOptions shardingDbContextOptions);
+        DbContext Create(DbContextOptions dbContextOptions, IRouteTail routeTail);
     }
 }

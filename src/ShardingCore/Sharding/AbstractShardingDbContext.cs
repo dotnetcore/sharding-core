@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
-using ShardingCore.Sharding.ShardingTransactions;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.EFCores.OptionsExtensions;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ShardingCore.Sharding
 {
@@ -61,11 +60,11 @@ namespace ShardingCore.Sharding
         /// <summary>
         /// 是否是真正的执行者
         /// </summary>
-        public  bool IsExecutor => _shardingDbContextExecutor == null;
+        private  bool isExecutor => _shardingDbContextExecutor == null;
 
         //public void ShardingUpgrade()
         //{
-        //    //IsExecutor = true;
+        //    //isExecutor = true;
         //}
 
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
@@ -87,14 +86,14 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry Add(object entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
 
         public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
@@ -105,14 +104,14 @@ namespace ShardingCore.Sharding
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
         public override ValueTask<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
@@ -120,14 +119,14 @@ namespace ShardingCore.Sharding
 #if EFCORE2
         public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
         public override Task<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
@@ -135,7 +134,7 @@ namespace ShardingCore.Sharding
 
         public override void AddRange(params object[] entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.AddRange(entities);
                 return;
@@ -158,7 +157,7 @@ namespace ShardingCore.Sharding
 
         public override void AddRange(IEnumerable<object> entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.AddRange(entities);
                 return;
@@ -181,7 +180,7 @@ namespace ShardingCore.Sharding
 
         public override async Task AddRangeAsync(params object[] entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 await base.AddRangeAsync(entities);
                 return;
@@ -204,7 +203,7 @@ namespace ShardingCore.Sharding
 
         public override async Task AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 await base.AddRangeAsync(entities, cancellationToken);
                 return;
@@ -227,21 +226,21 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Attach<TEntity>(TEntity entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override EntityEntry Attach(object entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override void AttachRange(params object[] entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.AttachRange(entities);
                 return;
@@ -264,7 +263,7 @@ namespace ShardingCore.Sharding
 
         public override void AttachRange(IEnumerable<object> entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.AttachRange(entities);
                 return;
@@ -292,35 +291,35 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry Entry(object entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry<TEntity> Update<TEntity>(TEntity entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override EntityEntry Update(object entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override void UpdateRange(params object[] entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.UpdateRange(entities);
                 return;
@@ -343,7 +342,7 @@ namespace ShardingCore.Sharding
 
         public override void UpdateRange(IEnumerable<object> entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.UpdateRange(entities);
                 return;
@@ -366,21 +365,21 @@ namespace ShardingCore.Sharding
 
         public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override EntityEntry Remove(object entity)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override void RemoveRange(params object[] entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.RemoveRange(entities);
                 return;
@@ -403,7 +402,7 @@ namespace ShardingCore.Sharding
 
         public override void RemoveRange(IEnumerable<object> entities)
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.RemoveRange(entities);
                 return;
@@ -457,21 +456,21 @@ namespace ShardingCore.Sharding
         public override int SaveChanges()
         {
 
-            if (IsExecutor)
+            if (isExecutor)
                 return base.SaveChanges();
             return this.SaveChanges(true);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.SaveChanges(acceptAllChangesOnSuccess);
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (!_shardingDbContextExecutor.IsBeginTransaction)
+            if (Database.CurrentTransaction==null)
             {
-                using (var tran = _shardingDbContextExecutor.BeginTransaction())
+                using (var tran = Database.BeginTransaction())
                 {
                     i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
                     tran.Commit();
@@ -488,21 +487,21 @@ namespace ShardingCore.Sharding
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return base.SaveChangesAsync(cancellationToken);
             return this.SaveChangesAsync(true, cancellationToken);
         }
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (IsExecutor)
+            if (isExecutor)
                 return await base.SaveChangesAsync(acceptAllChangesOnSuccess,cancellationToken);
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (!_shardingDbContextExecutor.IsBeginTransaction)
+            if (Database.CurrentTransaction==null)
             {
-                using (var tran = _shardingDbContextExecutor.BeginTransaction())
+                using (var tran = Database.BeginTransaction())
                 {
                     i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #if EFCORE2
@@ -525,7 +524,7 @@ namespace ShardingCore.Sharding
         public override void Dispose()
         {
 
-            if (IsExecutor)
+            if (isExecutor)
             {
                 base.Dispose();
             }
@@ -539,7 +538,7 @@ namespace ShardingCore.Sharding
 
         public override async ValueTask DisposeAsync()
         {
-            if (IsExecutor)
+            if (isExecutor)
             {
                 await base.DisposeAsync();
             }
@@ -550,11 +549,31 @@ namespace ShardingCore.Sharding
                 await base.DisposeAsync();
             }
         }
+        public Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return _shardingDbContextExecutor.RollbackAsync(cancellationToken);
+        }
+
+        public Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return _shardingDbContextExecutor.CommitAsync(cancellationToken);
+        }
 #endif
 
-        public IShardingTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
+        public void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction)
         {
-            return _shardingDbContextExecutor.BeginTransaction(isolationLevel);
+            _shardingDbContextExecutor.UseShardingTransaction(wrapDbContextTransaction);
         }
+
+        public void Rollback()
+        {
+            _shardingDbContextExecutor.Rollback();
+        }
+
+        public void Commit()
+        {
+            _shardingDbContextExecutor.Commit();
+        }
+
     }
 }

@@ -44,8 +44,6 @@ namespace Sample.SqlServerShardingDataSource
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
                 .AddShardingDataSource(sp =>
                 {

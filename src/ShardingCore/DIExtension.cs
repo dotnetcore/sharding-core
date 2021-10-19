@@ -24,6 +24,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.EFCores.OptionsExtensions;
 
 namespace ShardingCore
@@ -49,7 +50,7 @@ namespace ShardingCore
                 var virtualDataSource = sp.GetService<IVirtualDataSource<TShardingDbContext>> ();
                 var connectionString = virtualDataSource.GetDefaultDataSource().ConnectionString;
                 optionsAction?.Invoke(connectionString, option);
-                option.UseSharding();
+                option.UseSharding<TShardingDbContext>();
             };
             services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
             return new ShardingCoreConfigBuilder<TShardingDbContext>(services, optionsAction);
@@ -216,11 +217,11 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             return services;
         }
-        public static DbContextOptionsBuilder UseSharding(this DbContextOptionsBuilder optionsBuilder)
+        public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             return optionsBuilder.UseShardingWrapMark().ReplaceService<IDbSetSource, ShardingDbSetSource>()
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
-                //.ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory>();
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
         }
 
         public static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)

@@ -39,7 +39,6 @@ namespace ShardingCore.DIExtensions
 
             //添加创建TActualDbContext 的DbContextOptionsBuilder创建者
             var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(
-                _shardingCoreConfigBuilder.ShardingConfigOption.SameConnectionConfigure,
                 _shardingCoreConfigBuilder.ShardingConfigOption.DefaultQueryConfigure);
             services
                 .AddSingleton<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>,

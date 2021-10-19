@@ -16,21 +16,12 @@ namespace ShardingCore.Sharding
     */
     public class ShardingDbContextOptionsBuilderConfig<TShardingDbContext> : IShardingDbContextOptionsBuilderConfig<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingDbContextOptionsBuilderConfig(Action<DbConnection, DbContextOptionsBuilder> sameConnectionDbContextOptionsCreator, Action<string,DbContextOptionsBuilder> defaultQueryDbContextOptionsCreator)
+        public ShardingDbContextOptionsBuilderConfig(Action<string,DbContextOptionsBuilder> defaultQueryDbContextOptionsCreator)
         {
-            SameConnectionDbContextOptionsCreator = sameConnectionDbContextOptionsCreator;
             DefaultQueryDbContextOptionsCreator = defaultQueryDbContextOptionsCreator;
         }
-        public Action<DbConnection, DbContextOptionsBuilder> SameConnectionDbContextOptionsCreator { get; }
         public Action<string,DbContextOptionsBuilder> DefaultQueryDbContextOptionsCreator { get; }
         public Type ShardingDbContextType => typeof(TShardingDbContext);
-
-        public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
-        {
-            SameConnectionDbContextOptionsCreator(dbConnection, dbContextOptionsBuilder);
-            dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
-            return dbContextOptionsBuilder;
-        }
 
         public DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,DbContextOptionsBuilder dbContextOptionsBuilder)
         {
