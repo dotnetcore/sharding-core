@@ -201,7 +201,6 @@ or
                     o.CreateShardingTableOnStart = true;//create sharding table
                     o.EnsureCreatedWithOutShardingTable = true;//create data source with out sharding table
                 })
-                .AddShardingTransaction((connection, builder) =>builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
                 {
@@ -390,8 +389,6 @@ or
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
                 .AddShardingDataSource(sp =>
                 {
@@ -568,7 +565,7 @@ ctor inject IShardingRouteManager shardingRouteManager
 ```
 2.手动开启事务 [请参考微软](https://docs.microsoft.com/zh-cn/ef/core/saving/transactions)
 ```c#
-            using (var tran = _defaultTableDbContext.BeginTransaction())
+            using (var tran = _defaultTableDbContext.DataBase.BeginTransaction())
             {
                     ........
                 _defaultTableDbContext.SaveChanges();
