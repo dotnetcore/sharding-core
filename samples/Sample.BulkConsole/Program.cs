@@ -32,6 +32,8 @@ namespace Sample.BulkConsole
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
                 })
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;")
                 .AddShardingTableRoute(op=> {
                     op.AddShardingTableRoute<OrderVirtualRoute>();

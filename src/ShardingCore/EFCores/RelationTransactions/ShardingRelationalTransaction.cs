@@ -24,43 +24,41 @@ namespace ShardingCore.EFCores
         private readonly ISupportShardingTransaction _supportShardingTransaction;
         private bool supportShardingTransaction => _supportShardingTransaction != null;
 #if !EFCORE2
-        public ShardingRelationalTransaction(DbContext dbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
+        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
         {
-            if (dbContext is ISupportShardingTransaction supportShardingTransaction)
-            {
-                _supportShardingTransaction = supportShardingTransaction;
-            }
+            _supportShardingTransaction = supportShardingTransaction;
         }
 
 #endif
 #if EFCORE2
-        public ShardingRelationalTransaction(DbContext dbContext, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
+        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
         {
-            if (dbContext is ISupportShardingTransaction supportShardingTransaction)
-            {
-                _supportShardingTransaction = supportShardingTransaction;
-            }
+            _supportShardingTransaction = supportShardingTransaction;
         }
 
 #endif
-
-        protected override void ClearTransaction()
-        {
-            base.ClearTransaction();
-            _supportShardingTransaction.UseShardingTransaction(null);
-        }
+        //protected override void ClearTransaction()
+        //{
+        //    if (_canClear)
+        //    {
+        //        base.ClearTransaction();
+        //        _supportShardingTransaction.NotifyShardingTransaction(null);
+        //    }
+        //}
 
 
         public override void Commit()
         {
             base.Commit();
             _supportShardingTransaction?.Commit();
+            _supportShardingTransaction.NotifyShardingTransaction();
         }
 
         public override void Rollback()
         {
             base.Rollback();
             _supportShardingTransaction?.Rollback();
+            _supportShardingTransaction.NotifyShardingTransaction();
         }
 
 #if !EFCORE2
@@ -72,6 +70,7 @@ namespace ShardingCore.EFCores
             {
                 await _supportShardingTransaction.RollbackAsync(cancellationToken);
             }
+            _supportShardingTransaction.NotifyShardingTransaction();
         }
 
         public override async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -81,12 +80,7 @@ namespace ShardingCore.EFCores
             {
                 await _supportShardingTransaction.CommitAsync(cancellationToken);
             }
-        }
-        protected override async Task ClearTransactionAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            await base.ClearTransactionAsync(cancellationToken);
-            _supportShardingTransaction.UseShardingTransaction(null);
-
+            _supportShardingTransaction.NotifyShardingTransaction();
         }
 #endif
     }

@@ -41,6 +41,8 @@ namespace Samples.AutoByDate.SqlServer
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0",
                     "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
                 .AddShardingTableRoute(o =>

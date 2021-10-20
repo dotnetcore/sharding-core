@@ -17,5 +17,6 @@ namespace ShardingCore
     public interface IShardingDbContextOptionsBuilderConfig<TShardingDbContext>  where TShardingDbContext:DbContext,IShardingDbContext
     {
         DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder);
+        DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
     }
 }

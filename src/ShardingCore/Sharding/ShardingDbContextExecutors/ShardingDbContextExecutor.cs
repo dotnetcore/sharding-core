@@ -31,6 +31,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// <typeparam name="TShardingDbContext"></typeparam>
     public class ShardingDbContextExecutor<TShardingDbContext> : IShardingDbContextExecutor where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private readonly DbContext _shardingDbContext;
+
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
@@ -40,8 +42,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
 
-        public IDbContextTransaction CurrentTransaction { get; private set; }
-        private bool IsBeginTransaction => CurrentTransaction != null;
+        private bool IsBeginTransaction => _shardingDbContext.Database.CurrentTransaction != null;
 
         public int ReadWriteSeparationPriority
         {
@@ -57,8 +58,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
 
 
-        public ShardingDbContextExecutor()
+        public ShardingDbContextExecutor(DbContext shardingDbContext)
         {
+            _shardingDbContext = shardingDbContext;
             _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory<TShardingDbContext>>();
@@ -71,7 +73,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private IDataSourceDbContext GetDataSourceDbContext(string dataSourceName)
         {
-            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext<TShardingDbContext>(dataSourceName, _virtualDataSource.IsDefault(dataSourceName), IsBeginTransaction, _shardingDbContextOptionsBuilderConfig, _shardingDbContextFactory, _actualConnectionStringManager));
+            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext<TShardingDbContext>(dataSourceName, _virtualDataSource.IsDefault(dataSourceName), _shardingDbContext, _shardingDbContextOptionsBuilderConfig, _shardingDbContextFactory, _actualConnectionStringManager));
 
         }
 
@@ -133,23 +135,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return i;
         }
 
-        public void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction)
+        public void NotifyShardingTransaction()
         {
-            if (IsBeginTransaction)
+            foreach (var dbContextCache in _dbContextCaches)
             {
-                if (wrapDbContextTransaction != null)
-                    throw new ShardingCoreException("db transaction is already begin");
-
-                foreach (var dbContextCache in _dbContextCaches)
-                {
-                    dbContextCache.Value.UseTransaction(null);
-                }
+                dbContextCache.Value.NotifyTransaction();
             }
-            else
-            {
-                BeginTransaction(wrapDbContextTransaction);
-            }
-            CurrentTransaction = wrapDbContextTransaction;
         }
 
         public void Rollback()
@@ -169,11 +160,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         }
 
 
-        private void BeginTransaction(IDbContextTransaction wrapDbContextTransaction)
+        private void BeginTransaction()
         {
             foreach (var dbContextCache in _dbContextCaches)
             {
-                dbContextCache.Value.UseTransaction(wrapDbContextTransaction);
+                dbContextCache.Value.NotifyTransaction();
             }
         }
 

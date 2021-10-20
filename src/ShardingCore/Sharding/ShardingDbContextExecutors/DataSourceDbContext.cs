@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     */
     public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public  bool IsDefault { get; }
+        public bool IsDefault { get; }
         private readonly IShardingDbContextOptionsBuilderConfig<TShardingDbContext> _shardingDbContextOptionsBuilderConfig;
         private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
@@ -40,41 +40,78 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private ConcurrentDictionary<string, DbContext> _dataSourceDbContexts =
             new ConcurrentDictionary<string, DbContext>();
 
-        private IDbContextTransaction _dbContextTransaction;
 
-        private bool _isBeginTransaction =false;
-        private IsolationLevel _isolationLevel = IsolationLevel.Unspecified;
+        private bool _isBeginTransaction => _shardingDbContext.Database.CurrentTransaction != null;
+        private readonly DbContext _shardingDbContext;
+        private IDbContextTransaction _shardingContextTransaction => _shardingDbContext?.Database?.CurrentTransaction;
 
-        private readonly DbContextOptionsBuilder _dbContextOptionsBuilder;
 
         private readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger;
+        private DbContextOptions<TShardingDbContext> _dbContextOptions;
+
+        private object SLOCK = new object();
+
+        private IDbContextTransaction CurrentDbContextTransaction => IsDefault
+            ? _shardingContextTransaction
+            : _dataSourceDbContexts.Values.FirstOrDefault(o => o.Database.CurrentTransaction != null)?.Database
+                ?.CurrentTransaction;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="dataSourceName"></param>
+        /// <param name="isDefault"></param>
+        /// <param name="shardingDbContext"></param>
+        /// <param name="shardingDbContextOptionsBuilderConfig"></param>
+        /// <param name="shardingDbContextFactory"></param>
+        /// <param name="actualConnectionStringManager"></param>
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
-            bool isBeginTransaction,
+            DbContext shardingDbContext,
             IShardingDbContextOptionsBuilderConfig<TShardingDbContext> shardingDbContextOptionsBuilderConfig,
             IShardingDbContextFactory<TShardingDbContext> shardingDbContextFactory,
             ActualConnectionStringManager<TShardingDbContext> actualConnectionStringManager)
         {
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
-            _isBeginTransaction = isBeginTransaction;
+            _shardingDbContext = shardingDbContext;
             _shardingDbContextOptionsBuilderConfig = shardingDbContextOptionsBuilderConfig;
             _shardingDbContextFactory = shardingDbContextFactory;
             _actualConnectionStringManager = actualConnectionStringManager;
             _logger = ShardingContainer.GetService<ILogger<DataSourceDbContext<TShardingDbContext>>>();
-            _dbContextOptionsBuilder = CreateDbContextOptionBuilder();
-            InitDbContextOptionsBuilder();
-        }
 
-        private void InitDbContextOptionsBuilder()
+        }
+        /// <summary>
+        /// 不支持并发后期发现直接报错而不是用lock
+        /// </summary>
+        /// <returns></returns>
+        private DbContextOptions<TShardingDbContext> CreateShareDbContextOptionsBuilder()
         {
-            var connectionString = _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
-            _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, _dbContextOptionsBuilder);
+            if (_dbContextOptions != null)
+            {
+                return _dbContextOptions;
+            }
+            lock (SLOCK)
+            {
+                if (_dbContextOptions != null)
+                {
+                    return _dbContextOptions;
+                }
+                var dbContextOptionsBuilder = CreateDbContextOptionBuilder();
+
+                if (IsDefault)
+                {
+                    var dbConnection = _shardingDbContext.Database.GetDbConnection();
+                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
+                }
+                else
+                {
+                    var connectionString = _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
+                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
+                }
+                _dbContextOptions = dbContextOptionsBuilder.Options;
+                return _dbContextOptions;
+            }
         }
 
         public static DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
@@ -84,7 +121,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return (DbContextOptionsBuilder<TShardingDbContext>)Activator.CreateInstance(type);
         }
 
-
+        /// <summary>
+        /// 不支持并发后期发现直接报错而不是用lock
+        /// </summary>
+        /// <param name="routeTail"></param>
+        /// <returns></returns>
         public DbContext CreateDbContext(IRouteTail routeTail)
         {
             if (routeTail.IsMultiEntityQuery())
@@ -95,60 +136,19 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(_dbContextOptionsBuilder.Options, routeTail);
+                dbContext = _shardingDbContextFactory.Create(CreateShareDbContextOptionsBuilder(), routeTail);
                 _dataSourceDbContexts.TryAdd(cacheKey, dbContext);
-                ShardingDbTransaction(dbContext);
+                ShardingDbTransaction();
             }
             return dbContext;
         }
 
-        private void ShardingDbTransaction(DbContext dbContext)
+        private void ShardingDbTransaction()
         {
             if (_isBeginTransaction)
             {
-                if (_dbContextTransaction != null)
-                {
-                    dbContext.Database.UseTransaction(_dbContextTransaction.GetDbTransaction());
-                }
-                else
-                {
-                    _dbContextTransaction = dbContext.Database.BeginTransaction();
-                }
-            }
-        }
-
-        public void UseTransaction(IDbContextTransaction dbContextTransaction)
-        {
-            if (dbContextTransaction == null)
-            {
-                ClearTransaction();
-            }
-            else
-            {
-                ResSetTransaction(dbContextTransaction);
+                BeginAnyTransaction();
                 JoinCurrentTransaction();
-            }
-        }
-        /// <summary>
-        /// 重新设置当前的事务
-        /// </summary>
-        /// <param name="dbContextTransaction"></param>
-        private void ResSetTransaction(IDbContextTransaction dbContextTransaction)
-        {
-            if (dbContextTransaction == null)
-                throw new ArgumentNullException(nameof(dbContextTransaction));
-            if (IsDefault)
-            {
-                _dbContextTransaction = dbContextTransaction;
-            }
-            else
-            {
-                _isolationLevel = dbContextTransaction.GetDbTransaction().IsolationLevel;
-                _isBeginTransaction = true;
-                if (!_dataSourceDbContexts.IsEmpty)
-                {
-                    _dbContextTransaction = _dataSourceDbContexts.First().Value.Database.BeginTransaction(_isolationLevel);
-                }
             }
         }
         /// <summary>
@@ -157,25 +157,58 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private void JoinCurrentTransaction()
         {
             //如果当前的dbcontext有的话
-            if (_dbContextTransaction != null)
+            if (CurrentDbContextTransaction != null)
             {
+                var dbTransaction = CurrentDbContextTransaction.GetDbTransaction();
                 foreach (var dataSourceDbContext in _dataSourceDbContexts)
                 {
                     if (dataSourceDbContext.Value.Database.CurrentTransaction == null)
-                        dataSourceDbContext.Value.Database.UseTransaction(_dbContextTransaction.GetDbTransaction());
+                        dataSourceDbContext.Value.Database.UseTransaction(dbTransaction);
                 }
+            }
+        }
+
+        private void BeginAnyTransaction()
+        {
+            if (_isBeginTransaction)
+            {
+                if (!IsDefault)
+                {
+                    if (!_dataSourceDbContexts.IsEmpty)
+                    {
+                        var isolationLevel = _shardingContextTransaction.GetDbTransaction().IsolationLevel;
+                        var firstTransaction = _dataSourceDbContexts.Values
+                            .FirstOrDefault(o => o.Database.CurrentTransaction != null)
+                            ?.Database?.CurrentTransaction;
+                        if (firstTransaction == null)
+                        {
+                            _ = _dataSourceDbContexts.First().Value.Database
+                                .BeginTransaction(isolationLevel);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void NotifyTransaction()
+        {
+            if (!_isBeginTransaction)
+            {
+                ClearTransaction();
+            }
+            else
+            {
+                BeginAnyTransaction();
+                JoinCurrentTransaction();
             }
         }
         private void ClearTransaction()
         {
-            _dbContextTransaction = null;
             foreach (var dataSourceDbContext in _dataSourceDbContexts)
             {
                 if (dataSourceDbContext.Value.Database.CurrentTransaction != null)
                     dataSourceDbContext.Value.Database.UseTransaction(null);
             }
-            _isBeginTransaction = false;
-            _isolationLevel = IsolationLevel.Unspecified;
         }
 
         /// <summary>
@@ -211,11 +244,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 return;
             try
             {
-                _dbContextTransaction.Rollback();
+                CurrentDbContextTransaction?.Rollback();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                _logger.LogError(e,"rollback error.");
+                _logger.LogError(e, "rollback error.");
             }
         }
 
@@ -225,7 +258,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 return;
             try
             {
-                _dbContextTransaction.Commit();
+                CurrentDbContextTransaction?.Commit();
             }
             catch (Exception e)
             {
@@ -241,7 +274,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 return;
             try
             {
-                await _dbContextTransaction.RollbackAsync(cancellationToken);
+                if (CurrentDbContextTransaction != null)
+                    await CurrentDbContextTransaction.RollbackAsync(cancellationToken);
             }
             catch (Exception e)
             {
@@ -256,7 +290,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 return;
             try
             {
-               await  _dbContextTransaction.CommitAsync(cancellationToken);
+                if (CurrentDbContextTransaction != null)
+                    await CurrentDbContextTransaction.CommitAsync(cancellationToken);
             }
             catch (Exception e)
             {

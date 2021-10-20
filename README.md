@@ -200,7 +200,8 @@ or
                 {
                     o.CreateShardingTableOnStart = true;//create sharding table
                     o.EnsureCreatedWithOutShardingTable = true;//create data source with out sharding table
-                })
+                })  .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
                 {
@@ -389,6 +390,8 @@ or
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0","Data Source=localhost;Initial Catalog=ShardingCoreDBxx0;Integrated Security=True;")
                 .AddShardingDataSource(sp =>
                 {

@@ -41,6 +41,8 @@ namespace Sample.Migrations
                     o.EnsureCreatedWithOutShardingTable = false;
                     o.AutoTrackEntity = true;
                 })
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0",
                     "Data Source=localhost;Initial Catalog=ShardingCoreDBMigration;Integrated Security=True;")
                 .AddShardingTableRoute(o =>

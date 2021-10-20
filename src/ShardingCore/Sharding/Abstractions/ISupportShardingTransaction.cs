@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface ISupportShardingTransaction
     {
-        void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction);
+        void NotifyShardingTransaction();
         void Rollback();
         void Commit();
 #if !EFCORE2

@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     {
         bool IsDefault { get; }
         DbContext CreateDbContext(IRouteTail routeTail);
-        void UseTransaction(IDbContextTransaction dbContextTransaction);
+        void NotifyTransaction();
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
 

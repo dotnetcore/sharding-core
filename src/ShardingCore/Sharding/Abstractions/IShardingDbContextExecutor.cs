@@ -20,7 +20,6 @@ namespace ShardingCore.Sharding.Abstractions
 
 #endif
     {
-        IDbContextTransaction CurrentTransaction { get; }
         /// <summary>
         /// 读写分离优先级
         /// </summary>
@@ -48,7 +47,7 @@ namespace ShardingCore.Sharding.Abstractions
             CancellationToken cancellationToken = new CancellationToken());
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
-        void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction);
+        void NotifyShardingTransaction();
 
 
 

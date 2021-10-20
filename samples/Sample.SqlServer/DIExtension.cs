@@ -73,11 +73,17 @@ namespace Sample.SqlServer
                         }
                     }
 
-                    virtualDbContext.AddRange(userMods);
-                    virtualDbContext.AddRange(SysTests);
-                    virtualDbContext.AddRange(userSalaries);
 
-                    virtualDbContext.SaveChanges();
+
+                    using (var tran = virtualDbContext.Database.BeginTransaction())
+                    {
+                        virtualDbContext.AddRange(userMods);
+                        virtualDbContext.AddRange(SysTests);
+                        virtualDbContext.AddRange(userSalaries);
+
+                        virtualDbContext.SaveChanges();
+                        tran.Commit();
+                    }
                 }
             }
         }

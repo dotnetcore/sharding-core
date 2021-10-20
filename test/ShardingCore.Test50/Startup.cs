@@ -55,6 +55,8 @@ namespace ShardingCore.Test50
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                 })
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
                 .AddShardingTableRoute(op =>
                 {
@@ -129,10 +131,16 @@ namespace ShardingCore.Test50
                         }
                     }
 
-                    await virtualDbContext.AddRangeAsync(userMods);
-                    await virtualDbContext.AddRangeAsync(userSalaries);
+                    using (var tran = virtualDbContext.Database.BeginTransaction())
+                    {
+                        await virtualDbContext.AddRangeAsync(userMods);
+                        await virtualDbContext.AddRangeAsync(userSalaries);
 
-                    await virtualDbContext.SaveChangesAsync();
+                        await virtualDbContext.SaveChangesAsync();
+                        var b = 0;
+                        var c = 1 / b;
+                        tran.Commit();
+                    }
                 }
             }
         }

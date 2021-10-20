@@ -219,10 +219,13 @@ namespace ShardingCore
         }
         public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return optionsBuilder.UseShardingWrapMark().ReplaceService<IDbSetSource, ShardingDbSetSource>()
+            return optionsBuilder.UseShardingWrapMark()
+                .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IDbContextTransactionManager, ShardingRelationalTransactionManager<TShardingDbContext>>()
                 .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
         }
+        
 
         public static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)
         {

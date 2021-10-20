@@ -37,7 +37,7 @@ namespace ShardingCore.Sharding
             {
                 _shardingDbContextExecutor =
                     (IShardingDbContextExecutor)Activator.CreateInstance(
-                        typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()));
+                        typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()),this);
             }
         }
         /// <summary>
@@ -560,9 +560,9 @@ namespace ShardingCore.Sharding
         }
 #endif
 
-        public void UseShardingTransaction(IDbContextTransaction wrapDbContextTransaction)
+        public void NotifyShardingTransaction()
         {
-            _shardingDbContextExecutor.UseShardingTransaction(wrapDbContextTransaction);
+            _shardingDbContextExecutor.NotifyShardingTransaction();
         }
 
         public void Rollback()

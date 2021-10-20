@@ -43,8 +43,8 @@ namespace Sample.SqlServer
                     o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
                 })
                 //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
-                //.AddShardingTransaction((connection, builder) =>
-                //    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
+                .AddShardingTransaction((connection, builder) =>
+                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("ds0",
                     "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
