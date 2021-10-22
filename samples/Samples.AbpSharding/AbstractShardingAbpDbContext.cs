@@ -14,10 +14,11 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace Samples.AbpSharding
 {
-    public abstract class AbstractShardingAbpDbContext : AbpDbContext<AbstractShardingAbpDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
+    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite 
+                                where TDbContext:DbContext
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
-        protected AbstractShardingAbpDbContext(DbContextOptions<AbstractShardingAbpDbContext> options) : base(options)
+        protected AbstractShardingAbpDbContext(DbContextOptions<TDbContext> options) : base(options)
         {
 
             var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
@@ -60,7 +61,7 @@ namespace Samples.AbpSharding
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
-            if (!parallelQuery&& dbContext is AbstractShardingAbpDbContext abstractShardingAbpDbContext)
+            if (!parallelQuery&& dbContext is AbstractShardingAbpDbContext<TDbContext> abstractShardingAbpDbContext)
             {
                 abstractShardingAbpDbContext.LazyServiceProvider = this.LazyServiceProvider;
             }
