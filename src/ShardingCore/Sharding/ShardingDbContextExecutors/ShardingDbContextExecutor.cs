@@ -76,6 +76,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext<TShardingDbContext>(dataSourceName, _virtualDataSource.IsDefault(dataSourceName), _shardingDbContext, _shardingDbContextOptionsBuilderConfig, _shardingDbContextFactory, _actualConnectionStringManager));
 
         }
+        /// <summary>
+        /// 是否有多个dcontext
+        /// </summary>
+        public bool IsMultiDbContext =>
+            _dbContextCaches.Count > 1 || _dbContextCaches.Sum(o => o.Value.DbContextCount) > 1;
 
         public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)
         {
@@ -155,7 +160,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             foreach (var dbContextCache in _dbContextCaches)
             {
-                dbContextCache.Value.Commit();
+                dbContextCache.Value.Commit(_dbContextCaches.Count);
             }
         }
 
@@ -192,7 +197,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             foreach (var dbContextCache in _dbContextCaches)
             {
-                await dbContextCache.Value.CommitAsync(cancellationToken);
+                await dbContextCache.Value.CommitAsync(_dbContextCaches.Count,cancellationToken);
             }
         }
         public async ValueTask DisposeAsync()

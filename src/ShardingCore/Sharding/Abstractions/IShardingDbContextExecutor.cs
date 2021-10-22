@@ -28,6 +28,10 @@ namespace ShardingCore.Sharding.Abstractions
         /// 当前是否开启读写分离
         /// </summary>
         bool ReadWriteSeparation { get; set; }
+        /// <summary>
+        /// 是否存在多个dbcontext
+        /// </summary>
+        bool IsMultiDbContext { get; }
 
 
         /// <summary>

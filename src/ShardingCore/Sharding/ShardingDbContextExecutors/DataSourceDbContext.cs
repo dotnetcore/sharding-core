@@ -28,6 +28,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext where TShardingDbContext : DbContext, IShardingDbContext
     {
         public bool IsDefault { get; }
+        public int DbContextCount => _dataSourceDbContexts.Count;
         private readonly IShardingDbContextOptionsBuilderConfig<TShardingDbContext> _shardingDbContextOptionsBuilderConfig;
         private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
@@ -252,7 +253,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-        public void Commit()
+        public void Commit(int dataSourceCount)
         {
             if (IsDefault)
                 return;
@@ -263,6 +264,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             catch (Exception e)
             {
                 _logger.LogError(e, "commit error.");
+                if (dataSourceCount == 1)
+                    throw;
             }
         }
 #if !EFCORE2
@@ -283,7 +286,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-        public async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task CommitAsync(int dataSourceCount,CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsDefault)
@@ -296,6 +299,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             catch (Exception e)
             {
                 _logger.LogError(e, "commit error.");
+                if (dataSourceCount == 1)
+                    throw;
             }
         }
 #endif

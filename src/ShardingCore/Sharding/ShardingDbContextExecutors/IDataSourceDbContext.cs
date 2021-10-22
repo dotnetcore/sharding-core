@@ -24,6 +24,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 #endif
     {
         bool IsDefault { get; }
+        int DbContextCount { get; }
         DbContext CreateDbContext(IRouteTail routeTail);
         void NotifyTransaction();
 
@@ -34,10 +35,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
 
         void Rollback();
-        void Commit();
+        void Commit(int dataSourceCount);
 #if !EFCORE2
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
-        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
+        Task CommitAsync(int dataSourceCount,CancellationToken cancellationToken = new CancellationToken());
 #endif
 
     }

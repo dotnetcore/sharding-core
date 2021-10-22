@@ -468,7 +468,7 @@ namespace ShardingCore.Sharding
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction==null)
+            if (Database.CurrentTransaction==null&&_shardingDbContextExecutor.IsMultiDbContext)
             {
                 using (var tran = Database.BeginTransaction())
                 {
@@ -499,9 +499,9 @@ namespace ShardingCore.Sharding
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction==null)
+            if (Database.CurrentTransaction==null && _shardingDbContextExecutor.IsMultiDbContext)
             {
-                using (var tran = Database.BeginTransaction())
+                using (var tran = await Database.BeginTransactionAsync(cancellationToken))
                 {
                     i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #if EFCORE2
