@@ -72,6 +72,10 @@ namespace ShardingCore.Extensions
                 return null;
             }
         }
+        public static PropertyInfo GetProperty(this object obj, string propertyName)
+        {
+            return obj.GetType().GetProperty(propertyName, _bindingFlags);
+        }
         /// <summary>
         /// 类型X是否包含某个属性
         /// </summary>

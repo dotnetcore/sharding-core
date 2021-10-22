@@ -6,16 +6,21 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.Helpers;
+using ShardingCore.Utils;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.Reflection;
 
 namespace Samples.AbpSharding
 {
-    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite 
-                                where TDbContext:DbContext
+    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
+                                where TDbContext : DbContext
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
         protected AbstractShardingAbpDbContext(DbContextOptions<TDbContext> options) : base(options)
@@ -61,7 +66,7 @@ namespace Samples.AbpSharding
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
-            if (!parallelQuery&& dbContext is AbstractShardingAbpDbContext<TDbContext> abstractShardingAbpDbContext)
+            if (!parallelQuery && dbContext is AbstractShardingAbpDbContext<TDbContext> abstractShardingAbpDbContext)
             {
                 abstractShardingAbpDbContext.LazyServiceProvider = this.LazyServiceProvider;
             }
@@ -77,7 +82,43 @@ namespace Samples.AbpSharding
         /// <returns></returns>
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
+            CheckAndSetShardingKeyThatSupportAutoCreate(entity);
             return _shardingDbContextExecutor.CreateGenericDbContext(entity);
+        }
+
+        private void CheckAndSetShardingKeyThatSupportAutoCreate<TEntity>(TEntity entity) where TEntity : class
+        {
+            if (entity is IShardingKeyIsGuId)
+            {
+
+                if (entity is IEntity<Guid> guidEntity)
+                {
+                    if (guidEntity.Id != default)
+                    {
+                        return;
+                    }
+                    var idProperty = entity.GetProperty(nameof(IEntity<Guid>.Id));
+
+                    var dbGeneratedAttr = ReflectionHelper
+                        .GetSingleAttributeOrDefault<DatabaseGeneratedAttribute>(
+                            idProperty
+                        );
+
+                    if (dbGeneratedAttr != null && dbGeneratedAttr.DatabaseGeneratedOption != DatabaseGeneratedOption.None)
+                    {
+                        return;
+                    }
+
+                    EntityHelper.TrySetId(
+                        guidEntity,
+                        () => GuidGenerator.Create(),
+                        true
+                    );
+                }
+            }else if (entity is IShardingKeyIsCreationTime)
+            {
+                AuditPropertySetter?.SetCreationProperties(entity);
+            }
         }
 
 
