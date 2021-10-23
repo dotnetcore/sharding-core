@@ -1,6 +1,7 @@
 using ShardingCore.Extensions;
 using System;
 using System.Collections.Generic;
+using ShardingCore.Sharding.MergeEngines.ParallelControl;
 
 namespace ShardingCore
 {
@@ -13,6 +14,7 @@ namespace ShardingCore
     public class ShardingBootstrapper : IShardingBootstrapper
     {
         private readonly IEnumerable<IShardingConfigOption> _shardingConfigOptions;
+        private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
         public ShardingBootstrapper(IServiceProvider serviceProvider)
         {
@@ -22,6 +24,8 @@ namespace ShardingCore
 
         public void Start()
         {
+            if (!_doOnlyOnce.IsUnDo())
+                return;
             foreach (var shardingConfigOption in _shardingConfigOptions)
             {
                 var instance = (IShardingDbContextBootstrapper)Activator.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(shardingConfigOption.ShardingDbContextType), shardingConfigOption);

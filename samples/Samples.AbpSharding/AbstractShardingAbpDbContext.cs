@@ -66,9 +66,9 @@ namespace Samples.AbpSharding
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
-            if (!parallelQuery && dbContext is AbstractShardingAbpDbContext<TDbContext> abstractShardingAbpDbContext)
+            if (!parallelQuery && dbContext is AbpDbContext<TDbContext> abpDbContext)
             {
-                abstractShardingAbpDbContext.LazyServiceProvider = this.LazyServiceProvider;
+                abpDbContext.LazyServiceProvider = this.LazyServiceProvider;
             }
 
             return dbContext;
@@ -83,8 +83,15 @@ namespace Samples.AbpSharding
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
             CheckAndSetShardingKeyThatSupportAutoCreate(entity);
-            return _shardingDbContextExecutor.CreateGenericDbContext(entity);
+            var dbContext = _shardingDbContextExecutor.CreateGenericDbContext(entity);
+            if (dbContext is AbpDbContext<TDbContext> abpDbContext && abpDbContext.LazyServiceProvider == null)
+            {
+                abpDbContext.LazyServiceProvider = this.LazyServiceProvider;
+            }
+
+            return dbContext;
         }
+        
 
         private void CheckAndSetShardingKeyThatSupportAutoCreate<TEntity>(TEntity entity) where TEntity : class
         {
