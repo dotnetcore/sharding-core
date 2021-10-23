@@ -43,9 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.SqlServerShardingDat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src5x", "src5x", "{EB1C9149-78C9-4D99-BE3F-B80FE2015E96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.5x", "src5x\ShardingCore.5x\ShardingCore.5x.csproj", "{68A9F118-EF0A-4D03-8845-77D084561A28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.5x", "src5x\ShardingCore.5x\ShardingCore.5x.csproj", "{68A9F118-EF0A-4D03-8845-77D084561A28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Migrations", "samples\Sample.Migrations\Sample.Migrations.csproj", "{648DCBBE-BE8F-4EAC-8367-FE7BC558DA8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Migrations", "samples\Sample.Migrations\Sample.Migrations.csproj", "{648DCBBE-BE8F-4EAC-8367-FE7BC558DA8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
