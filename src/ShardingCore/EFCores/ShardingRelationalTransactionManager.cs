@@ -54,7 +54,6 @@ namespace ShardingCore.EFCores
             _relationalConnection.ResetState();
         }
 
-
         public IDbContextTransaction BeginTransaction()
         {
             return BeginTransaction(IsolationLevel.Unspecified);

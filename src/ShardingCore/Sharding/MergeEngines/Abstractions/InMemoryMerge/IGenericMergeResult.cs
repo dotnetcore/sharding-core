@@ -13,7 +13,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     /// <summary>
     /// 非确认结果的合并
     /// </summary>
-    public interface IGenericMergeResult
+    internal interface IGenericMergeResult
     {
         /// <summary>
         /// 合并结果

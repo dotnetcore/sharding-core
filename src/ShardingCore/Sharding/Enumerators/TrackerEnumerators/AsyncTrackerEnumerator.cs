@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
     */
 #if !EFCORE2
 
-    public class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
+    internal class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
     {
         private readonly StreamMergeContext<T> _streamMergeContext;
         private readonly IAsyncEnumerator<T> _asyncEnumerator;

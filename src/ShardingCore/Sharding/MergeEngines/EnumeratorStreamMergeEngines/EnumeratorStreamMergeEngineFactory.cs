@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>
+    internal class EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly StreamMergeContext<TEntity> _streamMergeContext;

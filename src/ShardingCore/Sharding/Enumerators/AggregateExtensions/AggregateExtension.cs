@@ -5,15 +5,15 @@ using System.Reflection;
 
 namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Tuesday, 02 February 2021 14:44:36
-* @Email: 326308290@qq.com
-*/
-/// <summary>
-/// https://stackoverflow.com/questions/17490080/how-to-do-a-sum-using-dynamic-linq
-/// </summary>
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Tuesday, 02 February 2021 14:44:36
+    * @Email: 326308290@qq.com
+    */
+    /// <summary>
+    /// https://stackoverflow.com/questions/17490080/how-to-do-a-sum-using-dynamic-linq
+    /// </summary>
     internal static class AggregateExtension
     {
         

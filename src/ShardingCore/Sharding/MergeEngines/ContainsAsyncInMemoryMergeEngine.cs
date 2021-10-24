@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ContainsAsyncInMemoryMergeEngine<TEntity>: AbstractEnsureMethodCallConstantInMemoryAsyncMergeEngine<TEntity,bool>
+    internal class ContainsAsyncInMemoryMergeEngine<TEntity>: AbstractEnsureMethodCallConstantInMemoryAsyncMergeEngine<TEntity,bool>
     {
         public ContainsAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {

@@ -15,7 +15,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class InMemoryReverseStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
+    internal class InMemoryReverseStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
         private readonly IStreamMergeAsyncEnumerator<T> _inMemoryStreamMergeAsyncEnumerator;
         private bool _first = true;

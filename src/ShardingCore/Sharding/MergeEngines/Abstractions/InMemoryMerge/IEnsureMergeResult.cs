@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     /// 确认结果的合并
     /// </summary>
     /// <typeparam name="T">返回的确认结果类型</typeparam>
-    public interface IEnsureMergeResult<T>
+    internal interface IEnsureMergeResult<T>
     {
        /// <summary>
        /// 合并结果

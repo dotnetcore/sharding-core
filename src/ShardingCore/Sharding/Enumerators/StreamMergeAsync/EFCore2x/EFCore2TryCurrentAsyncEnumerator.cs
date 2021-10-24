@@ -15,7 +15,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x
     * @Email: 326308290@qq.com
     */
 #if EFCORE2
-    public class EFCore2TryCurrentAsyncEnumerator<T>:IAsyncEnumerator<T>
+    internal class EFCore2TryCurrentAsyncEnumerator<T>:IAsyncEnumerator<T>
     {
         private readonly IAsyncEnumerator<T> _asyncEnumerator;
         private bool currentMoved=false;

@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
     * @Date: Saturday, 14 August 2021 22:07:28
     * @Email: 326308290@qq.com
     */
-    public class AsyncEnumeratorStreamMergeEngine<TShardingDbContext,T> : IAsyncEnumerable<T>, IEnumerable<T>
+    internal class AsyncEnumeratorStreamMergeEngine<TShardingDbContext,T> : IAsyncEnumerable<T>, IEnumerable<T>
     where  TShardingDbContext:DbContext,IShardingDbContext
     {
         private readonly StreamMergeContext<T> _mergeContext;

@@ -13,7 +13,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IAsyncParallelLimit
+    internal interface IAsyncParallelLimit
     {
         Task<TResult> AsyncParallelLimitExecuteAsync<TResult>(Func<Task<TResult>> executeAsync,
             CancellationToken cancellationToken = new CancellationToken());

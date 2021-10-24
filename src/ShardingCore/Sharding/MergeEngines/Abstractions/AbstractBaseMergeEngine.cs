@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractBaseMergeEngine<TEntity>: IAsyncParallelLimit
+    internal abstract class AbstractBaseMergeEngine<TEntity>: IAsyncParallelLimit
     {
 
         private readonly SemaphoreSlim _semaphore;

@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class SequencePaginationList
+    internal class SequencePaginationList
     {
         private readonly IEnumerable<RouteQueryResult<long>> _routeQueryResults;
         private long? _skip;

@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractEnsureMethodCallConstantInMemoryAsyncMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal abstract class AbstractEnsureMethodCallConstantInMemoryAsyncMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         private readonly TEntity _constantItem;
 

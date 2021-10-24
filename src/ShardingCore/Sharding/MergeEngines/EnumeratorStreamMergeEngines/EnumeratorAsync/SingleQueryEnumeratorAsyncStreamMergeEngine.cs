@@ -9,13 +9,13 @@ using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 02 September 2021 20:58:10
-* @Email: 326308290@qq.com
-*/
-    public class SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Thursday, 02 September 2021 20:58:10
+    * @Email: 326308290@qq.com
+    */
+    internal class SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         public SingleQueryEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)

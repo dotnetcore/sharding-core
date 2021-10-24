@@ -12,7 +12,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity> : AbstractInMemoryAsyncMergeEngine<TEntity>, IGenericMergeResult
+    internal abstract class AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity> : AbstractInMemoryAsyncMergeEngine<TEntity>, IGenericMergeResult
     {
 
 

@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IEnumeratorStreamMergeEngine<TEntity>
+    internal abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IEnumeratorStreamMergeEngine<TEntity>
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
 

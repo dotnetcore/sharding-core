@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract  class AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TResult,TSelect>: AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal abstract  class AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TResult,TSelect>: AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
 
         protected AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)

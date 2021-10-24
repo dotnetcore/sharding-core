@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class AverageAsyncInMemoryMergeEngine<TEntity, TEnsureResult> :
+    internal class AverageAsyncInMemoryMergeEngine<TEntity, TEnsureResult> :
             AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TEnsureResult,TEnsureResult>
     {
         public AverageAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression,

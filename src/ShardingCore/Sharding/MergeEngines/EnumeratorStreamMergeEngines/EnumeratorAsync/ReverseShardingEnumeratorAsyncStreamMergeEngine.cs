@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
     {
         private readonly long _total;
 

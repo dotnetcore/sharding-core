@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>,IInMemoryAsyncMergeEngine<TEntity>
+    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>,IInMemoryAsyncMergeEngine<TEntity>
     {
         private readonly MethodCallExpression _methodCallExpression;
         private readonly StreamMergeContext<TEntity> _mergeContext;

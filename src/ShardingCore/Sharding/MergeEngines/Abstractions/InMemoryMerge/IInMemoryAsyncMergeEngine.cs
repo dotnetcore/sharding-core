@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IInMemoryAsyncMergeEngine<TEntity>
+    internal interface IInMemoryAsyncMergeEngine<TEntity>
     {
         StreamMergeContext<TEntity> GetStreamMergeContext();
         Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery,

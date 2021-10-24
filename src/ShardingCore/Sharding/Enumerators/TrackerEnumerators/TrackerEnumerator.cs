@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class TrackerEnumerator<T>: IEnumerator<T>
+    internal class TrackerEnumerator<T>: IEnumerator<T>
     {
         private readonly StreamMergeContext<T> _streamMergeContext;
         private readonly IEnumerator<T> _enumerator;

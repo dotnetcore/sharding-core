@@ -13,7 +13,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
     * @Date: Sunday, 15 August 2021 06:49:09
     * @Email: 326308290@qq.com
     */
-    public class MultiOrderStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
+    internal class MultiOrderStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
 
         private readonly StreamMergeContext<T> _mergeContext;
