@@ -705,8 +705,11 @@ var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().Ord
 使用该框架需要注意两点如果你的shardingdbcontext重写了以下服务可能无法使用 如果还想使用需要自己重写扩展[请参考](https://github.com/xuejmnet/sharding-core/blob/main/src/ShardingCore/DIExtension.cs)
 1.shardingdbcontext
 ```c#
-    return optionsBuilder.ReplaceService<IDbSetSource, ShardingDbSetSource>()
-                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>();
+   return optionsBuilder.UseShardingWrapMark()
+                .ReplaceService<IDbSetSource, ShardingDbSetSource>()
+                .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IDbContextTransactionManager, ShardingRelationalTransactionManager<TShardingDbContext>>()
+                .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
 ```
 2.defaultdbcontext
 ```c#
@@ -725,12 +728,11 @@ return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKe
 - startup是否已经添加虚拟路由
 - startup是否已经添加bootstrapper.start()
 
-```c#添加追踪
-
+```c#
+//支持最终修改
             var sresult =  _defaultTableDbContext.Set<SysUserMod>().ToList();
 
             var sysUserMod98 = result.FirstOrDefault(o => o.Id == "98");
-            _defaultTableDbContext.Attach(sysUserMod98);//添加追踪
             sysUserMod98.Name = "name_update"+new Random().Next(1,99)+"_98";
             await _defaultTableDbContext.SaveChangesAsync();
 --log info

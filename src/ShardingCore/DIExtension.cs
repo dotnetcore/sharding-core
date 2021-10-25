@@ -24,6 +24,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.EFCores.OptionsExtensions;
 

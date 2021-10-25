@@ -75,7 +75,10 @@ namespace ShardingCore.Helpers
         }
 
 
-
+        /// <summary>
+        /// check TContext ctor is <see cref="DbContextOptions"/>
+        /// </summary>
+        /// <typeparam name="TContext">DbContext</typeparam>
         public static void CheckContextConstructors<TContext>()
             where TContext : DbContext
         {

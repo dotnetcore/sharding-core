@@ -91,7 +91,7 @@ namespace Samples.AbpSharding
 
             return dbContext;
         }
-        
+
 
         private void CheckAndSetShardingKeyThatSupportAutoCreate<TEntity>(TEntity entity) where TEntity : class
         {
@@ -122,7 +122,8 @@ namespace Samples.AbpSharding
                         true
                     );
                 }
-            }else if (entity is IShardingKeyIsCreationTime)
+            }
+            else if (entity is IShardingKeyIsCreationTime)
             {
                 AuditPropertySetter?.SetCreationProperties(entity);
             }
@@ -180,7 +181,6 @@ namespace Samples.AbpSharding
                 group.Key.AddRange(group.Select(o => o.Entity));
             }
         }
-
         public override void AddRange(IEnumerable<object> entities)
         {
             if (isExecutor)
