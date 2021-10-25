@@ -86,9 +86,9 @@ namespace ShardingCore.DIExtensions
         public bool AutoTrackEntity { get; set; }
 
         /// <summary>
-        /// 单次查询并发线程数目(最小1)
+        /// 单次查询并发线程数目(最小1)默认cpu核心数*2
         /// </summary>
-        public int ParallelQueryMaxThreadCount { get; set; } = 65536;
+        public int ParallelQueryMaxThreadCount { get; set; } = Environment.ProcessorCount*2;
         /// <summary>
         /// 默认30秒超时
         /// </summary>
