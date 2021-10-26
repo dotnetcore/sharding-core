@@ -161,19 +161,10 @@ namespace ShardingCore.EFCores
         public override void AddRange(params TEntity[] entities)
         {
 
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().AddRange(group.Select(o => o.Entity));
+                 aggregateKv.Key.Set<TEntity>().AddRange(aggregateKv.Value);
             }
         }
 
@@ -185,20 +176,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override async Task AddRangeAsync(params TEntity[] entities)
         {
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.Set<TEntity>().AddRangeAsync(group.Select(o => o.Entity));
+              await  aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value);
             }
         }
 
@@ -210,19 +191,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void AttachRange(params TEntity[] entities)
         {
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().AttachRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().AttachRange(aggregateKv.Value);
             }
         }
 
@@ -235,20 +207,10 @@ namespace ShardingCore.EFCores
         public override void RemoveRange(params TEntity[] entities)
         {
             Check.NotNull(entities, nameof(entities));
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().RemoveRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().RemoveRange(aggregateKv.Value);
             }
         }
 
@@ -260,20 +222,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void UpdateRange(params TEntity[] entities)
         {
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().UpdateRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().UpdateRange(aggregateKv.Value);
             }
         }
 
@@ -285,20 +237,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void AddRange(IEnumerable<TEntity> entities)
         {
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().AddRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().AddRange(aggregateKv.Value);
             }
         }
 
@@ -313,19 +255,10 @@ namespace ShardingCore.EFCores
             CancellationToken cancellationToken = default)
         {
 
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.Set<TEntity>().AddRangeAsync(group.Select(o => o.Entity));
+                await aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value,cancellationToken);
             }
         }
 
@@ -337,20 +270,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void AttachRange(IEnumerable<TEntity> entities)
         {
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().AttachRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().AttachRange(aggregateKv.Value);
             }
         }
 
@@ -365,21 +288,12 @@ namespace ShardingCore.EFCores
             Check.NotNull(entities, nameof(entities));
 
 
-
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = _context.CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().RemoveRange(group.Select(o => o.Entity));
+                aggregateKv.Key.Set<TEntity>().RemoveRange(aggregateKv.Value);
             }
+
         }
 
         /// <summary>
@@ -390,7 +304,16 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void UpdateRange(IEnumerable<TEntity> entities)
         {
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
+            {
+                aggregateKv.Key.Set<TEntity>().UpdateRange(aggregateKv.Value);
+            }
+        }
+
+        private Dictionary<DbContext, IEnumerable<TEntity>> AggregateToDic(IEnumerable<TEntity> entities)
+        {
+           return  entities.Select(o =>
             {
                 var dbContext = _context.CreateGenericDbContext(o);
                 return new
@@ -398,12 +321,7 @@ namespace ShardingCore.EFCores
                     DbContext = dbContext,
                     Entity = o
                 };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.Set<TEntity>().UpdateRange(group.Select(o => o.Entity));
-            }
+            }).GroupBy(g => g.DbContext).ToDictionary(o=>o.Key,o=>o.Select(g=>g.Entity));
         }
 
         public override TEntity Find(params object[] keyValues)

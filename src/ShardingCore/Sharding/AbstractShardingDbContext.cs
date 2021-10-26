@@ -135,14 +135,9 @@ namespace ShardingCore.Sharding
         }
 #endif
 
-        public override void AddRange(params object[] entities)
+        private Dictionary<DbContext, IEnumerable<TEntity>> AggregateToDic<TEntity>(IEnumerable<TEntity> entities) where TEntity:class
         {
-            if (IsExecutor)
-            {
-                base.AddRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
+            return entities.Select(o =>
             {
                 var dbContext = CreateGenericDbContext(o);
                 return new
@@ -150,11 +145,20 @@ namespace ShardingCore.Sharding
                     DbContext = dbContext,
                     Entity = o
                 };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
+            }).GroupBy(g => g.DbContext).ToDictionary(o => o.Key, o => o.Select(g => g.Entity));
+        }
+        public override void AddRange(params object[] entities)
+        {
+            if (IsExecutor)
             {
-                group.Key.AddRange(group.Select(o => o.Entity));
+                base.AddRange(entities);
+                return;
+            }
+
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
+            {
+                aggregateKv.Key.AddRange(aggregateKv.Value);
             }
         }
 
@@ -165,19 +169,11 @@ namespace ShardingCore.Sharding
                 base.AddRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
 
-            foreach (var group in groups)
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                group.Key.AddRange(group.Select(o => o.Entity));
+                aggregateKv.Key.AddRange(aggregateKv.Value);
             }
         }
 
@@ -188,19 +184,10 @@ namespace ShardingCore.Sharding
                 await base.AddRangeAsync(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
+                await aggregateKv.Key.AddRangeAsync(aggregateKv.Value);
             }
         }
 
@@ -211,19 +198,10 @@ namespace ShardingCore.Sharding
                 await base.AddRangeAsync(entities, cancellationToken);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
+                await aggregateKv.Key.AddRangeAsync(aggregateKv.Value,cancellationToken);
             }
         }
 
@@ -248,19 +226,10 @@ namespace ShardingCore.Sharding
                 base.AttachRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AttachRange(group.Select(o => o.Entity));
+                 aggregateKv.Key.AttachRange(aggregateKv.Value);
             }
         }
 
@@ -271,19 +240,10 @@ namespace ShardingCore.Sharding
                 base.AttachRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AttachRange(group.Select(o => o.Entity));
+                aggregateKv.Key.AttachRange(aggregateKv.Value);
             }
         }
 
@@ -327,19 +287,10 @@ namespace ShardingCore.Sharding
                 base.UpdateRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
+                aggregateKv.Key.UpdateRange(aggregateKv.Value);
             }
         }
 
@@ -350,19 +301,10 @@ namespace ShardingCore.Sharding
                 base.UpdateRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
+                aggregateKv.Key.UpdateRange(aggregateKv.Value);
             }
         }
 
@@ -387,19 +329,10 @@ namespace ShardingCore.Sharding
                 base.RemoveRange(entities);
                 return;
             }
-                var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
+                aggregateKv.Key.RemoveRange(aggregateKv.Value);
             }
         }
 
@@ -410,19 +343,10 @@ namespace ShardingCore.Sharding
                 base.RemoveRange(entities);
                 return;
             }
-            var groups = entities.Select(o =>
+            var aggregateToDic = AggregateToDic(entities);
+            foreach (var aggregateKv in aggregateToDic)
             {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
+                aggregateKv.Key.RemoveRange(aggregateKv.Value);
             }
         }
 
