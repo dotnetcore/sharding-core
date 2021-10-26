@@ -172,7 +172,7 @@ namespace ShardingCore.Test50
         public async Task ToList_Id_In_Test()
         {
             var ids = new[] {"1", "2", "3", "4"};
-            var sysUserMods = await _virtualDbContext.Set<SysUserMod>().Where(o => ids.Contains(o.Id)).ToListAsync();
+            var sysUserMods = await _virtualDbContext.Set<SysUserMod>().Where(o => new List<string> { "1", "2", "3", "4" }.Contains(o.Id)).ToListAsync();
             foreach (var id in ids)
             {
                 Assert.Contains(sysUserMods, o => o.Id == id);
@@ -184,8 +184,11 @@ namespace ShardingCore.Test50
         [Fact]
         public async Task ToList_Id_Eq_Test()
         {
-            var mods = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "3").ToListAsync();
+            var id= 3;
+            var mods = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == id.ToString()).ToListAsync();
             Assert.Single(mods);
+            var mods1 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "4").ToListAsync();
+            Assert.Single(mods1);
             Assert.Equal("3", mods[0].Id);
         }
 

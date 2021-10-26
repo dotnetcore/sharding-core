@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
@@ -64,10 +65,16 @@ namespace ShardingCore.Core.Internal.Visitors
         private bool IsConstantOrMember(Expression expression)
         {
             return expression is ConstantExpression
-                   || (expression is MemberExpression member && (member.Expression is ConstantExpression || member.Expression is MemberExpression || member.Expression is MemberExpression));
+                   || (expression is MemberExpression member && (member.Expression is ConstantExpression || member.Expression is MemberExpression || member.Expression is MemberExpression))
+                   || expression is MethodCallExpression;
         }
 
-        private object GetFieldValue(Expression expression)
+        private bool IsMethodCall(Expression expression)
+        {
+            return expression is MethodCallExpression;
+        }
+
+        private object GetShardingKeyValue(Expression expression)
         {
             if (expression is ConstantExpression)
                 return (expression as ConstantExpression).Value;
@@ -81,7 +88,25 @@ namespace ShardingCore.Core.Internal.Visitors
 
             if (expression is MemberExpression member1Expression)
             {
+                var target = GetShardingKeyValue(member1Expression.Expression);
+                if (member1Expression.Member is FieldInfo field)
+                    return field.GetValue(target);
+                if (member1Expression.Member is PropertyInfo property)
+                    return property.GetValue(target);
                 return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+            }
+
+            if (expression is MethodCallExpression methodCallExpression)
+            {
+                return Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
+                //return methodCallExpression.Method.Invoke(
+                //    GetShardingKeyValue(methodCallExpression.Object),
+                //    methodCallExpression.Arguments
+                //        .Select(
+                //            a => GetShardingKeyValue(a)
+                //        )
+                //        .ToArray()
+                //);
             }
 
             throw new ShardingKeyGetValueException("cant get value " + expression);
@@ -213,18 +238,18 @@ namespace ShardingCore.Core.Internal.Visitors
             //单个
             else
             {
-                bool paramterAtLeft;
+                bool paramterAtLeft=false;
                 object value = null;
 
-                if (IsShardingKey(binaryExpression.Left) && IsConstantOrMember(binaryExpression.Right))
+                if (IsShardingKey(binaryExpression.Left)&&IsConstantOrMember(binaryExpression.Right))
                 {
                     paramterAtLeft = true;
-                    value = GetFieldValue(binaryExpression.Right);
+                    value = GetShardingKeyValue(binaryExpression.Right);
                 }
                 else if (IsConstantOrMember(binaryExpression.Left) && IsShardingKey(binaryExpression.Right))
                 {
                     paramterAtLeft = false;
-                    value = GetFieldValue(binaryExpression.Left);
+                    value = GetShardingKeyValue(binaryExpression.Left);
                 }
                 else
                     return x => true;
