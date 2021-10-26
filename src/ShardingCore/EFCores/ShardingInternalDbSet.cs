@@ -8,6 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Extensions;
+using ShardingCore.Utils;
 
 namespace ShardingCore.EFCores
 {
@@ -37,6 +43,40 @@ namespace ShardingCore.EFCores
             _context = (IShardingDbContext)context;
         }
 #endif
+        private IVirtualDataSource _virtualDataSource;
+
+        protected IVirtualDataSource VirtualDataSource
+        {
+            get
+            {
+                if (null == _virtualDataSource)
+                {
+                    _virtualDataSource =
+                        (IVirtualDataSource) ShardingContainer.GetService(
+                            typeof(IVirtualDataSource<>).GetGenericType0(_context.GetType()));
+                }
+
+                return _virtualDataSource;
+            }
+        }
+        
+        private IVirtualTableManager _virtualTableManager;
+
+        protected IVirtualTableManager VirtualTableManager
+        {
+            get
+            {
+                if (null == _virtualTableManager)
+                {
+                    _virtualTableManager =
+                        (IVirtualTableManager) ShardingContainer.GetService(
+                            typeof(IVirtualTableManager<>).GetGenericType0(_context.GetType()));
+                }
+
+                return _virtualTableManager;
+            }
+        }
+
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
         ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -364,6 +404,89 @@ namespace ShardingCore.EFCores
             {
                 group.Key.Set<TEntity>().UpdateRange(group.Select(o => o.Entity));
             }
+        }
+
+        public override TEntity Find(params object[] keyValues)
+        {
+            var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
+            if (primaryKeyFindDbContext != null)
+            {
+                return primaryKeyFindDbContext.Set<TEntity>().Find(keyValues);
+            }
+            return base.Find(keyValues);
+        }
+
+#if !EFCORE2
+        public override ValueTask<TEntity> FindAsync(params object[] keyValues)
+        {
+            var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
+            if (primaryKeyFindDbContext != null)
+            {
+                return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues);
+            }
+            return base.FindAsync(keyValues);
+        }
+
+        public override ValueTask<TEntity> FindAsync(object[] keyValues, CancellationToken cancellationToken)
+        {
+            var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
+            if (primaryKeyFindDbContext != null)
+            {
+                return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues, cancellationToken);
+            }
+            return base.FindAsync(keyValues, cancellationToken);
+        }
+#endif
+#if EFCORE2
+        public override Task<TEntity> FindAsync(params object[] keyValues)
+        {
+            var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
+            if (primaryKeyFindDbContext != null)
+            {
+                return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues);
+            }
+            return base.FindAsync(keyValues);
+        }
+
+        public override Task<TEntity> FindAsync(object[] keyValues, CancellationToken cancellationToken)
+        {
+            var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
+            if (primaryKeyFindDbContext != null)
+            {
+                return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues, cancellationToken);
+            }
+            return base.FindAsync(keyValues, cancellationToken);
+        }
+#endif
+
+        private DbContext GetDbContextByKeyValue(params object[] keyValues)
+        {
+            if (keyValues.Length == 1)
+            {
+                var shardingEntityConfig = ShardingUtil.Parse(typeof(TEntity));
+                //单key字段
+                if (null != shardingEntityConfig.SinglePrimaryKeyFieldName)
+                {
+                    var isShardingDataSource = typeof(TEntity).IsShardingDataSource();
+                    var shardingDataSourceFieldIsKey = shardingEntityConfig.ShardingDataSourceFieldIsKey();
+                    if (isShardingDataSource && !shardingDataSourceFieldIsKey)
+                        return null;
+                    var isShardingTable = typeof(TEntity).IsShardingTable();
+                    var shardingTableFieldIsKey = shardingEntityConfig.ShardingTableFieldIsKey();
+                    if (isShardingTable && !shardingTableFieldIsKey)
+                        return null;
+                    var primaryKeyValue = keyValues[0];
+                    if (primaryKeyValue != null)
+                    {
+                        var dataSourceName = VirtualDataSource.GetDataSourceName<TEntity>(primaryKeyValue);
+                        var tableTail = VirtualTableManager.GetTableTail<TEntity>(primaryKeyValue);
+                        var routeTail = ShardingContainer.GetService<IRouteTailFactory>().Create(tableTail);
+                        return _context.GetDbContext(dataSourceName, false, routeTail);
+                    }
+                }
+            }
+
+            return null;
         }
 
     }

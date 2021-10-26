@@ -98,6 +98,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 return dbContext;
             }
         }
+
         private DbContextOptions<TShardingDbContext> CreateParallelDbContextOptions(string dataSourceName)
         {
             var dbContextOptionBuilder = DataSourceDbContext<TShardingDbContext>.CreateDbContextOptionBuilder();

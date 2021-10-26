@@ -20,6 +20,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="routeTail"></param>
         /// <returns></returns>
         DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail);
+
         /// <summary>
         /// 创建通用的db context
         /// </summary>
@@ -27,6 +28,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
+
 
     }
 }

@@ -28,10 +28,11 @@ namespace ShardingCore.Utils
         {
         }
 
-        public static void ParsePrimaryKeyName(IEntityType entityType)
+        public static IKey ParsePrimaryKeyName(IEntityType entityType)
         {
             var primaryKey = entityType.FindPrimaryKey();
             _caches.TryAdd(entityType.ClrType, primaryKey);
+            return primaryKey;
         }
 
         public static IEnumerable<object> GetPrimaryKeyValues(object entity)
@@ -47,6 +48,15 @@ namespace ShardingCore.Utils
         public static IKey GetEntityIKey(object entity)
         {
             var entityType = entity.GetType();
+            if (!_caches.TryGetValue(entityType, out var primaryKey))
+            {
+                return null;
+            }
+
+            return primaryKey;
+        }
+        public static IKey GetEntityIKey(Type entityType)
+        {
             if (!_caches.TryGetValue(entityType, out var primaryKey))
             {
                 return null;

@@ -1,14 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Sharding.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Extensions
 {
@@ -21,7 +19,7 @@ namespace ShardingCore.Extensions
     */
     public static class VirtualDataSourceExtension
     {
-        public static string GetDataSourceName<TShardingDbContext,TEntity>(this IVirtualDataSource<TShardingDbContext> virtualDataSource,TEntity entity) where TShardingDbContext : DbContext, IShardingDbContext where TEntity : class
+        public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource,TEntity entity)where TEntity : class
         {
             if (!entity.IsShardingDataSource())
                 return virtualDataSource.DefaultDataSourceName;
@@ -30,12 +28,19 @@ namespace ShardingCore.Extensions
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity as IShardingDataSource))[0];
         }
 
-        public static List<string> GetDataSourceNames<TShardingDbContext, TEntity>(this IVirtualDataSource<TShardingDbContext> virtualDataSource, Expression<Func<TEntity, bool>> where)
-            where TShardingDbContext : DbContext, IShardingDbContext
+        public static List<string> GetDataSourceNames<TEntity>(this IVirtualDataSource virtualDataSource, Expression<Func<TEntity, bool>> where)
             where TEntity : class
         {
             return virtualDataSource.RouteTo(typeof(TEntity),new ShardingDataSourceRouteConfig(predicate: where))
                 .ToList();
+        }
+        public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource, object shardingKeyValue) where TEntity : class
+        {
+            if (!typeof(TEntity).IsShardingDataSource())
+                return virtualDataSource.DefaultDataSourceName;
+
+            return virtualDataSource.RouteTo(typeof(TEntity),
+                new ShardingDataSourceRouteConfig(shardingKeyValue:shardingKeyValue))[0];
         }
     }
 }

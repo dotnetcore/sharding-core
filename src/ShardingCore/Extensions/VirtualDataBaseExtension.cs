@@ -79,6 +79,14 @@ namespace ShardingCore.Extensions
             var physicTable = virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new ShardingTableRouteConfig(null, entity as IShardingTable, null))[0];
             return physicTable.Tail;
         }
+        public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,
+            object shardingKeyValue) where TEntity : class
+        {
+            if (!typeof(TEntity).IsShardingTable())
+                return string.Empty;
+            var physicTable = virtualTableManager.GetVirtualTable(typeof(TEntity)).RouteTo(new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];
+            return physicTable.Tail;
+        }
         public static bool IsVirtualDataSourceRoute(this Type routeType)
         {
             if (routeType == null)

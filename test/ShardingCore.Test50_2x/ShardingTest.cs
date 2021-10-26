@@ -19,7 +19,7 @@ namespace ShardingCore.Test50_2x
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -29,20 +29,19 @@ namespace ShardingCore.Test50_2x
         //public async Task Route_TEST()
         //{
         //    var queryable1 = _virtualDbContext.Set<SysUserMod>().Where(o=>o.Id=="339");
-        //    var routeResults1 = _routingRuleEngineFactory.Route(queryable1);
+        //    var routeResults1 = _tableRouteRuleEngineFactory.Route(queryable1);
         //    Assert.Equal(1,routeResults1.Count());
         //    Assert.Equal(1,routeResults1.FirstOrDefault().ReplaceTables.Count());
         //    Assert.Equal("0",routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().Tail);
         //    Assert.Equal(nameof(SysUserMod),routeResults1.FirstOrDefault().ReplaceTables.FirstOrDefault().OriginalName);
         //    var ids = new[] {"339", "124","142"};
         //    var queryable2= _virtualDbContext.Set<SysUserMod>().Where(o=>ids.Contains(o.Id));
-        //    var routeResult2s = _routingRuleEngineFactory.Route(queryable2);
+        //    var routeResult2s = _tableRouteRuleEngineFactory.Route(queryable2);
         //    Assert.Equal(2,routeResult2s.Count());
         //    Assert.Equal(1,routeResult2s.FirstOrDefault().ReplaceTables.Count());
         //    Assert.Equal(2,routeResult2s.SelectMany(o=>o.ReplaceTables).Count());
         //    Assert.Equal(true,routeResult2s.SelectMany(o=>o.ReplaceTables).All(o=>new[]{"0","1"}.Contains(o.Tail)));
         //}
-
         [Fact]
         public async Task ToList_All_Route_Test()
         {
@@ -73,7 +72,6 @@ namespace ShardingCore.Test50_2x
                 descAge--;
             }
         }
-
         [Fact]
         public async Task ToList_All_Test()
         {
@@ -96,6 +94,8 @@ namespace ShardingCore.Test50_2x
                 Assert.Equal(descAge, sysUserMod.Age);
                 descAge--;
             }
+
+
 
             var pageResult = await _virtualDbContext.Set<SysUserMod>().Skip(10).Take(10).OrderByDescending(o => o.Age).ToListAsync();
             Assert.Equal(10, pageResult.Count);
@@ -121,7 +121,8 @@ namespace ShardingCore.Test50_2x
                                   DateOfMonth = salary.DateOfMonth,
                                   Name = u.Name
                               }).ToListAsync();
-            var list2 = list.OrderBy(o=>o.Age).Select(o=>o.Age).Distinct().ToList();
+
+            var list2 = list.OrderBy(o => o.Age).Select(o => o.Age).Distinct().ToList();
             Assert.Equal(24000, list.Count());
             Assert.Equal(24, list.Count(o => o.Name == "name_200"));
 
@@ -165,7 +166,7 @@ namespace ShardingCore.Test50_2x
         [Fact]
         public async Task ToList_Id_In_Test()
         {
-            var ids = new[] {"1", "2", "3", "4"};
+            var ids = new[] { "1", "2", "3", "4" };
             var sysUserMods = await _virtualDbContext.Set<SysUserMod>().Where(o => ids.Contains(o.Id)).ToListAsync();
             foreach (var id in ids)
             {
@@ -241,6 +242,7 @@ namespace ShardingCore.Test50_2x
 
             var sysUserModDesc = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Id).FirstOrDefaultAsync();
             Assert.True(sysUserModDesc != null && sysUserModDesc.Id == "999");
+
         }
 
         [Fact]
@@ -248,6 +250,8 @@ namespace ShardingCore.Test50_2x
         {
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefaultAsync();
             Assert.NotNull(sysUserMod);
+            var userMod = _virtualDbContext.Set<SysUserMod>().Find("1");
+            Assert.Equal(sysUserMod, userMod);
             Assert.True(sysUserMod.Id == "1");
             var user198 = await _virtualDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");
             Assert.True(user198.Id == "198");
@@ -261,6 +265,7 @@ namespace ShardingCore.Test50_2x
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").FirstOrDefaultAsync();
             Assert.NotNull(sysUserMod);
             Assert.Equal("2", sysUserMod.Id);
+
         }
 
         [Fact]
@@ -319,14 +324,14 @@ namespace ShardingCore.Test50_2x
         public async Task Max_Join_Test()
         {
             var queryable = (from u in _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "300")
-                join salary in _virtualDbContext.Set<SysUserSalary>()
-                    on u.Id equals salary.UserId
-                select new
-                {
-                    Salary = salary.Salary,
-                    DateOfMonth = salary.DateOfMonth,
-                    Name = u.Name
-                });
+                             join salary in _virtualDbContext.Set<SysUserSalary>()
+                                 on u.Id equals salary.UserId
+                             select new
+                             {
+                                 Salary = salary.Salary,
+                                 DateOfMonth = salary.DateOfMonth,
+                                 Name = u.Name
+                             });
             var maxSalary = await queryable.MaxAsync(o => o.Salary);
             Assert.Equal(1390000, maxSalary);
         }
@@ -360,25 +365,25 @@ namespace ShardingCore.Test50_2x
         [Fact]
         public async Task Group_Test()
         {
-            var ids = new[] {"200", "300"};
-            var dateOfMonths = new[] {202111, 202110};
+            var ids = new[] { "200", "300" };
+            var dateOfMonths = new[] { 202111, 202110 };
             var group = await (from u in _virtualDbContext.Set<SysUserSalary>()
                     .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
-                group u by new
-                {
-                    UId = u.UserId
-                }
+                               group u by new
+                               {
+                                   UId = u.UserId
+                               }
                 into g
-                select new
-                {
-                    GroupUserId = g.Key.UId,
-                    Count = g.Count(),
-                    TotalSalary = g.Sum(o => o.Salary),
-                    AvgSalary = g.Average(o => o.Salary),
-                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
-                    MinSalary = g.Min(o => o.Salary),
-                    MaxSalary = g.Max(o => o.Salary)
-                }).ToListAsync();
+                               select new
+                               {
+                                   GroupUserId = g.Key.UId,
+                                   Count = g.Count(),
+                                   TotalSalary = g.Sum(o => o.Salary),
+                                   AvgSalary = g.Average(o => o.Salary),
+                                   AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
+                                   MinSalary = g.Min(o => o.Salary),
+                                   MaxSalary = g.Max(o => o.Salary)
+                               }).ToListAsync();
             Assert.Equal(2, group.Count);
             Assert.Equal(2, group[0].Count);
             Assert.Equal(2260000, group[0].TotalSalary);

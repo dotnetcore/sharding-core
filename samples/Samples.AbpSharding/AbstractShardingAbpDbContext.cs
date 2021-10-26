@@ -60,7 +60,7 @@ namespace Samples.AbpSharding
 
         //public void ShardingUpgrade()
         //{
-        //    //isExecutor = true;
+        //    //IsExecutor = true;
         //}
 
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)

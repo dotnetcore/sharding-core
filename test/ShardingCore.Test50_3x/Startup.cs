@@ -47,6 +47,7 @@ namespace ShardingCore.Test50_3x
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
+                    o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))

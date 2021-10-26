@@ -15,11 +15,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     * @Date: Friday, 05 February 2021 13:01:39
     * @Email: 326308290@qq.com
     */
-    /// <summary>
-    /// 虚拟数据源 连接所有的实际数据源
-    /// </summary>
-    public interface IVirtualDataSource<TShardingDbContext> 
-        where TShardingDbContext : DbContext, IShardingDbContext
+
+    public interface IVirtualDataSource
     {
         string DefaultDataSourceName { get; }
         /// <summary>
@@ -54,5 +51,12 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
         bool IsDefault(string dataSourceName);
+    }
+    /// <summary>
+    /// 虚拟数据源 连接所有的实际数据源
+    /// </summary>
+    public interface IVirtualDataSource<TShardingDbContext> : IVirtualDataSource
+        where TShardingDbContext : DbContext, IShardingDbContext
+    {
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace ShardingCore.Core.VirtualDatabase
@@ -29,6 +30,11 @@ namespace ShardingCore.Core.VirtualDatabase
         /// 分库字段
         /// </summary>
         public string ShardingDataSourceField { get; set; }
+        /// <summary>
+        /// 主键名称
+        /// </summary>
+        public string SinglePrimaryKeyFieldName { get; set; }
+
 
         /// <summary>
         /// 启动时是否建表 auto create data source when start app
