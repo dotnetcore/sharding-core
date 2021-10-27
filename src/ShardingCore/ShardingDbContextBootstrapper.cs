@@ -79,11 +79,14 @@ namespace ShardingCore
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;
-                        var primaryKeyNames = ShardingKeyUtil.ParsePrimaryKeyName(entity);
-                        if (primaryKeyNames.Properties.Count == 1)
+                        if (entityType.IsShardingDataSource() || entityType.IsShardingTable())
                         {
-                            var shardingEntityConfig = ShardingUtil.Parse(entityType);
-                            shardingEntityConfig.SinglePrimaryKeyFieldName = primaryKeyNames.Properties.First().Name;
+                            var primaryKeyNames = ShardingKeyUtil.ParsePrimaryKeyName(entity);
+                            if (primaryKeyNames.Properties.Count == 1)
+                            {
+                                var shardingEntityConfig = ShardingUtil.Parse(entityType);
+                                shardingEntityConfig.SinglePrimaryKeyFieldName = primaryKeyNames.Properties.First().Name;
+                            }
                         }
                         //添加追踪模型
                         _trackerManager.AddDbContextModel(entityType);
