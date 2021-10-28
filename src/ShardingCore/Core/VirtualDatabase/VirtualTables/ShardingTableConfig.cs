@@ -36,6 +36,6 @@
 //        /// <summary>
 //        /// 分表尾巴后缀 table sharding tail prefix
 //        /// </summary>
-//        public string TailPrefix { get; set; } = "_";
+//        public string TableSeparator { get; set; } = "_";
 //    }
 //}

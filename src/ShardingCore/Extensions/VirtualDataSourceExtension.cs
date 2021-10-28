@@ -21,8 +21,6 @@ namespace ShardingCore.Extensions
     {
         public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource,TEntity entity)where TEntity : class
         {
-            if (!entity.IsShardingDataSource())
-                return virtualDataSource.DefaultDataSourceName;
 
             return virtualDataSource.RouteTo(entity.GetType(),
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity as IShardingDataSource))[0];
@@ -36,9 +34,6 @@ namespace ShardingCore.Extensions
         }
         public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource, object shardingKeyValue) where TEntity : class
         {
-            if (!typeof(TEntity).IsShardingDataSource())
-                return virtualDataSource.DefaultDataSourceName;
-
             return virtualDataSource.RouteTo(typeof(TEntity),
                 new ShardingDataSourceRouteConfig(shardingKeyValue:shardingKeyValue))[0];
         }

@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
@@ -25,9 +26,11 @@ namespace ShardingCore.EFCores
     public class ShardingModelCustomizer<TShardingDbContext> : ModelCustomizer where TShardingDbContext : DbContext, IShardingDbContext
     {
         private Type _shardingDbContextType => typeof(TShardingDbContext);
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
 
         public ShardingModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
         {
+            _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
         }
 
         public override void Customize(ModelBuilder modelBuilder, DbContext context)
@@ -41,10 +44,10 @@ namespace ShardingCore.EFCores
                     var singleQueryRouteTail = (ISingleQueryRouteTail) shardingTableDbContext.RouteTail;
                     var tail = singleQueryRouteTail.GetTail();
                     var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-                    var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTableAllTails().Contains(tail)).Select(o => o.EntityType).ToHashSet();
+                    var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTableAllTails().Contains(tail)).Select(o => o.EntityMetadata.EntityType).ToHashSet();
 
                     //设置分表
-                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && typeMap.Contains(o.ClrType)).ToArray();
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => _entityMetadataManager.IsShardingTable(o.ClrType) && typeMap.Contains(o.ClrType)).ToArray();
                     foreach (var entityType in mutableEntityTypes)
                     {
                         MappingToTable(entityType.ClrType, modelBuilder, tail);
@@ -54,7 +57,7 @@ namespace ShardingCore.EFCores
                 {
                     var multiQueryRouteTail = (IMultiQueryRouteTail) shardingTableDbContext.RouteTail;
                     var entityTypes = multiQueryRouteTail.GetEntityTypes();
-                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsShardingTable() && entityTypes.Contains(o.ClrType)).ToArray();
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => _entityMetadataManager.IsShardingTable(o.ClrType) && entityTypes.Contains(o.ClrType)).ToArray();
                     foreach (var entityType in mutableEntityTypes)
                     {
                         var queryTail = multiQueryRouteTail.GetEntityTail(entityType.ClrType);
@@ -69,17 +72,17 @@ namespace ShardingCore.EFCores
 
         private void MappingToTable(Type clrType, ModelBuilder modelBuilder, string tail)
         {
-            var shardingEntityConfig = ShardingUtil.Parse(clrType);
-            var shardingEntity = shardingEntityConfig.EntityType;
-            var tailPrefix = shardingEntityConfig.TailPrefix;
+            var entityMetadata = _entityMetadataManager.TryGet(clrType);
+            var shardingEntity = entityMetadata.EntityType;
+            var tableSeparator = entityMetadata.TableSeparator;
             var entity = modelBuilder.Entity(shardingEntity);
-            var tableName = shardingEntityConfig.VirtualTableName;
+            var tableName = entityMetadata.VirtualTableName;
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
 #if DEBUG
-            Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tailPrefix}{tail}]");
+            Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tableSeparator}{tail}]");
 #endif
-            entity.ToTable($"{tableName}{tailPrefix}{tail}");
+            entity.ToTable($"{tableName}{tableSeparator}{tail}");
         }
     }
 }

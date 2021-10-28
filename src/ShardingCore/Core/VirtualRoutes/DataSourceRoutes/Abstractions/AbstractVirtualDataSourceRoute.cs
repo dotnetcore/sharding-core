@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.EntityShardingMetadatas;
+using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
@@ -11,13 +14,17 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     * @Date: Friday, 18 December 2020 14:33:01
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T> where T : class, IShardingDataSource
+    public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T>, IEntityMetadataAutoBindInitializer where T : class, IShardingDataSource
     {
-        private bool _inited = false;
-        public void Init()
+        public EntityMetadata EntityMetadata { get; private set; }
+        private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+
+
+        public void Initialize(EntityMetadata entityMetadata)
         {
-            if (_inited)
+            if (!_doOnlyOnce.IsUnDo())
                 throw new InvalidOperationException("already init");
+            EntityMetadata = entityMetadata;
             var paginationConfiguration = CreatePaginationConfiguration();
             if (paginationConfiguration != null)
             {
@@ -26,16 +33,16 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                 paginationConfiguration.Configure(paginationBuilder);
             }
 
-            _inited = true;
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {
             return null;
         }
-        /// <summary>
-        /// entity type
-        /// </summary>
-        public Type ShardingEntityType => typeof(T);
+
+        public virtual IEntityMetadataDataSourceConfiguration<T> CreateEntityMetadataDataSourceConfiguration()
+        {
+            return null;
+        }
 
         public new PaginationMetadata PaginationMetadata { get; protected set; }
         public bool EnablePagination => PaginationMetadata != null;

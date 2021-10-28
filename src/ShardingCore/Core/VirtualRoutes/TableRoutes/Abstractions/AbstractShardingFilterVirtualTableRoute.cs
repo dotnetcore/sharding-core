@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
@@ -52,7 +53,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         var physicTables = allPhysicTables.Where(o => mustTails.Contains(o.Tail)).ToList();
                         if (physicTables.IsEmpty()||physicTables.Count!=mustTails.Count)
                             throw new ShardingCoreException(
-                                $" sharding route must error:[{ShardingEntityType.FullName}]-->[{string.Join(",",mustTails)}]");
+                                $" sharding route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustTails)}]");
                         return physicTables;
                     }
 
@@ -61,7 +62,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         var physicTables = allPhysicTables.Where(o => hintTails.Contains(o.Tail)).ToList();
                         if (physicTables.IsEmpty()||physicTables.Count!=hintTails.Count)
                             throw new ShardingCoreException(
-                                $" sharding route hint error:[{ShardingEntityType.FullName}]-->[{string.Join(",",hintTails)}]");
+                                $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
                         ProcessAssertRoutes(allPhysicTables, physicTables);
                         return physicTables;
                     }

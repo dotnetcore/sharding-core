@@ -19,7 +19,9 @@ namespace ShardingCore
         Type ShardingDbContextType { get;}
         bool UseReadWrite { get; }
 
+        bool HasVirtualTableRoute(Type entityType);
         Type GetVirtualTableRouteType(Type entityType);
+        bool HasVirtualDataSourceRoute(Type entityType);
         Type GetVirtualDataSourceRouteType(Type entityType);
 
 

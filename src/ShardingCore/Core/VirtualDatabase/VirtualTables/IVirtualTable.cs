@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -19,14 +20,7 @@ namespace ShardingCore.Core.VirtualTables
     /// </summary>
     public interface IVirtualTable
     {
-        /// <summary>
-        /// 分表的类型
-        /// </summary>
-        Type EntityType { get; }
-        /// <summary>
-        /// 分表配置
-        /// </summary>
-        ShardingEntityConfig ShardingConfig { get; }
+        EntityMetadata EntityMetadata { get; }
         /// <summary>
         /// 分页配置
         /// </summary>
@@ -55,13 +49,6 @@ namespace ShardingCore.Core.VirtualTables
         /// <param name="physicTable"></param>
         /// <returns>添加成功</returns>
         bool AddPhysicTable(IPhysicTable physicTable);
-
-        /// <summary>
-        /// 设置原始表名 get original table name when app start
-        /// <see cref="ShardingBootstrapper"/>
-        /// </summary>
-        /// <param name="originalTableName"></param>
-        void SetVirtualTableName(string originalTableName);
         /// <summary>
         /// 获取原始表名 get original table name
         /// </summary>
@@ -80,7 +67,7 @@ namespace ShardingCore.Core.VirtualTables
         List<string> GetTableAllTails();
     }
 
-    public interface IVirtualTable<T> : IVirtualTable where T : class,IShardingTable
+    public interface IVirtualTable<T> : IVirtualTable where T : class
     {
         new IVirtualTableRoute<T> GetVirtualRoute();
     }

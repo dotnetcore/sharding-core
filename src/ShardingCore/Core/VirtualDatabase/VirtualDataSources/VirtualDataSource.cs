@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -23,6 +24,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     */
     public class VirtualDataSource<TShardingDbContext> : IVirtualDataSource<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
 
         private readonly ConcurrentDictionary<string, IPhysicDataSource> _physicDataSources =
@@ -30,7 +32,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public string DefaultDataSourceName { get; private set; }
 
-
+        public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        {
+            _entityMetadataManager = entityMetadataManager;
+        }
 
 
         public List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig)
@@ -47,8 +52,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
             if (routeRouteConfig.UseEntity())
             {
-                var shardingEntityConfig = ShardingUtil.Parse(entityType);
-                shardingKeyValue = routeRouteConfig.GetShardingDataSource().GetPropertyValue(shardingEntityConfig.ShardingDataSourceField);
+                shardingKeyValue = routeRouteConfig.GetShardingDataSource().GetPropertyValue(virtualDataSourceRoute.EntityMetadata.ShardingDataSourceProperty.Name);
             }
 
             if (shardingKeyValue != null)
@@ -62,7 +66,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
-            if(!entityType.IsShardingDataSource())
+            if(!_entityMetadataManager.IsShardingDataSource(entityType))
                 throw new InvalidOperationException(
                     $"entity type :[{entityType.FullName}] not impl [{nameof(IShardingDataSource)}]");
 
@@ -106,10 +110,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
         {
-            if (!virtualDataSourceRoute.ShardingEntityType.IsShardingDataSource())
-                throw new InvalidOperationException($"{virtualDataSourceRoute.ShardingEntityType.FullName} should impl {nameof(IShardingDataSource)}");
+            if (!virtualDataSourceRoute.EntityMetadata.IsShardingDataSource())
+                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should impl {nameof(IShardingDataSource)}");
 
-            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.ShardingEntityType, virtualDataSourceRoute);
+            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityMetadata.EntityType, virtualDataSourceRoute);
         }
 
         public bool IsDefault(string dataSourceName)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.PhysicTables;
@@ -16,16 +17,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 */
     public class TableRouteResult
     {
-        public TableRouteResult(IEnumerable<IPhysicTable> replaceTables)
+        public TableRouteResult(IEnumerable<IPhysicTable> replaceTables, Type shardingDbContextType)
         {
+            ShardingDbContextType = shardingDbContextType;
             ReplaceTables = replaceTables.ToHashSet();
         }
         
         public ISet<IPhysicTable> ReplaceTables { get; }
-
+        public Type ShardingDbContextType { get; }
         protected bool Equals(TableRouteResult other)
         {
-            return Equals(ReplaceTables, other.ReplaceTables);
+            return Equals(ReplaceTables, other.ReplaceTables) && Equals(ShardingDbContextType, other.ShardingDbContextType);
         }
 
         public override bool Equals(object obj)
@@ -33,12 +35,26 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((TableRouteResult) obj);
+            return Equals((TableRouteResult)obj);
         }
+
+#if !EFCORE2
 
         public override int GetHashCode()
         {
-            return (ReplaceTables != null ? ReplaceTables.GetHashCode() : 0);
+            return HashCode.Combine(ReplaceTables, ShardingDbContextType);
         }
+#endif
+
+#if EFCORE2
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((ReplaceTables != null ? ReplaceTables.GetHashCode() : 0) * 397) ^ (ShardingDbContextType != null ? ShardingDbContextType.GetHashCode() : 0);
+            }
+        }
+#endif
     }
 }

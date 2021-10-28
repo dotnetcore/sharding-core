@@ -45,8 +45,6 @@ namespace ShardingCore.Extensions
 
             if (tails.IsEmpty())
                 return false;
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.MustTable.TryGetValue(entityType,out HashSet<string> mustTails))
             {
                 mustTails = new HashSet<string>();
@@ -82,8 +80,6 @@ namespace ShardingCore.Extensions
 
             if (tails.IsEmpty())
                 return false;
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.HintTable.TryGetValue(entityType, out HashSet<string> hintTails))
             {
                 hintTails = new HashSet<string>();
@@ -112,8 +108,6 @@ namespace ShardingCore.Extensions
 
             if (asserts.IsEmpty())
                 return false;
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.AssertTable.TryGetValue(entityType, out LinkedList<ITableRouteAssert> routeAsserts))
             {
                 routeAsserts = new LinkedList<ITableRouteAssert>();
@@ -140,8 +134,6 @@ namespace ShardingCore.Extensions
                 tail = null;
                 return false;
             }
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.MustTable.ContainsKey(entityType))
             {
                 tail = null;
@@ -162,8 +154,6 @@ namespace ShardingCore.Extensions
                 tail = null;
                 return false;
             }
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.HintTable.ContainsKey(entityType))
             {
                 tail = null;
@@ -185,8 +175,6 @@ namespace ShardingCore.Extensions
                 tail = null;
                 return false;
             }
-            if (!entityType.IsShardingTable())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingTable)}");
             if (!shardingRouteContext.AssertTable.ContainsKey(entityType))
             {
                 tail = null;

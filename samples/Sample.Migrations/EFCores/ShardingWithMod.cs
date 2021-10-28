@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.VirtualRoutes.Mods;
 using ShardingCore.VirtualRoutes.Months;
 

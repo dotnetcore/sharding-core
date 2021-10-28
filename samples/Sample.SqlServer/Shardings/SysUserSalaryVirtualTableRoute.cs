@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -76,5 +77,6 @@ namespace Sample.SqlServer.Shardings
         {
             return new SysUserSalaryPaginationConfiguration();
         }
+
     }
 }

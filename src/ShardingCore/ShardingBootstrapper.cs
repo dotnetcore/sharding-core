@@ -1,6 +1,7 @@
 using ShardingCore.Extensions;
 using System;
 using System.Collections.Generic;
+using ShardingCore.Bootstrapers;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 
 namespace ShardingCore

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
@@ -16,7 +17,6 @@ namespace ShardingCore.VirtualRoutes.Days
 */
     public abstract class AbstractSimpleShardingDayKeyLongVirtualTableRoute<T>:AbstractShardingTimeKeyLongVirtualTableRoute<T> where T:class,IShardingTable
     {
-
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
@@ -72,6 +72,5 @@ namespace ShardingCore.VirtualRoutes.Days
                 }
             }
         }
-
     }
 }

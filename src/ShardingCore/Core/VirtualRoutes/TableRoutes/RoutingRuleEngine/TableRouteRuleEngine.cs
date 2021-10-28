@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
@@ -24,10 +25,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     public class TableRouteRuleEngine<TShardingDbContext> : ITableRouteRuleEngine<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
 
-        public TableRouteRuleEngine(IVirtualTableManager<TShardingDbContext> virtualTableManager)
+        public TableRouteRuleEngine(IVirtualTableManager<TShardingDbContext> virtualTableManager,IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
             _virtualTableManager = virtualTableManager;
+            _entityMetadataManager = entityMetadataManager;
         }
 
         public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext)
@@ -36,7 +39,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableRoute();
 
 
-            var shardingEntities = queryEntities.Where(o => o.IsShardingTable());
+            var shardingEntities = queryEntities.Where(o => _entityMetadataManager.IsShardingTable(o));
             foreach (var shardingEntity in shardingEntities)
             {
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
@@ -55,7 +58,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                 }
             }
 
-            return routeMaps.Select(o => o.Value).Cartesian().Select(o => new TableRouteResult(o));
+            return routeMaps.Select(o => o.Value).Cartesian().Select(o => new TableRouteResult(o,typeof(TShardingDbContext)));
         }
     }
 }

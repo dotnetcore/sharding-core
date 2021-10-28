@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Sharding.PaginationConfigurations;
 
@@ -17,7 +18,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
     /// </summary>
     public interface IVirtualTableRoute
     {
-        Type ShardingEntityType { get; }
+        EntityMetadata EntityMetadata { get; }
         string ShardingKeyToTail(object shardingKey);
 
         /// <summary>
@@ -42,14 +43,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// </summary>
         /// <returns></returns>
         List<string> GetAllTails();
+
     }
 
-    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class,IShardingTable
+    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置
         /// </summary>
         /// <returns></returns>
         IPaginationConfiguration<T> CreatePaginationConfiguration();
+
+        IEntityMetadataTableConfiguration<T> CreateEntityMetadataTableConfiguration();
     }
 }

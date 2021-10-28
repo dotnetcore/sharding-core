@@ -139,12 +139,23 @@ namespace ShardingCore
             }
         }
 
+        public bool HasVirtualTableRoute(Type entityType)
+        {
+            return _virtualTableRoutes.ContainsKey(entityType);
+        }
+
         public Type GetVirtualTableRouteType(Type entityType)
         {
             if (!_virtualTableRoutes.ContainsKey(entityType))
                 throw new ArgumentException($"{entityType} not found IVirtualTableRoute");
             return _virtualTableRoutes[entityType];
         }
+
+        public bool HasVirtualDataSourceRoute(Type entityType)
+        {
+            return _virtualDataSourceRoutes.ContainsKey(entityType);
+        }
+
         public Type GetVirtualDataSourceRouteType(Type entityType)
         {
             if (!_virtualDataSourceRoutes.ContainsKey(entityType))

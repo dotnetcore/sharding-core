@@ -26,6 +26,7 @@ using ShardingCore.TableCreator;
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.EFCores.OptionsExtensions;
 
 namespace ShardingCore
@@ -200,6 +201,8 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(IVirtualTableManager<>),typeof(VirtualTableManager<>));
             //分表dbcontext创建
             services.TryAddSingleton(typeof(IShardingDbContextFactory<>), typeof(ShardingDbContextFactory<>));
+            //分表分库对象元信息管理
+            services.TryAddSingleton(typeof(IEntityMetadataManager<>), typeof(DefaultEntityMetadataManager<>));
 
             //分表引擎
             services.TryAddSingleton(typeof(ITableRouteRuleEngine<>),typeof(TableRouteRuleEngine<>));

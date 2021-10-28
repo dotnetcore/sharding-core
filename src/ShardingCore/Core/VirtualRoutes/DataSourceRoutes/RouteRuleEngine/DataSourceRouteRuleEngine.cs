@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Exceptions;
@@ -21,21 +22,23 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     public class DataSourceRouteRuleEngine<TShardingDbContext> : IDataSourceRouteRuleEngine<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
 
-        public DataSourceRouteRuleEngine(IVirtualDataSource<TShardingDbContext> virtualDataSource)
+        public DataSourceRouteRuleEngine(IVirtualDataSource<TShardingDbContext> virtualDataSource,IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
             _virtualDataSource = virtualDataSource;
+            _entityMetadataManager = entityMetadataManager;
         }
         public DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> routeRuleContext)
         {
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
-            var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !o.IsShardingDataSource());
+            var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !_entityMetadataManager.IsShardingDataSource(o));
             //存在不分库的
             if (notShardingDataSourceEntityType != null)
                 dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { _virtualDataSource.DefaultDataSourceName });
 
 
-            var queryEntities = routeRuleContext.QueryEntities.Where(o => o.IsShardingDataSource()).ToList();
+            var queryEntities = routeRuleContext.QueryEntities.Where(o => _entityMetadataManager.IsShardingDataSource(o)).ToList();
             if (queryEntities.Count > 1)
                 throw new ShardingCoreNotSupportedException($"{routeRuleContext.Queryable.ShardingPrint()}");
             foreach (var queryEntity in queryEntities)

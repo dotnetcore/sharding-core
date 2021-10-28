@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualTables;
@@ -19,14 +20,14 @@ namespace ShardingCore.Core.Internal.Visitors
 */
     public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
     {
-        private readonly ShardingEntityConfig _shardingConfig;
+        private readonly EntityMetadata _entityMetadata;
         private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(ShardingEntityConfig shardingConfig, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
         {
-            _shardingConfig = shardingConfig;
+            _entityMetadata = entityMetadata;
             _shardingKeyConvert = shardingKeyConvert;
             _keyToTailWithFilter = keyToTailWithFilter;
         }
@@ -39,8 +40,8 @@ namespace ShardingCore.Core.Internal.Visitors
         private bool IsShardingKey(Expression expression)
         {
             return expression is MemberExpression member
-                   && member.Expression.Type == _shardingConfig.EntityType
-                   && member.Member.Name == _shardingConfig.ShardingTableField;
+                   && member.Expression.Type == _entityMetadata.EntityType
+                   && member.Member.Name == _entityMetadata.ShardingTableProperty.Name;
         }
         /// <summary>
         /// 方法是否包含shardingKey
@@ -54,8 +55,8 @@ namespace ShardingCore.Core.Internal.Visitors
                 for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
                 {
                     var isShardingKey = methodCallExpression.Arguments[i] is MemberExpression member
-                                        && member.Expression.Type == _shardingConfig.EntityType
-                                        && member.Member.Name == _shardingConfig.ShardingTableField;
+                                        && member.Expression.Type == _entityMetadata.EntityType
+                                        && member.Member.Name == _entityMetadata.ShardingTableProperty.Name;
                     if (isShardingKey) return true;
                 }
             }

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
@@ -16,14 +18,26 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     * @Date: Friday, 18 December 2020 14:33:01
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T> where T : class, IShardingTable
+    public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T>, IEntityMetadataAutoBindInitializer where T : class, IShardingTable
     {
+
+        private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+        public void Initialize(EntityMetadata entityMetadata)
+        {
+            if (!_doOnlyOnce.IsUnDo())
+                throw new InvalidOperationException("already init");
+            EntityMetadata = entityMetadata;
+        }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {
             return null;
         }
 
-        public Type ShardingEntityType => typeof(T);
+        public virtual IEntityMetadataTableConfiguration<T> CreateEntityMetadataTableConfiguration()
+        {
+            return null;
+        }
+
         /// <summary>
         /// 如何将分表字段转成对应的类型
         /// </summary>
@@ -31,6 +45,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <returns></returns>
 
         protected abstract TKey ConvertToShardingKey(object shardingKey);
+
+        public EntityMetadata EntityMetadata { get; private set; }
+
         /// <summary>
         /// 如何将分表字段转成后缀
         /// </summary>
@@ -59,5 +76,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// </summary>
         /// <returns></returns>
         public abstract List<string> GetAllTails();
+
     }
 }

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions
@@ -26,11 +27,12 @@ namespace ShardingCore.Extensions
         public static void RemoveDbContextRelationModelThatIsShardingTable(this DbContext dbContext)
         {
             var contextModel = dbContext.Model as Model;
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(dbContext.GetType()));
 
 #if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
- contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => m.EntityType.ClrType.IsShardingTable())).Select(o => o.Key).ToList();
+ contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
             for (int i = 0; i < valueTuples.Count; i++)
             {
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
@@ -39,7 +41,7 @@ namespace ShardingCore.Extensions
 #if !EFCORE5
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
-            var list = entityTypes.Where(o=>o.Value.ClrType.IsShardingTable()).Select(o=>o.Key).ToList();
+            var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)).Select(o=>o.Key).ToList();
             for (int i = 0; i < list.Count; i++)
             {
                 entityTypes.Remove(list[i]);

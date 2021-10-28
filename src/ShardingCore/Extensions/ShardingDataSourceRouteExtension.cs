@@ -45,8 +45,6 @@ namespace ShardingCore.Extensions
 
             if (dataSources.IsEmpty())
                 return false;
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.MustDataSource.TryGetValue(entityType,out HashSet<string> mustDataSources))
             {
                 mustDataSources = new HashSet<string>();
@@ -82,8 +80,6 @@ namespace ShardingCore.Extensions
 
             if (dataSources.IsEmpty())
                 return false;
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.HintDataSource.TryGetValue(entityType, out HashSet<string> hintDataSources))
             {
                 hintDataSources = new HashSet<string>();
@@ -112,8 +108,6 @@ namespace ShardingCore.Extensions
 
             if (asserts.IsEmpty())
                 return false;
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.AssertDataSource.TryGetValue(entityType, out LinkedList<IDataSourceRouteAssert> routeAsserts))
             { 
                 routeAsserts = new LinkedList<IDataSourceRouteAssert>();
@@ -140,8 +134,6 @@ namespace ShardingCore.Extensions
                 dataSources = null;
                 return false;
             }
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.MustDataSource.ContainsKey(entityType))
             {
                 dataSources = null;
@@ -162,8 +154,6 @@ namespace ShardingCore.Extensions
                 dataSources = null;
                 return false;
             }
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.HintDataSource.ContainsKey(entityType))
             {
                 dataSources = null;
@@ -185,8 +175,6 @@ namespace ShardingCore.Extensions
                 dataSources = null;
                 return false;
             }
-            if (!entityType.IsShardingDataSource())
-                throw new ShardingCoreException($"sharding route entity type :{entityType.FullName} must impl {nameof(IShardingDataSource)}");
             if (!shardingRouteContext.AssertDataSource.ContainsKey(entityType))
             {
                 dataSources = null;

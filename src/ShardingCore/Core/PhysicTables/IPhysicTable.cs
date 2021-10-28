@@ -1,4 +1,5 @@
 using System;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.PhysicTables
@@ -11,6 +12,7 @@ namespace ShardingCore.Core.PhysicTables
 */
     public interface IPhysicTable
     {
+        EntityMetadata EntityMetadata { get; }
         /// <summary>
         /// 表全称
         /// </summary>
@@ -22,7 +24,7 @@ namespace ShardingCore.Core.PhysicTables
         /// <summary>
         /// 尾巴前缀 tail prefix
         /// </summary>
-        string TailPrefix { get; }
+        string TableSeparator { get; }
         /// <summary>
         /// 尾巴
         /// </summary>

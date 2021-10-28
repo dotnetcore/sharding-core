@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
@@ -23,6 +24,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     /// <typeparam name="TKey"></typeparam>
     public abstract class AbstractShardingFilterVirtualDataSourceRoute<T, TKey> : AbstractVirtualDataSourceRoute<T, TKey> where T : class, IShardingDataSource
     {
+
         public  ShardingRouteContext CurrentShardingRouteContext =>
             ShardingContainer.GetService<IShardingRouteManager>().Current;
         /// <summary>
@@ -51,7 +53,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                         var dataSources = allDataSourceNames.Where(o => mustDataSources.Contains(o)).ToList();
                         if (dataSources.IsEmpty()||dataSources.Count!=mustDataSources.Count)
                             throw new ShardingCoreException(
-                                $" sharding data source route must error:[{ShardingEntityType.FullName}]-->[{string.Join(",",mustDataSources)}]");
+                                $" sharding data source route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustDataSources)}]");
                         return dataSources;
                     }
 
@@ -60,7 +62,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                         var dataSources = allDataSourceNames.Where(o => hintDataSouces.Contains(o)).ToList();
                         if (dataSources.IsEmpty()||dataSources.Count!=hintDataSouces.Count)
                             throw new ShardingCoreException(
-                                $" sharding data source route hint error:[{ShardingEntityType.FullName}]-->[{string.Join(",",hintDataSouces)}]");
+                                $" sharding data source route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintDataSouces)}]");
                         ProcessAssertRoutes(allDataSourceNames, dataSources);
                         return dataSources;
                     }

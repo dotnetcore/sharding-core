@@ -80,7 +80,7 @@ namespace ShardingCore.TableCreator
                             if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                             {
                                 _logger.LogWarning(
-                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.ShardingConfig.TailPrefix}{tail}]");
+                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.EntityMetadata.TableSeparator}{tail}]");
                                 throw new ShardingCreateException(" create table error :", ex);
                             }
                         }

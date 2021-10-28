@@ -61,7 +61,7 @@ namespace ShardingCore.Helpers
             //其余其余都是将Name和Table使用分表名替换
             var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDContext>>();
             var allVirtualTables = virtualTableManager.GetAllVirtualTables();
-            var existsShardingTables = allVirtualTables.ToDictionary(o => o.ShardingConfig.VirtualTableName, o => o.GetAllPhysicTables().Select(p=>p.FullName).ToList());
+            var existsShardingTables = allVirtualTables.ToDictionary(o => o.EntityMetadata.VirtualTableName, o => o.GetAllPhysicTables().Select(p=>p.FullName).ToList());
             //Dictionary<string, List<string>> _existsShardingTables
             //    = Cache.ServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
             List<string> resList = new List<string>();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.VirtualRoutes;
@@ -23,7 +24,7 @@ namespace Sample.SqlServer.Shardings
         protected override bool EnableHintRoute => true;
         protected override bool EnableAssertRoute => true;
 
-        public SysUserModVirtualTableRoute() : base(2,3)
+        public SysUserModVirtualTableRoute() : base(2, 3)
         {
         }
 

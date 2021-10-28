@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
@@ -22,17 +23,21 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
     /// </summary>
     public class VirtualTableManager<TShardingDbContext> : IVirtualTableManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
 
         /// <summary>
         /// {entityType,virtualTableType}
         /// </summary>
         private readonly ConcurrentDictionary<Type, IVirtualTable> _shardingVirtualTables = new ConcurrentDictionary<Type, IVirtualTable>();
         private readonly ConcurrentDictionary<string, IVirtualTable> _shardingVirtualTaleVirtualTables = new ConcurrentDictionary<string, IVirtualTable>();
-
+        public VirtualTableManager(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        {
+            _entityMetadataManager = entityMetadataManager;
+        }
 
         public bool AddVirtualTable(IVirtualTable virtualTable)
         {
-            var result = _shardingVirtualTables.TryAdd(virtualTable.EntityType, virtualTable);
+            var result = _shardingVirtualTables.TryAdd(virtualTable.EntityMetadata.EntityType, virtualTable);
             _shardingVirtualTaleVirtualTables.TryAdd(virtualTable.GetVirtualTableName(), virtualTable);
             return result;
         }
@@ -43,7 +48,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         /// <returns></returns>
         public IVirtualTable GetVirtualTable(Type shardingEntityType)
         {
-            if (!shardingEntityType.IsShardingTable())
+            if (!_entityMetadataManager.IsShardingTable(shardingEntityType))
                 throw new InvalidOperationException(shardingEntityType.FullName);
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
                 throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
@@ -52,7 +57,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
 
         public IVirtualTable TryGetVirtualTable(Type shardingEntityType)
         {
-            if (!shardingEntityType.IsShardingTable())
+            if (!_entityMetadataManager.IsShardingTable(shardingEntityType))
                 throw new InvalidOperationException(shardingEntityType.FullName);
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
                 return null;
@@ -80,7 +85,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
 
         public bool AddPhysicTable(IVirtualTable virtualTable, IPhysicTable physicTable)
         {
-            return AddPhysicTable(virtualTable.EntityType, physicTable);
+            return AddPhysicTable(virtualTable.EntityMetadata.EntityType, physicTable);
         }
 
         public bool AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable)

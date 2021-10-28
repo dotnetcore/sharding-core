@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Sample.SqlServerShardingDataSource.Domain.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
 using ShardingCore.Helpers;
@@ -55,5 +56,6 @@ namespace Sample.SqlServerShardingDataSource.Shardings
                 }
             }
         }
+
     }
 }

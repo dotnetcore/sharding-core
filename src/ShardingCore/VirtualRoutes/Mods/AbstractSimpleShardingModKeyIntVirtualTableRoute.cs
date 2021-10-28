@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 
@@ -23,7 +24,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         protected readonly int Mod;
         protected readonly int TailLength;
         protected readonly char PaddingChar;
-        protected AbstractSimpleShardingModKeyIntVirtualTableRoute(int tailLength,int mod,char paddingChar='0')
+        protected AbstractSimpleShardingModKeyIntVirtualTableRoute(int tailLength,int mod,char paddingChar= '0') 
         {
             if(tailLength<1)
                 throw new ArgumentException($"{nameof(tailLength)} less than 1 ");

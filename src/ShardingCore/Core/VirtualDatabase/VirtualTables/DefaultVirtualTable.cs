@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
@@ -24,18 +25,11 @@ namespace ShardingCore.Core.VirtualTables
     /// 同数据库虚拟表
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DefaultVirtualTable<T> : IVirtualTable<T> where T : class,IShardingTable
+    public class DefaultVirtualTable<T> : IVirtualTable<T> where T : class
     {
+        public EntityMetadata EntityMetadata { get; }
         private readonly IVirtualTableRoute<T> _virtualTableRoute;
           
-        /// <summary>
-        /// 分表的对象类型
-        /// </summary>
-        public Type EntityType { get; }
-        /// <summary>
-        /// 分表的配置
-        /// </summary>
-        public ShardingEntityConfig ShardingConfig { get; }
         /// <summary>
         /// 分库配置
         /// </summary>
@@ -49,11 +43,10 @@ namespace ShardingCore.Core.VirtualTables
 
         private readonly ConcurrentDictionary<IPhysicTable, object> _physicTables = new ConcurrentDictionary<IPhysicTable, object>();
 
-        public DefaultVirtualTable(IVirtualTableRoute<T> virtualTableRoute)
+        public DefaultVirtualTable(IVirtualTableRoute<T> virtualTableRoute,EntityMetadata entityMetadata)
         {
-               _virtualTableRoute = virtualTableRoute;
-            EntityType = typeof(T);
-            ShardingConfig = ShardingUtil.Parse(EntityType);
+            EntityMetadata = entityMetadata;
+            _virtualTableRoute = virtualTableRoute;
             var paginationConfiguration = virtualTableRoute.CreatePaginationConfiguration();
             if (paginationConfiguration!=null)
             {
@@ -80,7 +73,7 @@ namespace ShardingCore.Core.VirtualTables
                 shardingKeyValue = tableRouteConfig.GetShardingKeyValue();
 
             if (tableRouteConfig.UseEntity())
-                shardingKeyValue = tableRouteConfig.GetShardingEntity().GetPropertyValue(ShardingConfig.ShardingTableField);
+                shardingKeyValue = tableRouteConfig.GetShardingEntity().GetPropertyValue(EntityMetadata.ShardingTableProperty.Name);
 
             if (shardingKeyValue == null)
                 throw new ShardingCoreException(" route entity queryable or sharding key value is null ");
@@ -91,19 +84,14 @@ namespace ShardingCore.Core.VirtualTables
 
         public bool AddPhysicTable(IPhysicTable physicTable)
         {
-            if (physicTable.EntityType != EntityType)
-                throw new InvalidOperationException($"virtual table entity type :[{EntityType.FullName}] physic table entity type:[{physicTable.EntityType.FullName}]");
+            if (physicTable.EntityType != EntityMetadata.EntityType)
+                throw new InvalidOperationException($"virtual table entity type :[{EntityMetadata.EntityType.FullName}] physic table entity type:[{physicTable.EntityType.FullName}]");
             return _physicTables.TryAdd(physicTable, null);
-        }
-
-        public void SetVirtualTableName(string originalTableName)
-        {
-            ShardingConfig.VirtualTableName = originalTableName;
         }
 
         public string GetVirtualTableName()
         {
-            return ShardingConfig.VirtualTableName;
+            return EntityMetadata.VirtualTableName;
         }
 
         IVirtualTableRoute IVirtualTable.GetVirtualRoute()

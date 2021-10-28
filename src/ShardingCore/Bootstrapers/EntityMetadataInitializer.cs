@@ -1,0 +1,202 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Logging;
+using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.TrackerManagers;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualTables;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.TableCreator;
+using ShardingCore.Utils;
+
+namespace ShardingCore.Bootstrapers
+{
+    public interface IEntityMetadataInitializer
+    {
+        void Initialize();
+    }
+    public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
+    {
+        private readonly string _dataSourceName;
+        private readonly IEntityType _entityType;
+        private readonly string _virtualTableName;
+        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
+        private readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger;
+
+        public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams
+            , IShardingConfigOption shardingConfigOption,
+            ITrackerManager<TShardingDbContext> trackerManager,IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
+            IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IShardingTableCreator<TShardingDbContext> tableCreator,
+            ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
+            )
+        {
+            _dataSourceName = entityMetadataEnsureParams.DataSourceName;
+            _entityType = entityMetadataEnsureParams.EntityType;
+            _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
+            _shardingConfigOption = shardingConfigOption;
+            _trackerManager = trackerManager;
+            _virtualDataSource = virtualDataSource;
+            _virtualTableManager = virtualTableManager;
+            _entityMetadataManager = entityMetadataManager;
+            _tableCreator = tableCreator;
+            _logger = logger;
+        }
+        public void Initialize()
+        {
+            var shardingEntityType = _entityType.ClrType;
+            _trackerManager.AddDbContextModel(shardingEntityType);
+            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList());
+            _entityMetadataManager.AddEntityMetadata(entityMetadata);
+            //设置标签
+            if (_shardingConfigOption.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
+            {
+                var creatEntityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TEntity>.CreatEntityMetadataDataSourceBuilder(entityMetadata);
+                //配置属性分库信息
+                EntityMetadataHelper.Configure(creatEntityMetadataDataSourceBuilder);
+                var dataSourceRoute = CreateVirtualDataSourceRoute(virtualDataSourceRouteType, entityMetadata);
+                if (dataSourceRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
+                {
+                    entityMetadataAutoBindInitializer.Initialize(entityMetadata);
+                }
+                //配置分库信息
+                var entityMetadataDataSourceConfiguration = dataSourceRoute.CreateEntityMetadataDataSourceConfiguration();
+                entityMetadataDataSourceConfiguration?.Configure(creatEntityMetadataDataSourceBuilder);
+
+                _virtualDataSource.AddVirtualDataSourceRoute(dataSourceRoute);
+
+            }
+            if (_shardingConfigOption.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
+            {
+                var entityMetadataTableBuilder = EntityMetadataTableBuilder<TEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
+                //配置属性分表信息
+                EntityMetadataHelper.Configure(entityMetadataTableBuilder);
+
+                var virtualTableRoute = CreateVirtualTableRoute(virtualTableRouteType, entityMetadata);
+                if (virtualTableRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
+                {
+                    entityMetadataAutoBindInitializer.Initialize(entityMetadata);
+                }
+                //配置分表信息
+                var createEntityMetadataTableConfiguration = virtualTableRoute.CreateEntityMetadataTableConfiguration();
+                createEntityMetadataTableConfiguration?.Configure(entityMetadataTableBuilder);
+                //创建虚拟表
+                var virtualTable = CreateVirtualTable(virtualTableRoute,entityMetadata);
+                _virtualTableManager.AddVirtualTable(virtualTable);
+                CreateDataTable(_dataSourceName, virtualTable);
+            }
+
+        }
+
+        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable)
+        {
+            var entityMetadata = virtualTable.EntityMetadata;
+            foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
+            {
+                if (NeedCreateTable(entityMetadata))
+                {
+                    try
+                    {
+                        //添加物理表
+                        virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
+                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
+                        {
+                            _logger.LogWarning(
+                                $"table :{virtualTable.GetVirtualTableName()}{entityMetadata.TableSeparator}{tail} will created.", e);
+                        }
+                    }
+                }
+                else
+                {
+                    //添加物理表
+                    virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
+                }
+
+            }
+        }
+        private bool NeedCreateTable(EntityMetadata entityMetadata)
+        {
+            if (entityMetadata.AutoCreateTable.HasValue)
+            {
+                if (entityMetadata.AutoCreateTable.Value)
+                    return entityMetadata.AutoCreateTable.Value;
+                else
+                {
+                    if (entityMetadata.AutoCreateDataSourceTable.HasValue)
+                        return entityMetadata.AutoCreateDataSourceTable.Value;
+                }
+            }
+            if (entityMetadata.AutoCreateDataSourceTable.HasValue)
+            {
+                if (entityMetadata.AutoCreateDataSourceTable.Value)
+                    return entityMetadata.AutoCreateDataSourceTable.Value;
+                else
+                {
+                    if (entityMetadata.AutoCreateTable.HasValue)
+                        return entityMetadata.AutoCreateTable.Value;
+                }
+            }
+
+            return _shardingConfigOption.CreateShardingTableOnStart.GetValueOrDefault();
+        }
+        private IVirtualDataSourceRoute<TEntity> CreateVirtualDataSourceRoute(Type virtualRouteType,EntityMetadata entityMetadata)
+        {
+            var constructors
+                = virtualRouteType.GetTypeInfo().DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .ToArray();
+            if (constructors.Length != 1)
+            {
+                throw new ArgumentException(
+                    $"virtual route :[{virtualRouteType}] found more  declared constructor ");
+            }
+
+            var @params = constructors[0].GetParameters().Select(x => x.ParameterType == ShardingContainer.GetService(x.ParameterType))
+                .ToArray();
+            object o = Activator.CreateInstance(virtualRouteType, @params);
+            return (IVirtualDataSourceRoute<TEntity>)o;
+        }
+
+
+        private IVirtualTableRoute<TEntity> CreateVirtualTableRoute(Type virtualRouteType, EntityMetadata entityMetadata)
+        {
+            var constructors
+                = virtualRouteType.GetTypeInfo().DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .ToArray();
+
+            if (constructors.Length !=1)
+            {
+                throw new ArgumentException(
+                    $"virtual route :[{virtualRouteType}] found more  declared constructor ");
+            }
+            var @params = constructors[0].GetParameters().Select(x => ShardingContainer.GetService(x.ParameterType))
+                .ToArray();
+            object o = Activator.CreateInstance(virtualRouteType, @params);
+            return (IVirtualTableRoute<TEntity>)o;
+        }
+
+        private IVirtualTable<TEntity> CreateVirtualTable(IVirtualTableRoute<TEntity> virtualTableRoute,EntityMetadata entityMetadata)
+        {
+            return new DefaultVirtualTable<TEntity>(virtualTableRoute, entityMetadata);
+        }
+    }
+}

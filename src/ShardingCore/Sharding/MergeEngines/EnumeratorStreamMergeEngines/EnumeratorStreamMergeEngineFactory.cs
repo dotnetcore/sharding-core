@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -34,12 +35,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         private readonly IShardingPageManager _shardingPageManager;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private EnumeratorStreamMergeEngineFactory(StreamMergeContext<TEntity> streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
+            _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
         }
 
         public static EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity> Create(StreamMergeContext<TEntity> streamMergeContext)
@@ -56,10 +59,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
             //未开启系统分表或者本次查询涉及多张分表
-            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSupportPaginationQuery() && _shardingPageManager.Current != null)
+            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSupportPaginationQuery<TShardingDbContext,TEntity>() && _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
-                var shardingEntityType = _streamMergeContext.QueryEntities.FirstOrDefault(o => o.IsShardingDataSource() || o.IsShardingTable());
+                var shardingEntityType = _streamMergeContext.QueryEntities.FirstOrDefault(o => _entityMetadataManager.IsShardingDataSource(o) || _entityMetadataManager.IsShardingTable(o));
                 if (shardingEntityType == null)
                     throw new ShardingCoreException($"query not found sharding data source or sharding table entity");
 
@@ -87,8 +90,8 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         private IEnumeratorStreamMergeEngine<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
         {
 
-            var isShardingDataSource = shardingEntityType.IsShardingDataSource();
-            var isShardingTable = shardingEntityType.IsShardingTable();
+            var isShardingDataSource = _entityMetadataManager.IsShardingDataSource(shardingEntityType);
+            var isShardingTable = _entityMetadataManager.IsShardingTable(shardingEntityType);
             PaginationSequenceConfig dataSourceSequenceOrderConfig = null;
             PaginationSequenceConfig tableSequenceOrderConfig = null;
             if (isShardingDataSource)
@@ -123,8 +126,8 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             var orderCount = _streamMergeContext.Orders.Count();
             var primaryOrder = _streamMergeContext.Orders.First();
-            var isShardingDataSource = shardingEntityType.IsShardingDataSource();
-            var isShardingTable = shardingEntityType.IsShardingTable();
+            var isShardingDataSource = _entityMetadataManager.IsShardingDataSource(shardingEntityType);
+            var isShardingTable = _entityMetadataManager.IsShardingTable(shardingEntityType);
             PaginationSequenceConfig dataSourceSequenceOrderConfig = null;
             PaginationSequenceConfig tableSequenceOrderConfig = null;
             IVirtualDataSourceRoute virtualDataSourceRoute = null;

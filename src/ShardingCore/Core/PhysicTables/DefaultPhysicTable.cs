@@ -1,4 +1,5 @@
 using System;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.PhysicTables
@@ -20,13 +21,15 @@ namespace ShardingCore.Core.PhysicTables
             VirtualTable = virtualTable;
             OriginalName = virtualTable.GetVirtualTableName();
             Tail = tail;
-            EntityType = VirtualTable.EntityType;
+            EntityMetadata = VirtualTable.EntityMetadata;
+            EntityType = EntityMetadata.EntityType;
         }
 
 
-        public string FullName => $"{OriginalName}{TailPrefix}{Tail}";
+        public EntityMetadata EntityMetadata { get; }
+        public string FullName => $"{OriginalName}{TableSeparator}{Tail}";
         public string OriginalName { get; }
-        public string TailPrefix =>VirtualTable.ShardingConfig.TailPrefix;
+        public string TableSeparator => EntityMetadata.TableSeparator;
         public string Tail { get;  }
         public Type EntityType { get; }
         public IVirtualTable VirtualTable { get; }
