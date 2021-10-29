@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.Migrations.EFCores;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 
 namespace Sample.Migrations
 {

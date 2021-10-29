@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
 

@@ -15,7 +15,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
     /// time type is date time
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> : AbstractShardingOperatorVirtualTableRoute<T, DateTime> where T : class, IShardingTable
+    public abstract class AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> : AbstractShardingOperatorVirtualTableRoute<T, DateTime> where T : class
     {
         /// <summary>
         /// how convert object to date time

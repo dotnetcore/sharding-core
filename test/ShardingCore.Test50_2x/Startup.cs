@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ShardingCore.Bootstrapers;
 using ShardingCore.EFCores;
 using ShardingCore.Test50_2x.Domain.Entities;
 using ShardingCore.Test50_2x.Shardings;

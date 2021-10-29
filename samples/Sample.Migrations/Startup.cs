@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Sample.Migrations.EFCores;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 
 namespace Sample.Migrations
 {

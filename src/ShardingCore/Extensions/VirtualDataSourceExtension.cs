@@ -23,7 +23,7 @@ namespace ShardingCore.Extensions
         {
 
             return virtualDataSource.RouteTo(entity.GetType(),
-                new ShardingDataSourceRouteConfig(shardingDataSource: entity as IShardingDataSource))[0];
+                new ShardingDataSourceRouteConfig(shardingDataSource: entity))[0];
         }
 
         public static List<string> GetDataSourceNames<TEntity>(this IVirtualDataSource virtualDataSource, Expression<Func<TEntity, bool>> where)

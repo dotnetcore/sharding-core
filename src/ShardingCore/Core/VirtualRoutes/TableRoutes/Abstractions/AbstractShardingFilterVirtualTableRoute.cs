@@ -24,7 +24,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingFilterVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class, IShardingTable
+    public abstract class AbstractShardingFilterVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class
     {
         public  ShardingRouteContext CurrentShardingRouteContext =>
             ShardingContainer.GetService<IShardingRouteManager>().Current;

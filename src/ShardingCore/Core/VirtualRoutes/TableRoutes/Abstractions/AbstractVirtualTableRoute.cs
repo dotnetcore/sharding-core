@@ -18,7 +18,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     * @Date: Friday, 18 December 2020 14:33:01
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T>, IEntityMetadataAutoBindInitializer where T : class, IShardingTable
+    public abstract class AbstractVirtualTableRoute<T, TKey> : IVirtualTableRoute<T>, IEntityMetadataAutoBindInitializer where T : class
     {
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
@@ -77,5 +77,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <returns></returns>
         public abstract List<string> GetAllTails();
 
+        public virtual void Configure(EntityMetadataTableBuilder<T> builder)
+        {
+            
+        }
     }
 }

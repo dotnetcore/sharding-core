@@ -13,7 +13,7 @@ namespace ShardingCore.Test50_2x.Domain.Entities
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingTableKey(TailPrefix = "_")]
+        [ShardingTableKey(TableSeparator = "_")]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称

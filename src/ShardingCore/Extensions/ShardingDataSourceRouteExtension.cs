@@ -25,7 +25,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="dataSources"></param>
         /// <returns>任何一个dataSources被添加成功就返回成功</returns>
-        public static bool TryCreateOrAddMustDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] dataSources) where TEntity : class, IShardingDataSource
+        public static bool TryCreateOrAddMustDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] dataSources) where TEntity : class
         {
             return TryCreateOrAddMustDataSource(shardingRouteContext, typeof(TEntity), dataSources);
         }
@@ -60,7 +60,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="dataSources"></param>
         /// <returns>任何一个dataSources被添加成功就返回成功</returns>
-        public static bool TryCreateOrAddHintDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] dataSources) where TEntity : class, IShardingDataSource
+        public static bool TryCreateOrAddHintDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] dataSources) where TEntity : class
         {
             return TryCreateOrAddHintDataSource(shardingRouteContext, typeof(TEntity), dataSources);
         }
@@ -95,7 +95,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="dataSources"></param>
         /// <returns></returns>
-        public static bool TryCreateOrAddAssertDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params IDataSourceRouteAssert<TEntity>[] dataSources) where TEntity : class, IShardingDataSource
+        public static bool TryCreateOrAddAssertDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, params IDataSourceRouteAssert<TEntity>[] dataSources) where TEntity : class
         {
             return TryCreateOrAddAssertDataSource(shardingRouteContext, typeof(TEntity), dataSources);
         }
@@ -123,7 +123,7 @@ namespace ShardingCore.Extensions
 
 
 
-        public static bool TryGetMustDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> dataSources) where TEntity  : class, IShardingDataSource
+        public static bool TryGetMustDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> dataSources) where TEntity  : class
         {
             return TryGetMustDataSource(shardingRouteContext,typeof(TEntity),out dataSources);
         }
@@ -143,7 +143,7 @@ namespace ShardingCore.Extensions
             dataSources = shardingRouteContext.MustDataSource[entityType];
             return true;
         }
-        public static bool TryGetHintDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> dataSources) where TEntity  : class,IShardingDataSource
+        public static bool TryGetHintDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> dataSources) where TEntity  : class
         {
             return TryGetHintDataSource(shardingRouteContext,typeof(TEntity),out dataSources);
         }
@@ -164,7 +164,7 @@ namespace ShardingCore.Extensions
             return true;
         }
 
-        public static bool TryGetAssertDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out ICollection<IDataSourceRouteAssert> dataSources)where TEntity  : class,IShardingDataSource
+        public static bool TryGetAssertDataSource<TEntity>(this ShardingRouteContext shardingRouteContext, out ICollection<IDataSourceRouteAssert> dataSources)where TEntity  : class
         {
             return TryGetAssertDataSource(shardingRouteContext,typeof(TEntity), out dataSources);
         }

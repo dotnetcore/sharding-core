@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ShardingCore.Bootstrapers;
 using ShardingCore.Extensions.ShardingPageExtensions;
 
 namespace Sample.BulkConsole

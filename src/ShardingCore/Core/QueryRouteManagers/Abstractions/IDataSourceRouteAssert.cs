@@ -24,7 +24,7 @@ namespace ShardingCore.Core.QueryRouteManagers.Abstractions
         void Assert(List<string> allDataSources, List<string> resultDataSources);
     }
 
-    public interface IDataSourceRouteAssert<T> : IDataSourceRouteAssert where T : class, IShardingDataSource
+    public interface IDataSourceRouteAssert<T> : IDataSourceRouteAssert where T : class
     {
 
     }

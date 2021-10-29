@@ -26,8 +26,10 @@ using ShardingCore.TableCreator;
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Bootstrapers;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.Jobs;
 
 namespace ShardingCore
 {
@@ -219,6 +221,8 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+
+            services.AddShardingJob();
             return services;
         }
         public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext

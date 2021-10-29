@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Entities;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 
 namespace Sample.SqlServer3x
 {

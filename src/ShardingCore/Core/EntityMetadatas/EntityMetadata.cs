@@ -8,10 +8,11 @@ namespace ShardingCore.Core.EntityMetadatas
 {
     public class EntityMetadata
     {
-        public EntityMetadata(Type entityType, string virtualTableName, IReadOnlyList<PropertyInfo> primaryKeyProperties)
+        public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties)
         {
             EntityType = entityType;
             VirtualTableName = virtualTableName;
+            ShardingDbContextType = shardingDbContextType;
             PrimaryKeyProperties = primaryKeyProperties;
             IsSingleKey= PrimaryKeyProperties.Count == 1;
         }
@@ -23,6 +24,9 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表的原表名 original table name in db exclude tail
         /// </summary>
         public string VirtualTableName { get; }
+
+        public Type ShardingDbContextType { get; }
+
         /// <summary>
         /// 主键
         /// </summary>

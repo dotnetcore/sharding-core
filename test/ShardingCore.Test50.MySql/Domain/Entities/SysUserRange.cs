@@ -13,7 +13,7 @@
 //         /// <summary>
 //         /// 分表分库range切分
 //         /// </summary>
-//         [ShardingKey(TailPrefix = "_",AutoCreateTableOnStart = true)]
+//         [ShardingKey(TableSeparator = "_",AutoCreateTableOnStart = true)]
 //         public string Id { get; set; }
 //         /// <summary>
 //         /// 姓名

@@ -18,7 +18,7 @@ namespace ShardingCore.Core.QueryRouteManagers.Abstractions
         void Assert(List<IPhysicTable> allPhysicTables, List<IPhysicTable> resultPhysicTables);
     }
 
-    public interface ITableRouteAssert<T> : ITableRouteAssert where T : class,IShardingTable
+    public interface ITableRouteAssert<T> : ITableRouteAssert where T : class
     {
         
     }

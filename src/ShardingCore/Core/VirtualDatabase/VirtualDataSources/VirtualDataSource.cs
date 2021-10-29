@@ -68,7 +68,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             if(!_entityMetadataManager.IsShardingDataSource(entityType))
                 throw new InvalidOperationException(
-                    $"entity type :[{entityType.FullName}] not impl [{nameof(IShardingDataSource)}]");
+                    $"entity type :[{entityType.FullName}] not configure sharding data source");
 
             if (!_dataSourceVirtualRoutes.TryGetValue(entityType, out var dataSourceVirtualRoute))
                 throw new InvalidOperationException(
@@ -111,7 +111,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
         {
             if (!virtualDataSourceRoute.EntityMetadata.IsShardingDataSource())
-                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should impl {nameof(IShardingDataSource)}");
+                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should configure sharding data source");
 
             return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityMetadata.EntityType, virtualDataSourceRoute);
         }

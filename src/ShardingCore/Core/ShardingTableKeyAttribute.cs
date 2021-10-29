@@ -19,7 +19,7 @@ namespace ShardingCore.Core
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class ShardingTableKeyAttribute : Attribute
     {
-        public const string DEFAULT_TAIL_PREFIX = "_";
+        public const string DEFAULT_TABLE_SEPARATOR = "_";
 
         /// <summary>
         /// 是否需要在启动的时候创建表
@@ -29,6 +29,6 @@ namespace ShardingCore.Core
         /// <summary>
         /// 分表尾巴前缀 
         /// </summary>
-        public string TailPrefix { get; set; } = DEFAULT_TAIL_PREFIX;
+        public string TableSeparator { get; set; } = DEFAULT_TABLE_SEPARATOR;
     }
 }

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 
-namespace ShardingCore.Utils
+namespace ShardingCore.Helpers
 {
     public class EntityMetadataHelper
     {
@@ -37,7 +35,7 @@ namespace ShardingCore.Utils
                                 ? (bool?) null
                                 : (shardingKey.AutoCreateTableOnStart == ShardingKeyAutoCreateTableEnum.Create);
                         builder.AutoCreateTable(autoCreateTable);
-                        builder.TableSeparator(shardingKey.TailPrefix);
+                        builder.TableSeparator(shardingKey.TableSeparator);
                         shardingTableCount++;
                     }
                 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.EntityShardingMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -15,6 +16,10 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
+using ShardingCore.Helpers;
+using ShardingCore.Jobs;
+using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Jobs.Impls;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using ShardingCore.Utils;
@@ -60,7 +65,7 @@ namespace ShardingCore.Bootstrapers
         {
             var shardingEntityType = _entityType.ClrType;
             _trackerManager.AddDbContextModel(shardingEntityType);
-            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList());
+            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList());
             _entityMetadataManager.AddEntityMetadata(entityMetadata);
             //设置标签
             if (_shardingConfigOption.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
@@ -74,8 +79,10 @@ namespace ShardingCore.Bootstrapers
                     entityMetadataAutoBindInitializer.Initialize(entityMetadata);
                 }
                 //配置分库信息
-                var entityMetadataDataSourceConfiguration = dataSourceRoute.CreateEntityMetadataDataSourceConfiguration();
-                entityMetadataDataSourceConfiguration?.Configure(creatEntityMetadataDataSourceBuilder);
+                if(dataSourceRoute is IEntityMetadataDataSourceConfiguration<TEntity> entityMetadataDataSourceConfiguration)
+                {
+                    entityMetadataDataSourceConfiguration.Configure(creatEntityMetadataDataSourceBuilder);
+                }
 
                 _virtualDataSource.AddVirtualDataSourceRoute(dataSourceRoute);
 
@@ -92,14 +99,32 @@ namespace ShardingCore.Bootstrapers
                     entityMetadataAutoBindInitializer.Initialize(entityMetadata);
                 }
                 //配置分表信息
-                var createEntityMetadataTableConfiguration = virtualTableRoute.CreateEntityMetadataTableConfiguration();
-                createEntityMetadataTableConfiguration?.Configure(entityMetadataTableBuilder);
+                if (virtualTableRoute is IEntityMetadataTableConfiguration<TEntity> createEntityMetadataTableConfiguration)
+                {
+                    createEntityMetadataTableConfiguration.Configure(entityMetadataTableBuilder);
+                }
                 //创建虚拟表
                 var virtualTable = CreateVirtualTable(virtualTableRoute,entityMetadata);
                 _virtualTableManager.AddVirtualTable(virtualTable);
+                //检测校验分表分库对象元数据
+                entityMetadata.CheckMetadata();
+                //创建表
                 CreateDataTable(_dataSourceName, virtualTable);
+                //添加任务
+                if (virtualTableRoute is IJob routeJob&& routeJob.StartJob())
+                {
+                    var jobManager = ShardingContainer.GetService<IJobManager>();
+                    var jobEntries = JobTypeParser.Parse(virtualTableRoute.GetType());
+                    jobEntries.ForEach(o =>
+                    {
+                        o.JobName = $"{routeJob.JobName}:{o.JobName}";
+                    });
+                    foreach (var jobEntry in jobEntries)
+                    {
+                        jobManager.AddJob(jobEntry);
+                    }
+                }
             }
-
         }
 
         private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable)

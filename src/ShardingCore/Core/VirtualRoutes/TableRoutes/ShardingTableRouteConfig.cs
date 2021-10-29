@@ -12,12 +12,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
     public class ShardingTableRouteConfig
     {
         private readonly IQueryable _queryable;
-        private readonly IShardingTable _shardingTable;
+        private readonly object _shardingTable;
         private readonly object _shardingKeyValue;
         private readonly Expression _predicate;
 
 
-        public ShardingTableRouteConfig(IQueryable queryable=null,IShardingTable shardingTable=null,object shardingKeyValue=null,Expression predicate=null)
+        public ShardingTableRouteConfig(IQueryable queryable=null,object shardingTable=null,object shardingKeyValue=null,Expression predicate=null)
         {
             _queryable = queryable;
             _shardingTable = shardingTable;
@@ -34,7 +34,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
             return _shardingKeyValue;
         }
 
-        public IShardingTable GetShardingEntity()
+        public object GetShardingEntity()
         {
             return _shardingTable;
         }

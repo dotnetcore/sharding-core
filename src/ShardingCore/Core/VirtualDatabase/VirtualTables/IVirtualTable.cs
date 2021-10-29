@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ShardingCore.Bootstrapers;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase;

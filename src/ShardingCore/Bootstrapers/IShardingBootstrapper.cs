@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace ShardingCore
+namespace ShardingCore.Bootstrapers
 {
 /*
 * @Author: xjm

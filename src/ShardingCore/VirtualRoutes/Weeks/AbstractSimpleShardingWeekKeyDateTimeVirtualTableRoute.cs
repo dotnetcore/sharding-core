@@ -3,8 +3,15 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Extensions;
 using ShardingCore.Helpers;
+using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Jobs.Impls.Attributes;
+using ShardingCore.TableCreator;
 using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Weeks
@@ -15,7 +22,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
 * @Date: Wednesday, 27 January 2021 12:40:27
 * @Email: 326308290@qq.com
 */
-    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T : class, IShardingTable
+    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>,IJob where T : class
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
@@ -70,6 +77,55 @@ namespace ShardingCore.VirtualRoutes.Weeks
                     return tail => true;
                 }
             }
+        }
+        /// <summary>
+        /// 每周五 5点
+        /// </summary>
+        [JobRun(Name = "定时创建表", Cron = "0 0 5 ? * 6", RunOnceOnStart = true)]
+        public virtual void AutoShardingTableCreate()
+        {
+
+            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
+            if (virtualTable == null)
+            {
+                return;
+            }
+            var now = DateTime.Now.Date.AddDays(3);
+            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
+            try
+            {tableCreator.CreateTable(virtualDataSource.DefaultDataSourceName, typeof(T), tail);
+            }
+            catch (Exception e)
+            {
+                //ignore
+            }
+        }
+        /// <summary>
+        /// 每周末晚上23点55分添加数据
+        /// </summary>
+        [JobRun(Name = "定时添加虚拟表", Cron = "0 55 23 ? * 1")]
+        public virtual void AutoShardingTableAdd()
+        {
+            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
+            if (virtualTable == null)
+            {
+                return;
+            }
+            var now = DateTime.Now.Date.AddDays(3);
+            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
+            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+        }
+
+        public virtual string JobName =>
+            $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
+
+        public virtual bool StartJob()
+        {
+            return false;
         }
 
     }

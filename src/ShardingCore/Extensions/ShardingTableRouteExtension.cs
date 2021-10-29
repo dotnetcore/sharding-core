@@ -25,7 +25,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="tails"></param>
         /// <returns>任何一个tails被添加成功就返回成功</returns>
-        public static bool TryCreateOrAddMustTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class, IShardingTable
+        public static bool TryCreateOrAddMustTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class
         {
             return TryCreateOrAddMustTail(shardingRouteContext, typeof(TEntity), tails);
         }
@@ -60,7 +60,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="tails"></param>
         /// <returns>任何一个tails被添加成功就返回成功</returns>
-        public static bool TryCreateOrAddHintTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class, IShardingTable
+        public static bool TryCreateOrAddHintTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class
         {
             return TryCreateOrAddHintTail(shardingRouteContext, typeof(TEntity), tails);
         }
@@ -95,7 +95,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="tails"></param>
         /// <returns></returns>
-        public static bool TryCreateOrAddAssertTail<TEntity>(this ShardingRouteContext shardingRouteContext, params ITableRouteAssert<TEntity>[] tails) where TEntity : class, IShardingTable
+        public static bool TryCreateOrAddAssertTail<TEntity>(this ShardingRouteContext shardingRouteContext, params ITableRouteAssert<TEntity>[] tails) where TEntity : class
         {
             return TryCreateOrAddAssertTail(shardingRouteContext, typeof(TEntity), tails);
         }
@@ -123,7 +123,7 @@ namespace ShardingCore.Extensions
 
 
 
-        public static bool TryGetMustTail<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> tail) where TEntity  : class,IShardingTable
+        public static bool TryGetMustTail<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> tail) where TEntity  : class
         {
             return TryGetMustTail(shardingRouteContext,typeof(TEntity),out tail);
         }
@@ -143,7 +143,7 @@ namespace ShardingCore.Extensions
             tail = shardingRouteContext.MustTable[entityType];
             return true;
         }
-        public static bool TryGetHintTail<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> tail) where TEntity  : class,IShardingTable
+        public static bool TryGetHintTail<TEntity>(this ShardingRouteContext shardingRouteContext, out HashSet<string> tail) where TEntity  : class
         {
             return TryGetHintTail(shardingRouteContext,typeof(TEntity),out tail);
         }
@@ -164,7 +164,7 @@ namespace ShardingCore.Extensions
             return true;
         }
 
-        public static bool TryGetAssertTail<TEntity>(this ShardingRouteContext shardingRouteContext, out ICollection<ITableRouteAssert> tail)where TEntity  : class,IShardingTable
+        public static bool TryGetAssertTail<TEntity>(this ShardingRouteContext shardingRouteContext, out ICollection<ITableRouteAssert> tail)where TEntity  : class
         {
             return TryGetAssertTail(shardingRouteContext,typeof(TEntity), out tail);
         }

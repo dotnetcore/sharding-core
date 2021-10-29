@@ -75,7 +75,7 @@ namespace ShardingCore.Extensions
         public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,
             TEntity entity) where TEntity : class
         {
-            var physicTable = virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new ShardingTableRouteConfig(null, entity as IShardingTable, null))[0];
+            var physicTable = virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new ShardingTableRouteConfig(shardingTable: entity))[0];
             return physicTable.Tail;
         }
         public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,

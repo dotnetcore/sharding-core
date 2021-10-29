@@ -13,12 +13,12 @@ namespace ShardingCore.Core.VirtualRoutes
     {
         
         private readonly IQueryable _queryable;
-        private readonly IShardingDataSource _shardingDataSource;
+        private readonly object _shardingDataSource;
         private readonly object _shardingKeyValue;
         private readonly Expression _predicate;
 
 
-        public ShardingDataSourceRouteConfig(IQueryable queryable=null,IShardingDataSource shardingDataSource=null,object shardingKeyValue=null,Expression predicate=null)
+        public ShardingDataSourceRouteConfig(IQueryable queryable=null,object shardingDataSource=null,object shardingKeyValue=null,Expression predicate=null)
         {
             _queryable = queryable;
             _shardingDataSource = shardingDataSource;
@@ -35,7 +35,7 @@ namespace ShardingCore.Core.VirtualRoutes
             return _shardingKeyValue;
         }
 
-        public IShardingDataSource GetShardingDataSource()
+        public object GetShardingDataSource()
         {
             return _shardingDataSource;
         }

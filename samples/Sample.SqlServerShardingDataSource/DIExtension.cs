@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServerShardingDataSource.DbContexts;
 using Sample.SqlServerShardingDataSource.Domain.Entities;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 
 namespace Sample.SqlServerShardingDataSource
 {

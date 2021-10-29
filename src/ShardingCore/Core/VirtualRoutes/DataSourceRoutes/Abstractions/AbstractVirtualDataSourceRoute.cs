@@ -14,7 +14,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     * @Date: Friday, 18 December 2020 14:33:01
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T>, IEntityMetadataAutoBindInitializer where T : class, IShardingDataSource
+    public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T>, IEntityMetadataAutoBindInitializer where T : class
     {
         public EntityMetadata EntityMetadata { get; private set; }
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
@@ -76,5 +76,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 
         public abstract List<string> GetAllDataSourceNames();
         public abstract bool AddDataSourceName(string dataSourceName);
+        public void Configure(EntityMetadataDataSourceBuilder<T> builder)
+        {
+            
+        }
     }
 }

@@ -1,3 +1,4 @@
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Test50.Domain.Entities;
 using ShardingCore.VirtualRoutes.Mods;
 
@@ -17,5 +18,10 @@ namespace ShardingCore.Test50.Shardings
         {
         }
 
+        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        {
+            builder.ShardingProperty(o => o.Id);
+            builder.TableSeparator("_");
+        }
     }
 }

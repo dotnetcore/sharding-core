@@ -23,24 +23,24 @@ namespace ShardingCore.Utils
 */
     public class ShardingUtil
     {
-        
-        /// <summary>
-        /// 分库路由过滤
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="shardingEntityBaseType"></param>
-        /// <param name="shardingKeyConvert"></param>
-        /// <param name="keyToTailExpression"></param>
-        /// <returns></returns>
-        public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, ShardingEntityConfig shardingEntityBaseType, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
-        {
-            QueryableRouteShardingDataSourceDiscoverVisitor<TKey> visitor = new QueryableRouteShardingDataSourceDiscoverVisitor<TKey>(shardingEntityBaseType, shardingKeyConvert, keyToTailExpression);
 
-            visitor.Visit(queryable.Expression);
+        ///// <summary>
+        ///// 分库路由过滤
+        ///// </summary>
+        ///// <typeparam name="TKey"></typeparam>
+        ///// <param name="queryable"></param>
+        ///// <param name="entityMetadata"></param>
+        ///// <param name="shardingKeyConvert"></param>
+        ///// <param name="keyToTailExpression"></param>
+        ///// <returns></returns>
+        //public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
+        //{
+        //    QueryableRouteShardingDataSourceDiscoverVisitor<TKey> visitor = new QueryableRouteShardingDataSourceDiscoverVisitor<TKey>(entityMetadata, shardingKeyConvert, keyToTailExpression);
 
-            return visitor.GetDataSourceFilter();
-        }
+        //    visitor.Visit(queryable.Expression);
+
+        //    return visitor.GetDataSourceFilter();
+        //}
         /// <summary>
         /// 分表路由过滤
         /// </summary>

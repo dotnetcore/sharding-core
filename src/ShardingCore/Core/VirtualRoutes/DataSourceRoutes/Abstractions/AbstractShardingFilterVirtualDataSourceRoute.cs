@@ -22,7 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingFilterVirtualDataSourceRoute<T, TKey> : AbstractVirtualDataSourceRoute<T, TKey> where T : class, IShardingDataSource
+    public abstract class AbstractShardingFilterVirtualDataSourceRoute<T, TKey> : AbstractVirtualDataSourceRoute<T, TKey> where T : class
     {
 
         public  ShardingRouteContext CurrentShardingRouteContext =>

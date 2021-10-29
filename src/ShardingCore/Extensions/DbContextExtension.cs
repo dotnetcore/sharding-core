@@ -81,7 +81,7 @@ namespace ShardingCore.Extensions
         }
 
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType<T>(this DbContext dbContext)
-            where T : IShardingTable
+            where T:class
         {
             RemoveDbContextRelationModelSaveOnlyThatIsNamedType(dbContext, typeof(T));
         }

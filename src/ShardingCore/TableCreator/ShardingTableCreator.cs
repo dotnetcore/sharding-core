@@ -44,7 +44,7 @@ namespace ShardingCore.TableCreator
             _routeTailFactory = routeTailFactory;
         }
 
-        public void CreateTable< T>(string dataSourceName, string tail) where T : class, IShardingTable
+        public void CreateTable<T>(string dataSourceName, string tail) where T : class
         {
              CreateTable(dataSourceName,typeof(T), tail);
         }

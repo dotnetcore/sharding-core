@@ -46,7 +46,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 
     }
 
-    public interface IVirtualTableRoute<T> : IVirtualTableRoute where T : class
+    public interface IVirtualTableRoute<T> : IVirtualTableRoute, IEntityMetadataTableConfiguration<T> where T : class
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置
@@ -54,6 +54,5 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <returns></returns>
         IPaginationConfiguration<T> CreatePaginationConfiguration();
 
-        IEntityMetadataTableConfiguration<T> CreateEntityMetadataTableConfiguration();
     }
 }

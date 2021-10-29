@@ -1,10 +1,12 @@
-using ShardingCore.Extensions;
 using System;
 using System.Collections.Generic;
-using ShardingCore.Bootstrapers;
+using System.Threading.Tasks;
+using ShardingCore.Extensions;
+using ShardingCore.Jobs;
+using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 
-namespace ShardingCore
+namespace ShardingCore.Bootstrapers
 {
     /*
     * @Author: xjm
@@ -31,6 +33,15 @@ namespace ShardingCore
             {
                 var instance = (IShardingDbContextBootstrapper)Activator.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(shardingConfigOption.ShardingDbContextType), shardingConfigOption);
                 instance.Init();
+            }
+
+            var jobManager = ShardingContainer.GetService<IJobManager>();
+            if (jobManager != null && jobManager.HasAnyJob())
+            {
+                Task.Factory.StartNew(async () =>
+                {
+                    await ShardingContainer.GetService<JobRunnerService>().StartAsync();
+                }, TaskCreationOptions.LongRunning);
             }
         }
 

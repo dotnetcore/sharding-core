@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore;
+using ShardingCore.Bootstrapers;
 
 namespace Sample.SqlServer
 {

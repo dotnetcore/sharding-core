@@ -44,7 +44,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             {
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
 
-                var physicTables = virtualTable.RouteTo(new ShardingTableRouteConfig(tableRouteRuleContext.Queryable));
+                var physicTables = virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: tableRouteRuleContext.Queryable));
                 if (!routeMaps.ContainsKey(virtualTable))
                 {
                     routeMaps.Add(virtualTable, physicTables.ToHashSet());
