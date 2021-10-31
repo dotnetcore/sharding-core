@@ -43,6 +43,16 @@ namespace ShardingCore
         {
             DataSourcesConfigure = dataSourcesConfigure ?? throw new ArgumentNullException(nameof(dataSourcesConfigure));
         }
+        public Func<IServiceProvider, IShardingComparer<TShardingDbContext>> ReplaceShardingComparerFactory { get; private set; }
+        /// <summary>
+        /// 替换默认的比较器
+        /// </summary>
+        /// <param name="newShardingComparerFactory"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        {
+            ReplaceShardingComparerFactory=newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
+        }
 
 
         ///// <summary>

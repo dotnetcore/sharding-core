@@ -30,6 +30,11 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
+        public ShardingCoreConfigEndBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        {
+            _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
+            return this;
+        }
         public IServiceCollection End()
         {
             var services = _shardingCoreConfigBuilder.Services;
@@ -50,6 +55,14 @@ namespace ShardingCore.DIExtensions
                 .AddSingleton<IShardingDbContextCreatorConfig,
                     DefaultShardingDbContextCreatorConfig<TShardingDbContext>>(sp =>
                     new DefaultShardingDbContextCreatorConfig<TShardingDbContext>());
+            if (_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory != null)
+            {
+                services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
+            }
+            else
+            {
+                services.AddSingleton<IShardingComparer<TShardingDbContext>, CSharpLanguageShardingComparer<TShardingDbContext>>();
+            }
 
             if (!_shardingCoreConfigBuilder.ShardingConfigOption.UseReadWrite)
             {
@@ -94,6 +107,7 @@ namespace ShardingCore.DIExtensions
 
                 services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
                 services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
+                
                 //foreach (var dataSourceKv in dataSources)
                 //{
                 //    if (dataSourceKv.Key == _shardingCoreConfigBuilder.DefaultDataSourceName)

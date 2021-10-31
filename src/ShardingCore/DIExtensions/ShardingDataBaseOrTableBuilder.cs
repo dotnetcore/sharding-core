@@ -40,5 +40,10 @@ namespace ShardingCore.DIExtensions
             }
             return new ShardingReadWriteSeparationBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
+        public ShardingDataBaseOrTableBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        {
+            _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
+            return this;
+        }
     }
 }

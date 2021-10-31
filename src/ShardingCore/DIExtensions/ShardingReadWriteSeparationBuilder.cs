@@ -34,5 +34,10 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder.ShardingConfigOption.UseReadWriteConfiguration(readWriteSeparationConfigure,readStrategyEnum, defaultEnable,defaultPriority);
             return new ShardingCoreConfigEndBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
+        public ShardingReadWriteSeparationBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        {
+            _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
+            return this;
+        }
     }
 }

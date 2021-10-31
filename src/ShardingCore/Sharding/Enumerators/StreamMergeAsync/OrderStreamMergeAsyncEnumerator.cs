@@ -115,7 +115,7 @@ namespace ShardingCore.Sharding.Enumerators
             int i = 0;
             foreach (var order in _mergeContext.Orders)
             {
-                int result = CompareHelper.CompareToWith(_orderValues[i], other.GetCompares()[i], order.IsAsc);
+                int result = _mergeContext.GetShardingComparer().Compare(_orderValues[i], other.GetCompares()[i], order.IsAsc);
                 if (0 != result)
                 {
                     return result;

@@ -47,26 +47,28 @@ namespace ShardingCore.Sharding
         public IEnumerable<TableRouteResult> TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
         /// <summary>
-        /// ±¾´Î²éÑ¯Éæ¼°µÄ¶ÔÏó
+        /// æœ¬æ¬¡æŸ¥è¯¢æ¶‰åŠçš„å¯¹è±¡
         /// </summary>
         public ISet<Type> QueryEntities { get; }
         /// <summary>
-        /// ±¾´Î²éÑ¯ÊÇ·ñ°üº¬notracking
+        /// æœ¬æ¬¡æŸ¥è¯¢æ˜¯å¦åŒ…å«notracking
         /// </summary>
         public bool? IsNoTracking { get; }
         /// <summary>
-        /// ±¾´Î²éÑ¯¿ç¿â
+        /// æœ¬æ¬¡æŸ¥è¯¢è·¨åº“
         /// </summary>
         public bool IsCrossDataSource { get; }
         /// <summary>
-        /// ±¾´Î²éÑ¯¿ç±í
+        /// æœ¬æ¬¡æŸ¥è¯¢è·¨è¡¨
         /// </summary>
         public bool IsCrossTable { get; }
 
         private readonly ITrackerManager _trackerManager;
         private readonly IShardingConfigOption _shardingConfigOption;
 
-        private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts; 
+        private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
+
+        private readonly IShardingComparer _shardingComparer;
 
         public StreamMergeContext(IQueryable<T> source, IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
@@ -93,6 +95,8 @@ namespace ShardingCore.Sharding
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));
+            _shardingComparer = (IShardingComparer)ShardingContainer.GetService(typeof(IShardingComparer<>).GetGenericType0(_shardingDbContext.GetType()));
+
             _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>()
                 .FirstOrDefault(o => o.ShardingDbContextType == shardingDbContext.GetType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
@@ -123,7 +127,7 @@ namespace ShardingCore.Sharding
             Skip = skip;
         }
         /// <summary>
-        /// ´´½¨¶ÔÓ¦µÄdbcontext
+        /// åˆ›å»ºå¯¹åº”çš„dbcontext
         /// </summary>
         /// <param name="dataSourceName">data source name</param>
         /// <param name="tableRouteResult"></param>
@@ -131,7 +135,7 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            //Èç¹û¿ªÆôÁË¶ÁĞ´·ÖÀë»òÕß±¾´Î²éÑ¯ÊÇ¿ç±í»òÕß¿ç¿âµÄ±íÊ¾±¾´Î²éÑ¯µÄdbcontextÊÇ²»´æ´¢µÄÓÃÍêºó¾ÍÖ±½Ódispose
+            //å¦‚æœå¼€å¯äº†è¯»å†™åˆ†ç¦»æˆ–è€…æœ¬æ¬¡æŸ¥è¯¢æ˜¯è·¨è¡¨æˆ–è€…è·¨åº“çš„è¡¨ç¤ºæœ¬æ¬¡æŸ¥è¯¢çš„dbcontextæ˜¯ä¸å­˜å‚¨çš„ç”¨å®Œåå°±ç›´æ¥dispose
             var parallelQuery = IsParallelQuery();
             var dbContext = _shardingDbContext.GetDbContext(dataSourceName, parallelQuery, routeTail);
             if (parallelQuery)
@@ -190,7 +194,7 @@ namespace ShardingCore.Sharding
             return _shardingConfigOption.ParallelQueryTimeOut;
         }
         /// <summary>
-        /// ÊÇ·ñÊÇ¿ç×ÊÔ´²éÑ¯
+        /// æ˜¯å¦æ˜¯è·¨èµ„æºæŸ¥è¯¢
         /// </summary>
         /// <returns></returns>
         private bool IsCrossQuery()
@@ -198,7 +202,7 @@ namespace ShardingCore.Sharding
             return IsCrossDataSource || IsCrossTable;
         }
         /// <summary>
-        /// ÊÇ·ñÆôÓÃ¶ÁĞ´·ÖÀë
+        /// æ˜¯å¦å¯ç”¨è¯»å†™åˆ†ç¦»
         /// </summary>
         /// <returns></returns>
         private bool IsUseReadWriteSeparation()
@@ -207,7 +211,7 @@ namespace ShardingCore.Sharding
         }
 
         /// <summary>
-        /// ÊÇ·ñÊ¹ÓÃ²¢ĞĞ²éÑ¯
+        /// æ˜¯å¦ä½¿ç”¨å¹¶è¡ŒæŸ¥è¯¢
         /// </summary>
         /// <returns></returns>
         private bool IsParallelQuery()
@@ -216,12 +220,12 @@ namespace ShardingCore.Sharding
         }
 
         /// <summary>
-        /// ÊÇ·ñÊ¹ÓÃsharding track
+        /// æ˜¯å¦ä½¿ç”¨sharding track
         /// </summary>
         /// <returns></returns>
         public bool IsUseShardingTrack(Type entityType)
         {
-            //Ã»ÓĞ¿çdbcontext²éÑ¯²¢ÇÒ²»ÊÇ¶ÁĞ´·ÖÀë²Å¿ÉÒÔÄÇÃ´ÊÇ·ñ×·×ÙÖ®ÀàµÄÓÉ²éÑ¯µÄdbcontext×ÔĞĞ´¦Àí
+            //æ²¡æœ‰è·¨dbcontextæŸ¥è¯¢å¹¶ä¸”ä¸æ˜¯è¯»å†™åˆ†ç¦»æ‰å¯ä»¥é‚£ä¹ˆæ˜¯å¦è¿½è¸ªä¹‹ç±»çš„ç”±æŸ¥è¯¢çš„dbcontextè‡ªè¡Œå¤„ç†
             if (!IsParallelQuery())
                 return false;
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
@@ -242,6 +246,10 @@ namespace ShardingCore.Sharding
             }
         }
 
+        public IShardingComparer GetShardingComparer()
+        {
+            return _shardingComparer;
+        }
         public void Dispose()
         {
             foreach (var dbContext in _parallelDbContexts.Keys)
