@@ -33,11 +33,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             return null;
         }
 
-        public virtual IEntityMetadataTableConfiguration<T> CreateEntityMetadataTableConfiguration()
-        {
-            return null;
-        }
-
         /// <summary>
         /// 如何将分表字段转成对应的类型
         /// </summary>

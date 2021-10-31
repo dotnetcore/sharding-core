@@ -39,11 +39,6 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             return null;
         }
 
-        public virtual IEntityMetadataDataSourceConfiguration<T> CreateEntityMetadataDataSourceConfiguration()
-        {
-            return null;
-        }
-
         public new PaginationMetadata PaginationMetadata { get; protected set; }
         public bool EnablePagination => PaginationMetadata != null;
 
