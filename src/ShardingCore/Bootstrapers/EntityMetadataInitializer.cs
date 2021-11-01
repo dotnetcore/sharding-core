@@ -32,7 +32,6 @@ namespace ShardingCore.Bootstrapers
     }
     public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
     {
-        private readonly string _dataSourceName;
         private readonly IEntityType _entityType;
         private readonly string _virtualTableName;
         private readonly IShardingConfigOption _shardingConfigOption;
@@ -50,7 +49,6 @@ namespace ShardingCore.Bootstrapers
             ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
             )
         {
-            _dataSourceName = entityMetadataEnsureParams.DataSourceName;
             _entityType = entityMetadataEnsureParams.EntityType;
             _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
             _shardingConfigOption = shardingConfigOption;
@@ -66,7 +64,8 @@ namespace ShardingCore.Bootstrapers
             var shardingEntityType = _entityType.ClrType;
             _trackerManager.AddDbContextModel(shardingEntityType);
             var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList());
-            _entityMetadataManager.AddEntityMetadata(entityMetadata);
+            if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
+                throw new InvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");
             //设置标签
             if (_shardingConfigOption.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
             {

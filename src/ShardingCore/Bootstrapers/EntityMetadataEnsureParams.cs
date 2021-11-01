@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ShardingCore.Bootstrapers
 {
     public class EntityMetadataEnsureParams
     {
-        public EntityMetadataEnsureParams(string dataSourceName, IEntityType entityType, string virtualTableName)
+        public EntityMetadataEnsureParams(IEntityType entityType)
         {
-            DataSourceName = dataSourceName;
             EntityType = entityType;
+
+#if !EFCORE2
+            var virtualTableName = entityType.GetTableName();
+#endif
+#if EFCORE2
+            var virtualTableName = entityType.Relational().TableName;
+#endif
             VirtualTableName = virtualTableName;
         }
 
-        public string DataSourceName { get; }
         public IEntityType EntityType { get; }
         public string VirtualTableName { get; }
     }

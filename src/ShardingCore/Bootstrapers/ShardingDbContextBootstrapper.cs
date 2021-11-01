@@ -44,6 +44,8 @@ namespace ShardingCore.Bootstrapers
         private readonly IShardingConfigOption _shardingConfigOption;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly ILogger<ShardingDbContextBootstrapper<TShardingDbContext>> _logger;
 
@@ -52,28 +54,68 @@ namespace ShardingCore.Bootstrapers
             _shardingConfigOption = shardingConfigOption;
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
+            _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
             _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
+            _virtualDataSource= ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
         }
         public void Init()
         {
-            var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
+            _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
+            InitializeEntityMetadata();
+            InitializeConfigure();
+        }
+
+        private void InitializeEntityMetadata()
+        {
+            using (var serviceScope = ShardingContainer.Services.CreateScope())
+            {
+                //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
+                using var context =
+                    (DbContext)serviceScope.ServiceProvider.GetService(_shardingConfigOption.ShardingDbContextType);
+             
+                foreach (var entity in context.Model.GetEntityTypes())
+                {
+                    var entityType = entity.ClrType;
+
+                    if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
+                    _shardingConfigOption.HasVirtualTableRoute(entityType))
+                    {
+                            var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(typeof(TShardingDbContext), entityType);
+                            var constructors
+                                = entityMetadataInitializerType.GetTypeInfo().DeclaredConstructors
+                                    .Where(c => !c.IsStatic && c.IsPublic)
+                                    .ToArray();
+                            var @params = constructors[0].GetParameters().Select((o, i) =>
+                            {
+                                if (i == 0)
+                                {
+                                    return new EntityMetadataEnsureParams( entity);
+                                }
+
+                                return ShardingContainer.GetService(o.ParameterType);
+                            }).ToArray();
+                            var entityMetadataInitializer = (IEntityMetadataInitializer)Activator.CreateInstance(entityMetadataInitializerType, @params);
+                            entityMetadataInitializer.Initialize();
+                    }
+                }
+                //if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
+                //    EnsureCreated(context, dataSourceName);
+            }
+
+        }
+
+        private void InitializeConfigure()
+        {
+
             var dataSources = _shardingConfigOption.GetDataSources();
-            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
-            //foreach (var dataSourceKv in dataSources)
-            //{
-            //    virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceKv.Key,
-            //        dataSourceKv.Value, false));
-            //}
-            ISet<Type> entitiesInitSet = new HashSet<Type>();
             foreach (var dataSourceKv in dataSources)
             {
-
                 using (var serviceScope = ShardingContainer.Services.CreateScope())
                 {
                     var dataSourceName = dataSourceKv.Key;
                     var connectionString = dataSourceKv.Value;
-                    virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
+                    _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
                     using var context =
                         (DbContext)serviceScope.ServiceProvider.GetService(_shardingConfigOption.ShardingDbContextType);
                     if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
@@ -82,60 +124,11 @@ namespace ShardingCore.Bootstrapers
                     {
                         var entityType = entity.ClrType;
 
-                        if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
-                        _shardingConfigOption.HasVirtualTableRoute(entityType))
+                        if (_entityMetadataManager.IsShardingTable(entityType))
                         {
-                            //只初始化一次
-                            if (!entitiesInitSet.Contains(entityType))
-                            {
-                                //获取ShardingEntity的实际表名
-#if !EFCORE2
-                                var virtualTableName = context.Model.FindEntityType(entityType).GetTableName();
-#endif
-#if EFCORE2
-                                var virtualTableName = context.Model.FindEntityType(entityType).Relational().TableName;
-#endif
-                                var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(typeof(TShardingDbContext), entityType);
-                                var constructors
-                                    = entityMetadataInitializerType.GetTypeInfo().DeclaredConstructors
-                                        .Where(c => !c.IsStatic && c.IsPublic)
-                                        .ToArray();
-                                var @params = constructors[0].GetParameters().Select((o, i) =>
-                                {
-
-
-                                    if (i == 0)
-                                    {
-                                        if (o.ParameterType != typeof(EntityMetadataEnsureParams))
-                                            throw new InvalidOperationException($"{typeof(EntityMetadataInitializer<,>).FullName} constructors first params type should {typeof(EntityMetadataEnsureParams).FullName}");
-                                        return new EntityMetadataEnsureParams(dataSourceName, entity, virtualTableName);
-                                    }
-
-                                    return ShardingContainer.GetService(o.ParameterType);
-                                }).ToArray();
-                                var entityMetadataInitializer = (IEntityMetadataInitializer)Activator.CreateInstance(entityMetadataInitializerType, @params);
-                                entityMetadataInitializer.Initialize();
-                                entitiesInitSet.Add(entityType);
-                            }
-
                             var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
                             //创建表
                             CreateDataTable(dataSourceName, virtualTable);
-                            //var virtualTableRoute = virtualTable.GetVirtualRoute();
-                            ////添加任务
-                            //if (virtualTableRoute is IJob routeJob && routeJob.StartJob())
-                            //{
-                            //    var jobManager = ShardingContainer.GetService<IJobManager>();
-                            //    var jobEntries = JobTypeParser.Parse(virtualTableRoute.GetType());
-                            //    jobEntries.ForEach(o =>
-                            //    {
-                            //        o.JobName = $"{routeJob.JobName}:{o.JobName}";
-                            //    });
-                            //    foreach (var jobEntry in jobEntries)
-                            //    {
-                            //        jobManager.AddJob(jobEntry);
-                            //    }
-                            //}
                         }
                     }
                 }
@@ -205,8 +198,7 @@ namespace ShardingCore.Bootstrapers
 
                 lock (modelCacheSyncObject)
                 {
-                    var shardingEntitiyTypes = _shardingConfigOption.GetShardingTableRouteTypes();
-                    dbContext.RemoveDbContextRelationModelThatIsShardingTable(shardingEntitiyTypes);
+                    dbContext.RemoveDbContextRelationModelThatIsShardingTable();
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
                 }
