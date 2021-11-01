@@ -24,15 +24,14 @@ namespace ShardingCore.Extensions
         /// 移除所有的分表关系的模型
         /// </summary>
         /// <param name="dbContext"></param>
-        public static void RemoveDbContextRelationModelThatIsShardingTable(this DbContext dbContext)
+        internal static void RemoveDbContextRelationModelThatIsShardingTable(this DbContext dbContext,ISet<Type> shardingTableType)
         {
             var contextModel = dbContext.Model as Model;
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(dbContext.GetType()));
 
 #if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
- contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
+ contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => shardingTableType.Contains(m.EntityType.ClrType))).Select(o => o.Key).ToList();
             for (int i = 0; i < valueTuples.Count; i++)
             {
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
@@ -41,7 +40,7 @@ namespace ShardingCore.Extensions
 #if !EFCORE5
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
-            var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)).Select(o=>o.Key).ToList();
+            var list = entityTypes.Where(o=> shardingTableType.Contains(o.Value.ClrType)).Select(o=>o.Key).ToList();
             for (int i = 0; i < list.Count; i++)
             {
                 entityTypes.Remove(list[i]);

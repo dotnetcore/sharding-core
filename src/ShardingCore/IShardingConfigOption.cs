@@ -24,6 +24,9 @@ namespace ShardingCore
         bool HasVirtualDataSourceRoute(Type entityType);
         Type GetVirtualDataSourceRouteType(Type entityType);
 
+        ISet<Type> GetShardingTableRouteTypes();
+        ISet<Type> GetShardingDataSourceRouteTypes();
+
 
         IDictionary<string, string> GetDataSources();
 

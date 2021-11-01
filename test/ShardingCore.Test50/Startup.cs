@@ -139,8 +139,6 @@ namespace ShardingCore.Test50
                         await virtualDbContext.AddRangeAsync(userSalaries);
 
                         await virtualDbContext.SaveChangesAsync();
-                        var b = 0;
-                        var c = 1 / b;
                         tran.Commit();
                     }
                 }

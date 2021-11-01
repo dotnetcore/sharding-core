@@ -173,6 +173,16 @@ namespace ShardingCore
             return _virtualDataSourceRoutes[entityType];
         }
 
+        public ISet<Type> GetShardingTableRouteTypes()
+        {
+            return _virtualTableRoutes.Keys.ToHashSet();
+        }
+
+        public ISet<Type> GetShardingDataSourceRouteTypes()
+        {
+            return _virtualDataSourceRoutes.Keys.ToHashSet();
+        }
+
         public IDictionary<string, string> GetDataSources()
         {
             var defaultDataSources = new Dictionary<string, string>(){{DefaultDataSourceName,DefaultConnectionString}};

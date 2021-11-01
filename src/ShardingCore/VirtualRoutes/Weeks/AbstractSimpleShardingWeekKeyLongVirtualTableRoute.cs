@@ -88,7 +88,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
         [JobRun(Name = "定时创建表", Cron = "0 0 5 ? * 6", RunOnceOnStart = true)]
         public virtual void AutoShardingTableCreate()
         {
-
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
@@ -99,13 +99,28 @@ namespace ShardingCore.VirtualRoutes.Weeks
             }
             var now = DateTime.Now.Date.AddDays(3);
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            try
+            ISet<string> dataSources = new HashSet<string>()
             {
-                tableCreator.CreateTable(virtualDataSource.DefaultDataSourceName, typeof(T), tail);
+                virtualDataSource.DefaultDataSourceName
+            };
+            if (entityMetadataManager.IsShardingDataSource(typeof(T)))
+            {
+                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(T));
+                foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
+                {
+                    dataSources.Add(dataSourceName);
+                }
             }
-            catch (Exception e)
+            foreach (var dataSource in dataSources)
             {
-                //ignore
+                try
+                {
+                    tableCreator.CreateTable(dataSource, typeof(T), tail);
+                }
+                catch (Exception e)
+                {
+                    //ignore
+                }
             }
         }
         /// <summary>

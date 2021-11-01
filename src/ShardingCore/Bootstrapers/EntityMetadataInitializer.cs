@@ -108,10 +108,8 @@ namespace ShardingCore.Bootstrapers
                 _virtualTableManager.AddVirtualTable(virtualTable);
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckMetadata();
-                //创建表
-                CreateDataTable(_dataSourceName, virtualTable);
                 //添加任务
-                if (virtualTableRoute is IJob routeJob&& routeJob.StartJob())
+                if (virtualTableRoute is IJob routeJob && routeJob.StartJob())
                 {
                     var jobManager = ShardingContainer.GetService<IJobManager>();
                     var jobEntries = JobTypeParser.Parse(virtualTableRoute.GetType());
@@ -127,61 +125,6 @@ namespace ShardingCore.Bootstrapers
             }
         }
 
-        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable)
-        {
-            var entityMetadata = virtualTable.EntityMetadata;
-            foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
-            {
-                if (NeedCreateTable(entityMetadata))
-                {
-                    try
-                    {
-                        //添加物理表
-                        virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
-                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
-                        {
-                            _logger.LogWarning(
-                                $"table :{virtualTable.GetVirtualTableName()}{entityMetadata.TableSeparator}{tail} will created.", e);
-                        }
-                    }
-                }
-                else
-                {
-                    //添加物理表
-                    virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
-                }
-
-            }
-        }
-        private bool NeedCreateTable(EntityMetadata entityMetadata)
-        {
-            if (entityMetadata.AutoCreateTable.HasValue)
-            {
-                if (entityMetadata.AutoCreateTable.Value)
-                    return entityMetadata.AutoCreateTable.Value;
-                else
-                {
-                    if (entityMetadata.AutoCreateDataSourceTable.HasValue)
-                        return entityMetadata.AutoCreateDataSourceTable.Value;
-                }
-            }
-            if (entityMetadata.AutoCreateDataSourceTable.HasValue)
-            {
-                if (entityMetadata.AutoCreateDataSourceTable.Value)
-                    return entityMetadata.AutoCreateDataSourceTable.Value;
-                else
-                {
-                    if (entityMetadata.AutoCreateTable.HasValue)
-                        return entityMetadata.AutoCreateTable.Value;
-                }
-            }
-
-            return _shardingConfigOption.CreateShardingTableOnStart.GetValueOrDefault();
-        }
         private IVirtualDataSourceRoute<TEntity> CreateVirtualDataSourceRoute(Type virtualRouteType,EntityMetadata entityMetadata)
         {
             var constructors

@@ -27,13 +27,13 @@ namespace ShardingCore.Core.EntityMetadatas
         public EntityMetadataDataSourceBuilder<TEntity> ShardingProperty<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression)
         {
             var propertyAccess = propertyExpression.GetPropertyAccess();
-            _entityMetadata.SetShardingTableProperty(propertyAccess);
+            _entityMetadata.SetShardingDataSourceProperty(propertyAccess);
             return this;
         }
         public EntityMetadataDataSourceBuilder<TEntity> ShardingProperty(string propertyName)
         {
             var propertyInfo = typeof(TEntity).GetProperty(propertyName);
-            _entityMetadata.SetShardingTableProperty(propertyInfo);
+            _entityMetadata.SetShardingDataSourceProperty(propertyInfo);
             return this;
         }
         /// <summary>

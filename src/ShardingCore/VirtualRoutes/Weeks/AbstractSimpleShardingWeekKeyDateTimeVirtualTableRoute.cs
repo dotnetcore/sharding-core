@@ -16,20 +16,20 @@ using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Weeks
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 27 January 2021 12:40:27
-* @Email: 326308290@qq.com
-*/
-    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>,IJob where T : class
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 27 January 2021 12:40:27
+    * @Email: 326308290@qq.com
+    */
+    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>, IJob where T : class
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
             var beginTime = GetBeginTime().Date;
-         
-            var tails=new List<string>();
+
+            var tails = new List<string>();
             //提前创建表
             var nowTimeStamp = DateTime.Now.Date;
             if (beginTime > nowTimeStamp)
@@ -59,23 +59,23 @@ namespace ShardingCore.VirtualRoutes.Weeks
                 case ShardingOperatorEnum.GreaterThanOrEqual:
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) >= 0;
                 case ShardingOperatorEnum.LessThan:
-                {
-                    var currentMonth = ShardingCoreHelper.GetCurrentMonday(shardingKey);
-                    //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
-                    if (currentMonth == shardingKey)
-                        return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
-                    return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
-                }
+                    {
+                        var currentMonth = ShardingCoreHelper.GetCurrentMonday(shardingKey);
+                        //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
+                        if (currentMonth == shardingKey)
+                            return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
+                        return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
+                    }
                 case ShardingOperatorEnum.LessThanOrEqual:
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
                 case ShardingOperatorEnum.Equal: return tail => tail == t;
                 default:
-                {
+                    {
 #if DEBUG
-                    Console.WriteLine($"shardingOperator is not equal scan all table tail");
+                        Console.WriteLine($"shardingOperator is not equal scan all table tail");
 #endif
-                    return tail => true;
-                }
+                        return tail => true;
+                    }
             }
         }
         /// <summary>
@@ -84,7 +84,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
         [JobRun(Name = "定时创建表", Cron = "0 0 5 ? * 6", RunOnceOnStart = true)]
         public virtual void AutoShardingTableCreate()
         {
-
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
@@ -95,12 +95,28 @@ namespace ShardingCore.VirtualRoutes.Weeks
             }
             var now = DateTime.Now.Date.AddDays(3);
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            try
-            {tableCreator.CreateTable(virtualDataSource.DefaultDataSourceName, typeof(T), tail);
-            }
-            catch (Exception e)
+            ISet<string> dataSources = new HashSet<string>()
             {
-                //ignore
+                virtualDataSource.DefaultDataSourceName
+            };
+            if (entityMetadataManager.IsShardingDataSource(typeof(T)))
+            {
+                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(T));
+                foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
+                {
+                    dataSources.Add(dataSourceName);
+                }
+            }
+            foreach (var dataSource in dataSources)
+            {
+                try
+                {
+                    tableCreator.CreateTable(dataSource, typeof(T), tail);
+                }
+                catch (Exception e)
+                {
+                    //ignore
+                }
             }
         }
         /// <summary>
