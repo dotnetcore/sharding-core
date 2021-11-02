@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Sample.Migrations.Migrations.ShardingMigrations
+namespace Sample.Migrations.Migrations
 {
-    public partial class EFCoreSharding : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -40,7 +40,10 @@ namespace Sample.Migrations.Migrations.ShardingMigrations
                 {
                     Id = table.Column<string>(type: "varchar(128)", unicode: false, maxLength: 128, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    Age = table.Column<int>(type: "int", nullable: false)
+                    Age = table.Column<int>(type: "int", nullable: false),
+                    TextStr = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: ""),
+                    TextStr1 = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: "123"),
+                    TextStr2 = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: "123")
                 },
                 constraints: table =>
                 {

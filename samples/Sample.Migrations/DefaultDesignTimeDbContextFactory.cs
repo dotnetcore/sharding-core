@@ -38,7 +38,7 @@ namespace Sample.Migrations
             services.AddLogging();
             var buildServiceProvider = services.BuildServiceProvider();
             ShardingContainer.SetServices(buildServiceProvider);
-            new ShardingBootstrapper(buildServiceProvider).Start();
+            ShardingContainer.GetService<IShardingBootstrapper>().Start();
         }
 
         public DefaultShardingTableDbContext CreateDbContext(string[] args)
