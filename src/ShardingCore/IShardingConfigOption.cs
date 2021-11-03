@@ -43,6 +43,7 @@ namespace ShardingCore
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }
+
         /// <summary>
         /// 自动追踪实体
         /// </summary>

@@ -83,7 +83,7 @@ namespace ShardingCore.VirtualRoutes.Years
         /// <summary>
         /// 每年12月20号自动创建表
         /// </summary>
-        [JobRun(Name = "定时创建表", Cron = "0 0 5 20 12 ?", RunOnceOnStart = true)]
+        [JobRun(Name = "定时创建表", Cron = "0 0 5 20,21,22,23,24,25,26,27,28,29,30,31 12 ?", RunOnceOnStart = true)]
         public virtual void AutoShardingTableCreate()
         {
             var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));

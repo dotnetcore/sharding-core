@@ -10,6 +10,10 @@
 </div>
 
 ---
+
+## 📚 Documentation
+
+[中文文档](https://xuejmnet.github.io/sharding-core-doc/) | [English Document](https://xuejmnet.github.io/sharding-core-doc/en/)
 ### 依赖
 
 Release  | EF Core | .NET Standard | .NET (Core) 
