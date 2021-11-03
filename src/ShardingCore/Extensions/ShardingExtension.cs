@@ -85,39 +85,43 @@ namespace ShardingCore.Extensions
         public static Dictionary<string, Dictionary<DbContext, IEnumerable<TEntity>>> BulkShardingEnumerable<TShardingDbContext, TEntity>(this TShardingDbContext shardingDbContext,
             IEnumerable<TEntity> entities) where TShardingDbContext : DbContext, IShardingDbContext where TEntity : class
         {
+            if (entities.IsEmpty())
+                return new Dictionary<string, Dictionary<DbContext, IEnumerable<TEntity>>>();
             var entityType = typeof(TEntity);
             var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
-            var entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
+            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(shardingDbContext.GetType()));
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             var dataSourceNames = new Dictionary<string, Dictionary<string, BulkDicEntry<TEntity>>>();
             var entitiesArray = entities as TEntity[] ?? entities.ToArray();
             var isShardingDataSource = entityMetadataManager.IsShardingDataSource(entityType);
             var isShardingTable = entityMetadataManager.IsShardingTable(entityType);
             if (!isShardingDataSource && !isShardingTable)
-                throw new InvalidOperationException(typeof(TEntity).FullName);
+                return new Dictionary<string, Dictionary<DbContext, IEnumerable<TEntity>>>()
+                {
+                    {
+                        virtualDataSource.DefaultDataSourceName,
+                        new Dictionary<DbContext, IEnumerable<TEntity>>()
+                        {
+                            {
+                                shardingDbContext.CreateGenericDbContext(entitiesArray[0]),
+                                entitiesArray
+                            }
+                        }
+                    }
+                };
             if (!isShardingDataSource)
             {
                 var bulkDicEntries = new Dictionary<string, BulkDicEntry<TEntity>>();
                 dataSourceNames.Add(virtualDataSource.DefaultDataSourceName, bulkDicEntries);
 
-                IVirtualTable virtualTable = null;
-                IVirtualTableRoute virtualTableRoute = null;
-                ISet<string> allTails = null;
-                if (isShardingTable)
-                {
-                    var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-                    virtualTable = virtualTableManager.GetVirtualTable(entityType);
-                    virtualTableRoute = virtualTable.GetVirtualRoute();
-                    allTails = virtualTableRoute.GetAllTails().ToHashSet();
-                }
+                var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
+                var virtualTable = virtualTableManager.GetVirtualTable(entityType);
+                var virtualTableRoute = virtualTable.GetVirtualRoute();
+                var allTails = virtualTableRoute.GetAllTails().ToHashSet();
                 foreach (var entity in entitiesArray)
                 {
-                    if (isShardingTable)
-                        BulkShardingTableEnumerable(shardingDbContext, virtualDataSource.DefaultDataSourceName, bulkDicEntries,
-                            routeTailFactory, virtualTable, virtualTableRoute, allTails, entity);
-                    else
-                        BulkNoShardingTableEnumerable(shardingDbContext, virtualDataSource.DefaultDataSourceName, bulkDicEntries,
-                            routeTailFactory, entity);
+                    BulkShardingTableEnumerable(shardingDbContext, virtualDataSource.DefaultDataSourceName, bulkDicEntries,
+                        routeTailFactory, virtualTable, virtualTableRoute, allTails, entity);
                 }
             }
             else
@@ -131,10 +135,10 @@ namespace ShardingCore.Extensions
                 ISet<string> allTails = null;
                 if (isShardingTable)
                 {
-                    var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
+                    var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
                     virtualTable = virtualTableManager.GetVirtualTable(entityType);
-                     virtualTableRoute = virtualTable.GetVirtualRoute();
-                     allTails = virtualTableRoute.GetAllTails().ToHashSet();
+                    virtualTableRoute = virtualTable.GetVirtualRoute();
+                    allTails = virtualTableRoute.GetAllTails().ToHashSet();
                 }
                 foreach (var entity in entitiesArray)
                 {
@@ -167,7 +171,7 @@ namespace ShardingCore.Extensions
         }
 
         private static void BulkShardingTableEnumerable<TShardingDbContext, TEntity>(TShardingDbContext shardingDbContext, string dataSourceName, Dictionary<string, BulkDicEntry<TEntity>> dataSourceBulkDicEntries,
-            IRouteTailFactory routeTailFactory, IVirtualTable virtualTable,IVirtualTableRoute virtualTableRoute,ISet<string> allTails, TEntity entity)
+            IRouteTailFactory routeTailFactory, IVirtualTable virtualTable, IVirtualTableRoute virtualTableRoute, ISet<string> allTails, TEntity entity)
             where TShardingDbContext : DbContext, IShardingDbContext
             where TEntity : class
         {
@@ -221,11 +225,13 @@ namespace ShardingCore.Extensions
                 IEnumerable<TEntity> entities) where TShardingDbContext : DbContext, IShardingDbContext
             where TEntity : class
         {
-            var entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
                 throw new InvalidOperationException(typeof(TEntity).FullName);
-            if (!entityMetadataManager.IsShardingTable(typeof(TEntity)))
-                throw new InvalidOperationException(typeof(TEntity).FullName);
+            //if (!entityMetadataManager.IsShardingTable(typeof(TEntity)))
+            //    throw new InvalidOperationException(typeof(TEntity).FullName);
+            if (entities.IsEmpty())
+                return new Dictionary<DbContext, IEnumerable<TEntity>>();
             return shardingDbContext.BulkShardingEnumerable(entities).First().Value;
         }
         /// <summary>
@@ -239,11 +245,10 @@ namespace ShardingCore.Extensions
         public static IDictionary<string, IEnumerable<DbContext>> BulkShardingExpression<TShardingDbContext, TEntity>(this TShardingDbContext shardingDbContext, Expression<Func<TEntity, bool>> where) where TEntity : class
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-
-            var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
+            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(shardingDbContext.GetType()));
             var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            var entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
+            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
 
             var dataSourceNames = virtualDataSource.GetDataSourceNames(where);
             var result = new Dictionary<string, LinkedList<DbContext>>();
@@ -258,8 +263,8 @@ namespace ShardingCore.Extensions
                 }
                 if (entityMetadataManager.IsShardingTable(entityType))
                 {
-                    var physicTables = virtualTableManager.GetVirtualTable(entityType).RouteTo(new ShardingTableRouteConfig(predicate:@where));
-                    if(physicTables.IsEmpty())
+                    var physicTables = virtualTableManager.GetVirtualTable(entityType).RouteTo(new ShardingTableRouteConfig(predicate: @where));
+                    if (physicTables.IsEmpty())
                         throw new ShardingCoreException($"{where.ShardingPrint()} cant found ant physic table");
 
                     var dbs = physicTables.Select(o => shardingDbContext.GetDbContext(dataSourceName, true, routeTailFactory.Create(o.Tail))).ToList();
@@ -276,17 +281,15 @@ namespace ShardingCore.Extensions
 
             }
 
-            return result.ToDictionary(o=>o.Key,o=>(IEnumerable<DbContext>)o.Value);
+            return result.ToDictionary(o => o.Key, o => (IEnumerable<DbContext>)o.Value);
         }
 
         public static IEnumerable<DbContext> BulkShardingTableExpression<TShardingDbContext, TEntity>(this TShardingDbContext shardingDbContext, Expression<Func<TEntity, bool>> where) where TEntity : class
             where TShardingDbContext : DbContext, IShardingDbContext
         {
 
-            var entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
+            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
-                throw new InvalidOperationException(typeof(TEntity).FullName);
-            if (!entityMetadataManager.IsShardingTable(typeof(TEntity)))
                 throw new InvalidOperationException(typeof(TEntity).FullName);
             return shardingDbContext.BulkShardingExpression<TShardingDbContext, TEntity>(where).First().Value;
         }

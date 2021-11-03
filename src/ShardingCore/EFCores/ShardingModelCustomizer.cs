@@ -79,9 +79,9 @@ namespace ShardingCore.EFCores
             var tableName = entityMetadata.VirtualTableName;
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
-#if DEBUG
-            Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tableSeparator}{tail}]");
-#endif
+//#if DEBUG
+//            Console.WriteLine($"mapping table :[tableName]-->[{tableName}{tableSeparator}{tail}]");
+//#endif
             entity.ToTable($"{tableName}{tableSeparator}{tail}");
         }
     }
