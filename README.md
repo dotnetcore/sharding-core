@@ -602,7 +602,7 @@ var list = new List<SysUserMod>();
                 _defaultTableDbContext.SaveChanges();
           //or
             var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
-            using (var tran = _defaultTableDbContext.BeginTransaction())
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             {
                     foreach (var dataSourceMap in dbContexts)
                     {
