@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Threading;
+using ShardingCore.Jobs.Abstaractions;
 
 namespace ShardingCore.Jobs.Impls
 {
@@ -26,6 +27,10 @@ namespace ShardingCore.Jobs.Impls
         /// 任务名称
         /// </summary>
         public string JobName { get; set; }
+        /// <summary>
+        /// job实例
+        /// </summary>
+        public IJob JobInstance { get; set; }
 
         public Type JobClass { get; set; }
         public MethodInfo JobMethod { get; set; }

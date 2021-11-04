@@ -26,7 +26,7 @@ namespace Sample.BulkConsole
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddShardingDbContext<MyShardingDbContext>(
-                    (conn, o) => o.UseSqlServer(conn))
+                    (conn, o) => o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;

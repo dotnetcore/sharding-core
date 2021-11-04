@@ -11,6 +11,7 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ShardingCore.Sharding
@@ -65,10 +66,6 @@ namespace ShardingCore.Sharding
         public bool IsExecutor { get; }
 
 
-        //public void ShardingUpgrade()
-        //{
-        //    //IsExecutor = true;
-        //}
 
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {

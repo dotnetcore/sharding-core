@@ -44,6 +44,7 @@ namespace Sample.SqlServer
                 {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+                    o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
                 }).End();
 
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(

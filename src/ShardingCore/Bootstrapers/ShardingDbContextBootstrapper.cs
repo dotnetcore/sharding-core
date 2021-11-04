@@ -68,7 +68,7 @@ namespace ShardingCore.Bootstrapers
 
         private void InitializeEntityMetadata()
         {
-            using (var serviceScope = ShardingContainer.Services.CreateScope())
+            using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
                 //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
                 using var context =
@@ -111,7 +111,7 @@ namespace ShardingCore.Bootstrapers
             var dataSources = _shardingConfigOption.GetDataSources();
             foreach (var dataSourceKv in dataSources)
             {
-                using (var serviceScope = ShardingContainer.Services.CreateScope())
+                using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
                 {
                     var dataSourceName = dataSourceKv.Key;
                     var connectionString = dataSourceKv.Value;

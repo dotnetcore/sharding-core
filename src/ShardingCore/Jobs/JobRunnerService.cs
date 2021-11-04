@@ -11,19 +11,18 @@ using ShardingCore.Jobs.Impls;
 
 namespace ShardingCore.Jobs
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 06 January 2021 13:00:11
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 06 January 2021 13:00:11
+    * @Email: 326308290@qq.com
+    */
     internal class JobRunnerService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly JobGlobalOptions _jobGlobalOptions;
         private readonly IJobManager _jobManager;
         private readonly ILogger<JobRunnerService> _logger;
-        private readonly IJobFactory _jobFactory;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private const long DEFAULT_MILLIS = 1000L;
 
@@ -32,37 +31,18 @@ namespace ShardingCore.Jobs
         /// </summary>
         private const long MAX_DELAY_MILLIS = 30000L;
 
-        public JobRunnerService(IServiceProvider serviceProvider,JobGlobalOptions jobGlobalOptions, IJobManager jobManager, ILogger<JobRunnerService> logger, IJobFactory jobFactory)
+        public JobRunnerService(IServiceProvider serviceProvider, JobGlobalOptions jobGlobalOptions, IJobManager jobManager, ILogger<JobRunnerService> logger)
         {
             _serviceProvider = serviceProvider;
             _jobGlobalOptions = jobGlobalOptions;
             _jobManager = jobManager;
             _logger = logger;
-            _jobFactory = jobFactory;
         }
-
-        //private void Init()
-        //{
-        //    var assemblies = AssemblyHelper.CurrentDomain.GetAssemblies();
-        //    foreach (var x in assemblies)
-        //    {
-        //        // 查找接口为Job的类
-        //        var types = x.DefinedTypes.Where(y => y.IsJobType()).ToList();
-        //        foreach (var y in types)
-        //        {
-        //            var jobs = JobTypeParser.Parse(y.AsType());
-        //            foreach (var job in jobs)
-        //            {
-        //                _jobManager.AddJob(job);
-        //            }
-        //        }
-        //    }
-        //}
 
         public async Task StartAsync()
         {
             if (_jobGlobalOptions.DelaySecondsOnStart > 0)
-                await Task.Delay(TimeSpan.FromSeconds(_jobGlobalOptions.DelaySecondsOnStart),_cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(_jobGlobalOptions.DelaySecondsOnStart), _cts.Token);
             while (!_cts.Token.IsCancellationRequested)
             {
                 var delayMs = 0L;
@@ -73,11 +53,11 @@ namespace ShardingCore.Jobs
                 catch (Exception e)
                 {
                     _logger.LogError($"job runner service exception : {e}");
-                    await Task.Delay((int) DEFAULT_MILLIS, _cts.Token);
+                    await Task.Delay((int)DEFAULT_MILLIS, _cts.Token);
                 }
 
                 if (delayMs > 0)
-                    await Task.Delay((int) Math.Min(MAX_DELAY_MILLIS, delayMs), _cts.Token); //最大休息为MAX_DELAY_MILLIS
+                    await Task.Delay((int)Math.Min(MAX_DELAY_MILLIS, delayMs), _cts.Token); //最大休息为MAX_DELAY_MILLIS
             }
         }
 
@@ -138,7 +118,7 @@ namespace ShardingCore.Jobs
                     {
                         using (var scope = _serviceProvider.CreateScope())
                         {
-                            var job = _jobFactory.CreateJobInstance(scope, jobEntry);
+                            var job = jobEntry.JobInstance;
                             if (job == null)
                                 _logger.LogWarning($"###  job  [{jobEntry.JobName}] cant created, create method :{(jobEntry.CreateFromServiceProvider ? "from service provider" : "activator")}");
                             var method = jobEntry.JobMethod;

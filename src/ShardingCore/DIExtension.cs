@@ -47,7 +47,10 @@ namespace ShardingCore
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-
+            if (contextLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+            if (optionsLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
             {
                 var virtualDataSource = sp.GetRequiredService<IVirtualDataSource<TShardingDbContext>> ();

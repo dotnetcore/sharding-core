@@ -186,7 +186,7 @@ namespace ShardingCore
         public IDictionary<string, string> GetDataSources()
         {
             var defaultDataSources = new Dictionary<string, string>(){{DefaultDataSourceName,DefaultConnectionString}};
-            return defaultDataSources.Concat(DataSourcesConfigure?.Invoke(ShardingContainer.Services)??new Dictionary<string, string>()).ToDictionary(o=>o.Key,o=>o.Value);
+            return defaultDataSources.Concat(DataSourcesConfigure?.Invoke(ShardingContainer.ServiceProvider)??new Dictionary<string, string>()).ToDictionary(o=>o.Key,o=>o.Value);
         }
 
 

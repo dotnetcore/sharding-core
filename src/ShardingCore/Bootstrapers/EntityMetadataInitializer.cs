@@ -115,6 +115,7 @@ namespace ShardingCore.Bootstrapers
                     jobEntries.ForEach(o =>
                     {
                         o.JobName = $"{routeJob.JobName}:{o.JobName}";
+                        o.JobInstance = routeJob;
                     });
                     foreach (var jobEntry in jobEntries)
                     {

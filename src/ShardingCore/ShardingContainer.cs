@@ -10,40 +10,46 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 02 January 2021 19:37:27
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Saturday, 02 January 2021 19:37:27
+    * @Email: 326308290@qq.com
+    */
     public class ShardingContainer
     {
         private ShardingContainer()
         {
-            
+
         }
-        public static IServiceProvider Services { get; private set; }
+
+        private static IServiceProvider serviceProvider;
+
+        public static IServiceProvider ServiceProvider
+        {
+            get { return serviceProvider ?? throw new InvalidOperationException("sharding core not start"); }
+        }
         /// <summary>
         /// 静态注入
         /// </summary>
         /// <param name="services"></param>
         public static void SetServices(IServiceProvider services)
         {
-            Services = services;
+            serviceProvider = services;
         }
 
         public static T GetService<T>()
         {
-            return Services.GetService<T>();
+            return ServiceProvider.GetService<T>();
         }
         public static IEnumerable<T> GetServices<T>()
         {
-            return Services.GetServices<T>();
+            return ServiceProvider.GetServices<T>();
         }
         public static object GetService(Type serviceType)
         {
-            return Services.GetService(serviceType);
+            return ServiceProvider.GetService(serviceType);
         }
-        
+
     }
 }

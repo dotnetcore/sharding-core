@@ -1,4 +1,6 @@
-﻿namespace ShardingCore.Jobs.Abstaractions
+﻿using System;
+
+namespace ShardingCore.Jobs.Abstaractions
 {
     internal interface IJob
     {

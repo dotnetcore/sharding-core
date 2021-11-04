@@ -104,7 +104,7 @@ namespace ShardingCore.Core.EntityMetadatas
             if (null == EntityType || null == PrimaryKeyProperties || null == VirtualTableName ||
                 (!IsMultiTableMapping && !IsMultiDataSourceMapping))
             {
-                throw new ShardingCoreException($"configure entity:{EntityType}");
+                throw new ShardingCoreException($"no found  entity:{EntityType} configure");
             }
         }
         protected bool Equals(EntityMetadata other)

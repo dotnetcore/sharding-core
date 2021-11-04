@@ -18,8 +18,7 @@ namespace ShardingCore.Jobs
             var option = new JobGlobalOptions();
             config?.Invoke(option);
             services.AddSingleton(sp => option).AddSingleton<IJobManager, InMemoryJobManager>()
-                .AddSingleton<JobRunnerService>()
-                .AddSingleton<IJobFactory, DefaultJobFactory>();
+                .AddSingleton<JobRunnerService>();
             return services;
         }
     }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 
 namespace ShardingCore.Extensions
 {
@@ -36,6 +37,11 @@ namespace ShardingCore.Extensions
         {
             return virtualDataSource.RouteTo(typeof(TEntity),
                 new ShardingDataSourceRouteConfig(shardingKeyValue:shardingKeyValue))[0];
+        }
+
+        public static IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>(this IVirtualDataSource virtualDataSource) where TEntity : class
+        {
+            return (IVirtualDataSourceRoute<TEntity>)virtualDataSource.GetRoute(typeof(TEntity));
         }
     }
 }

@@ -22,6 +22,7 @@ namespace Sample.SqlServer.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
+            modelBuilder.ApplyConfiguration(new TestYearShardingMap());
         }
 
         public IRouteTail RouteTail { get; set; }
