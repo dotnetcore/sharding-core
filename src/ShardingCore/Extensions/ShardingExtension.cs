@@ -187,7 +187,7 @@ namespace ShardingCore.Extensions
             var routeTailIdentity = routeTail.GetRouteTailIdentity();
             if (!dataSourceBulkDicEntries.TryGetValue(routeTailIdentity, out var bulkDicEntry))
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName, true, routeTail);
+                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, routeTail);
                 bulkDicEntry = new BulkDicEntry<TEntity>(dbContext, new LinkedList<TEntity>());
                 dataSourceBulkDicEntries.Add(routeTailIdentity, bulkDicEntry);
             }
@@ -202,7 +202,7 @@ namespace ShardingCore.Extensions
             var routeTailIdentity = routeTail.GetRouteTailIdentity();
             if (!dataSourceBulkDicEntries.TryGetValue(routeTailIdentity, out var bulkDicEntry))
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName, true, routeTail);
+                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, routeTail);
                 bulkDicEntry = new BulkDicEntry<TEntity>(dbContext, new LinkedList<TEntity>());
                 dataSourceBulkDicEntries.Add(routeTailIdentity, bulkDicEntry);
             }
@@ -267,7 +267,7 @@ namespace ShardingCore.Extensions
                     if (physicTables.IsEmpty())
                         throw new ShardingCoreException($"{where.ShardingPrint()} cant found ant physic table");
 
-                    var dbs = physicTables.Select(o => shardingDbContext.GetDbContext(dataSourceName, true, routeTailFactory.Create(o.Tail))).ToList();
+                    var dbs = physicTables.Select(o => shardingDbContext.GetDbContext(dataSourceName, false, routeTailFactory.Create(o.Tail))).ToList();
                     foreach (var dbContext in dbs)
                     {
                         dbContexts.AddLast(dbContext);
@@ -275,7 +275,7 @@ namespace ShardingCore.Extensions
                 }
                 else
                 {
-                    var dbContext = shardingDbContext.GetDbContext(dataSourceName, true, routeTailFactory.Create(string.Empty));
+                    var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, routeTailFactory.Create(string.Empty));
                     dbContexts.AddLast(dbContext);
                 }
 

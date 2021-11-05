@@ -82,7 +82,7 @@ namespace Sample.SqlServer
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-            app.DbSeed();
+            //app.DbSeed();
         }
     }
 }

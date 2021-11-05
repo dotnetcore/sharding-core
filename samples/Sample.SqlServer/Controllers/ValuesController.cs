@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using EFCore.BulkExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -122,47 +123,50 @@ namespace Sample.SqlServer.Controllers
                 shardingPageResultAsync
             });
         }
-        //[HttpGet]
-        //public IActionResult Get3()
-        //{
+        [HttpGet]
+        public IActionResult Get3()
+        {
 
-        //    var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
-        //    using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-        //    {
-        //        dbContext2s.ForEach(dbContext =>
-        //        {
-        //            dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
-        //            {
-        //                AgeGroup = 1000
-        //            });
-        //        });
-        //        _defaultTableDbContext.SaveChanges();
-        //        tran.Commit();
-        //    }
-        //    var list = new List<SysUserMod>();
-        //    var dbContexts = _defaultTableDbContext.BulkShardingEnumerable(list);
+            //var dbContext2s = _defaultTableDbContext.BulkShardingExpression<SysUserMod>(o => o.Age > 100);
+            //using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            //{
+            //    dbContext2s.ForEach(dbContext =>
+            //    {
+            //        dbContext.Set<SysUserMod>().Where(o => o.Age > 100).Update(o => new SysUserMod()
+            //        {
+            //            AgeGroup = 1000
+            //        });
+            //    });
+            //    _defaultTableDbContext.SaveChanges();
+            //    tran.Commit();
+            //}
+            var list = new List<SysUserMod>();
+            for (int i = 0; i < 100; i++)
+            {
+                list.Add(new SysUserMod()
+                {
+                    Id =i.ToString(),
+                    Name = i.ToString(),
+                    Age = i,
+                    AgeGroup = i
+                });
+            }
 
-        //    using (var tran = _defaultTableDbContext.Database.BeginTransaction())
-        //    {
-        //        dbContexts.ForEach(kv =>
-        //        {
-        //            kv.Key.BulkInsert(kv.Value);
-        //        });
-        //        dbContexts.ForEach(kv =>
-        //        {
-        //            kv.Key.BulkDelete(kv.Value);
-        //        });
-        //        dbContexts.ForEach(kv =>
-        //        {
-        //            kv.Key.BulkUpdate(kv.Value);
-        //        });
-        //        _defaultTableDbContext.SaveChanges();
-        //        tran.Commit();
-        //    }
+            using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                var dbContexts = _defaultTableDbContext.BulkShardingTableEnumerable(list);
+                dbContexts.ForEach(kv =>
+                {
+                    kv.Key.BulkInsert(kv.Value.ToList());
+                });
+                var a = 0;
+                var b = 1 / a;
+                tran.Commit();
+            }
 
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
 
     }
 }

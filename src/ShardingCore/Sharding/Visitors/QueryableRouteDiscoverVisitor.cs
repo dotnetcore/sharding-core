@@ -133,9 +133,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
         private Expression<Func<string, bool>> Resolve(Expression expression)
         {
-            if (expression is LambdaExpression)
+            if (expression is LambdaExpression lambda)
             {
-                LambdaExpression lambda = expression as LambdaExpression;
                 expression = lambda.Body;
                 return Resolve(expression);
             }
@@ -145,13 +144,12 @@ namespace ShardingCore.Core.Internal.Visitors
                 return ParseGetWhere(binaryExpression);
             }
 
-            if (expression is UnaryExpression) //解析一元运算符
+            if (expression is UnaryExpression unary) //解析一元运算符
             {
-                UnaryExpression unary = expression as UnaryExpression;
-                if (unary.Operand is MethodCallExpression methodCall1Expression)
+                if (unary.Operand is MethodCallExpression unaryCallExpression)
                 {
                     // return ResolveLinqToObject(unary.Operand, false);
-                    return ResolveInFunc(methodCall1Expression, unary.NodeType != ExpressionType.Not);
+                    return ResolveInFunc(unaryCallExpression, unary.NodeType != ExpressionType.Not);
                 }
             }
 
