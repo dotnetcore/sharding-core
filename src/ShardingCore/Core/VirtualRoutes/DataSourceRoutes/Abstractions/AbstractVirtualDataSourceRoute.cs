@@ -71,7 +71,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 
         public abstract List<string> GetAllDataSourceNames();
         public abstract bool AddDataSourceName(string dataSourceName);
-        public void Configure(EntityMetadataDataSourceBuilder<T> builder)
+        public virtual void Configure(EntityMetadataDataSourceBuilder<T> builder)
         {
             
         }
