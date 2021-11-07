@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sample.SqlServerShardingDataSource.Controllers
+namespace Sample.SqlServerShardingTable.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -25,7 +24,7 @@ namespace Sample.SqlServerShardingDataSource.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<WeatherForecast>> Get()
+        public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast

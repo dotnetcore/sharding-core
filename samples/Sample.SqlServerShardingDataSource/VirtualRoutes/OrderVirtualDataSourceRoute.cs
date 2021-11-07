@@ -2,45 +2,40 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Sample.SqlServerShardingDataSource.Domain.Entities;
+using Sample.SqlServerShardingDataSource.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
-using ShardingCore.Helpers;
 
-namespace Sample.SqlServerShardingDataSource.Shardings
+namespace Sample.SqlServerShardingDataSource.VirtualRoutes
 {
-    public class SysUserModVirtualDataSourceRoute:AbstractShardingOperatorVirtualDataSourceRoute<SysUserMod,string>
+    public class OrderVirtualDataSourceRoute : AbstractShardingOperatorVirtualDataSourceRoute<Order, string>
     {
-        protected readonly int Mod=3;
-        protected readonly int TailLength=1;
-        protected readonly char PaddingChar='0';
-
+        private readonly List<string> _dataSources = new List<string>()
+        {
+            "A", "B", "C"
+        };
         protected override string ConvertToShardingKey(object shardingKey)
         {
-            return shardingKey.ToString();
+            return shardingKey?.ToString() ?? string.Empty;
         }
-
+        //我们设置区域就是数据库
         public override string ShardingKeyToDataSourceName(object shardingKey)
         {
-            var shardingKeyStr = ConvertToShardingKey(shardingKey);
-            return "ds"+Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength, PaddingChar); ;
+            return ConvertToShardingKey(shardingKey);
         }
 
         public override List<string> GetAllDataSourceNames()
         {
-            return new List<string>()
-            {
-                "ds0",
-                "ds1",
-                "ds2"
-            };
+            return _dataSources;
         }
 
         public override bool AddDataSourceName(string dataSourceName)
         {
-            throw new NotImplementedException();
+            if (_dataSources.Any(o => o == dataSourceName))
+                return false;
+            _dataSources.Add(dataSourceName);
+            return true;
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
@@ -51,11 +46,15 @@ namespace Sample.SqlServerShardingDataSource.Shardings
             {
                 case ShardingOperatorEnum.Equal: return tail => tail == t;
                 default:
-                {
-                    return tail => true;
-                }
+                    {
+                        return tail => true;
+                    }
             }
         }
 
+        public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
+        {
+            builder.ShardingProperty(o => o.Area);
+        }
     }
 }

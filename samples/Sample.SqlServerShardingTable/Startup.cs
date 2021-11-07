@@ -1,15 +1,19 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Sample.SqlServerShardingDataSource.VirtualRoutes;
-using ShardingCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Sample.SqlServerShardingTable.VirtualRoutes;
+using ShardingCore;
 
-namespace Sample.SqlServerShardingDataSource
+namespace Sample.SqlServerShardingTable
 {
     public class Startup
     {
@@ -29,7 +33,6 @@ namespace Sample.SqlServerShardingDataSource
         {
 
             services.AddControllers();
-
             services.AddShardingDbContext<MyDbContext>((conStr, builder) =>
                 {
                     builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -43,26 +46,12 @@ namespace Sample.SqlServerShardingDataSource
                 }).AddShardingTransaction((connection, builder) =>
                 {
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
-                }).AddDefaultDataSource("A",
-                    "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBA;Integrated Security=True;")
-                .AddShardingDataSource(sp =>
+                }).AddDefaultDataSource("ds0",
+                    "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;")
+                .AddShardingTableRoute(op =>
                 {
-                    return new Dictionary<string, string>()
-                    {
-                        {
-                            "B",
-                            "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBB;Integrated Security=True;"
-                        },
-                        {
-                            "C",
-                            "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBC;Integrated Security=True;"
-                        },
-                    };
-                })
-                .AddShardingDataSourceRoute(op =>
-                {
-                    op.AddShardingDatabaseRoute<SysUserVirtualDataSourceRoute>();
-                    op.AddShardingDatabaseRoute<OrderVirtualDataSourceRoute>();
+                    op.AddShardingTableRoute<SysUserVirtualTableRoute>();
+                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 }).End();
         }
 
