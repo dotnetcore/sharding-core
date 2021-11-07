@@ -137,7 +137,7 @@ namespace ShardingCore.Bootstrapers
                     $"virtual route :[{virtualRouteType}] found more  declared constructor ");
             }
 
-            var @params = constructors[0].GetParameters().Select(x => x.ParameterType == ShardingContainer.GetService(x.ParameterType))
+            var @params = constructors[0].GetParameters().Select(x => ShardingContainer.GetService(x.ParameterType))
                 .ToArray();
             object o = Activator.CreateInstance(virtualRouteType, @params);
             return (IVirtualDataSourceRoute<TEntity>)o;
