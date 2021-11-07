@@ -23,13 +23,18 @@ namespace ShardingCore.Core.Internal.Visitors
         private readonly EntityMetadata _entityMetadata;
         private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
+        /// <summary>
+        /// 是否是分表路由
+        /// </summary>
+        private readonly bool _shardingTableRoute;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter)
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter,bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _shardingKeyConvert = shardingKeyConvert;
             _keyToTailWithFilter = keyToTailWithFilter;
+            _shardingTableRoute = shardingTableRoute;
         }
 
         public Func<string, bool> GetStringFilterTail()
@@ -41,7 +46,7 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             return expression is MemberExpression member
                    && member.Expression.Type == _entityMetadata.EntityType
-                   && member.Member.Name == _entityMetadata.ShardingTableProperty.Name;
+                   && member.Member.Name == (_shardingTableRoute?_entityMetadata.ShardingTableProperty.Name:_entityMetadata.ShardingDataSourceProperty.Name);
         }
         /// <summary>
         /// 方法是否包含shardingKey
@@ -56,7 +61,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     var isShardingKey = methodCallExpression.Arguments[i] is MemberExpression member
                                         && member.Expression.Type == _entityMetadata.EntityType
-                                        && member.Member.Name == _entityMetadata.ShardingTableProperty.Name;
+                                        && member.Member.Name == (_shardingTableRoute ? _entityMetadata.ShardingTableProperty.Name : _entityMetadata.ShardingDataSourceProperty.Name);
                     if (isShardingKey) return true;
                 }
             }

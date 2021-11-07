@@ -26,7 +26,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
-            var filter = ShardingUtil.GetRouteShardingTableFilter(queryable, EntityMetadata, ConvertToShardingKey, GetRouteToFilter);
+            var filter = ShardingUtil.GetRouteShardingTableFilter(queryable, EntityMetadata, ConvertToShardingKey, GetRouteToFilter,false);
             var dataSources = allDataSourceNames.Where(o => filter(o)).ToList();
             return dataSources;
         }
