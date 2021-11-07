@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sample.SqlServerShardingDataSource.Entities;
+using Sample.SqlServerShardingAll.Entities;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 
-namespace Sample.SqlServerShardingDataSource
+namespace Sample.SqlServerShardingAll
 {
-    public class MyDbContext:AbstractShardingDbContext
+    public class MyDbContext:AbstractShardingDbContext,IShardingTableDbContext
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
@@ -34,5 +34,6 @@ namespace Sample.SqlServerShardingDataSource
             });
         }
 
+        public IRouteTail RouteTail { get; set; }
     }
 }

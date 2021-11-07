@@ -182,15 +182,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-
-        private void BeginTransaction()
-        {
-            foreach (var dbContextCache in _dbContextCaches)
-            {
-                dbContextCache.Value.NotifyTransaction();
-            }
-        }
-
         #endregion
 
 

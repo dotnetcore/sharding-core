@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Migrations", "sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServerShardingTable", "samples\Sample.SqlServerShardingTable\Sample.SqlServerShardingTable.csproj", "{88FA5615-1BAA-4021-87EF-9D4A60257FE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServerShardingAll", "samples\Sample.SqlServerShardingAll\Sample.SqlServerShardingAll.csproj", "{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{88FA5615-1BAA-4021-87EF-9D4A60257FE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88FA5615-1BAA-4021-87EF-9D4A60257FE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88FA5615-1BAA-4021-87EF-9D4A60257FE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,6 +151,7 @@ Global
 		{68A9F118-EF0A-4D03-8845-77D084561A28} = {EB1C9149-78C9-4D99-BE3F-B80FE2015E96}
 		{648DCBBE-BE8F-4EAC-8367-FE7BC558DA8C} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{88FA5615-1BAA-4021-87EF-9D4A60257FE4} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
+		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

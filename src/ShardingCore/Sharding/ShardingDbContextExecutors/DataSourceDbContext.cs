@@ -107,8 +107,17 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
                 else
                 {
-                    var connectionString = _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
-                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
+                    if (_dataSourceDbContexts.IsEmpty)
+                    {
+                        var connectionString = _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
+                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
+                        return dbContextOptionsBuilder.Options;
+                    }
+                    else
+                    {
+                        var dbConnection = _dataSourceDbContexts.First().Value.Database.GetDbConnection();
+                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
+                    }
                 }
                 _dbContextOptions = dbContextOptionsBuilder.Options;
                 return _dbContextOptions;
