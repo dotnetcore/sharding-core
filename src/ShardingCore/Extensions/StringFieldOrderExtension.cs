@@ -61,7 +61,7 @@ namespace ShardingCore.Extensions
             }
             else
             {
-                var comparer = Activator.CreateInstance(typeof(InMemoryShardingComparer<>).GetGenericType0(selectorResultType), shardingComparer);
+                var comparer = shardingComparer.CreateComparer(selectorResultType);
                 resultExp = Expression.Call(typeof(Queryable), methodName,
                     new Type[] { type, selectorResultType },
                     source.Expression, Expression.Quote(selector),Expression.Constant(comparer));

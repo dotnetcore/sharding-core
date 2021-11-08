@@ -13,6 +13,7 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IShardingComparer
     {
         int Compare(IComparable a, IComparable b,bool asc);
+        object CreateComparer(Type comparerType);
     }
 
     public interface IShardingComparer<TShardingDbContext> : IShardingComparer where TShardingDbContext:DbContext,IShardingDbContext

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Internals;
 
 namespace ShardingCore.Sharding
 {
@@ -13,9 +15,18 @@ namespace ShardingCore.Sharding
 */
     public class CSharpLanguageShardingComparer<TShardingDbContext>:IShardingComparer<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
+        private readonly ConcurrentDictionary<Type, object> _comparers = new ConcurrentDictionary<Type, object>();
         public int Compare(IComparable x, IComparable y, bool asc)
         {
             return x.SafeCompareToWith(y, asc);
+        }
+
+        public object CreateComparer(Type comparerType)
+        {
+            var comparer = _comparers.GetOrAdd(comparerType,
+                key => Activator.CreateInstance(typeof(InMemoryShardingComparer<>).GetGenericType0(comparerType),
+                    this));
+            return comparer;
         }
     }
 }
