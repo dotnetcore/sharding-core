@@ -52,7 +52,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
                     if (selectProperties.IsNotEmpty())
                     {
                         var sort = string.Join(",",selectProperties.Select(o=>$"{o.PropertyName} asc"));
-                        reWriteQueryable = reWriteQueryable.OrderWithExpression(sort);
+                        reWriteQueryable = reWriteQueryable.OrderWithExpression(sort,null);
                         var reWriteOrders = new List<PropertyOrder>(selectProperties.Count());
                         foreach (var orderProperty in selectProperties)
                         {

@@ -39,7 +39,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
             var streamMergeContext = GetStreamMergeContext();
             if (streamMergeContext.Orders.Any())
-                return q.OrderWithExpression(streamMergeContext.Orders).Last();
+                return q.OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).Last();
 
             return q.Last();
         }

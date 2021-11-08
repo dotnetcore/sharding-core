@@ -4,6 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Internals;
 
 namespace ShardingCore.Extensions
 {
@@ -45,40 +47,51 @@ namespace ShardingCore.Extensions
             return Expression.Lambda(propertyAccess, parameter);
         }
 
-        private static MethodCallExpression GenerateMethodCall<TEntity>(IQueryable<TEntity> source, string methodName, String fieldName)
+        private static MethodCallExpression GenerateMethodCall<TEntity>(IQueryable<TEntity> source, string methodName, String fieldName,IShardingComparer shardingComparer=null)
         {
             Type type = typeof(TEntity);
             Type selectorResultType;
             LambdaExpression selector = GenerateSelector<TEntity>(fieldName, out selectorResultType);
-            MethodCallExpression resultExp = Expression.Call(typeof(Queryable), methodName,
-                new Type[] {type, selectorResultType},
-                source.Expression, Expression.Quote(selector));
+            MethodCallExpression resultExp;
+            if (shardingComparer == null)
+            {
+                resultExp = Expression.Call(typeof(Queryable), methodName,
+                    new Type[] { type, selectorResultType },
+                    source.Expression, Expression.Quote(selector));
+            }
+            else
+            {
+                var comparer = Activator.CreateInstance(typeof(InMemoryShardingComparer<>).GetGenericType0(selectorResultType), shardingComparer);
+                resultExp = Expression.Call(typeof(Queryable), methodName,
+                    new Type[] { type, selectorResultType },
+                    source.Expression, Expression.Quote(selector),Expression.Constant(comparer));
+            }
             return resultExp;
         }
 
         #endregion
 
-        internal static IOrderedQueryable<TEntity> OrderBy<TEntity>(this IQueryable<TEntity> source, string fieldName)
+        internal static IOrderedQueryable<TEntity> OrderBy<TEntity>(this IQueryable<TEntity> source, string fieldName, IShardingComparer shardingComparer = null)
         {
-            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.OrderBy), fieldName);
+            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.OrderBy), fieldName, shardingComparer);
             return source.Provider.CreateQuery<TEntity>(resultExp) as IOrderedQueryable<TEntity>;
         }
 
-        internal static IOrderedQueryable<TEntity> OrderByDescending<TEntity>(this IQueryable<TEntity> source, string fieldName)
+        internal static IOrderedQueryable<TEntity> OrderByDescending<TEntity>(this IQueryable<TEntity> source, string fieldName, IShardingComparer shardingComparer = null)
         {
-            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.OrderByDescending), fieldName);
+            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.OrderByDescending), fieldName, shardingComparer);
             return source.Provider.CreateQuery<TEntity>(resultExp) as IOrderedQueryable<TEntity>;
         }
 
-        internal static IOrderedQueryable<TEntity> ThenBy<TEntity>(this IOrderedQueryable<TEntity> source, string fieldName)
+        internal static IOrderedQueryable<TEntity> ThenBy<TEntity>(this IOrderedQueryable<TEntity> source, string fieldName, IShardingComparer shardingComparer = null)
         {
-            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.ThenBy), fieldName);
+            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.ThenBy), fieldName, shardingComparer);
             return source.Provider.CreateQuery<TEntity>(resultExp) as IOrderedQueryable<TEntity>;
         }
 
-        internal static IOrderedQueryable<TEntity> ThenByDescending<TEntity>(this IOrderedQueryable<TEntity> source, string fieldName)
+        internal static IOrderedQueryable<TEntity> ThenByDescending<TEntity>(this IOrderedQueryable<TEntity> source, string fieldName, IShardingComparer shardingComparer = null)
         {
-            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.ThenByDescending), fieldName);
+            MethodCallExpression resultExp = GenerateMethodCall<TEntity>(source, nameof(Queryable.ThenByDescending), fieldName, shardingComparer);
             return source.Provider.CreateQuery<TEntity>(resultExp) as IOrderedQueryable<TEntity>;
         }
         /// <summary>
@@ -86,9 +99,10 @@ namespace ShardingCore.Extensions
         /// </summary>
         /// <param name="source"></param>
         /// <param name="sortExpression">"child.name asc,child.age desc"</param>
+        /// <param name="shardingComparer"></param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, string sortExpression)
+        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, string sortExpression, IShardingComparer shardingComparer = null)
         {
             String[] orderFields = sortExpression.Split(',');
             IOrderedQueryable<TEntity> result = null;
@@ -99,17 +113,17 @@ namespace ShardingCore.Extensions
                 Boolean sortDescending = (expressionPart.Length == 2) && (expressionPart[1].Equals("DESC", StringComparison.OrdinalIgnoreCase));
                 if (sortDescending)
                 {
-                    result = currentFieldIndex == 0 ? source.OrderByDescending(sortField) : result.ThenByDescending(sortField);
+                    result = currentFieldIndex == 0 ? source.OrderByDescending(sortField,shardingComparer) : result.ThenByDescending(sortField, shardingComparer);
                 }
                 else
                 {
-                    result = currentFieldIndex == 0 ? source.OrderBy(sortField) : result.ThenBy(sortField);
+                    result = currentFieldIndex == 0 ? source.OrderBy(sortField, shardingComparer) : result.ThenBy(sortField, shardingComparer);
                 }
             }
 
             return result;
         }
-        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, IEnumerable<PropertyOrder> propertyOrders)
+        internal static IOrderedQueryable<TEntity> OrderWithExpression<TEntity>(this IQueryable<TEntity> source, IEnumerable<PropertyOrder> propertyOrders, IShardingComparer shardingComparer = null)
         {
             IOrderedQueryable<TEntity> result = null;
             var currentIndex = 0;
@@ -118,11 +132,11 @@ namespace ShardingCore.Extensions
                 String sortField = propertyOrder.PropertyExpression;
                 if (propertyOrder.IsAsc)
                 {
-                    result = currentIndex == 0 ? source.OrderBy(sortField) : result.ThenBy(sortField);
+                    result = currentIndex == 0 ? source.OrderBy(sortField, shardingComparer) : result.ThenBy(sortField, shardingComparer);
                 }
                 else
                 {
-                    result = currentIndex == 0 ? source.OrderByDescending(sortField) : result.ThenByDescending(sortField);
+                    result = currentIndex == 0 ? source.OrderByDescending(sortField, shardingComparer) : result.ThenByDescending(sortField, shardingComparer);
                 }
 
                 currentIndex++;

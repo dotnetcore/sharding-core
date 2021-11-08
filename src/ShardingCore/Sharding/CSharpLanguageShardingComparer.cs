@@ -13,9 +13,9 @@ namespace ShardingCore.Sharding
 */
     public class CSharpLanguageShardingComparer<TShardingDbContext>:IShardingComparer<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        public int Compare(IComparable a, IComparable b, bool asc)
+        public int Compare(IComparable x, IComparable y, bool asc)
         {
-            return a.SafeCompareToWith(b, asc);
+            return x.SafeCompareToWith(y, asc);
         }
     }
 }

@@ -242,17 +242,18 @@ namespace ShardingCore.Core.Internal.Visitors
             //单个
             else
             {
-                bool paramterAtLeft=false;
+                //条件在右边
+                bool conditionOnRight=false;
                 object value = null;
 
                 if (IsShardingKey(binaryExpression.Left)&&IsConstantOrMember(binaryExpression.Right))
                 {
-                    paramterAtLeft = true;
+                    conditionOnRight = true;
                     value = GetShardingKeyValue(binaryExpression.Right);
                 }
                 else if (IsConstantOrMember(binaryExpression.Left) && IsShardingKey(binaryExpression.Right))
                 {
-                    paramterAtLeft = false;
+                    conditionOnRight = false;
                     value = GetShardingKeyValue(binaryExpression.Left);
                 }
                 else
@@ -260,10 +261,10 @@ namespace ShardingCore.Core.Internal.Visitors
 
                 var op = binaryExpression.NodeType switch
                 {
-                    ExpressionType.GreaterThan => paramterAtLeft ? ShardingOperatorEnum.GreaterThan : ShardingOperatorEnum.LessThan,
-                    ExpressionType.GreaterThanOrEqual => paramterAtLeft ? ShardingOperatorEnum.GreaterThanOrEqual : ShardingOperatorEnum.LessThanOrEqual,
-                    ExpressionType.LessThan => paramterAtLeft ? ShardingOperatorEnum.LessThan : ShardingOperatorEnum.GreaterThan,
-                    ExpressionType.LessThanOrEqual => paramterAtLeft ? ShardingOperatorEnum.LessThanOrEqual : ShardingOperatorEnum.GreaterThanOrEqual,
+                    ExpressionType.GreaterThan => conditionOnRight ? ShardingOperatorEnum.GreaterThan : ShardingOperatorEnum.LessThan,
+                    ExpressionType.GreaterThanOrEqual => conditionOnRight ? ShardingOperatorEnum.GreaterThanOrEqual : ShardingOperatorEnum.LessThanOrEqual,
+                    ExpressionType.LessThan => conditionOnRight ? ShardingOperatorEnum.LessThan : ShardingOperatorEnum.GreaterThan,
+                    ExpressionType.LessThanOrEqual => conditionOnRight ? ShardingOperatorEnum.LessThanOrEqual : ShardingOperatorEnum.GreaterThanOrEqual,
                     ExpressionType.Equal => ShardingOperatorEnum.Equal,
                     ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
                     _ => ShardingOperatorEnum.UnKnown

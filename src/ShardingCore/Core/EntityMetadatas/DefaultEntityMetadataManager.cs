@@ -8,7 +8,7 @@ using ShardingCore.Sharding.Abstractions;
 namespace ShardingCore.Core.EntityMetadatas
 {
     /// <summary>
-    /// 默认分片对象原数据管理者实现
+    /// 默认分片对象元数据管理者实现
     /// </summary>
     /// <typeparam name="TShardingDbContext"></typeparam>
     public class DefaultEntityMetadataManager<TShardingDbContext> : IEntityMetadataManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
