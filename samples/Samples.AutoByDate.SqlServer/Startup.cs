@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using Samples.AutoByDate.SqlServer.DbContexts;
 using Samples.AutoByDate.SqlServer.Shardings;
 using ShardingCore;
@@ -32,7 +31,6 @@ namespace Samples.AutoByDate.SqlServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Samples.AutoByDate.SqlServer", Version = "v1"}); });
             
             services.AddShardingDbContext<DefaultShardingDbContext>(
                     (conn, o) => o.UseSqlServer(conn)
@@ -59,8 +57,6 @@ namespace Samples.AutoByDate.SqlServer
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Samples.AutoByDate.SqlServer v1"));
             }
 
             app.UseShardingCore();

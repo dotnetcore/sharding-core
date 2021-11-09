@@ -28,7 +28,7 @@ namespace ShardingCore.Extensions
         {
 #if EFCORE6
 
-            var contextModel = dbContext.Model as RuntimeModel;
+            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
 #endif
 #if EFCORE2 || EFCORE3 || EFCORE5
 
@@ -45,7 +45,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if EFCORE5 
+#if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
  contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
@@ -54,7 +54,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if EFCORE2 ||EFCORE3
+#if EFCORE2 || EFCORE3
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)).Select(o=>o.Key).ToList();
@@ -75,7 +75,7 @@ namespace ShardingCore.Extensions
         {
 #if EFCORE6
 
-            var contextModel = dbContext.Model as RuntimeModel;
+            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
 #endif
 #if EFCORE2 ||EFCORE3 ||EFCORE5
 
@@ -126,9 +126,8 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveModelCache(this DbContext dbContext)
         {
-            var serviceScope = typeof(DbContext).GetTypeFieldValue(dbContext, "_serviceScope") as IServiceScope;
 #if EFCORE6
-            var dependencies = serviceScope.ServiceProvider.GetService<ModelCreationDependencies>();
+            var dependencies = dbContext.GetService<ModelCreationDependencies>();
             var dependenciesModelSource = dependencies.ModelSource as ModelSource;
 
             var modelSourceDependencies =
@@ -138,7 +137,7 @@ namespace ShardingCore.Extensions
             memoryCache.Remove(key1);
 #endif
 #if EFCORE5
-            var dependencies = serviceScope.ServiceProvider.GetService<IModelCreationDependencies>();
+            var dependencies = dbContext.GetService<IModelCreationDependencies>();
             var dependenciesModelSource = dependencies.ModelSource as ModelSource;
 
             var modelSourceDependencies =
@@ -149,7 +148,7 @@ namespace ShardingCore.Extensions
 #endif
 #if EFCORE3
            
-            var modelSource = serviceScope.ServiceProvider.GetService<IModelSource>();
+            var modelSource = dbContext.GetService<IModelSource>();
             var modelSourceImpl = modelSource as ModelSource;
             
             var modelSourceDependencies =
@@ -161,7 +160,7 @@ namespace ShardingCore.Extensions
 
 #if EFCORE2
 
-            var modelSource = serviceScope.ServiceProvider.GetService<IModelSource>();
+            var modelSource = dbContext.GetService<IModelSource>();
             var modelSourceImpl = modelSource as RelationalModelSource;
 
             var modelSourceDependencies =
