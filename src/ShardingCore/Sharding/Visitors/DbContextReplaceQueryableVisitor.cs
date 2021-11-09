@@ -9,13 +9,13 @@ using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 13 January 2021 16:32:27
-* @Email: 326308290@qq.com
-*/
-#if !EFCORE5
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 13 January 2021 16:32:27
+    * @Email: 326308290@qq.com
+    */
+#if EFCORE2 || EFCORE3
     internal class DbContextReplaceQueryableVisitor : ExpressionVisitor
     {
         private readonly DbContext _dbContext;
@@ -43,7 +43,7 @@ namespace ShardingCore.Core.Internal.Visitors
     }
 #endif
 
-#if EFCORE5
+#if EFCORE5 || EFCORE6
 
     internal class DbContextReplaceQueryableVisitor : ExpressionVisitor
     {

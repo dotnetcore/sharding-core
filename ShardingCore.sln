@@ -47,9 +47,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.5x", "src5x\Sh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Migrations", "samples\Sample.Migrations\Sample.Migrations.csproj", "{648DCBBE-BE8F-4EAC-8367-FE7BC558DA8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServerShardingTable", "samples\Sample.SqlServerShardingTable\Sample.SqlServerShardingTable.csproj", "{88FA5615-1BAA-4021-87EF-9D4A60257FE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.SqlServerShardingTable", "samples\Sample.SqlServerShardingTable\Sample.SqlServerShardingTable.csproj", "{88FA5615-1BAA-4021-87EF-9D4A60257FE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.SqlServerShardingAll", "samples\Sample.SqlServerShardingAll\Sample.SqlServerShardingAll.csproj", "{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.SqlServerShardingAll", "samples\Sample.SqlServerShardingAll\Sample.SqlServerShardingAll.csproj", "{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test6x", "test\ShardingCore.Test6x\ShardingCore.Test6x.csproj", "{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +131,10 @@ Global
 		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +158,7 @@ Global
 		{648DCBBE-BE8F-4EAC-8367-FE7BC558DA8C} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{88FA5615-1BAA-4021-87EF-9D4A60257FE4} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{FD2C6D03-8D6D-4C1C-B534-4C785A4B1B06} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
+		{71D85D50-7F2B-4FEF-BC6F-A80DBDDAC7E8} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

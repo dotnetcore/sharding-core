@@ -27,7 +27,7 @@
         <Content Include="Configs\MacDbConfig.json" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\ShardingCore\ShardingCore.csproj" />
+      <ProjectReference Include="..\..\src5x\ShardingCore.5x\ShardingCore.5x.csproj" />
     </ItemGroup>
 
 </Project>

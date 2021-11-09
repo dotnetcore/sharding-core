@@ -23,7 +23,14 @@ namespace ShardingCore.EFCores
     {
         private readonly ISupportShardingTransaction _supportShardingTransaction;
         private bool supportShardingTransaction => _supportShardingTransaction != null;
-#if !EFCORE2
+#if EFCORE6
+        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned, ISqlGenerationHelper sqlGenerationHelper) : base(connection, transaction, transactionId, logger, transactionOwned, sqlGenerationHelper)
+        {
+            _supportShardingTransaction = supportShardingTransaction;
+        }
+
+#endif
+#if EFCORE3 || EFCORE5
         public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
         {
             _supportShardingTransaction = supportShardingTransaction;

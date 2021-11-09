@@ -194,6 +194,7 @@ namespace ShardingCore.Bootstrapers
             if (context is IShardingDbContext shardingDbContext)
             {
                 var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
+                
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
                 lock (modelCacheSyncObject)

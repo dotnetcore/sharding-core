@@ -30,14 +30,15 @@ namespace ShardingCore.EFCores
         where TEntity : class
     {
         private readonly IShardingDbContext _context;
-#if EFCORE5
+
+#if EFCORE5 || EFCORE6
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
             _context = (IShardingDbContext)context;
         }
 #endif
-#if !EFCORE5
+#if EFCORE2 || EFCORE3
 
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
@@ -432,7 +433,6 @@ namespace ShardingCore.EFCores
                 return VirtualDataSource.DefaultDataSourceName;
             return VirtualDataSource.GetDataSourceName<TEntity>(shardingKeyValue);
         }
-
     }
     
 }

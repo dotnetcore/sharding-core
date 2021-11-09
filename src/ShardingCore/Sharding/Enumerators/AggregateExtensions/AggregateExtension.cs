@@ -185,7 +185,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             // We're going to find one that matches the type of our property.
             MethodInfo maxMethod = typeof(Queryable).GetMethods().First(
                 m => m.Name == nameof(Queryable.Max)
-                     && m.GetParameters().Length==2
+                     && m.GetParameters().Length==2 && typeof(Expression).IsAssignableFrom(m.GetParameters()[1].ParameterType)
                      && m.IsGenericMethod);
 
             // Now that we have the correct method, we need to know how to call the method.
@@ -232,7 +232,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             // We're going to find one that matches the type of our property.
             MethodInfo minMethod = typeof(Queryable).GetMethods().First(
                 m => m.Name == nameof(Queryable.Min)
-                     && m.GetParameters().Length==2
+                     && m.GetParameters().Length==2 &&typeof(Expression).IsAssignableFrom(m.GetParameters()[1].ParameterType)
                      && m.IsGenericMethod);
 
             // Now that we have the correct method, we need to know how to call the method.
