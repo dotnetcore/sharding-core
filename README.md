@@ -16,11 +16,12 @@
 [中文文档](https://xuejmnet.github.io/sharding-core-doc/) | [English Document](https://xuejmnet.github.io/sharding-core-doc/en/)
 ### 依赖
 
-Release  | EF Core | .NET Standard | .NET (Core) 
+Release  | EF Core | .NET  | .NET (Core) 
 --- | --- | --- | --- 
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore) | >= 5.0.10 | 2.1 | 3.0+ 
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore) | 3.1.18 | 2.0 | 2.0+ 
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | 2.0 | 2.0+ 
+[6.x.x.x](https://www.nuget.org/packages/ShardingCore) | >= 6.0.0 | net 6.0 | 6.0+ 
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore) | >= 5.0.10 | Standard 2.1 | 5.0+ 
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore) | 3.1.18 | Standard 2.0 | 2.0+ 
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | Standard 2.0 | 2.0+ 
 ### 数据库支持 
 数据库  | 是否支持 | 支持情况
 --- | --- | --- 
