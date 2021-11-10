@@ -151,8 +151,8 @@ namespace ShardingCore.Bootstrapers
                     {
                         if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                         {
-                            _logger.LogWarning(
-                                $"table :{virtualTable.GetVirtualTableName()}{entityMetadata.TableSeparator}{tail} will created.", e);
+                            _logger.LogWarning(e,
+                                $"table :{virtualTable.GetVirtualTableName()}{entityMetadata.TableSeparator}{tail} will created.");
                         }
                     }
                 }

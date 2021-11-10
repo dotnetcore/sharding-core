@@ -73,15 +73,12 @@ namespace ShardingCore.Extensions
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType(this DbContext dbContext,
             Type shardingType)
         {
-#if EFCORE6
-
-            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
-#endif
 #if EFCORE2 ||EFCORE3 ||EFCORE5
 
             var contextModel = dbContext.Model as Model;
 #endif
 #if EFCORE6
+            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
             var valueTuples =
                 contextModelRelationalModel.Tables

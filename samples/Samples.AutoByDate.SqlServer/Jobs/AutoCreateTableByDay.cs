@@ -3,6 +3,7 @@ using ChronusJob.Abstractions;
 using ChronusJob.Jobs.Attributes;
 using Samples.AutoByDate.SqlServer.DbContexts;
 using Samples.AutoByDate.SqlServer.Domain.Entities;
+using ShardingCore;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
@@ -36,8 +37,8 @@ namespace Samples.AutoByDate.SqlServer.Jobs
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
             try
             {
-                virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail)); 
-                tableCreator.CreateTable("ds0",typeof(SysUserLogByDay),tail);
+                virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+                tableCreator.CreateTable("ds0", typeof(SysUserLogByDay), tail);
             }
             catch (Exception e)
             {

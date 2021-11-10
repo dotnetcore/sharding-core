@@ -70,7 +70,7 @@ namespace ShardingCore.TableCreator
                     lock (modelCacheSyncObject)
                     {
                         context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
-                        var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+                    var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
                         try
                         {
                             databaseCreator.CreateTables();
@@ -79,9 +79,9 @@ namespace ShardingCore.TableCreator
                         {
                             if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                             {
-                                _logger.LogWarning(
-                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.EntityMetadata.TableSeparator}{tail}]");
-                                throw new ShardingCreateException(" create table error :", ex);
+                                _logger.LogWarning(ex,
+                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.EntityMetadata.TableSeparator}{tail}].");
+                                throw new ShardingCreateException($" create table error :{ex.Message}", ex);
                             }
                         }
                         finally

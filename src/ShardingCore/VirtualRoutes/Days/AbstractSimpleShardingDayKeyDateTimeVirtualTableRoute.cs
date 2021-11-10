@@ -21,7 +21,7 @@ namespace ShardingCore.VirtualRoutes.Days
     * @Date: Wednesday, 27 January 2021 08:41:05
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<T>:AbstractShardingTimeKeyDateTimeVirtualTableRoute<T> where T:class
+    public abstract class AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<T>:AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>,IJob where T:class
     {
         /// <summary>
         /// begin time use fixed time eg.new DateTime(20xx,xx,xx)

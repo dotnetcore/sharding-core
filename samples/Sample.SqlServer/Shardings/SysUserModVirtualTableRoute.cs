@@ -6,7 +6,10 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.VirtualRoutes;
+using ShardingCore.VirtualRoutes.Abstractions;
+using ShardingCore.VirtualRoutes.Days;
 using ShardingCore.VirtualRoutes.Mods;
+using ShardingCore.VirtualRoutes.Weeks;
 
 namespace Sample.SqlServer.Shardings
 {
