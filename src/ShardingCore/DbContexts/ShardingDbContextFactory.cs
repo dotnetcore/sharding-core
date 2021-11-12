@@ -1,12 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DbContexts
 {
@@ -18,14 +13,11 @@ namespace ShardingCore.DbContexts
     */
     public class ShardingDbContextFactory<TShardingDbContext> : IShardingDbContextFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IShardingDbContextCreatorConfig _shardingDbContextCreatorConfig;
+        private readonly IShardingDbContextCreatorConfig<TShardingDbContext> _shardingDbContextCreatorConfig;
 
-        public ShardingDbContextFactory(IEnumerable<IShardingDbContextCreatorConfig> shardingDbContextCreatorConfigs)
+        public ShardingDbContextFactory(IShardingDbContextCreatorConfig<TShardingDbContext> shardingDbContextCreatorConfig)
         {
-            _shardingDbContextCreatorConfig = shardingDbContextCreatorConfigs
-                .FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))
-                ??throw new ShardingCoreException(
-                $"{typeof(TShardingDbContext).FullName} cant found DefaultShardingDbContextCreatorConfig<{typeof(TShardingDbContext).Name}> should use {nameof(DIExtension.AddShardingDbContext)}");
+            _shardingDbContextCreatorConfig = shardingDbContextCreatorConfig;
         }
         public DbContext Create(ShardingDbContextOptions shardingDbContextOptions)
         {

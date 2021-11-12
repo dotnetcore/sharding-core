@@ -1,13 +1,10 @@
+using Microsoft.Extensions.Logging;
+using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Jobs.Impls;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Jobs.Cron;
-using ShardingCore.Jobs.Extensions;
-using ShardingCore.Jobs.Impls;
 
 namespace ShardingCore.Jobs
 {
@@ -20,7 +17,6 @@ namespace ShardingCore.Jobs
     internal class JobRunnerService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly JobGlobalOptions _jobGlobalOptions;
         private readonly IJobManager _jobManager;
         private readonly ILogger<JobRunnerService> _logger;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -31,18 +27,15 @@ namespace ShardingCore.Jobs
         /// </summary>
         private const long MAX_DELAY_MILLIS = 30000L;
 
-        public JobRunnerService(IServiceProvider serviceProvider, JobGlobalOptions jobGlobalOptions, IJobManager jobManager, ILogger<JobRunnerService> logger)
+        public JobRunnerService(IServiceProvider serviceProvider,IJobManager jobManager, ILogger<JobRunnerService> logger)
         {
             _serviceProvider = serviceProvider;
-            _jobGlobalOptions = jobGlobalOptions;
             _jobManager = jobManager;
             _logger = logger;
         }
 
         public async Task StartAsync()
         {
-            if (_jobGlobalOptions.DelaySecondsOnStart > 0)
-                await Task.Delay(TimeSpan.FromSeconds(_jobGlobalOptions.DelaySecondsOnStart), _cts.Token);
             while (!_cts.Token.IsCancellationRequested)
             {
                 var delayMs = 0L;
@@ -116,29 +109,16 @@ namespace ShardingCore.Jobs
                 {
                     try
                     {
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var job = jobEntry.JobInstance;
-                            if (job == null)
-                                _logger.LogWarning($"###  job  [{jobEntry.JobName}] cant created, create method :{(jobEntry.CreateFromServiceProvider ? "from service provider" : "activator")}");
-                            var method = jobEntry.JobMethod;
-                            var @params = method.GetParameters().Select(x => scope.ServiceProvider.GetService(x.ParameterType)).ToArray();
+                        var job = jobEntry.JobInstance;
+                        if (job == null)
+                            _logger.LogWarning($"###  job  [{jobEntry.JobName}] is null ");
 
-                            _logger.LogInformation($"###  job  [{jobEntry.JobName}]  start success.");
-                            if (method.IsAsyncMethod())
-                            {
-                                if (method.Invoke(job, @params) is Task task)
-                                    await task;
-                            }
-                            else
-                            {
-                                method.Invoke(job, @params);
-                            }
-                            _logger.LogInformation($"###  job  [{jobEntry.JobName}]  invoke complete.");
-                            jobEntry.NextUtcTime = new CronExpression(jobEntry.Cron).GetTimeAfter(DateTime.UtcNow);
-                            if (!jobEntry.NextUtcTime.HasValue)
-                                _logger.LogWarning($"###  job [{jobEntry.JobName}] is stopped.");
-                        }
+                        _logger.LogInformation($"###  job  [{jobEntry.JobName}]  start success.");
+                        await job.ExecuteAsync();
+                        _logger.LogInformation($"###  job  [{jobEntry.JobName}]  invoke complete.");
+                        jobEntry.CalcNextUtcTime();
+                        if (!jobEntry.NextUtcTime.HasValue)
+                            _logger.LogWarning($"###  job [{jobEntry.JobName}] is stopped.");
                     }
                     catch (Exception e)
                     {

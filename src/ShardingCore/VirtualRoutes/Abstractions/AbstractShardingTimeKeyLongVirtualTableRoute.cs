@@ -13,8 +13,8 @@ namespace ShardingCore.VirtualRoutes.Abstractions
     /// <summary>
     /// sharding table route by time stamp (ms)
     /// </summary>
-    /// <typeparam name="T">entity</typeparam>
-    public abstract class AbstractShardingTimeKeyLongVirtualTableRoute<T> : AbstractShardingOperatorVirtualTableRoute<T, long> where T : class
+    /// <typeparam name="TEntity">entity</typeparam>
+    public abstract class AbstractShardingTimeKeyLongVirtualTableRoute<TEntity> : AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, long> where TEntity : class
     {
         /// <summary>
         /// how convert object to long

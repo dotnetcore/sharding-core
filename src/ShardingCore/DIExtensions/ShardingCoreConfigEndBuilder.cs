@@ -50,11 +50,6 @@ namespace ShardingCore.DIExtensions
                 .AddSingleton<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>,
                     ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp => config);
 
-            //添加创建TActualDbContext创建者
-            services
-                .AddSingleton<IShardingDbContextCreatorConfig,
-                    DefaultShardingDbContextCreatorConfig<TShardingDbContext>>(sp =>
-                    new DefaultShardingDbContextCreatorConfig<TShardingDbContext>());
             if (_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory != null)
             {
                 services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);

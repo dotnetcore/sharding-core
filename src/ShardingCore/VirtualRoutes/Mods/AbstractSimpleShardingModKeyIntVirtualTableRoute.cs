@@ -18,8 +18,8 @@ namespace ShardingCore.VirtualRoutes.Mods
     /// <summary>
     /// 分表字段为int的取模分表
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class AbstractSimpleShardingModKeyIntVirtualTableRoute<T>: AbstractShardingOperatorVirtualTableRoute<T,int> where T:class
+    /// <typeparam name="TEntity"></typeparam>
+    public abstract class AbstractSimpleShardingModKeyIntVirtualTableRoute<TEntity>: AbstractShardingOperatorVirtualTableRoute<TEntity,int> where TEntity:class
     {
         protected readonly int Mod;
         protected readonly int TailLength;

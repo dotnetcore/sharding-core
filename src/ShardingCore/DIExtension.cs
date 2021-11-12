@@ -71,6 +71,11 @@ namespace ShardingCore
 
         internal static IServiceCollection AddInternalShardingCore(this IServiceCollection services)
         {
+
+            //添加创建TActualDbContext创建者
+            services.TryAddSingleton(typeof(IShardingDbContextCreatorConfig<>),typeof(DefaultShardingDbContextCreatorConfig<>));
+
+
             services.TryAddSingleton(typeof(ITrackerManager<>),typeof(TrackerManager<>));
             services.TryAddSingleton(typeof(IStreamMergeContextFactory<>),typeof(StreamMergeContextFactory<>));
             services.TryAddSingleton(typeof(IShardingTableCreator<>),typeof(ShardingTableCreator<>));
@@ -103,7 +108,7 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
 
-            services.AddShardingJob();
+            services.TryAddShardingJob();
             return services;
         }
         public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext

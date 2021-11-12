@@ -29,7 +29,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// </summary>
         bool ReadWriteSeparation { get; set; }
         /// <summary>
-        /// 是否存在多个dbcontext
+        /// 是否存在多个db context
         /// </summary>
         bool IsMultiDbContext { get; }
 

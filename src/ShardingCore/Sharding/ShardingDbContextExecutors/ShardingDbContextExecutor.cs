@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     public class ShardingDbContextExecutor<TShardingDbContext> : IShardingDbContextExecutor where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly DbContext _shardingDbContext;
-
+         
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
@@ -43,8 +43,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-
-        private bool IsBeginTransaction => _shardingDbContext.Database.CurrentTransaction != null;
 
         public int ReadWriteSeparationPriority
         {
@@ -80,7 +78,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         }
         /// <summary>
-        /// 是否有多个dcontext
+        /// has more db context
         /// </summary>
         public bool IsMultiDbContext =>
             _dbContextCaches.Count > 1 || _dbContextCaches.Sum(o => o.Value.DbContextCount) > 1;

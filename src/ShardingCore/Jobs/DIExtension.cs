@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Jobs.Impls;
 
@@ -13,12 +14,10 @@ namespace ShardingCore.Jobs
 */
     internal static class DIExtension
     {
-        public static IServiceCollection AddShardingJob(this IServiceCollection services, Action<JobGlobalOptions> config=null)
+        public static IServiceCollection TryAddShardingJob(this IServiceCollection services)
         {
-            var option = new JobGlobalOptions();
-            config?.Invoke(option);
-            services.AddSingleton(sp => option).AddSingleton<IJobManager, InMemoryJobManager>()
-                .AddSingleton<JobRunnerService>();
+            services.TryAddSingleton<JobRunnerService>(); 
+            services.TryAddSingleton<IJobManager, InMemoryJobManager>();
             return services;
         }
     }

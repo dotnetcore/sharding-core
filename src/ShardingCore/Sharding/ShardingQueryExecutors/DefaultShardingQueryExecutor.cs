@@ -133,7 +133,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             // private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
 
-            var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod("Create");
+            var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod(nameof(IStreamMergeContextFactory.Create));
             if (streamMergeContextMethod == null)
                 throw new ShardingCoreException("cant found IStreamMergeContextFactory method [Create]");
             var streamMergeContext = streamMergeContextMethod.MakeGenericMethod(new Type[] { queryEntityType }).Invoke(streamMergeContextFactory, new[] { queryable, shardingDbContext });

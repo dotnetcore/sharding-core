@@ -40,6 +40,18 @@ namespace ShardingCore
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
         /// <summary>
+        /// 添加尝试建表的对象
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public bool AddEntityTryCreateTable(Type entityType);
+        /// <summary>
+        /// 是否需要启动创建表
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public bool NeedCreateTable(Type entityType);
+        /// <summary>
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }

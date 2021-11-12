@@ -1,18 +1,9 @@
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Helpers;
+using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using ShardingCore.Core;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Extensions;
-using ShardingCore.Helpers;
-using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Jobs.Impls.Attributes;
-using ShardingCore.TableCreator;
-using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Weeks
 {
@@ -22,7 +13,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
     * @Date: Wednesday, 27 January 2021 12:40:27
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>, IJob where T : class
+    public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<TEntity> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<TEntity> where TEntity : class
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
@@ -78,70 +69,14 @@ namespace ShardingCore.VirtualRoutes.Weeks
                     }
             }
         }
-        /// <summary>
-        /// 每周五 5点
-        /// </summary>
-        [JobRun(Name = "定时创建表", Cron = "0 0 5 ? * 6", RunOnceOnStart = true)]
-        public virtual void AutoShardingTableCreate()
+        public override string[] GetCronExpressions()
         {
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
-            if (virtualTable == null)
+            return new[]
             {
-                return;
-            }
-            var now = DateTime.Now.Date.AddDays(3);
-            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            ISet<string> dataSources = new HashSet<string>()
-            {
-                virtualDataSource.DefaultDataSourceName
+                "0 59 23 ? * 1",
+                "0 0 0 ? * 2",
+                "0 1 0 ? * 2",
             };
-            if (entityMetadataManager.IsShardingDataSource(typeof(T)))
-            {
-                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(T));
-                foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
-                {
-                    dataSources.Add(dataSourceName);
-                }
-            }
-            foreach (var dataSource in dataSources)
-            {
-                try
-                {
-                    tableCreator.CreateTable(dataSource, typeof(T), tail);
-                }
-                catch (Exception e)
-                {
-                    //ignore
-                }
-            }
-        }
-        /// <summary>
-        /// 每周末晚上23点55分添加数据
-        /// </summary>
-        [JobRun(Name = "定时添加虚拟表", Cron = "0 55 23 ? * 1")]
-        public virtual void AutoShardingTableAdd()
-        {
-            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
-            if (virtualTable == null)
-            {
-                return;
-            }
-            var now = DateTime.Now.Date.AddDays(3);
-            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
-        }
-
-        public virtual string JobName =>
-            $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
-
-        public virtual bool StartJob()
-        {
-            return false;
         }
 
     }

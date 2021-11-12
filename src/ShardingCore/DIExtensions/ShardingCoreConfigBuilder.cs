@@ -47,6 +47,10 @@ namespace ShardingCore.DIExtensions
             ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
+            foreach (var entityType in shardingCoreBeginOptions.GetCreateTableEntities())
+            {
+                ShardingConfigOption.AddEntityTryCreateTable(entityType);
+            }
 
             return new ShardingTransactionBuilder<TShardingDbContext>(this);
             //return new ShardingQueryBuilder<TShardingDbContext>(this);
@@ -98,5 +102,21 @@ namespace ShardingCore.DIExtensions
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }
+
+        private readonly  ISet<Type> _createTableEntities = new HashSet<Type>();
+
+        public void AddEntitiesTryCreateTable(params Type[] entityTypes)
+        {
+            foreach (var entityType in entityTypes)
+            {
+                _createTableEntities.Add(entityType);
+            }
+
+        }
+
+        public ISet<Type> GetCreateTableEntities()
+        {
+            return _createTableEntities;
+        }
     }
 }

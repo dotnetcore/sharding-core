@@ -23,6 +23,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         , IAsyncDisposable
 #endif
     {
+        /// <summary>
+        /// is default data source connection string
+        /// </summary>
         bool IsDefault { get; }
         int DbContextCount { get; }
         DbContext CreateDbContext(IRouteTail routeTail);

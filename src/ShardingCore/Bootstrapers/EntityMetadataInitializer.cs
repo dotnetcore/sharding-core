@@ -111,16 +111,8 @@ namespace ShardingCore.Bootstrapers
                 if (virtualTableRoute is IJob routeJob && routeJob.StartJob())
                 {
                     var jobManager = ShardingContainer.GetService<IJobManager>();
-                    var jobEntries = JobTypeParser.Parse(virtualTableRoute.GetType());
-                    jobEntries.ForEach(o =>
-                    {
-                        o.JobName = $"{routeJob.JobName}:{o.JobName}";
-                        o.JobInstance = routeJob;
-                    });
-                    foreach (var jobEntry in jobEntries)
-                    {
-                        jobManager.AddJob(jobEntry);
-                    }
+                    var jobEntry = JobEntryFactory.Create(routeJob);
+                    jobManager.AddJob(jobEntry);
                 }
             }
         }

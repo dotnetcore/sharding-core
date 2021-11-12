@@ -1,28 +1,19 @@
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Helpers;
+using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using ShardingCore.Core;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Extensions;
-using ShardingCore.Helpers;
-using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Jobs.Impls.Attributes;
-using ShardingCore.TableCreator;
-using ShardingCore.VirtualRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Months
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 27 January 2021 12:27:09
-* @Email: 326308290@qq.com
-*/
-    public abstract class AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<T> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<T>,IJob where T : class
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 27 January 2021 12:27:09
+    * @Email: 326308290@qq.com
+    */
+    public abstract class AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<TEntity> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<TEntity> where TEntity : class
     {
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
@@ -76,76 +67,14 @@ namespace ShardingCore.VirtualRoutes.Months
                 }
             }
         }
-        /// <summary>
-        /// 每个月20号5点会创建对应的表
-        /// </summary>
-        [JobRun(Name = "定时创建表", Cron = "0 0 5 20 * ?", RunOnceOnStart = true)]
-        public virtual void AutoShardingTableCreate()
+        public override string[] GetCronExpressions()
         {
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
-            if (virtualTable == null)
+            return new[]
             {
-                return;
-            }
-            var now = DateTime.Now.Date.AddDays(3);
-            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            ISet<string> dataSources = new HashSet<string>()
-            {
-                virtualDataSource.DefaultDataSourceName
+                "0 59 23 28,29,30,31 * ?",
+                "0 0 0 1 * ?",
+                "0 1 0 1 * ?",
             };
-            if (entityMetadataManager.IsShardingDataSource(typeof(T)))
-            {
-                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(T));
-                foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
-                {
-                    dataSources.Add(dataSourceName);
-                }
-
-            }
-            foreach (var dataSource in dataSources)
-            {
-                try
-                {
-                    tableCreator.CreateTable(dataSource, typeof(T), tail);
-                }
-                catch (Exception e)
-                {
-                    //ignore
-                }
-            }
-        }
-        /// <summary>
-        /// 每月最后一天需要程序自己判断是不是最后一天
-        /// </summary>
-        [JobRun(Name = "定时添加虚拟表", Cron = "0 55 23 28,29,30,31 * ?")]
-        public virtual void AutoShardingTableAdd()
-        {
-            var nowDateTime = DateTime.Now.Date;
-            var lastMonthDay = ShardingCoreHelper.GetNextMonthFirstDay(nowDateTime).AddDays(-1);
-            if (lastMonthDay.Date != nowDateTime)
-                return;
-
-            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTable = virtualTableManager.GetVirtualTable(typeof(T));
-            if (virtualTable == null)
-            {
-                return;
-            }
-            var now = DateTime.Now.Date.AddDays(7);
-            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
-        }
-
-        public virtual string JobName =>
-            $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
-
-        public virtual bool StartJob()
-        {
-            return false;
         }
 
     }

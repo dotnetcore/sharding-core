@@ -1,33 +1,24 @@
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Core;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
-using ShardingCore.Extensions;
-using ShardingCore.Helpers;
-using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Jobs.Impls.Attributes;
-using ShardingCore.TableCreator;
 
 namespace ShardingCore.VirtualRoutes.Mods
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 27 January 2021 08:14:30
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 27 January 2021 08:14:30
+    * @Email: 326308290@qq.com
+    */
     /// <summary>
     /// 分表字段为string的取模分表
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public abstract class AbstractSimpleShardingModKeyStringVirtualTableRoute<T>: AbstractShardingOperatorVirtualTableRoute<T,string> where T:class
+    /// <typeparam name="TEntity"></typeparam>
+    public abstract class AbstractSimpleShardingModKeyStringVirtualTableRoute<TEntity>: AbstractShardingOperatorVirtualTableRoute<TEntity,string> where TEntity:class
     {
         protected readonly int Mod;
         protected readonly int TailLength;

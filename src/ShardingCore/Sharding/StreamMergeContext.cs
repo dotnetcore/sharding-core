@@ -79,6 +79,10 @@ namespace ShardingCore.Sharding
             _source = source;
             _shardingDbContext = shardingDbContext;
             _routeTailFactory = routeTailFactory;
+            DataSourceRouteResult = dataSourceRouteResult;
+            TableRouteResults = tableRouteResults;
+            IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
+            IsCrossTable = tableRouteResults.Count() > 1;
             var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
@@ -88,10 +92,6 @@ namespace ShardingCore.Sharding
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
             QueryEntities = source.ParseQueryableRoute();
-            DataSourceRouteResult = dataSourceRouteResult;
-            TableRouteResults = tableRouteResults;
-            IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            IsCrossTable = tableRouteResults.Count() > 1;
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));

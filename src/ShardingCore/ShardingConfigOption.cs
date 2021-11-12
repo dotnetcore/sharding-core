@@ -24,6 +24,7 @@ namespace ShardingCore
     {
         private readonly Dictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly Dictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
+        private readonly ISet<Type> _createTableEntities = new HashSet<Type>();
 
         public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; private set; }
         public Action<string, DbContextOptionsBuilder> DefaultQueryConfigure { get; private set; }
@@ -200,6 +201,16 @@ namespace ShardingCore
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
 
+        public bool AddEntityTryCreateTable(Type entityType)
+        {
+            return _createTableEntities.Add(entityType);
+        }
+
+        public bool NeedCreateTable(Type entityType)
+        {
+            return _createTableEntities.Contains(entityType);
+        }
+
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>
@@ -212,7 +223,7 @@ namespace ShardingCore
         /// <summary>
         /// 单次查询并发线程数目(最小1)
         /// </summary>
-        public int ParallelQueryMaxThreadCount { get; set; } = 65536;
+        public int ParallelQueryMaxThreadCount { get; set; } = Environment.ProcessorCount*2;
         /// <summary>
         /// 默认30秒超时
         /// </summary>

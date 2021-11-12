@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Jobs.Cron;
 
 namespace ShardingCore.Jobs.Impls
 {
@@ -32,28 +34,10 @@ namespace ShardingCore.Jobs.Impls
         /// </summary>
         public IJob JobInstance { get; set; }
 
-        public Type JobClass { get; set; }
-        public MethodInfo JobMethod { get; set; }
-
-        /// <summary>
-        /// 开始时间
-        /// </summary>
-        public DateTime BeginUtcTime { get; set; }
-
-        /// <summary>
-        /// 表达式
-        /// </summary>
-        public string Cron { get; set; }
-
         /// <summary>
         /// 是否跳过如果正在运行
         /// </summary>
-        public bool SkipIfRunning { get; set; }
-        /// <summary>
-        /// 是否从di容器中获取
-        /// </summary>
-        
-        public bool CreateFromServiceProvider { get; set; }
+        public bool SkipIfRunning { get; set; } = true;
 
         /// <summary>
         /// 下次运行时间
@@ -79,6 +63,13 @@ namespace ShardingCore.Jobs.Impls
         {
             if (SkipIfRunning)
                 runStatus = unrunning;
+        }
+        /// <summary>
+        /// 计算下一次执行时间
+        /// </summary>
+        public void CalcNextUtcTime()
+        {
+            this.NextUtcTime= JobInstance.GetCronExpressions().Select(cron => new CronExpression(cron).GetTimeAfter(DateTime.UtcNow)).Min();
         }
     }
 }

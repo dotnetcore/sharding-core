@@ -13,7 +13,7 @@ namespace ShardingCore
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DefaultShardingDbContextCreatorConfig<TShardingDbContext> : IShardingDbContextCreatorConfig
+    public class DefaultShardingDbContextCreatorConfig<TShardingDbContext> : IShardingDbContextCreatorConfig<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly Func<ShardingDbContextOptions, DbContext> _creator;
