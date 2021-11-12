@@ -41,7 +41,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             if (!isQuery)
             {
                 //后拦截器
-                return  AfterPhysicTableFilter(allPhysicTables,DoRouteWithPredicate(allPhysicTables,queryable));
+                return DoRouteWithPredicate(allPhysicTables, queryable);
             }
             //强制路由不经过断言
             if (EnableHintRoute)

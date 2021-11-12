@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Extensions;
@@ -89,7 +90,9 @@ namespace Sample.SqlServer.Controllers
 
             using (_shardingRouteManager.CreateScope())
             {
-                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00");
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00","01");
+                //_shardingRouteManager.Current.TryCreateOrAddHintTail<SysUserMod>("00", "01");
+                //_shardingRouteManager.Current.TryCreateOrAddAssertTail<SysUserMod>(new TestRouteAssert());
 
                 var mod00s = await _defaultTableDbContext.Set<SysUserMod>().Skip(10).Take(11).ToListAsync();
             }

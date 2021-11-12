@@ -26,6 +26,9 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             _logger = ShardingContainer
                 .GetService<ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>>();
         }
+        /// <summary>
+        /// 不可以设置一样
+        /// </summary>
         public virtual string JobName =>
             $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
 

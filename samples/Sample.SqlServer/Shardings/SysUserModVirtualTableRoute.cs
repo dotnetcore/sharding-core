@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.VirtualRoutes;
@@ -25,6 +27,9 @@ namespace Sample.SqlServer.Shardings
         /// 开启提示路由
         /// </summary>
         protected override bool EnableHintRoute => true;
+        /// <summary>
+        /// 开启断言路由
+        /// </summary>
         protected override bool EnableAssertRoute => true;
 
         public SysUserModVirtualTableRoute() : base(2, 3)

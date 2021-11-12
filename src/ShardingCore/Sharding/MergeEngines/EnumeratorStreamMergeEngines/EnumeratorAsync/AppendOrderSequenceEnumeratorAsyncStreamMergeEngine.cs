@@ -64,18 +64,18 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 //if sharding data source 
                 var appendAsc = _dataSourceSequenceOrderConfig.AppendAsc;
                 //if sharding table
-                var useThenBy = dataSourceOrderMain && _tableSequenceOrderConfig != null;
+                var useThenBy =  _tableSequenceOrderConfig != null;
                 if (appendAsc)
                 {
                     sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
                         _dataSourceSequenceOrderConfig.RouteComparer)
-                        .ThenByIf(o => o.Tail, useThenBy && _tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer)
-                        .ThenByDescendingIf(o => o.Tail, useThenBy && !_tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig.RouteComparer);
+                        .ThenByIf(o => o.Tail, useThenBy && _tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig?.RouteComparer)
+                        .ThenByDescendingIf(o => o.Tail, useThenBy && !_tableSequenceOrderConfig.AppendAsc, _tableSequenceOrderConfig?.RouteComparer);
                 }
                 else
                 {
                     sortRouteResults = sortRouteResults.OrderByDescending(o => o.DataSourceName,
-                        _dataSourceSequenceOrderConfig.RouteComparer).ThenByDescendingIf(o => o.Tail, useThenBy, _tableSequenceOrderConfig.RouteComparer);
+                        _dataSourceSequenceOrderConfig.RouteComparer).ThenByDescendingIf(o => o.Tail, useThenBy, _tableSequenceOrderConfig?.RouteComparer);
                 }
                 reSetOrders.Add(new PropertyOrder(_dataSourceSequenceOrderConfig.PropertyName, _dataSourceSequenceOrderConfig.AppendAsc));
                 if (useThenBy)
