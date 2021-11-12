@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Linq;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore
 {

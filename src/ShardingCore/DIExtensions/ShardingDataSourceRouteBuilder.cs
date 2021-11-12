@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.DIExtensions
 {

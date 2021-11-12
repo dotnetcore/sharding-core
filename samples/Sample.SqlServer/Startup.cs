@@ -8,6 +8,7 @@ using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
 using System;
+using ShardingCore.Sharding.ShardingComparision;
 
 namespace Sample.SqlServer
 {

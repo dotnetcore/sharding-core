@@ -9,6 +9,8 @@ using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.Sharding.ShardingComparision;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.DIExtensions
 {

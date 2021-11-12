@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.DIExtensions
 {

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
 using ShardingCore.EFCores;
+using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Test50_2x.Domain.Entities;
 using ShardingCore.Test50_2x.Shardings;
 

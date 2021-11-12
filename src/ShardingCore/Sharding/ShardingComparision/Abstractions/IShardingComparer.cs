@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Sharding.Abstractions
+namespace ShardingCore.Sharding.ShardingComparision.Abstractions
 {
 /*
 * @Author: xjm

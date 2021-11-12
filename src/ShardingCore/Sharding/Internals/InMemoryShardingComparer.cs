@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Sharding.Internals
 {

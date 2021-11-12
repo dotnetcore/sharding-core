@@ -15,6 +15,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 
 namespace ShardingCore.Sharding

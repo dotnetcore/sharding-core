@@ -6,6 +6,7 @@ using System.Reflection;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Internals;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Extensions
 {

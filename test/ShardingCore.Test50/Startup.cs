@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
+using ShardingCore.Sharding.ShardingComparision;
 
 #if EFCORE5SQLSERVER
 using ShardingCore.SqlServer;
