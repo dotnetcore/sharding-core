@@ -30,7 +30,11 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
                 var count = await source.LongCountAsync();
                 if (count <= skip)
                     return new ShardingPagedResult<T>(new List<T>(0), count);
-                var data = await source.Skip(skip).Take(take).ToListAsync();
+                //获取剩余条数
+                var remainingCount = count - skip;
+                //当剩余条数小于take数就取remainingCount
+                var realTake = remainingCount < take ? remainingCount : take;
+                var data = await source.Skip(skip).Take((int)realTake).ToListAsync();
                 return new ShardingPagedResult<T>(data, count);
             }
         }
@@ -50,7 +54,11 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
                 var count = source.LongCount();
                 if (count <= skip)
                     return new ShardingPagedResult<T>(new List<T>(0), count);
-                var data = source.Skip(skip).Take(take).ToList();
+                //获取剩余条数
+                var remainingCount = count - skip;
+                //当剩余条数小于take数就取remainingCount
+                var realTake = remainingCount < take ? remainingCount : take;
+                var data = source.Skip(skip).Take((int)realTake).ToList();
                 return new ShardingPagedResult<T>(data, count);
             }
         }
