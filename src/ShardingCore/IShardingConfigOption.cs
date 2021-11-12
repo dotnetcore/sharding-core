@@ -45,6 +45,7 @@ namespace ShardingCore
         /// <param name="entityType"></param>
         /// <returns></returns>
         public bool AddEntityTryCreateTable(Type entityType);
+        public bool AnyEntityTryCreateTable();
         /// <summary>
         /// 是否需要启动创建表
         /// </summary>

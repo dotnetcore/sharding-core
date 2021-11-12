@@ -130,6 +130,13 @@ namespace ShardingCore.Bootstrapers
                             //创建表
                             CreateDataTable(dataSourceName, virtualTable);
                         }
+                        else
+                        {
+                            if(_shardingConfigOption.NeedCreateTable(entityType))
+                            {
+                                _tableCreator.CreateTable(dataSourceName, entityType, string.Empty);
+                            }
+                        }
                     }
                 }
             }

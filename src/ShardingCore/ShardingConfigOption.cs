@@ -207,6 +207,11 @@ namespace ShardingCore
             return _createTableEntities.Add(entityType);
         }
 
+        public bool AnyEntityTryCreateTable()
+        {
+            return _createTableEntities.Any();
+        }
+
         public bool NeedCreateTable(Type entityType)
         {
             return _createTableEntities.Contains(entityType);
@@ -215,7 +220,7 @@ namespace ShardingCore
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>
-        public bool? IgnoreCreateTableError { get; set; }
+        public bool? IgnoreCreateTableError { get; set; } = true;
         /// <summary>
         /// 自动追踪实体
         /// </summary>

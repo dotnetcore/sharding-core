@@ -8,6 +8,8 @@ using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
 using System;
+using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.ShardingComparision;
 
 namespace Sample.SqlServer
@@ -35,6 +37,8 @@ namespace Sample.SqlServer
                     o.AutoTrackEntity = true;
                     o.ParallelQueryMaxThreadCount = 100;
                     o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
+                    //if SysTest entity not exists in db and db is exists
+                    //o.AddEntityTryCreateTable<SysTest>(); // or `o.AddEntitiesTryCreateTable(typeof(SysTest));`
                 })
                 //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>

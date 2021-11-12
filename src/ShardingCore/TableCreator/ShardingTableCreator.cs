@@ -26,27 +26,22 @@ namespace ShardingCore.TableCreator
     public class ShardingTableCreator<TShardingDbContext> : IShardingTableCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger;
-        private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly IShardingConfigOption _shardingConfigOption;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger, IShardingDbContextFactory<TShardingDbContext> shardingDbContextFactory,
-            IVirtualTableManager<TShardingDbContext> virtualTableManager, IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions,IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger,  IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions, IRouteTailFactory routeTailFactory)
         {
             _logger = logger;
-            _shardingDbContextFactory = shardingDbContextFactory;
-            _virtualTableManager = virtualTableManager;
             _serviceProvider = serviceProvider;
             _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))
-                                     ??throw new ArgumentNullException(typeof(TShardingDbContext).FullName);
+                                     ?? throw new ArgumentNullException(typeof(TShardingDbContext).FullName);
             _routeTailFactory = routeTailFactory;
         }
 
         public void CreateTable<T>(string dataSourceName, string tail) where T : class
         {
-             CreateTable(dataSourceName,typeof(T), tail);
+            CreateTable(dataSourceName, typeof(T), tail);
         }
 
         /// <summary>
@@ -56,39 +51,38 @@ namespace ShardingCore.TableCreator
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        public void CreateTable(string dataSourceName,Type shardingEntityType, string tail)
+        public void CreateTable(string dataSourceName, Type shardingEntityType, string tail)
         {
             using (var serviceScope = _serviceProvider.CreateScope())
             {
-                var virtualTable = _virtualTableManager.GetVirtualTable( shardingEntityType);
                 var dbContext = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                 var shardingDbContext = (IShardingDbContext)dbContext;
-                var context = shardingDbContext.GetDbContext(dataSourceName,false, _routeTailFactory.Create(tail));
+                var context = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(tail));
 
                 var modelCacheSyncObject = context.GetModelCacheSyncObject();
-                    
-                    lock (modelCacheSyncObject)
-                    {
-                        context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
+
+                lock (modelCacheSyncObject)
+                {
+                    context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
                     var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-                        try
+                    try
+                    {
+                        databaseCreator.CreateTables();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                         {
-                            databaseCreator.CreateTables();
-                        }
-                        catch (Exception ex)
-                        {
-                            if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
-                            {
-                                _logger.LogWarning(ex,
-                                    $"create table error maybe table:[{virtualTable.GetVirtualTableName()}{virtualTable.EntityMetadata.TableSeparator}{tail}].");
-                                throw new ShardingCreateException($" create table error :{ex.Message}", ex);
-                            }
-                        }
-                        finally
-                        {
-                            context.RemoveModelCache();
+                            _logger.LogWarning(ex,
+                                    $"create table error entity name:[{shardingEntityType.Name}].");
+                            throw new ShardingCreateException($" create table error :{ex.Message}", ex);
                         }
                     }
+                    finally
+                    {
+                        context.RemoveModelCache();
+                    }
+                }
 
             }
         }

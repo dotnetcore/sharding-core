@@ -101,7 +101,7 @@ namespace ShardingCore.DIExtensions
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>
-        public bool? IgnoreCreateTableError { get; set; }
+        public bool? IgnoreCreateTableError { get; set; } = true;
 
         private readonly  ISet<Type> _createTableEntities = new HashSet<Type>();
 
