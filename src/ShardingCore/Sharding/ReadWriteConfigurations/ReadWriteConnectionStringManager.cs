@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     */
     public class ReadWriteConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private IShardingConnectionStringResolver _shardingConnectionStringResolver;
+        private IShardingConnectionStringResolver<TShardingDbContext> _shardingConnectionStringResolver;
 
 
         public ReadWriteConnectionStringManager(IShardingConnectionStringResolver<TShardingDbContext> shardingConnectionStringResolver)

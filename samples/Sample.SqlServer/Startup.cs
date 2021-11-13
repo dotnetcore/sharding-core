@@ -8,8 +8,11 @@ using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 
 namespace Sample.SqlServer
@@ -36,7 +39,7 @@ namespace Sample.SqlServer
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
                     o.ParallelQueryMaxThreadCount = 100;
-                    o.ParallelQueryTimeOut=TimeSpan.FromSeconds(10);
+                    o.ParallelQueryTimeOut = TimeSpan.FromSeconds(10);
                     //if SysTest entity not exists in db and db is exists
                     //o.AddEntityTryCreateTable<SysTest>(); // or `o.AddEntitiesTryCreateTable(typeof(SysTest));`
                 })
@@ -50,7 +53,14 @@ namespace Sample.SqlServer
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
-                }).End();
+                }).AddReadWriteSeparation(sp =>
+                {
+                    return new Dictionary<string, ISet<string>>()
+                    {
+                        {"ds0",new HashSet<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;"}}
+                    };
+                },ReadStrategyEnum.Loop,true).End();
+
 
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
             //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")

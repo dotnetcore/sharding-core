@@ -77,7 +77,7 @@ namespace ShardingCore.DIExtensions
                 if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Loop)
                 {
                     services
-                        .AddSingleton<IShardingConnectionStringResolver,
+                        .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
                             LoopShardingConnectionStringResolver<TShardingDbContext>>(sp =>
                         {
 
@@ -91,7 +91,7 @@ namespace ShardingCore.DIExtensions
                 else if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Random)
                 {
                     services
-                        .AddSingleton<IShardingConnectionStringResolver,
+                        .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
                             RandomShardingConnectionStringResolver<TShardingDbContext>>(sp =>
                         {
                             var readConnString = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);

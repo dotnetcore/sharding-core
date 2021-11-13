@@ -32,7 +32,7 @@ namespace ShardingCore.DIExtensions
             int defaultPriority = 10,
             ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
         {
-            _shardingCoreConfigBuilder.ShardingConfigOption.UseReadWriteConfiguration(readWriteSeparationConfigure,readStrategyEnum, defaultEnable,defaultPriority);
+            _shardingCoreConfigBuilder.ShardingConfigOption.UseReadWriteConfiguration(readWriteSeparationConfigure,readStrategyEnum, defaultEnable,defaultPriority, readConnStringGetStrategy);
             return new ShardingCoreConfigEndBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
         public ShardingReadWriteSeparationBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
