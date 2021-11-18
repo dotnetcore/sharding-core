@@ -18,6 +18,7 @@ namespace Sample.Migrations.EFCores
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.ApplyConfiguration(new NoShardingTableMap());
             modelBuilder.ApplyConfiguration(new ShardingWithModMap());
             modelBuilder.ApplyConfiguration(new ShardingWithDateTimeMap());

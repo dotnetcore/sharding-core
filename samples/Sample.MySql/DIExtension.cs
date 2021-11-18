@@ -1,23 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
-using ShardingCore;
 using ShardingCore.Bootstrapers;
-using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sample.MySql
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Tuesday, 26 January 2021 12:29:04
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Tuesday, 26 January 2021 12:29:04
+    * @Email: 326308290@qq.com
+    */
     public static class DIExtension
     {
         public static IApplicationBuilder UseShardingCore(this IApplicationBuilder app)

@@ -29,8 +29,8 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
 
         public string GetConnectionString()
         {
-            Interlocked.Increment(ref _seed);
-            var next = (int)(_seed % _length);
+            var newValue = Interlocked.Increment(ref _seed);
+            var next = (int)(newValue % _length);
             if (next < 0)
                 return _connectionStrings[Math.Abs(next)];
             return _connectionStrings[next];

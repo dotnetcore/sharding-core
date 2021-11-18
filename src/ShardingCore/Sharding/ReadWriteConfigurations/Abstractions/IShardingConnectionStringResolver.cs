@@ -13,14 +13,13 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IShardingConnectionStringResolver
-    {
-        string GetConnectionString(string dataSourceName);
-    }
-
-    public interface IShardingConnectionStringResolver<TShardingDbContext> : IShardingConnectionStringResolver
+    /// <summary>
+    /// 读写分离链接字符串解析
+    /// </summary>
+    /// <typeparam name="TShardingDbContext"></typeparam>
+    public interface IShardingConnectionStringResolver<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-
+        string GetConnectionString(string dataSourceName);
     }
 }

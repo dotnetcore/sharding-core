@@ -1,9 +1,6 @@
-using System;
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts.ShardingDbContexts;
-using ShardingCore.DbContexts.VirtualDbContexts;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DbContexts

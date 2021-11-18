@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -21,6 +22,7 @@ namespace ShardingCore.Helpers
         private ShardingCoreHelper() { }
         public static int GetStringHashCode(string value)
         {
+            Check.NotNull(value, nameof(value));
             int h = 0; // 默认值是0
             if (value.Length > 0)
             {

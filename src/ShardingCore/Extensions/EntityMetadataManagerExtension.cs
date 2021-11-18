@@ -12,5 +12,14 @@ namespace ShardingCore.Extensions
         {
             return entityMetadataManager.TryGet(typeof(TEntity));
         }
+
+        public static bool IsShardingTable<TEntity>(this IEntityMetadataManager entityMetadataManager) where TEntity : class
+        {
+            return entityMetadataManager.IsShardingTable(typeof(TEntity));
+        }
+        public static bool IsShardingDataSource<TEntity>(this IEntityMetadataManager entityMetadataManager) where TEntity : class
+        {
+            return entityMetadataManager.IsShardingDataSource(typeof(TEntity));
+        }
     }
 }

@@ -1,21 +1,16 @@
-﻿using System;
+﻿using EFCore.BulkExtensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Sample.SqlServer.DbContexts;
+using Sample.SqlServer.Domain.Entities;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Extensions;
+using ShardingCore.Extensions.ShardingPageExtensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
-using EFCore.BulkExtensions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
-using Sample.SqlServer.DbContexts;
-using Sample.SqlServer.Domain.Entities;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.QueryRouteManagers.Abstractions;
-using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
-using ShardingCore.Extensions.ShardingPageExtensions;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -167,6 +162,7 @@ namespace Sample.SqlServer.Controllers
                 tran.Commit();
             }
 
+            
 
             return Ok();
         }

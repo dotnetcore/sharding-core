@@ -1,25 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShardingCore.Bootstrapers;
-using ShardingCore.DbContexts.VirtualDbContexts;
-using ShardingCore.Extensions;
 using ShardingCore.Test50.MySql.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace ShardingCore.Test50.MySql
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Friday, 15 January 2021 15:37:46
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Friday, 15 January 2021 15:37:46
+    * @Email: 326308290@qq.com
+    */
     public class Startup
     {
         // // 自定义 host 构建

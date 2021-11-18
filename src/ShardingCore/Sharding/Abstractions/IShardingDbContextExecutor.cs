@@ -21,15 +21,15 @@ namespace ShardingCore.Sharding.Abstractions
 #endif
     {
         /// <summary>
-        /// 读写分离优先级
+        /// read write priority
         /// </summary>
         int ReadWriteSeparationPriority { get; set; }
         /// <summary>
-        /// 当前是否开启读写分离
+        /// current db context open? ReadWriteSeparationPriority>Current.ReadWriteSeparationPriority
         /// </summary>
         bool ReadWriteSeparation { get; set; }
         /// <summary>
-        /// 是否存在多个db context
+        /// has multi db context
         /// </summary>
         bool IsMultiDbContext { get; }
 
@@ -42,7 +42,12 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="routeTail"></param>
         /// <returns></returns>
         DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail);
-
+        /// <summary>
+        /// create db context by entity
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class;
 
 
@@ -51,15 +56,33 @@ namespace ShardingCore.Sharding.Abstractions
             CancellationToken cancellationToken = new CancellationToken());
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
+        /// <summary>
+        /// default data source CurrentTransaction change will call this method without default
+        /// </summary>
         void NotifyShardingTransaction();
 
 
 
-
+        /// <summary>
+        /// rollback
+        /// </summary>
         void Rollback();
+        /// <summary>
+        /// commit
+        /// </summary>
         void Commit();
 #if !EFCORE2
+        /// <summary>
+        /// rollback async
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
+        /// <summary>
+        /// commit async
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
 #endif
     }

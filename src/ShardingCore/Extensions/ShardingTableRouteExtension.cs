@@ -24,7 +24,7 @@ namespace ShardingCore.Extensions
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="shardingRouteContext"></param>
         /// <param name="tails"></param>
-        /// <returns>任何一个tails被添加成功就返回成功</returns>
+        /// <returns>any tail add success return true</returns>
         public static bool TryCreateOrAddMustTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class
         {
             return TryCreateOrAddMustTail(shardingRouteContext, typeof(TEntity), tails);
@@ -35,7 +35,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="entityType"></param>
         /// <param name="tails"></param>
-        /// <returns>任何一个tails被添加成功就返回成功</returns>
+        /// <returns>any tail add success return true</returns>
         public static bool TryCreateOrAddMustTail(this ShardingRouteContext shardingRouteContext, Type entityType, params string[] tails)
         {
             if (shardingRouteContext == null)
@@ -59,7 +59,7 @@ namespace ShardingCore.Extensions
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="shardingRouteContext"></param>
         /// <param name="tails"></param>
-        /// <returns>任何一个tails被添加成功就返回成功</returns>
+        /// <returns>any tail add success return true</returns>
         public static bool TryCreateOrAddHintTail<TEntity>(this ShardingRouteContext shardingRouteContext, params string[] tails) where TEntity : class
         {
             return TryCreateOrAddHintTail(shardingRouteContext, typeof(TEntity), tails);
@@ -70,7 +70,7 @@ namespace ShardingCore.Extensions
         /// <param name="shardingRouteContext"></param>
         /// <param name="entityType"></param>
         /// <param name="tails"></param>
-        /// <returns>任何一个tails被添加成功就返回成功</returns>
+        /// <returns>any tail add success return true</returns>
         public static bool TryCreateOrAddHintTail(this ShardingRouteContext shardingRouteContext, Type entityType, params string[] tails)
         {
             if (shardingRouteContext == null)

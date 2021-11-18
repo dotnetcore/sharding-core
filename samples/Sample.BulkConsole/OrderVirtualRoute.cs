@@ -20,7 +20,10 @@ namespace Sample.BulkConsole
         {
             return DateTime.Now.Date.AddDays(-3);
         }
-
+        /// <summary>
+        /// 返回null表示不开启
+        /// </summary>
+        /// <returns></returns>
         public override IPaginationConfiguration<Order> CreatePaginationConfiguration()
         {
             return new OrderPaginationConfiguration();

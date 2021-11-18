@@ -1,8 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Test6x.Domain.Entities;
 using Xunit;
 
@@ -18,13 +24,60 @@ namespace ShardingCore.Test6x
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
+        private readonly IConnectionStringManager<ShardingDefaultDbContext> _connectionStringManager;
+        private readonly IConfiguration _configuration;
+        private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
+        private readonly IShardingComparer<ShardingDefaultDbContext> _shardingComparer;
 
-        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager)
+        public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager, IConnectionStringManager<ShardingDefaultDbContext> connectionStringManager,IConfiguration configuration,
+            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,IShardingComparer<ShardingDefaultDbContext> shardingComparer)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
+            _connectionStringManager = connectionStringManager;
+            _configuration = configuration;
+            this._entityMetadataManager = entityMetadataManager;
+            _shardingComparer = shardingComparer;
         }
+        [Fact]
+        public void TestEntityMetadataManager()
+        {
+            var objMetadata0 = _entityMetadataManager.TryGet(typeof(object));
+            Assert.Null(objMetadata0);
+            var objMetadata1 = _entityMetadataManager.TryGet<object>();
+            Assert.Null(objMetadata1);
 
+            var objMetadata2 = _entityMetadataManager.TryGet(typeof(SysUserMod));
+            Assert.NotNull(objMetadata2);
+            var objMetadata3 = _entityMetadataManager.TryGet<SysUserMod>();
+            Assert.NotNull(objMetadata3);
+            var sysUserModIsShardingTable0 = _entityMetadataManager.IsShardingTable(typeof(SysUserMod));
+            Assert.True(sysUserModIsShardingTable0);
+            var sysUserModIsShardingTable1 = _entityMetadataManager.IsShardingTable<SysUserMod>();
+            Assert.True(sysUserModIsShardingTable1);
+            var sysUserModIsShardingDataSource0 = _entityMetadataManager.IsShardingDataSource(typeof(SysUserMod));
+            Assert.False(sysUserModIsShardingDataSource0);
+            var sysUserModIsShardingDataSource1 = _entityMetadataManager.IsShardingDataSource<SysUserMod>();
+            Assert.False(sysUserModIsShardingDataSource1);
+        }
+        [Fact]
+        public void TestShardingComparer()
+        {
+            var x = new Guid("7CDE28F8-D548-B96D-1C61-39FFE37AE492");
+            var y = new Guid("3425D899-291D-921B-DDE4-49FFE37AE493");
+            //asc y<x c# compare guid
+            var compare0 = x.CompareTo(y);
+            Assert.True(compare0>0);
+            //asc x<y db compare  uniqueidentifier
+            var compare1 = _shardingComparer.Compare(x, y, true);
+            Assert.True(compare1 < 0);
+        }
+        [Fact]
+        public void TestConnectionStringManager()
+        {
+            var connectionString = _connectionStringManager.GetConnectionString("ds0");
+            Assert.Equal(connectionString, _configuration.GetSection("SqlServer")["ConnectionString"]);
+        }
         //[Fact]
         //public async Task Route_TEST()
         //{
@@ -47,7 +100,7 @@ namespace ShardingCore.Test6x
         {
             using (_shardingRouteManager.CreateScope())
             {
-                _shardingRouteManager.Current.MustTable.TryAdd(typeof(SysUserMod), new HashSet<string>() { "00" });
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00");
 
                 var mod00s = await _virtualDbContext.Set<SysUserMod>().ToListAsync();
                 Assert.Equal(333, mod00s.Count);

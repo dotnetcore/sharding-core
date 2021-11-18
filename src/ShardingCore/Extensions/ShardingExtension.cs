@@ -117,7 +117,7 @@ namespace ShardingCore.Extensions
                 var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
                 var virtualTable = virtualTableManager.GetVirtualTable(entityType);
                 var virtualTableRoute = virtualTable.GetVirtualRoute();
-                var allTails = virtualTableRoute.GetAllTails().ToHashSet();
+                var allTails = virtualTable.GetTableAllTails().ToHashSet();
                 foreach (var entity in entitiesArray)
                 {
                     BulkShardingTableEnumerable(shardingDbContext, virtualDataSource.DefaultDataSourceName, bulkDicEntries,
@@ -138,7 +138,7 @@ namespace ShardingCore.Extensions
                     var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
                     virtualTable = virtualTableManager.GetVirtualTable(entityType);
                     virtualTableRoute = virtualTable.GetVirtualRoute();
-                    allTails = virtualTableRoute.GetAllTails().ToHashSet();
+                    allTails = virtualTable.GetTableAllTails().ToHashSet();
                 }
                 foreach (var entity in entitiesArray)
                 {

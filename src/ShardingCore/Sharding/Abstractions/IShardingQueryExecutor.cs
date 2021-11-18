@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.Abstractions
     public interface IShardingQueryExecutor
     {
         /// <summary>
-        /// ͬ��ִ�л�ȡ���
+        /// execute query
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="currentContext"></param>
@@ -26,7 +26,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         TResult Execute<TResult>(ICurrentDbContext currentContext, Expression query);
         /// <summary>
-        /// �첽ִ�л�ȡ���
+        /// execute query async
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="currentContext"></param>

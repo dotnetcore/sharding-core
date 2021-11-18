@@ -88,6 +88,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public IPhysicDataSource GetPhysicDataSource(string dataSourceName)
         {
+            Check.NotNull(dataSourceName, "data source name is null,plz confirm IShardingBootstrapper.Star()");
             if (!_physicDataSources.TryGetValue(dataSourceName, out var physicDataSource))
                 throw new InvalidOperationException($"not found  data source that name is :[{dataSourceName}]");
 

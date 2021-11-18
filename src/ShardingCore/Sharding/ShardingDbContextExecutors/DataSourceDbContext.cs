@@ -14,6 +14,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
+using ShardingCore.Infrastructures;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingDbContextExecutors
@@ -50,7 +51,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger;
         private DbContextOptions<TShardingDbContext> _dbContextOptions;
 
-        private object SLOCK = new object();
+        private OneByOneChecker oneByOne = new OneByOneChecker();
 
         private IDbContextTransaction CurrentDbContextTransaction => IsDefault
             ? _shardingContextTransaction
@@ -92,36 +93,54 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 return _dbContextOptions;
             }
-            lock (SLOCK)
+
+            var acquired = oneByOne.Start();
+            if (!acquired)
             {
+                throw new ShardingCoreException("cant parallel create CreateShareDbContextOptionsBuilder");
+            }
+            try
+            {
+
                 if (_dbContextOptions != null)
                 {
                     return _dbContextOptions;
                 }
+
                 var dbContextOptionsBuilder = CreateDbContextOptionBuilder();
 
                 if (IsDefault)
                 {
                     var dbConnection = _shardingDbContext.Database.GetDbConnection();
-                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
+                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection,
+                        dbContextOptionsBuilder);
                 }
                 else
                 {
                     if (_dataSourceDbContexts.IsEmpty)
                     {
-                        var connectionString = _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
-                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
+                        var connectionString =
+                            _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
+                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString,
+                            dbContextOptionsBuilder);
                         return dbContextOptionsBuilder.Options;
                     }
                     else
                     {
                         var dbConnection = _dataSourceDbContexts.First().Value.Database.GetDbConnection();
-                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
+                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection,
+                            dbContextOptionsBuilder);
                     }
                 }
+
                 _dbContextOptions = dbContextOptionsBuilder.Options;
                 return _dbContextOptions;
             }
+            finally
+            {
+                oneByOne.Stop();
+            }
+
         }
 
         public static DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
@@ -295,7 +314,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-        public async Task CommitAsync(int dataSourceCount,CancellationToken cancellationToken = new CancellationToken())
+        public async Task CommitAsync(int dataSourceCount, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsDefault)

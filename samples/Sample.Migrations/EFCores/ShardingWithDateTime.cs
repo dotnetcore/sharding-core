@@ -3,15 +3,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShardingCore.Core;
 using ShardingCore.VirtualRoutes.Months;
 using System;
+using ShardingCore.Core.EntityMetadatas;
 
 namespace Sample.Migrations.EFCores
 {
-    public class ShardingWithDateTime:IShardingTable
+    public class ShardingWithDateTime
     {
         public string Id { get; set; }
         public string Name { get; set; }
         public int Age { get; set; }
-        [ShardingTableKey]
         public DateTime CreateTime { get; set; }
     }
 
@@ -30,6 +30,11 @@ namespace Sample.Migrations.EFCores
         public override DateTime GetBeginTime()
         {
             return new DateTime(2021, 9, 1);
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<ShardingWithDateTime> builder)
+        {
+            builder.ShardingProperty(o => o.CreateTime);
         }
     }
 }

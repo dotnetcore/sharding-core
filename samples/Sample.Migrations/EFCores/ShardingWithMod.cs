@@ -11,9 +11,8 @@ using ShardingCore.VirtualRoutes.Months;
 
 namespace Sample.Migrations.EFCores
 {
-    public class ShardingWithMod:IShardingTable
+    public class ShardingWithMod
     {
-        [ShardingTableKey]
         public string Id { get; set; }
         public string Name { get; set; }
         public int Age { get; set; }
@@ -40,6 +39,11 @@ namespace Sample.Migrations.EFCores
     {
         public ShardingWithModVirtualTableRoute() : base(2, 3)
         {
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<ShardingWithMod> builder)
+        {
+            builder.ShardingProperty(o => o.Id);
         }
     }
 }
