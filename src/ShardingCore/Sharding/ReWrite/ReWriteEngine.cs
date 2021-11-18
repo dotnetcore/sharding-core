@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
@@ -67,13 +68,13 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
                     var selectProperties = extraEntry.SelectContext.SelectProperties.Where(o => !o.IsAggregateMethod);
 
                     if (orders.Count() != selectProperties.Count())
-                        throw new InvalidOperationException("group by query order items not equal select un-aggregate items");
+                        throw new ShardingCoreInvalidOperationException("group by query order items not equal select un-aggregate items");
                     var os=orders.Select(o => o.PropertyExpression).ToList();
                     var ss = selectProperties.Select(o => o.PropertyName).ToList();
                     for (int i = 0; i < os.Count(); i++)
                     {
                         if(!os[i].Equals(ss[i]))
-                            throw new InvalidOperationException($"group by query order items not equal select un-aggregate items: order:[{os[i]}],select:[{ss[i]}");
+                            throw new ShardingCoreInvalidOperationException($"group by query order items not equal select un-aggregate items: order:[{os[i]}],select:[{ss[i]}");
                     }
                 }
             }

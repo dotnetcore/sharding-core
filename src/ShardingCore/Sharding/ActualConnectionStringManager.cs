@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
@@ -88,7 +89,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                throw new InvalidOperationException($"ReadWriteConnectionStringManager:{_readWriteOptions.ReadConnStringGetStrategy}");
+                throw new ShardingCoreInvalidOperationException($"ReadWriteConnectionStringManager:{_readWriteOptions.ReadConnStringGetStrategy}");
             }
 
         }

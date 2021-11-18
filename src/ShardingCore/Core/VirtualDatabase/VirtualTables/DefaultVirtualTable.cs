@@ -85,7 +85,7 @@ namespace ShardingCore.Core.VirtualTables
         public bool AddPhysicTable(IPhysicTable physicTable)
         {
             if (physicTable.EntityType != EntityMetadata.EntityType)
-                throw new InvalidOperationException($"virtual table entity type :[{EntityMetadata.EntityType.FullName}] physic table entity type:[{physicTable.EntityType.FullName}]");
+                throw new ShardingCoreInvalidOperationException($"virtual table entity type :[{EntityMetadata.EntityType.FullName}] physic table entity type:[{physicTable.EntityType.FullName}]");
             return _physicTables.TryAdd(physicTable, null);
         }
 

@@ -12,6 +12,7 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
@@ -61,7 +62,13 @@ namespace ShardingCore.TableCreator
 
                 var modelCacheSyncObject = context.GetModelCacheSyncObject();
 
-                lock (modelCacheSyncObject)
+                var acquire = Monitor.TryEnter(modelCacheSyncObject,TimeSpan.FromSeconds(3));
+                if (!acquire)
+                {
+                    throw new ShardingCoreException("cant get modelCacheSyncObject lock");
+                }
+
+                try
                 {
                     context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
                     var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
@@ -74,7 +81,7 @@ namespace ShardingCore.TableCreator
                         if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
                         {
                             _logger.LogWarning(ex,
-                                    $"create table error entity name:[{shardingEntityType.Name}].");
+                                $"create table error entity name:[{shardingEntityType.Name}].");
                             throw new ShardingCreateException($" create table error :{ex.Message}", ex);
                         }
                     }
@@ -82,6 +89,10 @@ namespace ShardingCore.TableCreator
                     {
                         context.RemoveModelCache();
                     }
+                }
+                finally
+                {
+                    Monitor.Exit(modelCacheSyncObject);
                 }
 
             }

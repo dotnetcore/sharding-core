@@ -104,11 +104,11 @@ namespace ShardingCore.DIExtensions
 
                 services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
                 services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
-                
+
                 //foreach (var dataSourceKv in dataSources)
                 //{
                 //    if (dataSourceKv.Key == _shardingCoreConfigBuilder.DefaultDataSourceName)
-                //        throw new InvalidOperationException($"{nameof(AddShardingDataSource)} include default data source name:{_shardingCoreConfigBuilder.DefaultDataSourceName}");
+                //        throw new ShardingCoreInvalidOperationException($"{nameof(AddShardingDataSource)} include default data source name:{_shardingCoreConfigBuilder.DefaultDataSourceName}");
                 //    _shardingCoreConfigBuilder.AddShardingDataSource.Add(dataSourceKv.Key, dataSourceKv.Value);
                 //}
             }

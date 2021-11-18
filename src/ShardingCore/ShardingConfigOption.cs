@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
@@ -108,7 +109,7 @@ namespace ShardingCore
         public void AddShardingDataSourceRoute(Type routeType)
         {
             if (!routeType.IsVirtualDataSourceRoute())
-                throw new InvalidOperationException(routeType.FullName);
+                throw new ShardingCoreInvalidOperationException(routeType.FullName);
             //获取类型
             var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualDataSourceRoute<>)
                                                                                      && it.GetGenericArguments().Any());
@@ -135,7 +136,7 @@ namespace ShardingCore
         public void AddShardingTableRoute(Type routeType)
         {
             if (!routeType.IsIVirtualTableRoute())
-                throw new InvalidOperationException(routeType.FullName);
+                throw new ShardingCoreInvalidOperationException(routeType.FullName);
             //获取类型
             var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualTableRoute<>)
                                                                                      && it.GetGenericArguments().Any());

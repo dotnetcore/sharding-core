@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
         {
             if (!(secondExpression is ConstantExpression))
             {
-                throw new InvalidOperationException(GetMethodCallExpression().ShardingPrint());
+                throw new ShardingCoreInvalidOperationException(GetMethodCallExpression().ShardingPrint());
             }
 
             return queryable;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Sample.SqlServerShardingTable.Entities;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Helpers;
 
 namespace Sample.SqlServerShardingTable.VirtualRoutes
@@ -34,7 +35,7 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
                 return "C";
             }
             else
-                throw new InvalidOperationException($"cant calc hash route hash code:[{stringHashCode}]");
+                throw new ShardingCoreInvalidOperationException($"cant calc hash route hash code:[{stringHashCode}]");
         }
 
         public override List<string> GetAllTails()

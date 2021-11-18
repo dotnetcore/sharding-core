@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
@@ -204,11 +206,21 @@ namespace ShardingCore.Bootstrapers
                 
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
-                lock (modelCacheSyncObject)
+                var acquire = Monitor.TryEnter(modelCacheSyncObject, TimeSpan.FromSeconds(3));
+                if (!acquire)
+                {
+                    throw new ShardingCoreException("cant get modelCacheSyncObject lock");
+                }
+
+                try
                 {
                     dbContext.RemoveDbContextRelationModelThatIsShardingTable();
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
+                }
+                finally
+                {
+                    Monitor.Exit(modelCacheSyncObject);
                 }
             }
         }

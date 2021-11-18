@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -27,7 +28,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
                 return queryable.Where(predicate);
             }
 
-            throw new InvalidOperationException(GetMethodCallExpression().ShardingPrint());
+            throw new ShardingCoreInvalidOperationException(GetMethodCallExpression().ShardingPrint());
 
         }
     }

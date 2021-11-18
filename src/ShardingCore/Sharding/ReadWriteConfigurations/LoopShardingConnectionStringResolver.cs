@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ReadWriteConfigurations
@@ -34,7 +35,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         public string GetConnectionString(string dataSourceName)
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
-                throw new InvalidOperationException($"read write connector not found, data source name:[{dataSourceName}]");
+                throw new ShardingCoreInvalidOperationException($"read write connector not found, data source name:[{dataSourceName}]");
             return connector.GetConnectionString();
         }
     }

@@ -67,11 +67,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
             if(!_entityMetadataManager.IsShardingDataSource(entityType))
-                throw new InvalidOperationException(
+                throw new ShardingCoreInvalidOperationException(
                     $"entity type :[{entityType.FullName}] not configure sharding data source");
 
             if (!_dataSourceVirtualRoutes.TryGetValue(entityType, out var dataSourceVirtualRoute))
-                throw new InvalidOperationException(
+                throw new ShardingCoreInvalidOperationException(
                     $"entity type :[{entityType.FullName}] not found virtual data source route");
             return dataSourceVirtualRoute;
         }
@@ -90,7 +90,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             Check.NotNull(dataSourceName, "data source name is null,plz confirm IShardingBootstrapper.Star()");
             if (!_physicDataSources.TryGetValue(dataSourceName, out var physicDataSource))
-                throw new InvalidOperationException($"not found  data source that name is :[{dataSourceName}]");
+                throw new ShardingCoreInvalidOperationException($"not found  data source that name is :[{dataSourceName}]");
 
             return physicDataSource;
         }
@@ -101,7 +101,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             {
                 if (!string.IsNullOrWhiteSpace(DefaultDataSourceName))
                 {
-                    throw new InvalidOperationException($"default data source name:[{DefaultDataSourceName}],add physic default data source name:[{physicDataSource.DataSourceName}]");
+                    throw new ShardingCoreInvalidOperationException($"default data source name:[{DefaultDataSourceName}],add physic default data source name:[{physicDataSource.DataSourceName}]");
                 }
 
                 DefaultDataSourceName = physicDataSource.DataSourceName;
@@ -112,7 +112,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
         {
             if (!virtualDataSourceRoute.EntityMetadata.IsShardingDataSource())
-                throw new InvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should configure sharding data source");
+                throw new ShardingCoreInvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should configure sharding data source");
 
             return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityMetadata.EntityType, virtualDataSourceRoute);
         }
@@ -121,7 +121,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
             {
-                throw new ShardingCoreException("virtual data source not inited");
+                throw new ShardingCoreInvalidOperationException("virtual data source not inited");
             }
 
             return DefaultDataSourceName== dataSourceName;

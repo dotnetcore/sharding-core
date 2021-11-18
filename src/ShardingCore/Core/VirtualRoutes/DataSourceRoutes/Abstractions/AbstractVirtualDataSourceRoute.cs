@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 
@@ -23,7 +24,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         public void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
-                throw new InvalidOperationException("already init");
+                throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
             var paginationConfiguration = CreatePaginationConfiguration();
             if (paginationConfiguration != null)

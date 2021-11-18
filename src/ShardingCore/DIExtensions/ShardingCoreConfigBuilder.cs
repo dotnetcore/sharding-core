@@ -58,7 +58,7 @@ namespace ShardingCore.DIExtensions
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{
         //    if (!string.IsNullOrWhiteSpace(defaultDataSourceName) || !string.IsNullOrWhiteSpace(defaultConnectionString))
-        //        throw new InvalidOperationException($"{nameof(AddDefaultDataSource)}-{dataSourceName}");
+        //        throw new ShardingCoreInvalidOperationException($"{nameof(AddDefaultDataSource)}-{dataSourceName}");
         //    this.defaultDataSourceName = dataSourceName;
         //    this.defaultConnectionString = connectionString;
         //    return this;
@@ -67,7 +67,7 @@ namespace ShardingCore.DIExtensions
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDataSource(string dataSourceName, string connectionString)
         //{
         //    if (_dataSources.ContainsKey(dataSourceName))
-        //        throw new InvalidOperationException($"{nameof(AddDataSource)}-{dataSourceName} repeat");
+        //        throw new ShardingCoreInvalidOperationException($"{nameof(AddDataSource)}-{dataSourceName} repeat");
         //    _dataSources.Add(dataSourceName, connectionString);
         //    return this;
         //}

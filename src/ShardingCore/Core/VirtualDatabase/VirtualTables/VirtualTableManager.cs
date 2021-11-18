@@ -49,7 +49,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         public IVirtualTable GetVirtualTable(Type shardingEntityType)
         {
             if (!_entityMetadataManager.IsShardingTable(shardingEntityType))
-                throw new InvalidOperationException(shardingEntityType.FullName);
+                throw new ShardingCoreInvalidOperationException(shardingEntityType.FullName);
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
                 throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
             return virtualTable;
@@ -58,7 +58,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         public IVirtualTable TryGetVirtualTable(Type shardingEntityType)
         {
             if (!_entityMetadataManager.IsShardingTable(shardingEntityType))
-                throw new InvalidOperationException(shardingEntityType.FullName);
+                throw new ShardingCoreInvalidOperationException(shardingEntityType.FullName);
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
                 return null;
             return virtualTable;

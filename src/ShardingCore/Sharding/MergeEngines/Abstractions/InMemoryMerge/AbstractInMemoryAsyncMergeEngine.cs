@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
@@ -51,7 +52,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             if (methodCallExpression.Arguments.Count == 2)
             {
                 if (_secondExpression == null)
-                    throw new InvalidOperationException(methodCallExpression.ShardingPrint());
+                    throw new ShardingCoreInvalidOperationException(methodCallExpression.ShardingPrint());
                 // ReSharper disable once VirtualMemberCallInConstructor
                 _queryable = CombineQueryable(_queryable, _secondExpression);
             }

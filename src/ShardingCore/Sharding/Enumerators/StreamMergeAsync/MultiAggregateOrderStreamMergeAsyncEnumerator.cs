@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.Internal.PriorityQueues;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 
@@ -197,7 +198,7 @@ namespace ShardingCore.Sharding.Enumerators
                             }
                             else
                             {
-                                throw new InvalidOperationException($"method:{aggregate.AggregateMethod} invalid operation ");
+                                throw new ShardingCoreInvalidOperationException($"method:{aggregate.AggregateMethod} invalid operation ");
                             }
                             CurrentValue.SetPropertyValue(aggregate.PropertyName, aggregateValue);
                         }

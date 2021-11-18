@@ -203,8 +203,6 @@ namespace ShardingCore.Extensions
 
         }
 
-        private static object sLock = new object();
-
 
         public static IEnumerable<object> GetPrimaryKeyValues<TEntity>(TEntity entity,IKey primaryKey) where TEntity : class
         {

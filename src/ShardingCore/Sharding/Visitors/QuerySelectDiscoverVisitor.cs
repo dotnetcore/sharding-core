@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
+using ShardingCore.Exceptions;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
@@ -40,7 +41,7 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             //select 对象的数据和参数必须一致
             if (node.Members.Count != node.Arguments.Count)
-                throw new InvalidOperationException("cant parse select members length not eq arguments length");
+                throw new ShardingCoreInvalidOperationException("cant parse select members length not eq arguments length");
             for (int i = 0; i < node.Members.Count; i++)
             {
                 if (node.Arguments[i] is MethodCallExpression methodCallExpression)

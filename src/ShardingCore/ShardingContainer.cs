@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -27,7 +28,7 @@ namespace ShardingCore
 
         public static IServiceProvider ServiceProvider
         {
-            get { return serviceProvider ?? throw new InvalidOperationException("sharding core not start"); }
+            get { return serviceProvider ?? throw new ShardingCoreInvalidOperationException("sharding core not start"); }
         }
         /// <summary>
         /// 静态注入

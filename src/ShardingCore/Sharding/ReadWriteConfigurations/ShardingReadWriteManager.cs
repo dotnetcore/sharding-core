@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
@@ -35,11 +36,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         public ShardingReadWriteContext GetCurrent(Type shardingDbContextType)
         {
             if (!shardingDbContextType.IsShardingDbContext())
-                throw new InvalidOperationException(shardingDbContextType.FullName);
+                throw new ShardingCoreInvalidOperationException(shardingDbContextType.FullName);
 
             if (_shardingReadWriteAccessors.TryGetValue(shardingDbContextType, out var accessor))
                 return accessor.ShardingReadWriteContext;
-            throw new InvalidOperationException(shardingDbContextType.FullName);
+            throw new ShardingCoreInvalidOperationException(shardingDbContextType.FullName);
         }
 
         public ShardingReadWriteScope<TShardingDbContext> CreateScope<TShardingDbContext>() where TShardingDbContext : DbContext, IShardingDbContext

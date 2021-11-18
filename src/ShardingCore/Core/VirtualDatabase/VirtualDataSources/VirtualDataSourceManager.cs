@@ -50,7 +50,7 @@
 //        public IVirtualDataSource GetVirtualDataSource()
 //        {
 //            if (!_virtualDataSources.TryGetValue(shardingDbContextType, out var virtualDataSource))
-//                throw new InvalidOperationException($"not found virtual data source sharding db context type:[{shardingDbContextType.FullName}]");
+//                throw new ShardingCoreInvalidOperationException($"not found virtual data source sharding db context type:[{shardingDbContextType.FullName}]");
 //            return virtualDataSource;
 //        }
 

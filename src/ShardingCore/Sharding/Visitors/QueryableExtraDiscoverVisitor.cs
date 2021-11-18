@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.Visitors
@@ -69,13 +70,13 @@ namespace ShardingCore.Core.Internal.Visitors
             if (node.Method.Name == nameof(Queryable.Skip))
             {
                 if (HasSkip())
-                    throw new InvalidOperationException("more than one skip found");
+                    throw new ShardingCoreInvalidOperationException("more than one skip found");
                 _skip = (int)GetFieldValue(node.Arguments[1]);
             }
             else if (node.Method.Name == nameof(Queryable.Take))
             {
                 if (HasTake())
-                    throw new InvalidOperationException("more than one take found");
+                    throw new ShardingCoreInvalidOperationException("more than one take found");
                 _take = (int)GetFieldValue(node.Arguments[1]);
             } 
             else if (method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.OrderByDescending) || method.Name == nameof(Queryable.ThenBy) || method.Name == nameof(Queryable.ThenByDescending))

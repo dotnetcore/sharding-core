@@ -15,6 +15,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Jobs;
@@ -65,7 +66,7 @@ namespace ShardingCore.Bootstrapers
             _trackerManager.AddDbContextModel(shardingEntityType);
             var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList());
             if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
-                throw new InvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");
+                throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");
             //设置标签
             if (_shardingConfigOption.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
             {

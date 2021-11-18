@@ -25,7 +25,7 @@ namespace ShardingCore.DIExtensions
         public ShardingDataBaseOrTableBuilder<TShardingDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         {
             if (!string.IsNullOrWhiteSpace(_shardingCoreConfigBuilder.ShardingConfigOption.DefaultDataSourceName) || !string.IsNullOrWhiteSpace(_shardingCoreConfigBuilder.ShardingConfigOption.DefaultConnectionString))
-                throw new InvalidOperationException($"{nameof(AddDefaultDataSource)}-{dataSourceName}");
+                throw new ShardingCoreInvalidOperationException($"{nameof(AddDefaultDataSource)}-{dataSourceName}");
             _shardingCoreConfigBuilder.ShardingConfigOption.DefaultDataSourceName = dataSourceName;
             _shardingCoreConfigBuilder.ShardingConfigOption.DefaultConnectionString = connectionString;
             return new ShardingDataBaseOrTableBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);

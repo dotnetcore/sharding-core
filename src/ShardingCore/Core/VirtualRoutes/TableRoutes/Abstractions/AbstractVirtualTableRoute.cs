@@ -25,7 +25,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         public void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
-                throw new InvalidOperationException("already init");
+                throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
