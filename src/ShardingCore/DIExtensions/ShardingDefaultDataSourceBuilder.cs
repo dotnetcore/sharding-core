@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DIExtensions

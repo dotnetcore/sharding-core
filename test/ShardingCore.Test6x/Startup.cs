@@ -53,11 +53,24 @@ namespace ShardingCore.Test6x
                 })
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("ds0",hostBuilderContext.Configuration.GetSection("SqlServer")["ConnectionString"])
+                .AddDefaultDataSource("A", "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;")
+                .AddShardingDataSource(sp =>
+                {
+                    return new Dictionary<string, string>()
+                    {
+                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" },
+                        { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
+                    };
+                })
+                .AddShardingDataSourceRoute(o =>
+                {
+                    o.AddShardingDatabaseRoute<OrderAreaShardingVirtualDataSourceRoute>();
+                })
                 .AddShardingTableRoute(op =>
                 {
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
+                    op.AddShardingTableRoute<OrderCreateTimeVirtualTableRoute>();
                 }).End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
@@ -127,10 +140,26 @@ namespace ShardingCore.Test6x
                         }
                     }
 
+                    var areas = new List<string>(){"A","B","C"};
+                    List<Order> orders = new List<Order>();
+                    var begin = new DateTime(2021, 1, 1);
+                    for (int i = 0; i < 360; i++)
+                    {
+                        orders.Add(new Order()
+                        {
+                            Id = Guid.NewGuid(),
+                            Area = areas[i%3],
+                            CreateTime = begin,
+                            Money = i
+                        });
+                        begin = begin.AddDays(1);
+                    }
+
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
                         await virtualDbContext.AddRangeAsync(userSalaries);
+                        await virtualDbContext.AddRangeAsync(orders);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();

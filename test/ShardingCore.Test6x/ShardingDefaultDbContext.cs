@@ -24,6 +24,7 @@ namespace ShardingCore.Test6x
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
+            modelBuilder.ApplyConfiguration(new OrderMap());
         }
 
         public IRouteTail RouteTail { get; set; }

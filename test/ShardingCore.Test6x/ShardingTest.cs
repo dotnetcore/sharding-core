@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Test6x.Domain.Entities;
@@ -28,9 +30,10 @@ namespace ShardingCore.Test6x
         private readonly IConfiguration _configuration;
         private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
         private readonly IShardingComparer<ShardingDefaultDbContext> _shardingComparer;
+        private readonly IVirtualDataSource<ShardingDefaultDbContext> _virtualDataSource;
 
         public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager, IConnectionStringManager<ShardingDefaultDbContext> connectionStringManager,IConfiguration configuration,
-            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,IShardingComparer<ShardingDefaultDbContext> shardingComparer)
+            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,IShardingComparer<ShardingDefaultDbContext> shardingComparer,IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -38,6 +41,7 @@ namespace ShardingCore.Test6x
             _configuration = configuration;
             this._entityMetadataManager = entityMetadataManager;
             _shardingComparer = shardingComparer;
+            _virtualDataSource = virtualDataSource;
         }
         [Fact]
         public void TestEntityMetadataManager()
@@ -75,8 +79,8 @@ namespace ShardingCore.Test6x
         [Fact]
         public void TestConnectionStringManager()
         {
-            var connectionString = _connectionStringManager.GetConnectionString("ds0");
-            Assert.Equal(connectionString, _configuration.GetSection("SqlServer")["ConnectionString"]);
+            var connectionString = _connectionStringManager.GetConnectionString(_virtualDataSource.DefaultDataSourceName);
+            Assert.Equal(connectionString, "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
         }
         //[Fact]
         //public async Task Route_TEST()
@@ -447,6 +451,57 @@ namespace ShardingCore.Test6x
             Assert.Equal(11300, group[0].AvgSalaryDecimal);
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
+        }
+
+        [Fact]
+        public async Task OrderCountTest()
+        {
+            var asyncCount = await _virtualDbContext.Set<Order>().CountAsync();
+            Assert.Equal(360, asyncCount);
+            var syncCount =  _virtualDbContext.Set<Order>().Count();
+            Assert.Equal(360, syncCount);
+
+            var countA =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="A");
+            var countB =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="B");
+            var countC =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="C");
+            Assert.Equal(360, countA+ countB+ countC);
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var fourCount = await _virtualDbContext.Set<Order>().Where(o=>o.CreateTime>=fourBegin&&o.CreateTime<fiveBegin).CountAsync();
+            Assert.Equal(30,fourCount);
+        }
+        [Fact]
+        public async Task OrderFirstTest()
+        {
+            var threeMonth = new DateTime(2021,3,1);
+            var order = await _virtualDbContext.Set<Order>().FirstOrDefaultAsync(o=>o.CreateTime== threeMonth);//第59条 1月31天2月28天
+            Assert.NotNull(order);
+            Assert.Equal(59,order.Money);
+            Assert.Equal("C",order.Area);
+        }
+        [Fact]
+        public async Task OrderOrderTest()
+        {
+            var orders = await _virtualDbContext.Set<Order>().OrderBy(o => o.CreateTime).ToListAsync();
+            Assert.Equal(360,orders.Count);
+            var i = 0;
+            foreach (var order in orders)
+            {
+                Assert.Equal(i,order.Money);
+                i++;
+            }
+
+            var threeMonth = new DateTime(2021, 3, 1);
+            var orderPage = await _virtualDbContext.Set<Order>().Where(o=>o.CreateTime > threeMonth).OrderByDescending(o => o.CreateTime).ToShardingPageAsync(1,20);
+            Assert.Equal(20, orderPage.Data.Count);
+            Assert.Equal(300,orderPage.Total);
+
+            var j = 359;
+            foreach (var order in orderPage.Data)
+            {
+                Assert.Equal(j, order.Money);
+                j--;
+            }
         }
         // [Fact]
         // public async Task Group_API_Test()
