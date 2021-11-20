@@ -51,7 +51,7 @@ namespace ShardingCore.Extensions
                 shardingRouteContext.MustDataSource.Add(entityType, mustDataSources);
             }
 
-            return dataSources.Select(o => mustDataSources.Add(o)).Any(o => o);
+            return dataSources.Select(o => mustDataSources.Add(o)).All(o => o);
         }
         /// <summary>
         /// 创建或者添加提示路由
@@ -86,7 +86,7 @@ namespace ShardingCore.Extensions
                 shardingRouteContext.HintDataSource.Add(entityType, hintDataSources);
             }
 
-            return dataSources.Select(o => hintDataSources.Add(o)).Any(o => o);
+            return dataSources.Select(o => hintDataSources.Add(o)).All(o => o);
         }
         /// <summary>
         /// 创建或者添加断言

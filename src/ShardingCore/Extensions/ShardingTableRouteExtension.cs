@@ -51,7 +51,7 @@ namespace ShardingCore.Extensions
                 shardingRouteContext.MustTable.Add(entityType, mustTails);
             }
 
-            return tails.Select(o => mustTails.Add(o)).Any(o => o);
+            return tails.Select(o => mustTails.Add(o)).All(o => o);
         }
         /// <summary>
         /// 创建或者添加提示路由
@@ -86,7 +86,7 @@ namespace ShardingCore.Extensions
                 shardingRouteContext.HintTable.Add(entityType, hintTails);
             }
 
-            return tails.Select(o => hintTails.Add(o)).Any(o => o);
+            return tails.Select(o => hintTails.Add(o)).All(o => o);
         }
         /// <summary>
         /// 创建或者添加断言

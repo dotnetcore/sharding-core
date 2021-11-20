@@ -96,17 +96,7 @@ namespace ShardingCore.Extensions
             return ShardingUtil.GetQueryEntitiesFilter(queryable);
         }
 
-        public static T IfDo<T>(this T t, bool @if,Func<T,T> build)
-        {
-            if (@if)
-            {
-                return build(t);
-            }
 
-            return t;
-        }
-        
-        
         public static Type GetSequenceType(this Type type)
         {
             var sequenceType = TryGetSequenceType(type);

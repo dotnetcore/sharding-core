@@ -59,7 +59,7 @@ namespace ShardingCore.Extensions
             return metadata.IsMultiDataSourceMapping;
         }
         /// <summary>
-        /// 是否基继承至IShardingTable
+        /// 是否是分表
         /// </summary>
         /// <param name="metadata"></param>
         /// <returns></returns>

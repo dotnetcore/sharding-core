@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Sharding.Abstractions;
@@ -31,9 +35,12 @@ namespace ShardingCore.Test6x
         private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
         private readonly IShardingComparer<ShardingDefaultDbContext> _shardingComparer;
         private readonly IVirtualDataSource<ShardingDefaultDbContext> _virtualDataSource;
+        private readonly IVirtualTableManager<ShardingDefaultDbContext> _virtualTableManager;
 
         public ShardingTest(ShardingDefaultDbContext virtualDbContext,IShardingRouteManager shardingRouteManager, IConnectionStringManager<ShardingDefaultDbContext> connectionStringManager,IConfiguration configuration,
-            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,IShardingComparer<ShardingDefaultDbContext> shardingComparer,IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource)
+            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
+            IShardingComparer<ShardingDefaultDbContext> shardingComparer,IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource,
+            IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -42,6 +49,28 @@ namespace ShardingCore.Test6x
             this._entityMetadataManager = entityMetadataManager;
             _shardingComparer = shardingComparer;
             _virtualDataSource = virtualDataSource;
+            _virtualTableManager = virtualTableManager;
+        }
+
+        [Fact]
+        public void GenericTest()
+        {
+            var a = new DefaultPhysicDataSource("aaa","aaa",true);
+            var b = new DefaultPhysicDataSource("aaa","aaa1",false);
+            Assert.Equal(a,b);
+            var x = new EntityMetadata(typeof(LogDay),"aa",typeof(ShardingDefaultDbContext),new List<PropertyInfo>());
+            var y = new EntityMetadata(typeof(LogDay),"aa1",typeof(ShardingDefaultDbContext),new List<PropertyInfo>());
+            Assert.Equal(x, y);
+            var dateTime = new DateTime(2021,1,1);
+            var logDays = Enumerable.Range(0,100).Select(o=>new LogDay(){Id = Guid.NewGuid(),LogLevel = "info",LogBody = o.ToString(),LogTime = dateTime.AddDays(o)}).ToList();
+            var bulkShardingTableEnumerable = _virtualDbContext.BulkShardingTableEnumerable(logDays);
+            Assert.Equal(100, bulkShardingTableEnumerable.Count);
+            var bulkShardingEnumerable = _virtualDbContext.BulkShardingEnumerable(logDays);
+            Assert.Equal(1, bulkShardingEnumerable.Count);
+            foreach (var (key, value) in bulkShardingEnumerable)
+            {
+                Assert.Equal(100, value.Count);
+            }
         }
         [Fact]
         public void TestEntityMetadataManager()
@@ -502,6 +531,54 @@ namespace ShardingCore.Test6x
                 Assert.Equal(j, order.Money);
                 j--;
             }
+        }
+
+        [Fact]
+        public async Task LogDayCountTest()
+        {
+            var countAsync = await _virtualDbContext.Set<LogDay>().CountAsync();
+            Assert.Equal(3000,countAsync);
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var fourCount = await _virtualDbContext.Set<LogDay>().Where(o => o.LogTime >= fourBegin && o.LogTime < fiveBegin).CountAsync();
+            Assert.Equal(300, fourCount);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<LogDay>("20210102");
+                var countAsync1 = await _virtualDbContext.Set<LogDay>().CountAsync();
+                Assert.Equal(10, countAsync1);
+            }
+            Assert.Null(_shardingRouteManager.Current);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddHintTail<LogDay>("20210103", "20210104");
+                var countAsync2 = await _virtualDbContext.Set<LogDay>().CountAsync();
+                Assert.Equal(20, countAsync2);
+            }
+        }
+        [Fact]
+        public void LogDayTableSeparatorTest()
+        {
+            var virtualTable = _virtualTableManager.GetVirtualTable(typeof(LogDay));
+            var virtualTableName = virtualTable.GetVirtualTableName();
+            Assert.Equal(nameof(LogDay),virtualTableName);
+            var table = _virtualTableManager.GetVirtualTable(virtualTableName);
+            var tryGetVirtualTable = _virtualTableManager.TryGetVirtualTable(typeof(LogDay));
+            Assert.NotNull(tryGetVirtualTable);
+            var tryGetVirtualTable1 = _virtualTableManager.TryGetVirtualTable(virtualTableName);
+            Assert.NotNull(tryGetVirtualTable1);
+
+            var all = virtualTable.GetAllPhysicTables().All(o=>string.IsNullOrWhiteSpace(o.TableSeparator));
+            Assert.True(all);
+            var entityMetadata = _entityMetadataManager.TryGet<LogDay>();
+            Assert.NotNull(entityMetadata);
+            var isShardingTable = entityMetadata.IsShardingTable();
+            Assert.True(isShardingTable);
+            var isShardingDataSource = entityMetadata.IsShardingDataSource();
+            Assert.False(isShardingDataSource);
+            var emptySeparator = string.IsNullOrWhiteSpace(entityMetadata.TableSeparator);
+            Assert.True(emptySeparator);
+            Assert.Null(entityMetadata.AutoCreateDataSourceTable);
         }
         // [Fact]
         // public async Task Group_API_Test()

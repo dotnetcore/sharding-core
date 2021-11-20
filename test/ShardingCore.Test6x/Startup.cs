@@ -71,6 +71,7 @@ namespace ShardingCore.Test6x
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderCreateTimeVirtualTableRoute>();
+                    op.AddShardingTableRoute<LogDayVirtualTableRoute>();
                 }).End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
@@ -141,7 +142,7 @@ namespace ShardingCore.Test6x
                     }
 
                     var areas = new List<string>(){"A","B","C"};
-                    List<Order> orders = new List<Order>();
+                    List<Order> orders = new List<Order>(360);
                     var begin = new DateTime(2021, 1, 1);
                     for (int i = 0; i < 360; i++)
                     {
@@ -155,11 +156,33 @@ namespace ShardingCore.Test6x
                         begin = begin.AddDays(1);
                     }
 
+                    List<LogDay> logDays = new List<LogDay>(3600);
+
+                    var levels = new List<string>(){"info","warning","error"};
+                    var begin1 = new DateTime(2021, 1, 1);
+                    for (int i = 0; i < 300; i++)
+                    {
+                        var ltime = begin1;
+                        for (int j = 0; j < 10; j++)
+                        {
+                            logDays.Add(new LogDay()
+                            {
+                                Id = Guid.NewGuid(),
+                                LogLevel = levels[j%3],
+                                LogBody = $"{i}_{j}",
+                                LogTime = ltime.AddHours(1)
+                            });
+                            ltime = ltime.AddHours(1);
+                        }
+                        begin1 = begin1.AddDays(1);
+                    }
+
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
                         await virtualDbContext.AddRangeAsync(userSalaries);
                         await virtualDbContext.AddRangeAsync(orders);
+                        await virtualDbContext.AddRangeAsync(logDays);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();
