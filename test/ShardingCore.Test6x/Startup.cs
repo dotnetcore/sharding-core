@@ -144,7 +144,7 @@ namespace ShardingCore.Test6x
                     var areas = new List<string>(){"A","B","C"};
                     List<Order> orders = new List<Order>(360);
                     var begin = new DateTime(2021, 1, 1);
-                    for (int i = 0; i < 360; i++)
+                    for (int i = 0; i < 320; i++)
                     {
                         orders.Add(new Order()
                         {

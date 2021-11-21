@@ -486,14 +486,14 @@ namespace ShardingCore.Test6x
         public async Task OrderCountTest()
         {
             var asyncCount = await _virtualDbContext.Set<Order>().CountAsync();
-            Assert.Equal(360, asyncCount);
+            Assert.Equal(320, asyncCount);
             var syncCount =  _virtualDbContext.Set<Order>().Count();
-            Assert.Equal(360, syncCount);
+            Assert.Equal(320, syncCount);
 
             var countA =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="A");
             var countB =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="B");
             var countC =await _virtualDbContext.Set<Order>().CountAsync(o=>o.Area=="C");
-            Assert.Equal(360, countA+ countB+ countC);
+            Assert.Equal(320, countA+ countB+ countC);
             var fourBegin = new DateTime(2021, 4, 1).Date;
             var fiveBegin = new DateTime(2021, 5, 1).Date;
             var fourCount = await _virtualDbContext.Set<Order>().Where(o=>o.CreateTime>=fourBegin&&o.CreateTime<fiveBegin).CountAsync();
@@ -512,7 +512,7 @@ namespace ShardingCore.Test6x
         public async Task OrderOrderTest()
         {
             var orders = await _virtualDbContext.Set<Order>().OrderBy(o => o.CreateTime).ToListAsync();
-            Assert.Equal(360,orders.Count);
+            Assert.Equal(320,orders.Count);
             var i = 0;
             foreach (var order in orders)
             {
@@ -523,9 +523,9 @@ namespace ShardingCore.Test6x
             var threeMonth = new DateTime(2021, 3, 1);
             var orderPage = await _virtualDbContext.Set<Order>().Where(o=>o.CreateTime > threeMonth).OrderByDescending(o => o.CreateTime).ToShardingPageAsync(1,20);
             Assert.Equal(20, orderPage.Data.Count);
-            Assert.Equal(300,orderPage.Total);
+            Assert.Equal(260,orderPage.Total);
 
-            var j = 359;
+            var j = 319;
             foreach (var order in orderPage.Data)
             {
                 Assert.Equal(j, order.Money);

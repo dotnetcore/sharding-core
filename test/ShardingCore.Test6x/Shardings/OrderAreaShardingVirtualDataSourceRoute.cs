@@ -53,10 +53,5 @@ namespace ShardingCore.Test6x.Shardings
                 }
             }
         }
-
-        public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
-        {
-            builder.ShardingProperty(o => o.Area);
-        }
     }
 }

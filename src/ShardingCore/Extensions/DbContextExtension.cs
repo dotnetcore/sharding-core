@@ -130,7 +130,7 @@ namespace ShardingCore.Extensions
             var modelSourceDependencies =
                 dependenciesModelSource.GetPropertyValue("Dependencies") as ModelSourceDependencies;
             IMemoryCache memoryCache = modelSourceDependencies.MemoryCache;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
+            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext,true);
             memoryCache.Remove(key1);
 #endif
 #if EFCORE5
