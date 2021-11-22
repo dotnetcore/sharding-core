@@ -9,19 +9,8 @@ namespace ShardingCore.Exceptions
 {
     public class ShardingCoreInvalidOperationException: ShardingCoreException
     {
-        public ShardingCoreInvalidOperationException()
-        {
-        }
-
-        protected ShardingCoreInvalidOperationException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
 
         public ShardingCoreInvalidOperationException(string? message) : base(message)
-        {
-        }
-
-        public ShardingCoreInvalidOperationException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
     }

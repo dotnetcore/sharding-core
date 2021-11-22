@@ -99,7 +99,29 @@ namespace ShardingCore.Core.EntityMetadatas
             TableSeparator = separator;
         }
 
-        public void CheckMetadata()
+        public void CheckShardingDataSourceMetadata()
+        {
+            if (!IsMultiDataSourceMapping)
+            {
+                throw new ShardingCoreException($"not found  entity:{EntityType} configure");
+            }
+            if(ShardingDataSourceProperty==null)
+            {
+                throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
+            }
+        }
+        public void CheckShardingTableMetadata()
+        {
+            if (!IsMultiTableMapping)
+            {
+                throw new ShardingCoreException($"not found  entity:{EntityType} configure");
+            }
+            if (ShardingTableProperty == null)
+            {
+                throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
+            }
+        }
+        public void CheckGenericMetadata()
         {
             if (null == EntityType || null == PrimaryKeyProperties || null == VirtualTableName ||
                 (!IsMultiTableMapping && !IsMultiDataSourceMapping))

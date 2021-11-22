@@ -11,19 +11,8 @@ namespace ShardingCore.Exceptions
 */
     public class ShardingDataSourceNotFoundException:ShardingCoreException
     {
-        public ShardingDataSourceNotFoundException()
-        {
-        }
-
-        protected ShardingDataSourceNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
 
         public ShardingDataSourceNotFoundException(string message) : base(message)
-        {
-        }
-
-        public ShardingDataSourceNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

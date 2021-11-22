@@ -14,19 +14,8 @@ namespace ShardingCore.Exceptions
     */
     public class ShardingCoreParallelQueryTimeOutException:ShardingCoreException
     {
-        public ShardingCoreParallelQueryTimeOutException()
-        {
-        }
-
-        protected ShardingCoreParallelQueryTimeOutException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
 
         public ShardingCoreParallelQueryTimeOutException(string message) : base(message)
-        {
-        }
-
-        public ShardingCoreParallelQueryTimeOutException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

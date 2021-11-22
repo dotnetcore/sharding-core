@@ -11,20 +11,9 @@ namespace ShardingCore.Exceptions
 */
     public class ShardingKeyRouteNotMatchException:Exception
     {
-        public ShardingKeyRouteNotMatchException()
-        {
-        }
-
-        protected ShardingKeyRouteNotMatchException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
         public ShardingKeyRouteNotMatchException(string message) : base(message)
         {
         }
 
-        public ShardingKeyRouteNotMatchException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }

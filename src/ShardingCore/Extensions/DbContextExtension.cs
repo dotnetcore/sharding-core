@@ -132,6 +132,8 @@ namespace ShardingCore.Extensions
             IMemoryCache memoryCache = modelSourceDependencies.MemoryCache;
             object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext,true);
             memoryCache.Remove(key1);
+            object key2 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext,false);
+            memoryCache.Remove(key2);
 #endif
 #if EFCORE5
             var dependencies = dbContext.GetService<IModelCreationDependencies>();

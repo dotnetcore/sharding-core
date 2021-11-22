@@ -9,21 +9,9 @@ namespace ShardingCore.Exceptions
 * @Date: Wednesday, 13 January 2021 11:09:33
 * @Email: 326308290@qq.com
 */
-    public class ShardingKeyGetValueException:Exception
+    public class ShardingKeyGetValueException:ShardingCoreException
     {
-        public ShardingKeyGetValueException()
-        {
-        }
-
-        protected ShardingKeyGetValueException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
         public ShardingKeyGetValueException(string message) : base(message)
-        {
-        }
-
-        public ShardingKeyGetValueException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

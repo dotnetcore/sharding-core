@@ -33,6 +33,18 @@ namespace Sample.SqlServer.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Get2x()
+        {
+            await _defaultTableDbContext.AddAsync(new SysUserMod()
+            {
+                Id = Guid.NewGuid().ToString("n"),
+                Age = 9,
+                AgeGroup = 10, Name = "SysUserModTest"
+            });
+            await _defaultTableDbContext.SaveChangesAsync();
+            return Ok();
+        }
+        [HttpGet]
         public async Task<IActionResult> Get()
         {
             var sql = from ut in _defaultTableDbContext.Set<SysTest>()

@@ -83,7 +83,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 if (node is QueryRootExpression queryRootExpression)
                 {
                     if (QueryRootExpression != null)
-                        throw new InvalidReplaceQueryRootException("more than one query root");
+                        throw new ShardingCoreException("replace query root more than one query root");
                     QueryRootExpression = queryRootExpression;
                 }
 

@@ -12,21 +12,10 @@ namespace ShardingCore.Exceptions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingVirtualTableNotFoundException: Exception
+    public class ShardingVirtualTableNotFoundException: ShardingCoreException
     {
-        public ShardingVirtualTableNotFoundException()
-        {
-        }
-
-        protected ShardingVirtualTableNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
 
         public ShardingVirtualTableNotFoundException(string message) : base(message)
-        {
-        }
-
-        public ShardingVirtualTableNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

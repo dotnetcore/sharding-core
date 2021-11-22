@@ -158,9 +158,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public DbContext CreateDbContext(IRouteTail routeTail)
         {
             if (routeTail.IsMultiEntityQuery())
-                throw new ShardingCoreNotSupportedException("multi route not support track");
+                throw new NotSupportedException("multi route not support track");
             if (!(routeTail is ISingleQueryRouteTail singleQueryRouteTail))
-                throw new ShardingCoreNotSupportedException("multi route not support track");
+                throw new NotSupportedException("multi route not support track");
 
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))

@@ -85,6 +85,7 @@ namespace ShardingCore.Bootstrapers
                 }
 
                 _virtualDataSource.AddVirtualDataSourceRoute(dataSourceRoute);
+                entityMetadata.CheckShardingDataSourceMetadata();
 
             }
             if (_shardingConfigOption.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
@@ -107,7 +108,7 @@ namespace ShardingCore.Bootstrapers
                 var virtualTable = CreateVirtualTable(virtualTableRoute,entityMetadata);
                 _virtualTableManager.AddVirtualTable(virtualTable);
                 //检测校验分表分库对象元数据
-                entityMetadata.CheckMetadata();
+                entityMetadata.CheckShardingTableMetadata();
                 //添加任务
                 if (virtualTableRoute is IJob routeJob && routeJob.StartJob())
                 {
@@ -116,6 +117,7 @@ namespace ShardingCore.Bootstrapers
                     jobManager.AddJob(jobEntry);
                 }
             }
+            entityMetadata.CheckGenericMetadata();
         }
 
         private IVirtualDataSourceRoute<TEntity> CreateVirtualDataSourceRoute(Type virtualRouteType,EntityMetadata entityMetadata)
