@@ -114,11 +114,11 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 }
             }
 
-            if (isShardingDataSource&& dataSourceSequenceOrderConfig != null)
-            {
-                return new AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
-            }
-            else if (isShardingTable && tableSequenceOrderConfig != null)
+            var useSequenceEnumeratorMergeEngine = isShardingDataSource && (dataSourceSequenceOrderConfig != null ||
+                                                                            (isShardingTable &&
+                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
+
+            if (useSequenceEnumeratorMergeEngine)
             {
                 return new AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
             }
@@ -158,22 +158,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 }
             }
 
-            if (isShardingDataSource)
+            var useSequenceEnumeratorMergeEngine = isShardingDataSource && (dataSourceSequenceOrderConfig != null ||
+                                                                            (isShardingTable &&
+                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource&&isShardingTable && tableSequenceOrderConfig != null);
+            if (useSequenceEnumeratorMergeEngine)
             {
-                if (dataSourceSequenceOrderConfig != null)
-                {
-                    return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
-                }
-            }
-            else
-            {
-                if (isShardingTable)
-                {
-                    if(tableSequenceOrderConfig != null)
-                    {
-                        return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
-                    }
-                }
+                return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
