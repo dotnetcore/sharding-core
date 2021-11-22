@@ -113,10 +113,16 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                         .FirstOrDefault(o => o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName) && PaginationMatch(o));
                 }
             }
-            if (dataSourceSequenceOrderConfig != null || tableSequenceOrderConfig != null)
+
+            if (isShardingDataSource&& dataSourceSequenceOrderConfig != null)
             {
                 return new AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
             }
+            else if (isShardingTable && tableSequenceOrderConfig != null)
+            {
+                return new AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
+            }
+
 
             return null;
         }
@@ -151,9 +157,23 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                     tableSequenceOrderConfig = orderCount == 1 ? GetPaginationFullMatch(virtualTable.PaginationMetadata.PaginationConfigs, primaryOrder) : GetPaginationPrimaryMatch(virtualTable.PaginationMetadata.PaginationConfigs, primaryOrder);
                 }
             }
-            if (dataSourceSequenceOrderConfig != null || tableSequenceOrderConfig != null)
+
+            if (isShardingDataSource)
             {
-                return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                if (dataSourceSequenceOrderConfig != null)
+                {
+                    return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                }
+            }
+            else
+            {
+                if (isShardingTable)
+                {
+                    if(tableSequenceOrderConfig != null)
+                    {
+                        return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                    }
+                }
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
@@ -207,7 +227,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         private PaginationSequenceConfig GetPaginationFullMatch(ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
         {
-            return paginationSequenceConfigs.Where(o => !o.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch)).FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
+            return paginationSequenceConfigs.FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
         }
         private PaginationSequenceConfig GetPaginationPrimaryMatch(ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
         {
@@ -227,9 +247,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             if (propertyOrder.PropertyExpression != paginationSequenceConfig.PropertyName)
                 return false;
 
-            if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner) && !paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+            if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner))
                 return typeof(TEntity) == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
-
+            if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
+                return propertyOrder.PropertyExpression == paginationSequenceConfig.PropertyName;
             return false;
         }
     }

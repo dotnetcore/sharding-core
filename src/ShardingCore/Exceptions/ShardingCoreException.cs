@@ -14,13 +14,6 @@ namespace ShardingCore.Exceptions
     */
     public class ShardingCoreException: Exception
     {
-        public ShardingCoreException()
-        {
-        }
-
-        protected ShardingCoreException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
 
         public ShardingCoreException(string message) : base(message)
         {

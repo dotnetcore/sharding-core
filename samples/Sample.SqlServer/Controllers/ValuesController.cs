@@ -165,10 +165,10 @@ namespace Sample.SqlServer.Controllers
             using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             {
                 var dbContexts = _defaultTableDbContext.BulkShardingTableEnumerable(list);
-                dbContexts.ForEach(kv =>
+                foreach (var kv in dbContexts)
                 {
                     kv.Key.BulkInsert(kv.Value.ToList());
-                });
+                }
                 var a = 0;
                 var b = 1 / a;
                 tran.Commit();

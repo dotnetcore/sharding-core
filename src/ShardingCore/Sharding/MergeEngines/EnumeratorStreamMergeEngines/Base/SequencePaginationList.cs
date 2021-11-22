@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
                 var currentRealSkip = currentSkip;
                 var currentRealTake = routeQueryResult.QueryResult-currentSkip;
-                if (currentSkip != 0)
+                if (currentSkip != 0L)
                     currentSkip = 0;
                 if (currentTake.HasValue)
                 {
@@ -75,7 +75,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                     }
                     else
                     {
-                        currentRealTake = currentTake.Value-currentRealTake;
+                        currentTake = currentTake.Value - currentRealTake;
                     }
                 }
                 var sequenceResult = new SequenceResult(currentRealSkip, currentRealTake, routeQueryResult);

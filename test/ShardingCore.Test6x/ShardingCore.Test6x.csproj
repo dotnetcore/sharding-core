@@ -5,19 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Configs\DbConfig.json" />
-    <None Remove="Configs\MacDbConfig.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Configs\DbConfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />

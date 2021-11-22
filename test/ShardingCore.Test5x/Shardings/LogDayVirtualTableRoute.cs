@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Sharding.PaginationConfigurations;
-using ShardingCore.Test6x.Domain.Entities;
-using ShardingCore.Test6x.Shardings.PaginationConfigs;
+using ShardingCore.Test5x.Domain.Entities;
+using ShardingCore.Test5x.Shardings.PaginationConfigs;
 using ShardingCore.VirtualRoutes.Days;
 
-namespace ShardingCore.Test6x.Shardings
+namespace ShardingCore.Test5x.Shardings
 {
     public class LogDayVirtualTableRoute:AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<LogDay>
     {

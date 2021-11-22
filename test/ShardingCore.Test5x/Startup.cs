@@ -8,11 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
-using ShardingCore.Sharding.ShardingComparision;
-using ShardingCore.Test6x.Domain.Entities;
-using ShardingCore.Test6x.Shardings;
+using ShardingCore.Test5x.Domain.Entities;
+using ShardingCore.Test5x.Shardings;
 
-namespace ShardingCore.Test6x
+namespace ShardingCore.Test5x
 {
     /*
     * @Author: xjm

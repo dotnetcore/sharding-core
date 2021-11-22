@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
-using ShardingCore.Sharding.ShardingComparision;
-using ShardingCore.Test6x.Domain.Entities;
-using ShardingCore.Test6x.Shardings;
+using ShardingCore.Test3x.Domain.Entities;
+using ShardingCore.Test3x.Shardings;
 
-namespace ShardingCore.Test6x
+namespace ShardingCore.Test3x
 {
     /*
     * @Author: xjm

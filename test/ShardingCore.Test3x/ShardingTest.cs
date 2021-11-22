@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
@@ -15,10 +14,10 @@ using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.Test6x.Domain.Entities;
+using ShardingCore.Test3x.Domain.Entities;
 using Xunit;
 
-namespace ShardingCore.Test6x
+namespace ShardingCore.Test3x
 {
     /*
     * @Author: xjm
