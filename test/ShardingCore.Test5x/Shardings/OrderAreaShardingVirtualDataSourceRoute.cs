@@ -10,6 +10,7 @@ namespace ShardingCore.Test5x.Shardings
 {
     public class OrderAreaShardingVirtualDataSourceRoute:AbstractShardingOperatorVirtualDataSourceRoute<Order,string>
     {
+        protected override bool EnableHintRoute => true;
         private readonly List<string> _dataSources = new List<string>()
         {
             "A", "B", "C"

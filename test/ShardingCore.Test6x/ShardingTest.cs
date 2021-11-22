@@ -71,6 +71,7 @@ namespace ShardingCore.Test6x
             {
                 Assert.Equal(100, value.Count);
             }
+
         }
         [Fact]
         public void TestEntityMetadataManager()
@@ -596,6 +597,71 @@ namespace ShardingCore.Test6x
            Assert.Equal(10, page1.Data.Count);
            Assert.Equal(300, page1.Total);
 
+        }
+
+        [Fact]
+        public async Task Order_Average()
+        {
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var moneyAverage = await _virtualDbContext.Set<Order>()
+                .Where(o => o.CreateTime >= fourBegin && o.CreateTime <= fiveBegin).Select(o => o.Money).AverageAsync();
+            Assert.Equal(105, moneyAverage);
+
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("C");
+                var sum = await _virtualDbContext.Set<Order>()
+                    .Where(o =>  o.CreateTime == fiveBegin).Select(o => o.Money).SumAsync();
+                Assert.Equal(0,sum);
+            }
+        }
+
+        [Fact]
+        public async Task Order_Max()
+        {
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var moneyMax = await _virtualDbContext.Set<Order>()
+                .Where(o => o.CreateTime >= fourBegin && o.CreateTime <= fiveBegin).Select(o => o.Money).MaxAsync();
+            Assert.Equal(120, moneyMax);
+
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("C");
+                try
+                {
+                    var max = await _virtualDbContext.Set<Order>()
+                        .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).MaxAsync();
+                }
+                catch (InvalidOperationException e)
+                {
+                    Assert.True(e.Message.Contains("contains"));
+                }
+            }
+        }
+        [Fact]
+        public async Task Order_Min()
+        {
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var moneyMax = await _virtualDbContext.Set<Order>()
+                .Where(o => o.CreateTime >= fourBegin && o.CreateTime <= fiveBegin).Select(o => o.Money).MinAsync();
+            Assert.Equal(90, moneyMax);
+
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("C");
+                try
+                {
+                    var max = await _virtualDbContext.Set<Order>()
+                        .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).MinAsync();
+                }
+                catch (InvalidOperationException e)
+                {
+                    Assert.True(e.Message.Contains("contains"));
+                }
+            }
         }
         // [Fact]
         // public async Task Group_API_Test()
