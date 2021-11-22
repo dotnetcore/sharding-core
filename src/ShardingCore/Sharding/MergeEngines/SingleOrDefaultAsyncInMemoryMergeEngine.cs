@@ -35,13 +35,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public override async Task<TResult> DoMergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TResult>)queryable).SingleOrDefaultAsync(cancellationToken), cancellationToken);
-            var q = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).AsQueryable();
+            var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
 
-            var streamMergeContext = GetStreamMergeContext();
-            if (streamMergeContext.Orders.Any())
-                return q.OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).SingleOrDefault();
 
-            return q.SingleOrDefault();
+            if (notNullResult.IsEmpty())
+                return default;
+
+            if (notNullResult.Count > 1)
+                throw new InvalidOperationException("Sequence contains more than one element.");
+            return notNullResult.SingleOrDefault();
         }
     }
 }

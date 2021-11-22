@@ -663,6 +663,24 @@ namespace ShardingCore.Test6x
                 }
             }
         }
+
+        [Fact]
+        public async Task Order_Entity()
+        {
+            var x=await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).LastOrDefaultAsync();
+            Assert.NotNull(x);
+            Assert.Equal(319,x.Money);
+            var x1 = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).LastAsync();
+            Assert.Equal(x,x1);
+            var y = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).FirstOrDefaultAsync();
+            Assert.NotNull(y);
+            Assert.Equal(0, y.Money);
+            var y1 = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).FirstAsync();
+            Assert.Equal(y, y1);
+            var z=await _virtualDbContext.Set<Order>().SingleOrDefaultAsync(o => o.Money == 13);
+            var z1 = await _virtualDbContext.Set<Order>().SingleAsync(o => o.Money == 13);
+            Assert.Equal(z, z1);
+        }
         // [Fact]
         // public async Task Group_API_Test()
         // {
