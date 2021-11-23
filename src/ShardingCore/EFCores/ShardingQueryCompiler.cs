@@ -6,6 +6,7 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,7 +42,7 @@ namespace ShardingCore.EFCores
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
+                return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
         }
 
         public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)

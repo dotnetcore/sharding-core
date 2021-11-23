@@ -82,7 +82,7 @@ namespace ShardingCore.TableCreator
                         {
                             _logger.LogWarning(ex,
                                 $"create table error entity name:[{shardingEntityType.Name}].");
-                            throw new ShardingCreateException($" create table error :{ex.Message}", ex);
+                            throw new ShardingCoreException($" create table error :{ex.Message}", ex);
                         }
                     }
                     finally

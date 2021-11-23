@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -170,7 +171,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                 throw new ShardingCoreException($"cant found InMemoryAsyncStreamMergeEngine method [{methodName}]");
             var @params = async ? new object[] { cancellationToken } : new object[0];
             //typeof(TResult)==?resultType
-            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamEngine, @params);
+            return (TResult)streamEngineMethod.MakeGenericMethod(new Type[] { resultType })
+                .Invoke(streamEngine, @params);
         }
 
 
@@ -204,7 +206,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         }
         private TResult EnsureMergeExecute3<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
         {
-            var resultType=query.GetResultType();
+            var resultType = query.GetResultType();
             if (async)
                 streamMergeEngineType = streamMergeEngineType.MakeGenericType(query.GetQueryEntityType(), typeof(TResult).GetGenericArguments()[0], resultType);
             else
@@ -219,6 +221,6 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             var @params = async ? new object[] { cancellationToken } : new object[0];
             return (TResult)streamEngineMethod.Invoke(streamEngine, @params);
         }
-        
+
     }
 }

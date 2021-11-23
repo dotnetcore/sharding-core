@@ -115,7 +115,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 //);
             }
 
-            throw new ShardingKeyGetValueException("cant get value " + expression);
+            throw new ShardingCoreException("cant get value " + expression);
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)

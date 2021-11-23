@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 
         public override TResult MergeResult<TResult>()
         {
-            return AsyncHelper.RunSync(() => MergeResultAsync<TResult>());
+            return MergeResultAsync<TResult>().WaitAndUnwrapException();
         }
 
         public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())

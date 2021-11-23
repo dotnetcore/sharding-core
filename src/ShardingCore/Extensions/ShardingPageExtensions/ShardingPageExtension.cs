@@ -27,14 +27,14 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
             using (shardingPageManager.CreateScope())
             {
                 //获取每次总记录数
-                var count = await source.LongCountAsync();
+                var count = await source.CountAsync();
                 if (count <= skip)
                     return new ShardingPagedResult<T>(new List<T>(0), count);
                 //获取剩余条数
                 var remainingCount = count - skip;
                 //当剩余条数小于take数就取remainingCount
                 var realTake = remainingCount < take ? remainingCount : take;
-                var data = await source.Skip(skip).Take((int)realTake).ToListAsync();
+                var data = await source.Skip(skip).Take(realTake).ToListAsync();
                 return new ShardingPagedResult<T>(data, count);
             }
         }
@@ -51,14 +51,14 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
             using (shardingPageManager.CreateScope())
             {
                 //获取每次总记录数
-                var count = source.LongCount();
+                var count = source.Count();
                 if (count <= skip)
                     return new ShardingPagedResult<T>(new List<T>(0), count);
                 //获取剩余条数
                 var remainingCount = count - skip;
                 //当剩余条数小于take数就取remainingCount
                 var realTake = remainingCount < take ? remainingCount : take;
-                var data = source.Skip(skip).Take((int)realTake).ToList();
+                var data = source.Skip(skip).Take(realTake).ToList();
                 return new ShardingPagedResult<T>(data, count);
             }
         }

@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MinAsyncInMemoryMergeEngine<TEntity,TSelect> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TSelect>
+    internal class MinAsyncInMemoryMergeEngine<TEntity, TSelect> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TSelect>
     {
         public MinAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
@@ -37,15 +37,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         {
             if (typeof(decimal) == typeof(TResult))
             {
-                var result = (await base.ExecuteAsync(queryable => 
-                        ((IQueryable<decimal>)queryable).Select(o=>(decimal?)o).MinAsync(cancellationToken), cancellationToken))
+                var result = (await base.ExecuteAsync(queryable =>
+                        ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MinAsync(cancellationToken), cancellationToken))
                     .Where(o => o.QueryResult != null)
                     .ToList();
-                if(result.IsEmpty())
+                if (result.IsEmpty())
                     throw new InvalidOperationException("Sequence contains no elements.");
                 var min = result.Min(o => o.QueryResult.GetValueOrDefault());
 
-                return ConvertMin<TResult,decimal>(min);
+                return ConvertMin<TResult, decimal>(min);
             }
             if (typeof(float) == typeof(TResult))
             {

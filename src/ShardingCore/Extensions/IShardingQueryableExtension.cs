@@ -48,13 +48,13 @@ namespace ShardingCore.Extensions
         internal static IQueryable<T> RemoveOrderBy<T>(this IQueryable<T> source)
         {
             var expression = new RemoveOrderByVisitor().Visit(source.Expression);
-            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+            return (IQueryable<T>)source.Provider.CreateQuery(expression);
         }
-        
+
         internal static IQueryable<T> RemoveOrderByDescending<T>(this IQueryable<T> source)
         {
             var expression = new RemoveOrderByDescendingVisitor().Visit(source.Expression);
-            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+            return (IQueryable<T>)source.Provider.CreateQuery(expression);
         }
         internal static IQueryable<T> RemoveAnyOrderBy<T>(this IQueryable<T> source)
         {

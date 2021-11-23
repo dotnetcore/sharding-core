@@ -15,7 +15,7 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
         /// </summary>
         /// <param name="total">总记录数。</param>
         /// <param name="data">当前页面的数据。</param>
-        public ShardingPagedResult(List<T> data, long total)
+        public ShardingPagedResult(List<T> data, int total)
         {
             this.Total = total;
             this.Data = data;
@@ -26,7 +26,7 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
         /// <summary>
         /// 获取或设置总记录数。
         /// </summary>
-        public long Total { get; set; }
+        public int Total { get; set; }
         /// <summary>
         /// 分页数据
         /// </summary>

@@ -147,7 +147,7 @@ namespace ShardingCore.Extensions
                         throw new ShardingCoreInvalidOperationException($" etities has null value of sharding data source value");
                     var shardingDataSourceName = virtualDataSourceRoute.ShardingKeyToDataSourceName(shardingDataSourceValue);
                     if (!allDataSourceNames.Contains(shardingDataSourceName))
-                        throw new ShardingDataSourceNotFoundException(
+                        throw new ShardingCoreException(
                             $" data source name :[{shardingDataSourceName}] all data source names:[{string.Join(",", allDataSourceNames)}]");
                     if (!dataSourceNames.TryGetValue(shardingDataSourceName, out var bulkDicEntries))
                     {
@@ -180,8 +180,8 @@ namespace ShardingCore.Extensions
             var shardingKey = entity.GetPropertyValue(virtualTable.EntityMetadata.ShardingTableProperty.Name);
             var tail = virtualTableRoute.ShardingKeyToTail(shardingKey);
             if (!allTails.Contains(tail))
-                throw new ShardingKeyRouteNotMatchException(
-                    $"entity:{entityType.FullName},sharding key:{shardingKey},sharding tail:{tail}");
+                throw new ShardingCoreException(
+                    $"sharding key route not match entity:{entityType.FullName},sharding key:{shardingKey},sharding tail:{tail}");
 
             var routeTail = routeTailFactory.Create(tail);
             var routeTailIdentity = routeTail.GetRouteTailIdentity();

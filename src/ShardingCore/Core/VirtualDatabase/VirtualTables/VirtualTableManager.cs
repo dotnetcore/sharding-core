@@ -51,7 +51,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
             if (!_entityMetadataManager.IsShardingTable(shardingEntityType))
                 throw new ShardingCoreInvalidOperationException(shardingEntityType.FullName);
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
-                throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
+                throw new ShardingCoreException($"virtual table not found entity: {shardingEntityType.FullName}");
             return virtualTable;
         }
 
@@ -67,7 +67,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         public IVirtualTable GetVirtualTable(string virtualTableName)
         {
             if (!_shardingVirtualTaleVirtualTables.TryGetValue(virtualTableName, out var virtualTable))
-                throw new ShardingVirtualTableNotFoundException(virtualTableName);
+                throw new ShardingCoreException($"virtual table not found virtual table name: {virtualTableName}");
             return virtualTable;
         }
 
@@ -91,7 +91,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         public bool AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable)
         {
             if (!_shardingVirtualTables.TryGetValue(shardingEntityType, out var virtualTable))
-                throw new ShardingVirtualTableNotFoundException(shardingEntityType.FullName);
+                throw new ShardingCoreException($"virtual table not found entity: {shardingEntityType.FullName}");
             return virtualTable.AddPhysicTable(physicTable);
         }
 

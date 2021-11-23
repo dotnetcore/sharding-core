@@ -30,7 +30,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
             }
 
-            throw new ShardingKeyGetValueException("cant get value " + expression);
+            throw new ShardingCoreException("cant get value " + expression);
         }
     }
 }

@@ -5,6 +5,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualTables;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
@@ -39,6 +40,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// 获取数据源
         /// </summary>
         /// <param name="dataSourceName"></param>
+        /// <exception cref="ShardingCoreInvalidOperationException">
+        ///     thrown if data source name is not in virtual data source
+        ///     the length of the buffer
+        /// </exception>
         /// <returns></returns>
         IPhysicDataSource GetPhysicDataSource(string dataSourceName);
 

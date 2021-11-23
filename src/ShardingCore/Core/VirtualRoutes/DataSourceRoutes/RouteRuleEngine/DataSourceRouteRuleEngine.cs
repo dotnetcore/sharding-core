@@ -58,8 +58,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
             }
 
             if (dataSourceMaps.IsEmpty())
-                throw new ShardingDataSourceRouteNotMatchException(
-                    $"{routeRuleContext.Queryable.ShardingPrint()}");
+                throw new ShardingCoreException(
+                    $"data source route not match: {routeRuleContext.Queryable.ShardingPrint()}");
             if (dataSourceMaps.Count == 1)
                 return new DataSourceRouteResult(dataSourceMaps.First().Value);
             var intersect = dataSourceMaps.Select(o => o.Value).Aggregate((p, n) => p.Intersect(n).ToHashSet());
