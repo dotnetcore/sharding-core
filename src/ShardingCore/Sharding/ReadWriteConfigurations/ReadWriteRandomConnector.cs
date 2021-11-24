@@ -25,6 +25,8 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         }
         public string GetConnectionString()
         {
+            if (_length == 1)
+                return _connectionStrings[0];
             var next = RandomHelper.Next(0, _length);
             return _connectionStrings[next];
 

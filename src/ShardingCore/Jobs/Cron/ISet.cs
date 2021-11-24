@@ -16,6 +16,7 @@
 */
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShardingCore.Jobs.Cron
 {

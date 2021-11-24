@@ -16,12 +16,10 @@ namespace ShardingCore.Test6x.Shardings
             return new DateTime(2021, 1, 1);
         }
 
-
         public override IPaginationConfiguration<Order> CreatePaginationConfiguration()
         {
             return new OrderCreateTimePaginationConfiguration();
         }
-
         public override bool AutoCreateTableByTime()
         {
             return true;

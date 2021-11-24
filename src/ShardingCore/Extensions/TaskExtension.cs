@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace ShardingCore.Extensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+     [ExcludeFromCodeCoverage]
     internal static class TaskExtension
     {
         /// <summary>

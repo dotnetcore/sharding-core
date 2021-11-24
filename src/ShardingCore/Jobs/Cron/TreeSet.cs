@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShardingCore.Jobs.Cron
 {
@@ -24,6 +25,7 @@ namespace ShardingCore.Jobs.Cron
     /// SupportClass for the TreeSet class.
     /// </summary>
     [Serializable]
+    [ExcludeFromCodeCoverage]
     internal class TreeSet : ArrayList, ISortedSet
     {
         private readonly IComparer comparator = Comparer.Default;

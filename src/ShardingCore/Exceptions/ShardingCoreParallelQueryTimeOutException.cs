@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -12,6 +13,7 @@ namespace ShardingCore.Exceptions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    [ExcludeFromCodeCoverage]
     public class ShardingCoreParallelQueryTimeOutException:ShardingCoreException
     {
 

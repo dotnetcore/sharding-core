@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Test6x.Domain.Entities;
 using ShardingCore.Test6x.Shardings;
@@ -62,7 +63,18 @@ namespace ShardingCore.Test6x
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderCreateTimeVirtualTableRoute>();
                     op.AddShardingTableRoute<LogDayVirtualTableRoute>();
-                }).End();
+                }).AddReadWriteSeparation(sp =>
+                {
+                    return new Dictionary<string, ISet<string>>()
+                    {
+                        {
+                            "A", new HashSet<string>()
+                            {
+                                "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;"
+                            }
+                        }
+                    };
+                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime).End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
             //     {

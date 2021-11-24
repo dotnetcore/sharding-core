@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Jobs.Impls;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace ShardingCore.Jobs
     * @Date: Wednesday, 06 January 2021 13:00:11
     * @Email: 326308290@qq.com
     */
+    [ExcludeFromCodeCoverage]
     internal class JobRunnerService
     {
         private readonly IServiceProvider _serviceProvider;

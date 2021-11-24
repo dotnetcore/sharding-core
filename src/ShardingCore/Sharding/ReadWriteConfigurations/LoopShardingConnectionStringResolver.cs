@@ -32,6 +32,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             }
         }
 
+        public bool ContainsReadWriteDataSourceName(string dataSourceName)
+        {
+            return _connectors.ContainsKey(dataSourceName);
+        }
+
         public string GetConnectionString(string dataSourceName)
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))

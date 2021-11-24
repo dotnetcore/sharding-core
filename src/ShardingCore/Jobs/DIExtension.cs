@@ -14,7 +14,7 @@ namespace ShardingCore.Jobs
 */
     internal static class DIExtension
     {
-        public static IServiceCollection TryAddShardingJob(this IServiceCollection services)
+        internal static IServiceCollection TryAddShardingJob(this IServiceCollection services)
         {
             services.TryAddSingleton<JobRunnerService>(); 
             services.TryAddSingleton<IJobManager, InMemoryJobManager>();

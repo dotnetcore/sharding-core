@@ -14,7 +14,9 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableCreator;
 using ShardingCore.Test3x.Domain.Entities;
@@ -28,29 +30,31 @@ namespace ShardingCore.Test3x
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
-        private readonly IConnectionStringManager<ShardingDefaultDbContext> _connectionStringManager;
+        private readonly ActualConnectionStringManager<ShardingDefaultDbContext> _connectionStringManager;
         private readonly IConfiguration _configuration;
         private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
         private readonly IShardingComparer<ShardingDefaultDbContext> _shardingComparer;
         private readonly IVirtualDataSource<ShardingDefaultDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<ShardingDefaultDbContext> _virtualTableManager;
         private readonly IShardingTableCreator<ShardingDefaultDbContext> _shardingTableCreator;
+        private readonly IShardingReadWriteManager _shardingReadWriteManager;
 
-        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConnectionStringManager<ShardingDefaultDbContext> connectionStringManager, IConfiguration configuration,
+        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager,  IConfiguration configuration,
             IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
             IShardingComparer<ShardingDefaultDbContext> shardingComparer, IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource,
             IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
-            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator)
+            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
-            _connectionStringManager = connectionStringManager;
+            _connectionStringManager = new ActualConnectionStringManager<ShardingDefaultDbContext>();
             _configuration = configuration;
             this._entityMetadataManager = entityMetadataManager;
             _shardingComparer = shardingComparer;
             _virtualDataSource = virtualDataSource;
             _virtualTableManager = virtualTableManager;
             _shardingTableCreator = shardingTableCreator;
+            _shardingReadWriteManager = shardingReadWriteManager;
         }
 
         [Fact]
@@ -120,6 +124,24 @@ namespace ShardingCore.Test3x
             }
 
             _virtualDbContext.AddRange(logDays);
+            var bulkShardingExpression = _virtualDbContext.BulkShardingExpression<ShardingDefaultDbContext, Order>(o => new[] { "A", "B" }.Contains(o.Area));
+            Assert.Equal(2, bulkShardingExpression.Count);
+            Assert.True(bulkShardingExpression.ContainsKey("A"));
+            Assert.True(bulkShardingExpression.ContainsKey("B"));
+
+            var bulkShardingTableExpression = _virtualDbContext.BulkShardingTableExpression<ShardingDefaultDbContext, SysUserMod>(o => o.Id == Guid.NewGuid().ToString());
+            Assert.Equal(1, bulkShardingTableExpression.Count());
+
+            var isShardingDbContext = _virtualDbContext.IsShardingDbContext();
+            Assert.True(isShardingDbContext);
+            var isShardingTableDbContext = _virtualDbContext.IsShardingTableDbContext();
+            Assert.True(isShardingTableDbContext);
+            var shardingDbContext = _virtualDbContext.GetType().IsShardingDbContext();
+            Assert.True(shardingDbContext);
+            var shardingTableDbContext = _virtualDbContext.GetType().IsShardingTableDbContext();
+            Assert.True(shardingTableDbContext);
+            var virtualTable = _virtualTableManager.GetVirtualTable<SysUserMod>();
+            Assert.NotNull(virtualTable);
 
         }
 
@@ -164,8 +186,10 @@ namespace ShardingCore.Test3x
         [Fact]
         public void TestConnectionStringManager()
         {
-            var connectionString = _connectionStringManager.GetConnectionString(_virtualDataSource.DefaultDataSourceName);
+            _virtualDbContext.ReadWriteSeparationReadOnly();
+            var connectionString = _connectionStringManager.GetConnectionString(_virtualDataSource.DefaultDataSourceName,true);
             Assert.Equal(connectionString, "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
+            _virtualDbContext.ReadWriteSeparationWriteOnly();
         }
         //[Fact]
         //public void Route_TEST()
@@ -830,6 +854,57 @@ namespace ShardingCore.Test3x
             var z =  _virtualDbContext.Set<Order>().SingleOrDefault(o => o.Money == 13);
             var z1 =  _virtualDbContext.Set<Order>().Single(o => o.Money == 13);
             Assert.Equal(z, z1);
+        }
+        [Fact]
+        public void OrderReadWrite()
+        {
+            //切换到只读数据库，只读数据库又只配置了A数据源读取B数据源
+            _virtualDbContext.ReadWriteSeparationReadOnly();
+            var list = _virtualDbContext.Set<Order>().Where(o => o.Money == 1).ToList();
+            Assert.Equal(2, list.Count);
+
+            _virtualDbContext.ReadWriteSeparationWriteOnly();
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
+                var areaB = _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefault();
+                Assert.Null(areaB);
+            }
+            _virtualDbContext.ReadWriteSeparationReadOnly();
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
+                var areaB = _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefault();
+                Assert.NotNull(areaB);
+            }
+            _virtualDbContext.ReadWriteSeparationWriteOnly();
+            using (_shardingReadWriteManager.CreateScope<ShardingDefaultDbContext>())
+            {
+                _shardingReadWriteManager.GetCurrent<ShardingDefaultDbContext>().SetReadWriteSeparation(100, true);
+                using (_shardingRouteManager.CreateScope())
+                {
+                    _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
+                    var areaB = _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefault();
+                    Assert.NotNull(areaB);
+                }
+            }
+            using (_shardingReadWriteManager.CreateScope<ShardingDefaultDbContext>())
+            {
+                _shardingReadWriteManager.GetCurrent<ShardingDefaultDbContext>().SetReadWriteSeparation(100, true);
+                _virtualDbContext.ReadWriteSeparationWriteOnly();
+                using (_shardingRouteManager.CreateScope())
+                {
+                    _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
+                    var areaB = _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefault();
+                    Assert.Null(areaB);
+                }
+            }
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
+                var areaB = _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefault();
+                Assert.Null(areaB);
+            }
         }
         // [Fact]
         // public void Group_API_Test()

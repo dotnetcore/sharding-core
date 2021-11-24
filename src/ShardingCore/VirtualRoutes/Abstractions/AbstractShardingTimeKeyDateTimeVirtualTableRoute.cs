@@ -1,7 +1,4 @@
 using System;
-using ShardingCore.Core;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 
 namespace ShardingCore.VirtualRoutes.Abstractions
 {

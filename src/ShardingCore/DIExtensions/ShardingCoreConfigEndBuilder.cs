@@ -69,7 +69,7 @@ namespace ShardingCore.DIExtensions
             {
                 services.AddTransient<IConnectionStringManager<TShardingDbContext>, ReadWriteConnectionStringManager<TShardingDbContext>>();
 
-                services.AddSingleton<IReadWriteOptions, ReadWriteOptions<TShardingDbContext>>(sp =>
+                services.AddSingleton<IReadWriteOptions<TShardingDbContext>, ReadWriteOptions<TShardingDbContext>>(sp =>
                     new ReadWriteOptions<TShardingDbContext>(
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,

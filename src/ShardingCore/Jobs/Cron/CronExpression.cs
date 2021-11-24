@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Serialization;
 using System.Text;
@@ -205,6 +206,7 @@ namespace ShardingCore.Jobs.Cron
     /// <author>Contributions from Mads Henderson</author>
     /// <author>Refactoring from CronTrigger to CronExpression by Aaron Craven</author>
     [Serializable]
+    [ExcludeFromCodeCoverage]
     internal class CronExpression : ICloneable, IDeserializationCallback
     {
 		/// <summary>
@@ -1059,7 +1061,6 @@ namespace ShardingCore.Jobs.Cron
             i++;
             return i;
         }
-
 		/// <summary>
 		/// Gets the cron expression string.
 		/// </summary>

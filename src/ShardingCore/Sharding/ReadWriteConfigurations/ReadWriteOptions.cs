@@ -15,7 +15,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Email: 326308290@qq.com
     */
 
-    public class ReadWriteOptions<TShardingDbContext> : IReadWriteOptions
+    public class ReadWriteOptions<TShardingDbContext> : IReadWriteOptions<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         public ReadWriteOptions(int readWritePriority, bool readWriteSupport, ReadConnStringGetStrategyEnum readConnStringGetStrategy)

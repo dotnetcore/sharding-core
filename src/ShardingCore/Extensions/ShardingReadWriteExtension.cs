@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace ShardingCore.Extensions
@@ -15,6 +16,7 @@ namespace ShardingCore.Extensions
     */
     public static class ShardingReadWriteExtension
     {
+
         /// <summary>
         /// 设置读写分离读取写数据库
         /// </summary>
@@ -66,6 +68,11 @@ namespace ShardingCore.Extensions
             {
                 supportShardingReadWrite.ReadWriteSeparation = readOnly;
             }
+        }
+        public static void SetReadWriteSeparation(this ShardingReadWriteContext shardingReadWriteContext,int priority, bool readOnly)
+        {
+            shardingReadWriteContext.DefaultPriority = priority;
+            shardingReadWriteContext.DefaultReadEnable = readOnly;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.Visitors;
@@ -45,12 +46,13 @@ namespace ShardingCore.Extensions
             var expression = new RemoveTakeVisitor().Visit(source.Expression);
             return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
+        [ExcludeFromCodeCoverage]
         internal static IQueryable<T> RemoveOrderBy<T>(this IQueryable<T> source)
         {
             var expression = new RemoveOrderByVisitor().Visit(source.Expression);
             return (IQueryable<T>)source.Provider.CreateQuery(expression);
         }
-
+        [ExcludeFromCodeCoverage]
         internal static IQueryable<T> RemoveOrderByDescending<T>(this IQueryable<T> source)
         {
             var expression = new RemoveOrderByDescendingVisitor().Visit(source.Expression);

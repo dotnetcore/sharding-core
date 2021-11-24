@@ -13,7 +13,8 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IReadWriteOptions
+    public interface IReadWriteOptions<TShardingDbContext> 
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
         /// <summary>
         /// 默认读写配置优先级
@@ -24,11 +25,5 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
         /// </summary>
         bool ReadWriteSupport { get; }
         ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; }
-    }
-
-    public interface IReadWriteOptions<TShardingDbContext> : IReadWriteOptions
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
     }
 }

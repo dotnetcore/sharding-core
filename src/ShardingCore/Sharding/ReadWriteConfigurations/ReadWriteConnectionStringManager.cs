@@ -19,14 +19,18 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     public class ReadWriteConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private IShardingConnectionStringResolver<TShardingDbContext> _shardingConnectionStringResolver;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
 
 
-        public ReadWriteConnectionStringManager(IShardingConnectionStringResolver<TShardingDbContext> shardingConnectionStringResolver)
+        public ReadWriteConnectionStringManager(IShardingConnectionStringResolver<TShardingDbContext> shardingConnectionStringResolver,IVirtualDataSource<TShardingDbContext> virtualDataSource)
         {
             _shardingConnectionStringResolver = shardingConnectionStringResolver;
+            _virtualDataSource = virtualDataSource;
         }
         public string GetConnectionString(string dataSourceName)
         {
+            if (!_shardingConnectionStringResolver.ContainsReadWriteDataSourceName(dataSourceName))
+                return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
             return _shardingConnectionStringResolver.GetConnectionString(dataSourceName);
            
         }

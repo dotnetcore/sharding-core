@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -45,7 +46,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (routeRouteConfig.UseQueryable())
                 return virtualDataSourceRoute.RouteWithPredicate(routeRouteConfig.GetQueryable(), true);
             if (routeRouteConfig.UsePredicate())
-                return virtualDataSourceRoute.RouteWithPredicate((IQueryable)Activator.CreateInstance(typeof(EnumerableQuery<>).MakeGenericType(entityType), routeRouteConfig.UsePredicate()), false);
+            {
+                var shardingEmptyEnumerableQuery = (IShardingEmptyEnumerableQuery)Activator.CreateInstance(typeof(ShardingEmptyEnumerableQuery<>).MakeGenericType(entityType), routeRouteConfig.GetPredicate());
+                return virtualDataSourceRoute.RouteWithPredicate(shardingEmptyEnumerableQuery.EmptyQueryable(), false);
+            }
             object shardingKeyValue = null;
             if (routeRouteConfig.UseValue())
                 shardingKeyValue = routeRouteConfig.GetShardingKeyValue();

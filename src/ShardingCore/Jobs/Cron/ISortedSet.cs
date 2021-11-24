@@ -16,6 +16,7 @@
 */
 
 
+using System.Diagnostics.CodeAnalysis;
 using ShardingCore.Jobs.Cron;
 
 namespace ShardingCore.Jobs
@@ -23,7 +24,7 @@ namespace ShardingCore.Jobs
 	/// <summary>
 	/// A sorted set.
 	/// </summary>
-    internal interface ISortedSet : ISet
+	internal interface ISortedSet : ISet
 	{
 		/// <summary>
 		/// Returns a portion of the list whose elements are greater than the limit object parameter.

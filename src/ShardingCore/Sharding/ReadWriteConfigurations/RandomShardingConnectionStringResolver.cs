@@ -22,6 +22,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     {
         private readonly ConcurrentDictionary<string, ReadWriteRandomConnector> _connectors =
             new ConcurrentDictionary<string, ReadWriteRandomConnector>();
+
         public RandomShardingConnectionStringResolver(IEnumerable<ReadWriteRandomConnector> connectors)
         {
             var enumerator = connectors.GetEnumerator();
@@ -31,6 +32,12 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                 if (currentConnector != null)
                     _connectors.TryAdd(currentConnector.DataSourceName, currentConnector);
             }
+
+        }
+
+        public bool ContainsReadWriteDataSourceName(string dataSourceName)
+        {
+            return _connectors.ContainsKey(dataSourceName);
         }
 
         public string GetConnectionString(string dataSourceName)
