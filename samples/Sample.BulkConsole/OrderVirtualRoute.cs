@@ -28,5 +28,10 @@ namespace Sample.BulkConsole
         {
             return new OrderPaginationConfiguration();
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

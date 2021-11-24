@@ -14,5 +14,10 @@ namespace Samples.AutoByDate.SqlServer.Shardings
         {
             return new DateTime(2021, 8, 1);
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

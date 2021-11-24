@@ -13,5 +13,10 @@ namespace Sample.MySql.Shardings
         {
             return new DateTime(2021, 1, 01);
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

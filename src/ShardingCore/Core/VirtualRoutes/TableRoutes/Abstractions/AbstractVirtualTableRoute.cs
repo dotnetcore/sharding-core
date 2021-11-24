@@ -72,6 +72,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <returns></returns>
         public abstract List<string> GetAllTails();
 
+        /// <summary>
+        /// 配置分表信息
+        /// </summary>
+        /// <param name="builder"></param>
         public virtual void Configure(EntityMetadataTableBuilder<T> builder)
         {
             

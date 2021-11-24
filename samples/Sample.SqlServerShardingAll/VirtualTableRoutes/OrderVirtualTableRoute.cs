@@ -16,5 +16,10 @@ namespace Sample.SqlServerShardingAll.VirtualTableRoutes
         {
             builder.ShardingProperty(o => o.CreationTime);
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

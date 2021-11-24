@@ -32,14 +32,15 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         public virtual string JobName =>
             $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
 
-        public virtual bool StartJob()
-        {
-            return false;
-        }
+        /// <summary>
+        /// 是否需要自动创建按时间分表的路由
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool AutoCreateTableByTime();
         /// <summary>
         /// 显示错误日志
         /// </summary>
-        public virtual bool ShowErrorLog => false;
+        public virtual bool DoLogError => false;
 
         public abstract string[] GetCronExpressions();
 
@@ -84,7 +85,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
                 {
                     //ignore
                     _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    if (ShowErrorLog)
+                    if (DoLogError)
                         _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
                 }
             }

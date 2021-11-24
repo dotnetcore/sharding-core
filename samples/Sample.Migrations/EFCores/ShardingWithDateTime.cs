@@ -36,5 +36,10 @@ namespace Sample.Migrations.EFCores
         {
             builder.ShardingProperty(o => o.CreateTime);
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

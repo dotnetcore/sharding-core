@@ -14,15 +14,16 @@ namespace Sample.SqlServer.Shardings
         {
             return new DateTime(2020, 1, 1);
         }
-
-        public override bool StartJob()
-        {
-            return true;
-        }
+        
 
         public override void Configure(EntityMetadataTableBuilder<TestYearSharding> builder)
         {
             builder.ShardingProperty(o => o.CreateTIme);
+        }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
         }
     }
 }

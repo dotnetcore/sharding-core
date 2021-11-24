@@ -110,7 +110,7 @@ namespace ShardingCore.Bootstrapers
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckShardingTableMetadata();
                 //添加任务
-                if (virtualTableRoute is IJob routeJob && routeJob.StartJob())
+                if (virtualTableRoute is IJob routeJob && routeJob.AutoCreateTableByTime())
                 {
                     var jobManager = ShardingContainer.GetService<IJobManager>();
                     var jobEntry = JobEntryFactory.Create(routeJob);

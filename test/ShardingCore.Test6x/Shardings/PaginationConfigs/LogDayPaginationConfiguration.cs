@@ -12,7 +12,9 @@ namespace ShardingCore.Test6x.Shardings.PaginationConfigs
     {
         public void Configure(PaginationBuilder<LogDay> builder)
         {
-            builder.PaginationSequence(o => o.LogTime).UseQueryMatch(PaginationMatchEnum.Named|PaginationMatchEnum.Owner|PaginationMatchEnum.PrimaryMatch);
+            builder.PaginationSequence(o => o.LogTime)
+                .UseQueryMatch(PaginationMatchEnum.Named | PaginationMatchEnum.Owner |
+                               PaginationMatchEnum.PrimaryMatch);
         }
     }
 }

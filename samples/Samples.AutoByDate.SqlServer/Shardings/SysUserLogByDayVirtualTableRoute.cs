@@ -19,5 +19,10 @@ namespace Samples.AutoByDate.SqlServer.Shardings
             //如果返回动态值会导致程序重新启动这个值就会变动导致无法获取之前的表
             return DateTime.Now.AddDays(-2);
         }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
     }
 }

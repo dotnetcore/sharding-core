@@ -16,11 +16,6 @@ namespace ShardingCore.Test3x.Shardings
             return new DateTime(2021, 1, 1);
         }
 
-        public override bool StartJob()
-        {
-            return true;
-        }
-
         public override void Configure(EntityMetadataTableBuilder<LogDay> builder)
         {
             builder.ShardingProperty(o => o.LogTime);
@@ -30,6 +25,11 @@ namespace ShardingCore.Test3x.Shardings
         public override IPaginationConfiguration<LogDay> CreatePaginationConfiguration()
         {
             return new LogDayPaginationConfiguration();
+        }
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
         }
     }
 }

@@ -8,6 +8,6 @@ namespace ShardingCore.Jobs.Abstaractions
         string JobName { get; }
         string[] GetCronExpressions();
         Task ExecuteAsync();
-        bool StartJob();
+        bool AutoCreateTableByTime();
     }
 }
