@@ -13,7 +13,10 @@
 
 ## 📚 Documentation
 
-[中文文档](https://xuejmnet.github.io/sharding-core-doc/) | [English Document](https://xuejmnet.github.io/sharding-core-doc/en/)
+[中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
+
+
+[中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 ### 依赖
 
 Release  | EF Core | .NET  | .NET (Core) 
