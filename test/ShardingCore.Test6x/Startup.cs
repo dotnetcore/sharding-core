@@ -38,7 +38,7 @@ namespace ShardingCore.Test6x
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
-                    o.CreateShardingTableOnStart = false;
+                    o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = false;
                     o.AutoTrackEntity = true;
                 })
@@ -63,6 +63,7 @@ namespace ShardingCore.Test6x
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderCreateTimeVirtualTableRoute>();
                     op.AddShardingTableRoute<LogDayVirtualTableRoute>();
+                    op.AddShardingTableRoute<LogWeekDateTimeVirtualTableRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -179,12 +180,26 @@ namespace ShardingCore.Test6x
                         begin1 = begin1.AddDays(1);
                     }
 
+                    List<LogWeekDateTime> logWeeks = new List<LogWeekDateTime>(300);
+                    var begin2 = new DateTime(2021,1,1);
+                    for (int i = 0; i < 300; i++)
+                    {
+                        logWeeks.Add(new LogWeekDateTime()
+                        {
+                            Id = Guid.NewGuid().ToString("n"),
+                            Body = $"body_{i}",
+                            LogTime = begin2
+                        });
+                        begin2 = begin2.AddDays(1);
+                    }
+
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
                         await virtualDbContext.AddRangeAsync(userSalaries);
                         await virtualDbContext.AddRangeAsync(orders);
                         await virtualDbContext.AddRangeAsync(logDays);
+                        await virtualDbContext.AddRangeAsync(logWeeks);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();

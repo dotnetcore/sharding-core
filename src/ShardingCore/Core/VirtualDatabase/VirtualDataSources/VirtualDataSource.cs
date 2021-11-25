@@ -41,6 +41,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig)
         {
+            if (!_entityMetadataManager.IsShardingDataSource(entityType))
+                return new List<string>(1) { DefaultDataSourceName };
             var virtualDataSourceRoute = GetRoute( entityType);
 
             if (routeRouteConfig.UseQueryable())

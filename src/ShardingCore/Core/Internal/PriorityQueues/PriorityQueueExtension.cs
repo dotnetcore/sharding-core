@@ -2,16 +2,19 @@ using System;
 
 namespace ShardingCore.Core.Internal.PriorityQueues
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Monday, 25 January 2021 10:10:04
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Monday, 25 January 2021 10:10:04
+    * @Email: 326308290@qq.com
+    */
+    /// <summary>
+    /// 优先级队列扩展方法
+    /// </summary>
     internal static class PriorityQueueExtension
     {
         /// <summary>
-        /// 返回默认第一个元素集合为空返回null
+        /// 返回默认第一个元素,不删除元素,集合为空返回null
         /// </summary>
         /// <param name="queue"></param>
         /// <typeparam name="T"></typeparam>
@@ -32,7 +35,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues
         {
             if (queue.IsEmpty())
                 return default(T);
-            var first= queue.Top();
+            var first = queue.Top();
             queue.Pop();
             return first;
         }

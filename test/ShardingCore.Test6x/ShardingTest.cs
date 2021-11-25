@@ -608,11 +608,25 @@ namespace ShardingCore.Test6x
             Assert.Equal(20, orderPage.Data.Count);
             Assert.Equal(260,orderPage.Total);
 
+
             var j = 319;
             foreach (var order in orderPage.Data)
             {
                 Assert.Equal(j, order.Money);
                 j--;
+            }
+
+
+            var orderPage1 = await _virtualDbContext.Set<Order>().Where(o => o.CreateTime > threeMonth).OrderBy(o=>o.CreateTime).ToShardingPageAsync(1, 20);
+            Assert.Equal(20, orderPage1.Data.Count);
+            Assert.Equal(260, orderPage1.Total);
+
+
+            var j1 = 60;
+            foreach (var order in orderPage1.Data)
+            {
+                Assert.Equal(j1, order.Money);
+                j1++;
             }
         }
 
@@ -674,11 +688,10 @@ namespace ShardingCore.Test6x
            Assert.Equal(10, page.Data.Count);
            Assert.Equal(300, page.Total);
 
-           var page1 =  _virtualDbContext.Set<LogDay>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
-               .ToShardingPage(2, 10);
+           var page1 = await _virtualDbContext.Set<LogDay>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
+               .ToShardingPageAsync(2, 10);
            Assert.Equal(10, page1.Data.Count);
            Assert.Equal(300, page1.Total);
-
         }
 
         [Fact]
@@ -912,6 +925,47 @@ namespace ShardingCore.Test6x
                 var areaB = await _virtualDbContext.Set<Order>().Where(o => o.Area == "B").FirstOrDefaultAsync();
                 Assert.Null(areaB);
             }
+        }
+
+
+        [Fact]
+        public async Task LogWeekDateTimeCountTest()
+        {
+            var countAsync = await _virtualDbContext.Set<LogWeekDateTime>().CountAsync();
+            Assert.Equal(300, countAsync);
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var fourCount = await _virtualDbContext.Set<LogWeekDateTime>().Where(o => o.LogTime >= fourBegin && o.LogTime < fiveBegin).CountAsync();
+            Assert.Equal(30, fourCount);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<LogWeekDateTime>("20210419_25");
+                var countAsync1 = await _virtualDbContext.Set<LogWeekDateTime>().CountAsync();
+                Assert.Equal(7, countAsync1);
+            }
+            Assert.Null(_shardingRouteManager.Current);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddHintTail<LogWeekDateTime>("20210419_25", "20210426_02");
+                var countAsync2 = await _virtualDbContext.Set<LogWeekDateTime>().CountAsync();
+                Assert.Equal(14, countAsync2);
+            }
+        }
+
+        [Fact]
+        public async Task LogWeekDateTimeShardingPage()
+        {
+            var fourBegin = new DateTime(2021, 4, 1).Date;
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var page = await _virtualDbContext.Set<LogWeekDateTime>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
+                 .ToShardingPageAsync(2, 10);
+            Assert.Equal(10, page.Data.Count);
+            Assert.Equal(31, page.Total);
+
+            var page1 = await _virtualDbContext.Set<LogWeekDateTime>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
+                .ToShardingPageAsync(2, 10);
+            Assert.Equal(10, page1.Data.Count);
+            Assert.Equal(31, page1.Total);
         }
         // [Fact]
         // public async Task Group_API_Test()

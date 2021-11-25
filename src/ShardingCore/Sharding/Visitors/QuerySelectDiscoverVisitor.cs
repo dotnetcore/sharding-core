@@ -32,10 +32,6 @@ namespace ShardingCore.Core.Internal.Visitors
         //     return base.VisitMethodCall(node);
         // }
 
-        protected override Expression VisitMember(MemberExpression node)
-        {
-            return base.VisitMember(node);
-        }
 
         protected override Expression VisitNew(NewExpression node)
         {

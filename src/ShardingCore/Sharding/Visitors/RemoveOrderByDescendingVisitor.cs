@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -13,6 +14,7 @@ namespace ShardingCore.Sharding.Visitors
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    [ExcludeFromCodeCoverage]
     internal class RemoveOrderByDescendingVisitor : ExpressionVisitor
     {
         protected override Expression VisitMethodCall(MethodCallExpression node)

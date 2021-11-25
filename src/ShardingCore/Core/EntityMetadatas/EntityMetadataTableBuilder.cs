@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ShardingCore.Core.EntityMetadatas
 {
+    /// <summary>
+    /// 分表对象元数据建造者
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
     public class EntityMetadataTableBuilder<TEntity> where TEntity : class
     {
         private readonly EntityMetadata _entityMetadata;
@@ -54,7 +58,11 @@ namespace ShardingCore.Core.EntityMetadatas
             _entityMetadata.AutoCreateTable = autoCreate;
             return this;
         }
-
+        /// <summary>
+        /// 创建分表元数据建造者
+        /// </summary>
+        /// <param name="entityMetadata"></param>
+        /// <returns></returns>
         public static EntityMetadataTableBuilder<TEntity> CreateEntityMetadataTableBuilder(EntityMetadata entityMetadata)
         {
             return new EntityMetadataTableBuilder<TEntity>(entityMetadata);

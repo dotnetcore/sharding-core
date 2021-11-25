@@ -6,6 +6,9 @@ using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.EntityMetadatas
 {
+    /// <summary>
+    /// 分表或者分库对象的元数据信息记录对象在ShardingCore框架下的一些简单的信息
+    /// </summary>
     public class EntityMetadata
     {
         public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties)
@@ -98,7 +101,9 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             TableSeparator = separator;
         }
-
+        /// <summary>
+        /// 启动时检查分库信息是否完整
+        /// </summary>
         public void CheckShardingDataSourceMetadata()
         {
             if (!IsMultiDataSourceMapping)
@@ -110,6 +115,9 @@ namespace ShardingCore.Core.EntityMetadatas
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
             }
         }
+        /// <summary>
+        /// 启动时检查分表信息是否完整
+        /// </summary>
         public void CheckShardingTableMetadata()
         {
             if (!IsMultiTableMapping)
@@ -121,6 +129,9 @@ namespace ShardingCore.Core.EntityMetadatas
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
             }
         }
+        /// <summary>
+        /// 启动时检查对象信息是否完整
+        /// </summary>
         public void CheckGenericMetadata()
         {
             if (null == EntityType || null == PrimaryKeyProperties || null == VirtualTableName ||

@@ -675,8 +675,8 @@ namespace ShardingCore.Test2x
            Assert.Equal(10, page.Data.Count);
            Assert.Equal(300, page.Total);
 
-           var page1 =  _virtualDbContext.Set<LogDay>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
-               .ToShardingPage(2, 10);
+           var page1 =await  _virtualDbContext.Set<LogDay>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
+               .ToShardingPageAsync(2, 10);
            Assert.Equal(10, page1.Data.Count);
            Assert.Equal(300, page1.Total);
 

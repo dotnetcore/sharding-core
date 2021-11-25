@@ -65,6 +65,10 @@ namespace ShardingCore.VirtualRoutes.Years
                 }
             }
         }
+        /// <summary>
+        /// 在几时执行创建对应的表
+        /// </summary>
+        /// <returns></returns>
         public override string[] GetCronExpressions()
         {
             return new[]

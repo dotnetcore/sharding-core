@@ -19,21 +19,33 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             return _caches.TryAdd(entityMetadata.EntityType, entityMetadata);
         }
-
+        /// <summary>
+        /// 对象是否是分表对象
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
         public bool IsShardingTable(Type entityType)
         {
             if(!_caches.TryGetValue(entityType,out var entityMetadata))
                 return false;
             return entityMetadata.IsMultiTableMapping;
         }
-
+        /// <summary>
+        /// 对象是否是分库对象
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
         public bool IsShardingDataSource(Type entityType)
         {
             if (!_caches.TryGetValue(entityType, out var entityMetadata))
                 return false;
             return entityMetadata.IsMultiDataSourceMapping;
         }
-
+        /// <summary>
+        /// 对象获取没有返回null
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
         public EntityMetadata TryGet(Type entityType)
         {
             if (!_caches.TryGetValue(entityType, out var entityMetadata))

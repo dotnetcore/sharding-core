@@ -25,12 +25,14 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using ShardingCore.Utils;
 
+/*
+* @Author: xjm
+* @Description:
+* @Ver: 1.0
+* @Email: 326308290@qq.com
+*/
 namespace ShardingCore.Bootstrapers
 {
-    public interface IEntityMetadataInitializer
-    {
-        void Initialize();
-    }
     public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
     {
         private readonly IEntityType _entityType;
@@ -70,7 +72,7 @@ namespace ShardingCore.Bootstrapers
             //设置标签
             if (_shardingConfigOption.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
             {
-                var creatEntityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TEntity>.CreatEntityMetadataDataSourceBuilder(entityMetadata);
+                var creatEntityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TEntity>.CreateEntityMetadataDataSourceBuilder(entityMetadata);
                 //配置属性分库信息
                 EntityMetadataHelper.Configure(creatEntityMetadataDataSourceBuilder);
                 var dataSourceRoute = CreateVirtualDataSourceRoute(virtualDataSourceRouteType, entityMetadata);

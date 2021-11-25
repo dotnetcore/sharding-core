@@ -15,7 +15,15 @@ namespace ShardingCore.VirtualRoutes.Years
     */
     public abstract class AbstractSimpleShardingYearKeyLongVirtualTableRoute<TEntity> : AbstractShardingTimeKeyLongVirtualTableRoute<TEntity> where TEntity : class
     {
+        /// <summary>
+        /// 从哪个时间节点开始分表,请保证每次返回都是固定值
+        /// </summary>
+        /// <returns></returns>
         public abstract DateTime GetBeginTime();
+        /// <summary>
+        /// 返回这个对象在数据库里面的所有表后缀
+        /// </summary>
+        /// <returns></returns>
         public override List<string> GetAllTails()
         {
             var beginTime = GetBeginTime().Date;
@@ -36,12 +44,22 @@ namespace ShardingCore.VirtualRoutes.Years
             
             return tails;
         }
+        /// <summary>
+        /// 如何将时间转换成后缀
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
         protected override string TimeFormatToTail(long time)
         {
             var datetime = ShardingCoreHelper.ConvertLongToDateTime(time);
             return $"{datetime:yyyy}";
         }
-
+        /// <summary>
+        /// 当where条件用到对应的值时会调用改方法
+        /// </summary>
+        /// <param name="shardingKey"></param>
+        /// <param name="shardingOperator"></param>
+        /// <returns>当传入表后缀你告诉框架这个后缀是否需要被返回，分片字段如何筛选出后缀</returns>
         protected override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
@@ -71,6 +89,10 @@ namespace ShardingCore.VirtualRoutes.Years
                 }
             }
         }
+        /// <summary>
+        /// 在几时创建对应的表
+        /// </summary>
+        /// <returns></returns>
         public override string[] GetCronExpressions()
         {
             return new[]

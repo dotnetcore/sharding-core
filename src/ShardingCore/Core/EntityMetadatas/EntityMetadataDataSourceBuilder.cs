@@ -19,7 +19,7 @@ namespace ShardingCore.Core.EntityMetadatas
             _entityMetadata = entityMetadata;
         }
         /// <summary>
-        /// 设置分表字段
+        /// 设置分表字段  表达式
         /// </summary>
         /// <typeparam name="TProperty"></typeparam>
         /// <param name="propertyExpression"></param>
@@ -30,6 +30,11 @@ namespace ShardingCore.Core.EntityMetadatas
             _entityMetadata.SetShardingDataSourceProperty(propertyAccess);
             return this;
         }
+        /// <summary>
+        /// 设置分表字段 属性名称
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
         public EntityMetadataDataSourceBuilder<TEntity> ShardingProperty(string propertyName)
         {
             var propertyInfo = typeof(TEntity).GetProperty(propertyName);
@@ -47,8 +52,12 @@ namespace ShardingCore.Core.EntityMetadatas
             return this;
         }
 
-
-        public static EntityMetadataDataSourceBuilder<TEntity> CreatEntityMetadataDataSourceBuilder(EntityMetadata entityMetadata)
+        /// <summary>
+        /// 创建分库对象元数据创建者
+        /// </summary>
+        /// <param name="entityMetadata"></param>
+        /// <returns></returns>
+        public static EntityMetadataDataSourceBuilder<TEntity> CreateEntityMetadataDataSourceBuilder(EntityMetadata entityMetadata)
         {
             return new EntityMetadataDataSourceBuilder<TEntity>(entityMetadata);
         }

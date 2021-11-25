@@ -61,7 +61,7 @@ namespace Sample.SqlServer
                     };
                 },ReadStrategyEnum.Loop,true).End();
 
-
+            services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
             //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
             //    , op =>

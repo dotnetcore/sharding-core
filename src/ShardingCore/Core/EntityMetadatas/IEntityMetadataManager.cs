@@ -4,6 +4,9 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.EntityMetadatas
 {
+    /// <summary>
+    /// 元数据管理者 无法通过依赖注入获取,请是用泛型方法依赖注入来获取<see cref="IEntityMetadataManager&lt;TShardingDbContext&gt;"/>
+    /// </summary>
     public interface IEntityMetadataManager
     {
         /// <summary>

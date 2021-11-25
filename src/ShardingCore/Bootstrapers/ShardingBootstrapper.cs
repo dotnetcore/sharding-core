@@ -24,7 +24,9 @@ namespace ShardingCore.Bootstrapers
             ShardingContainer.SetServices(serviceProvider);
             _shardingConfigOptions = ShardingContainer.GetServices<IShardingConfigOption>();
         }
-
+        /// <summary>
+        /// Æô¶¯
+        /// </summary>
         public void Start()
         {
             if (!_doOnlyOnce.IsUnDo())

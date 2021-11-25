@@ -57,20 +57,23 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                         return dataSources;
                     }
 
-                    if (CurrentShardingRouteContext.TryGetHintDataSource<T>(out HashSet<string> hintDataSouces) && hintDataSouces.IsNotEmpty())
+                    if (CurrentShardingRouteContext.TryGetHintDataSource<T>(out HashSet<string> hintDataSources) && hintDataSources.IsNotEmpty())
                     {
-                        var dataSources = allDataSourceNames.Where(o => hintDataSouces.Contains(o)).ToList();
-                        if (dataSources.IsEmpty()||dataSources.Count!=hintDataSouces.Count)
+                        var dataSources = allDataSourceNames.Where(o => hintDataSources.Contains(o)).ToList();
+                        if (dataSources.IsEmpty()||dataSources.Count!=hintDataSources.Count)
                             throw new ShardingCoreException(
-                                $" sharding data source route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintDataSouces)}]");
-                        ProcessAssertRoutes(allDataSourceNames, dataSources);
-                        return dataSources;
+                                $" sharding data source route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintDataSources)}]");
+
+                        return GetFilterDataSourceNames(allDataSourceNames, dataSources);
                     }
                 }
             }
-
-
             var filterDataSources = DoRouteWithPredicate(allDataSourceNames, queryable);
+            return GetFilterDataSourceNames(allDataSourceNames,filterDataSources);
+        }
+
+        private List<string> GetFilterDataSourceNames(List<string> allDataSourceNames, List<string> filterDataSources)
+        {
             //后拦截器
             var resultDataSources = AfterDataSourceFilter(allDataSourceNames, filterDataSources);
             //最后处理断言

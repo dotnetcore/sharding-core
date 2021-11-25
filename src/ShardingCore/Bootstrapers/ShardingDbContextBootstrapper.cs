@@ -27,20 +27,29 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using ShardingCore.Utils;
 
+/*
+* @Author: xjm
+* @Description:
+* @Date: 2021/9/20 14:04:55
+* @Ver: 1.0
+* @Email: 326308290@qq.com
+*/
 namespace ShardingCore.Bootstrapers
 {
-    /*
-    * @Author: xjm
-    * @Description:
-    * @Date: 2021/9/20 14:04:55
-    * @Ver: 1.0
-    * @Email: 326308290@qq.com
-    */
+    /// <summary>
+    /// 分片具体DbContext初始化器
+    /// </summary>
     public interface IShardingDbContextBootstrapper
     {
+        /// <summary>
+        /// 初始化
+        /// </summary>
         void Init();
     }
 
+    /// <summary>
+    /// 分片具体DbContext初始化器
+    /// </summary>
     public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IShardingConfigOption _shardingConfigOption;
@@ -61,6 +70,9 @@ namespace ShardingCore.Bootstrapers
             _virtualDataSource= ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
         }
+        /// <summary>
+        /// 初始化
+        /// </summary>
         public void Init()
         {
             _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));

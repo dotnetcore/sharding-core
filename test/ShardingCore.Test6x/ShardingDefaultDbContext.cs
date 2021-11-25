@@ -26,6 +26,7 @@ namespace ShardingCore.Test6x
             modelBuilder.ApplyConfiguration(new SysUserSalaryMap());
             modelBuilder.ApplyConfiguration(new OrderMap());
             modelBuilder.ApplyConfiguration(new LogDayMap());
+            modelBuilder.ApplyConfiguration(new LogWeekDateTimeMap());
         }
 
         public IRouteTail RouteTail { get; set; }

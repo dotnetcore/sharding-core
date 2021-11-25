@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
@@ -67,7 +68,7 @@ namespace ShardingCore.Core.VirtualTables
             if (tableRouteConfig.UseQueryable())
                 return route.RouteWithPredicate(GetAllPhysicTables(), tableRouteConfig.GetQueryable(), true);
             if (tableRouteConfig.UsePredicate())
-                return route.RouteWithPredicate(GetAllPhysicTables(), new EnumerableQuery<T>((Expression<Func<T, bool>>)tableRouteConfig.GetPredicate()), false);
+                return route.RouteWithPredicate(GetAllPhysicTables(), new ShardingEmptyEnumerableQuery<T>((Expression<Func<T, bool>>)tableRouteConfig.GetPredicate()).EmptyQueryable(), false);
             object shardingKeyValue = null;
             if (tableRouteConfig.UseValue())
                 shardingKeyValue = tableRouteConfig.GetShardingKeyValue();

@@ -1,13 +1,20 @@
-namespace ShardingCore.Bootstrapers
-{
+
 /*
 * @Author: xjm
 * @Description:
-* @Date: Tuesday, 26 January 2021 12:15:27
+* @Ver: 1.0
 * @Email: 326308290@qq.com
 */
+namespace ShardingCore.Bootstrapers
+{
+    /// <summary>
+    /// 主要的分表启动器
+    /// </summary>
     public interface IShardingBootstrapper
     {
+        /// <summary>
+        /// 启动
+        /// </summary>
         void Start();
     }
 }

@@ -25,5 +25,6 @@ namespace Sample.SqlServer.Shardings
         {
             return true;
         }
+
     }
 }
