@@ -178,7 +178,7 @@ namespace ShardingCore.Sharding
 
         public bool HasAggregateQuery()
         {
-            return this.SelectContext.SelectProperties.Any(o => o.IsAggregateMethod);
+            return this.SelectContext.HasAverage();
         }
 
         public IShardingDbContext GetShardingDbContext()

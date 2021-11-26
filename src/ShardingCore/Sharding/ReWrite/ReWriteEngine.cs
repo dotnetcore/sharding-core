@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
 {
@@ -50,7 +51,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
                 if (orders.IsEmpty())
                 {
                     //将查询的属性转换成order by
-                    var selectProperties = extraEntry.SelectContext.SelectProperties.Where(o => !o.IsAggregateMethod);
+                    var selectProperties = extraEntry.SelectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty));
                     if (selectProperties.IsNotEmpty())
                     {
                         var sort = string.Join(",",selectProperties.Select(o=>$"{o.PropertyName} asc"));
@@ -66,7 +67,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
                 else
                 {
                     //将查询的属性转换成order by 并且order和select的未聚合查询必须一致
-                    var selectProperties = extraEntry.SelectContext.SelectProperties.Where(o => !o.IsAggregateMethod);
+                    var selectProperties = extraEntry.SelectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty));
 
                     if (orders.Count() != selectProperties.Count())
                         throw new ShardingCoreInvalidOperationException("group by query order items not equal select un-aggregate items");

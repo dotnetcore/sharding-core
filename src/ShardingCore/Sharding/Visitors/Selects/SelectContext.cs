@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.Visitors.Selects
 {
@@ -12,5 +14,15 @@ namespace ShardingCore.Core.Internal.Visitors.Selects
     public class SelectContext
     {
         public List<SelectProperty> SelectProperties { get; set; } = new List<SelectProperty>();
+
+        public bool HasAverage()
+        {
+            return SelectProperties.Any(o => o is SelectAverageProperty);
+        }
+
+        public bool HasCount()
+        {
+            return SelectProperties.Any(o=>o is SelectCountProperty);
+        }
     }
 }

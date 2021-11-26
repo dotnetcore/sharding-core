@@ -1,8 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
+		<DefineConstants>TRACE;DEBUG;EFCORE2Test;</DefineConstants>
+		<AssemblyName>ShardingCore.Test</AssemblyName>
+		<RootNamespace>ShardingCore.Test</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,6 +18,11 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\ShardingCore.Test\**\*.cs" />
+		<Compile Remove="..\ShardingCore.Test\obj\**" />
+		<Compile Remove="..\ShardingCore.Test\bin\**" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\src2x\ShardingCore.2x\ShardingCore.2x.csproj" />

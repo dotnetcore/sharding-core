@@ -8,6 +8,7 @@ using ShardingCore.Core.Internal.PriorityQueues;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
+using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Sharding.Enumerators
 {
@@ -54,7 +55,7 @@ namespace ShardingCore.Sharding.Enumerators
         private List<object> GetCurrentGroupValues(IOrderStreamMergeAsyncEnumerator<T> enumerator)
         {
             var first = enumerator.ReallyCurrent;
-            return _mergeContext.SelectContext.SelectProperties.Where(o => !o.IsAggregateMethod)
+            return _mergeContext.SelectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty))
                 .Select(o => first.GetValueByExpression(o.PropertyName)).ToList();
         }
 #if !EFCORE2
@@ -167,40 +168,55 @@ namespace ShardingCore.Sharding.Enumerators
 
             if (aggregateValues.IsNotEmpty())
             {
-                CurrentValue = aggregateValues.First();
+                var copyFields = string.Join(",", _mergeContext.SelectContext.SelectProperties.Select(o=>o.PropertyName));
+                CurrentValue =  AggregateExtension.CopyTSource(aggregateValues.First());
+
                 if (aggregateValues.Count > 1)
                 {
-                    var aggregates = _mergeContext.SelectContext.SelectProperties.Where(o => o.IsAggregateMethod).ToList();
+                    var aggregates = _mergeContext.SelectContext.SelectProperties.OfType<SelectAggregateProperty>().ToList();
                     if (aggregates.IsNotEmpty())
                     {
+                        var propertyValues = new LinkedList<(string Name,object Value)>();
                         foreach (var aggregate in aggregates)
                         {
                             object aggregateValue = null;
-                            if (aggregate.AggregateMethod == nameof(Queryable.Count))
+                            if (aggregate is SelectCountProperty  || aggregate is SelectSumProperty)
                             {
-                                aggregateValue = aggregateValues.AsQueryable().Sum(aggregate.PropertyName);
+                                aggregateValue = aggregateValues.AsQueryable().Sum(aggregate.Property);
                             }
-                            else if (aggregate.AggregateMethod == nameof(Queryable.Sum))
+                            else if (aggregate is SelectMaxProperty)
                             {
-                                aggregateValue = aggregateValues.AsQueryable().Sum(aggregate.PropertyName);
+                                aggregateValue = aggregateValues.AsQueryable().Max(aggregate.Property);
                             }
-                            else if (aggregate.AggregateMethod == nameof(Queryable.Max))
+                            else if (aggregate is SelectMinProperty)
                             {
-                                aggregateValue = aggregateValues.AsQueryable().Max(aggregate.PropertyName);
+                                aggregateValue = aggregateValues.AsQueryable().Min(aggregate.Property);
                             }
-                            else if (aggregate.AggregateMethod == nameof(Queryable.Min))
+                            else if (aggregate is SelectAverageProperty selectAverageProperty)
                             {
-                                aggregateValue = aggregateValues.AsQueryable().Min(aggregate.PropertyName);
-                            }
-                            else if (aggregate.AggregateMethod == nameof(Queryable.Average))
-                            {
-                                aggregateValue = aggregateValues.AsQueryable().Average(aggregate.PropertyName);
+                                if (selectAverageProperty.CountProperty!=null)
+                                {
+                                    aggregateValue = aggregateValues.AsQueryable().AverageWithCount(selectAverageProperty.Property, selectAverageProperty.CountProperty);
+                                }
+                                else if (selectAverageProperty.SumProperty != null)
+                                {
+                                    aggregateValue = aggregateValues.AsQueryable().AverageWithSum(selectAverageProperty.Property, selectAverageProperty.SumProperty);
+                                }
+                                else
+                                {
+                                    throw new ShardingCoreInvalidOperationException($"method:{aggregate.AggregateMethod} invalid operation ");
+                                }
                             }
                             else
                             {
                                 throw new ShardingCoreInvalidOperationException($"method:{aggregate.AggregateMethod} invalid operation ");
                             }
-                            CurrentValue.SetPropertyValue(aggregate.PropertyName, aggregateValue);
+
+                            propertyValues.AddLast((Name: aggregate.PropertyName, Value: aggregateValue));
+                        }
+                        foreach (var propertyValue in propertyValues)
+                        {
+                            CurrentValue.SetPropertyValue(propertyValue.Name, propertyValue.Value);
                         }
                     }
                 }
