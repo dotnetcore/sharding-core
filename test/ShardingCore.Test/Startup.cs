@@ -69,6 +69,7 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<LogWeekTimeLongVirtualTableRoute>();
                     op.AddShardingTableRoute<LogYearDateTimeVirtualRoute>();
                     op.AddShardingTableRoute<LogMonthLongvirtualRoute>();
+                    op.AddShardingTableRoute<LogYearLongVirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -236,6 +237,18 @@ namespace ShardingCore.Test
                         begin5 = begin5.AddDays(1);
                     }
 
+                    List<LogYearLong> logYearkLongs = new List<LogYearLong>(300);
+                    var begin6 = new DateTime(2021, 1, 1);
+                    for (int i = 0; i < 300; i++)
+                    {
+                        logYearkLongs.Add(new LogYearLong()
+                        {
+                            Id = Guid.NewGuid().ToString("n"),
+                            LogBody = $"body_{i}",
+                            LogTime = ShardingCoreHelper.ConvertDateTimeToLong(begin6)
+                        });
+                        begin6 = begin6.AddDays(1);
+                    }
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
@@ -246,6 +259,7 @@ namespace ShardingCore.Test
                         await virtualDbContext.AddRangeAsync(logWeekLongs);
                         await virtualDbContext.AddRangeAsync(logYears);
                         await virtualDbContext.AddRangeAsync(logMonthLongs);
+                        await virtualDbContext.AddRangeAsync(logYearkLongs);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();

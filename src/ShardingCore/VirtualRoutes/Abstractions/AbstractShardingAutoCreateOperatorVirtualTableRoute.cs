@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -17,6 +18,7 @@ using ShardingCore.TableCreator;
 
 namespace ShardingCore.VirtualRoutes.Abstractions
 {
+    [ExcludeFromCodeCoverage]
     public abstract class AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey> : AbstractShardingOperatorVirtualTableRoute<TEntity, TKey>, IJob where TEntity : class
     {
         private readonly ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>> _logger;
@@ -43,7 +45,6 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         public virtual bool DoLogError => false;
 
         public abstract string[] GetCronExpressions();
-
         public Task ExecuteAsync()
         {
             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));

@@ -31,6 +31,7 @@ namespace ShardingCore.Test
             modelBuilder.ApplyConfiguration(new LogYearDateTimeMap());
             modelBuilder.ApplyConfiguration(new LogNoShardingMap());
             modelBuilder.ApplyConfiguration(new LogMonthLongMap());
+            modelBuilder.ApplyConfiguration(new LogYearLongMap());
         }
 
         public IRouteTail RouteTail { get; set; }
