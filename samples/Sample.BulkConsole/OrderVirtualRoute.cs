@@ -29,6 +29,11 @@ namespace Sample.BulkConsole
             return new OrderPaginationConfiguration();
         }
 
+        public override void Configure(EntityMetadataTableBuilder<Order> builder)
+        {
+            
+        }
+
         public override bool AutoCreateTableByTime()
         {
             return true;

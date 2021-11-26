@@ -2,9 +2,9 @@
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Test.Domain.Maps;
+using ShardingCore.Test2x.Domain.Maps;
 
-namespace ShardingCore.Test
+namespace ShardingCore.Test2x
 {
     /*
     * @Author: xjm
@@ -29,8 +29,6 @@ namespace ShardingCore.Test
             modelBuilder.ApplyConfiguration(new LogWeekDateTimeMap());
             modelBuilder.ApplyConfiguration(new LogWeekTimeLongMap());
             modelBuilder.ApplyConfiguration(new LogYearDateTimeMap());
-            modelBuilder.ApplyConfiguration(new LogNoShardingMap());
-            modelBuilder.ApplyConfiguration(new LogMonthLongMap());
         }
 
         public IRouteTail RouteTail { get; set; }

@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Test.Domain.Entities;
-using ShardingCore.Test.Shardings;
+using ShardingCore.Test2x.Domain.Entities;
+using ShardingCore.Test2x.Shardings;
 
-namespace ShardingCore.Test
+namespace ShardingCore.Test2x
 {
     /*
     * @Author: xjm
@@ -37,11 +37,8 @@ namespace ShardingCore.Test
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
-#if DEBUG
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-
-#endif
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
@@ -68,7 +65,6 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<LogWeekDateTimeVirtualTableRoute>();
                     op.AddShardingTableRoute<LogWeekTimeLongVirtualTableRoute>();
                     op.AddShardingTableRoute<LogYearDateTimeVirtualRoute>();
-                    op.AddShardingTableRoute<LogMonthLongvirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -222,20 +218,6 @@ namespace ShardingCore.Test
                         begin4 = begin4.AddDays(1);
                     }
 
-
-                    List<LogMonthLong> logMonthLongs = new List<LogMonthLong>(300);
-                    var begin5 = new DateTime(2021, 1, 1);
-                    for (int i = 0; i < 300; i++)
-                    {
-                        logMonthLongs.Add(new LogMonthLong()
-                        {
-                            Id = Guid.NewGuid().ToString("n"),
-                            Body = $"body_{i}",
-                            LogTime = ShardingCoreHelper.ConvertDateTimeToLong(begin5)
-                        });
-                        begin5 = begin5.AddDays(1);
-                    }
-
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
@@ -245,7 +227,6 @@ namespace ShardingCore.Test
                         await virtualDbContext.AddRangeAsync(logWeeks);
                         await virtualDbContext.AddRangeAsync(logWeekLongs);
                         await virtualDbContext.AddRangeAsync(logYears);
-                        await virtualDbContext.AddRangeAsync(logMonthLongs);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();

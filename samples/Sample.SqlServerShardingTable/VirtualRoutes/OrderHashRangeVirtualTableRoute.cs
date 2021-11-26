@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Sample.SqlServerShardingTable.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Exceptions;
@@ -44,6 +45,11 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
             {
                 "A", "B", "C"
             };
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<Order> builder)
+        {
+            
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

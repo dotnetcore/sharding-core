@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
-using ShardingCore.Sharding.PaginationConfigurations;
+using ShardingCore.Test2x.Domain.Entities;
 
-namespace Sample.SqlServer.Shardings
+namespace ShardingCore.Test2x.Shardings
 {
 /*
 * @Author: xjm
@@ -44,11 +43,6 @@ namespace Sample.SqlServer.Shardings
             return list;
         }
 
-        public override void Configure(EntityMetadataTableBuilder<SysUserSalary> builder)
-        {
-            
-        }
-
         protected  string TimeFormatToTail(int time)
         {
             var dateOfMonth=DateTime.ParseExact($"{time}","yyyyMM",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.AdjustToUniversal);
@@ -78,10 +72,9 @@ namespace Sample.SqlServer.Shardings
             }
         }
 
-        public override IPaginationConfiguration<SysUserSalary> CreatePaginationConfiguration()
+        public override void Configure(EntityMetadataTableBuilder<SysUserSalary> builder)
         {
-            return new SysUserSalaryPaginationConfiguration();
+            builder.ShardingProperty(o => o.DateOfMonth);
         }
-
     }
 }

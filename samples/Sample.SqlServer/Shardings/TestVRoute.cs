@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
@@ -27,6 +28,11 @@ namespace Sample.SqlServer.Shardings
         public override List<string> GetAllTails()
         {
             return new List<string>() {"", "1"};
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        {
+            
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

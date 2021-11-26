@@ -40,5 +40,10 @@ namespace Sample.SqlServer.Shardings
         {
             return new SysUserModPaginationConfiguration();
         }
+
+        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        {
+            
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Sample.MySql.Domain.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.VirtualRoutes.Mods;
 
 namespace Sample.MySql.Shardings
@@ -13,6 +14,11 @@ namespace Sample.MySql.Shardings
     {
         public SysUserModVirtualTableRoute() : base(2,3)
         {
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        {
+            
         }
     }
 }

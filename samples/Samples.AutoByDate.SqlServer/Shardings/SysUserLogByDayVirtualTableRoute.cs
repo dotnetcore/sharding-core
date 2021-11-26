@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Samples.AutoByDate.SqlServer.Domain.Entities;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.VirtualRoutes.Days;
 
 namespace Samples.AutoByDate.SqlServer.Shardings
@@ -23,6 +24,11 @@ namespace Samples.AutoByDate.SqlServer.Shardings
         public override bool AutoCreateTableByTime()
         {
             return true;
+        }
+
+        public override void Configure(EntityMetadataTableBuilder<SysUserLogByDay> builder)
+        {
+            
         }
     }
 }

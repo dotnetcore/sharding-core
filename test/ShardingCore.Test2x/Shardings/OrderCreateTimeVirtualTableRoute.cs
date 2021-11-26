@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Sharding.PaginationConfigurations;
-using ShardingCore.Test.Domain.Entities;
+using ShardingCore.Test2x.Domain.Entities;
 using ShardingCore.VirtualRoutes.Months;
 
-namespace ShardingCore.Test.Shardings
+namespace ShardingCore.Test2x.Shardings
 {
    public  class OrderCreateTimeVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
