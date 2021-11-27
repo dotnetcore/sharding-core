@@ -1,7 +1,7 @@
 <h1 align="center"> ShardingCore </h1>
 
 
-`ShardingCore` 一款`ef-core`下高性能、轻量级类库的分表分库读写分离解决方案，具有零依赖、零学习成本、零业务代码入侵。
+`ShardingCore` 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案，具有零依赖、零学习成本、零业务代码入侵。
 
 ---
 
