@@ -70,6 +70,7 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<LogYearDateTimeVirtualRoute>();
                     op.AddShardingTableRoute<LogMonthLongvirtualRoute>();
                     op.AddShardingTableRoute<LogYearLongVirtualRoute>();
+                    op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -117,6 +118,7 @@ namespace ShardingCore.Test
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();
+                    var userModInts = new List<SysUserModInt>();
                     var userSalaries = new List<SysUserSalary>();
                     var beginTime = new DateTime(2020, 1, 1);
                     var endTime = new DateTime(2021, 12, 1);
@@ -125,6 +127,13 @@ namespace ShardingCore.Test
                         userMods.Add(new SysUserMod()
                         {
                             Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                            AgeGroup = Math.Abs(id % 10)
+                        });
+                        userModInts.Add(new SysUserModInt()
+                        {
+                            Id = id,
                             Age = id,
                             Name = $"name_{id}",
                             AgeGroup = Math.Abs(id % 10)
@@ -252,6 +261,7 @@ namespace ShardingCore.Test
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
+                        await virtualDbContext.AddRangeAsync(userModInts);
                         await virtualDbContext.AddRangeAsync(userSalaries);
                         await virtualDbContext.AddRangeAsync(orders);
                         await virtualDbContext.AddRangeAsync(logDays);

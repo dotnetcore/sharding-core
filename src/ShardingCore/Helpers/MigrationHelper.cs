@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -25,6 +26,7 @@ namespace ShardingCore.Helpers
     /// <summary>
     /// https://github.com/Coldairarrow/EFCore.Sharding/blob/master/src/EFCore.Sharding/Migrations/MigrationHelper.cs
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class MigrationHelper
     {
         private MigrationHelper() { }

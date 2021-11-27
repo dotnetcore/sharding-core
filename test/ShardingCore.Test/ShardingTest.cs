@@ -1270,6 +1270,73 @@ namespace ShardingCore.Test
 
             await _virtualDbContext.SaveChangesAsync();
         }
+
+
+
+        [Fact]
+        public async Task Int_ToList_All_Route_Test()
+        {
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserModInt>("00");
+
+                var mod00s = await _virtualDbContext.Set<SysUserModInt>().ToListAsync();
+                Assert.Equal(333, mod00s.Count);
+            }
+            var mods = await _virtualDbContext.Set<SysUserModInt>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserModInt>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserModInt>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+        }
+        [Fact]
+        public async Task Int_ToList_All_Test()
+        {
+
+            var mods = await _virtualDbContext.Set<SysUserModInt>().ToListAsync();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = await _virtualDbContext.Set<SysUserModInt>().OrderBy(o => o.Age).ToListAsync();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+            var modOrders2 = await _virtualDbContext.Set<SysUserModInt>().OrderByDescending(o => o.Age).ToListAsync();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+
+
+
+            var pageResult = await _virtualDbContext.Set<SysUserModInt>().Skip(10).Take(10).OrderByDescending(o => o.Age).ToListAsync();
+            Assert.Equal(10, pageResult.Count);
+            int pageDescAge = 990;
+            foreach (var sysUserMod in pageResult)
+            {
+                Assert.Equal(pageDescAge, sysUserMod.Age);
+                pageDescAge--;
+            }
+        }
         // [Fact]
         // public async Task Group_API_Test()
         // {

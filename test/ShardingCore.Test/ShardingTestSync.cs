@@ -1217,6 +1217,72 @@ namespace ShardingCore.Test
                 }
             }
         }
+
+
+        [Fact]
+        public void Int_ToList_All_Route_Test()
+        {
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserModInt>("00");
+
+                var mod00s = _virtualDbContext.Set<SysUserModInt>().ToList();
+                Assert.Equal(333, mod00s.Count);
+            }
+            var mods = _virtualDbContext.Set<SysUserModInt>().ToList();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = _virtualDbContext.Set<SysUserModInt>().OrderBy(o => o.Age).ToList();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+
+            var modOrders2 = _virtualDbContext.Set<SysUserModInt>().OrderByDescending(o => o.Age).ToList();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+        }
+        [Fact]
+        public void Int_ToList_All_Test()
+        {
+
+            var mods = _virtualDbContext.Set<SysUserModInt>().ToList();
+            Assert.Equal(1000, mods.Count);
+
+            var modOrders1 = _virtualDbContext.Set<SysUserModInt>().OrderBy(o => o.Age).ToList();
+            int ascAge = 1;
+            foreach (var sysUserMod in modOrders1)
+            {
+                Assert.Equal(ascAge, sysUserMod.Age);
+                ascAge++;
+            }
+
+            var modOrders2 = _virtualDbContext.Set<SysUserModInt>().OrderByDescending(o => o.Age).ToList();
+            int descAge = 1000;
+            foreach (var sysUserMod in modOrders2)
+            {
+                Assert.Equal(descAge, sysUserMod.Age);
+                descAge--;
+            }
+
+
+
+            var pageResult = _virtualDbContext.Set<SysUserModInt>().Skip(10).Take(10).OrderByDescending(o => o.Age).ToList();
+            Assert.Equal(10, pageResult.Count);
+            int pageDescAge = 990;
+            foreach (var sysUserMod in pageResult)
+            {
+                Assert.Equal(pageDescAge, sysUserMod.Age);
+                pageDescAge--;
+            }
+        }
         // [Fact]
         // public void Group_API_Test()
         // {
