@@ -29,6 +29,11 @@ namespace ShardingCore.Test2x
             modelBuilder.ApplyConfiguration(new LogWeekDateTimeMap());
             modelBuilder.ApplyConfiguration(new LogWeekTimeLongMap());
             modelBuilder.ApplyConfiguration(new LogYearDateTimeMap());
+            modelBuilder.ApplyConfiguration(new LogNoShardingMap());
+            modelBuilder.ApplyConfiguration(new LogMonthLongMap());
+            modelBuilder.ApplyConfiguration(new LogYearLongMap());
+            modelBuilder.ApplyConfiguration(new SysUserModIntMap());
+            modelBuilder.ApplyConfiguration(new LogDayLongMap());
         }
 
         public IRouteTail RouteTail { get; set; }

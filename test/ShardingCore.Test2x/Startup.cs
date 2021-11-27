@@ -37,8 +37,11 @@ namespace ShardingCore.Test2x
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
+#if DEBUG
+                    //o.CreateShardingTableOnStart = true;
+                    //o.EnsureCreatedWithOutShardingTable = true;
+
+#endif
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
@@ -65,6 +68,10 @@ namespace ShardingCore.Test2x
                     op.AddShardingTableRoute<LogWeekDateTimeVirtualTableRoute>();
                     op.AddShardingTableRoute<LogWeekTimeLongVirtualTableRoute>();
                     op.AddShardingTableRoute<LogYearDateTimeVirtualRoute>();
+                    op.AddShardingTableRoute<LogMonthLongvirtualRoute>();
+                    op.AddShardingTableRoute<LogYearLongVirtualRoute>();
+                    op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
+                    op.AddShardingTableRoute<LogDayLongVirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -112,6 +119,7 @@ namespace ShardingCore.Test2x
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();
+                    var userModInts = new List<SysUserModInt>();
                     var userSalaries = new List<SysUserSalary>();
                     var beginTime = new DateTime(2020, 1, 1);
                     var endTime = new DateTime(2021, 12, 1);
@@ -120,6 +128,13 @@ namespace ShardingCore.Test2x
                         userMods.Add(new SysUserMod()
                         {
                             Id = id.ToString(),
+                            Age = id,
+                            Name = $"name_{id}",
+                            AgeGroup = Math.Abs(id % 10)
+                        });
+                        userModInts.Add(new SysUserModInt()
+                        {
+                            Id = id,
                             Age = id,
                             Name = $"name_{id}",
                             AgeGroup = Math.Abs(id % 10)
@@ -161,6 +176,7 @@ namespace ShardingCore.Test2x
                     }
 
                     List<LogDay> logDays = new List<LogDay>(3600);
+                    List<LogDayLong> logDayLongs = new List<LogDayLong>(3600);
 
                     var levels = new List<string>(){"info","warning","error"};
                     var begin1 = new DateTime(2021, 1, 1);
@@ -175,6 +191,13 @@ namespace ShardingCore.Test2x
                                 LogLevel = levels[j%3],
                                 LogBody = $"{i}_{j}",
                                 LogTime = ltime.AddHours(1)
+                            });
+                            logDayLongs.Add(new LogDayLong()
+                            {
+                                Id = Guid.NewGuid(),
+                                LogLevel = levels[j%3],
+                                LogBody = $"{i}_{j}",
+                                LogTime = ShardingCoreHelper.ConvertDateTimeToLong(ltime.AddHours(1))
                             });
                             ltime = ltime.AddHours(1);
                         }
@@ -218,15 +241,45 @@ namespace ShardingCore.Test2x
                         begin4 = begin4.AddDays(1);
                     }
 
+
+                    List<LogMonthLong> logMonthLongs = new List<LogMonthLong>(300);
+                    var begin5 = new DateTime(2021, 1, 1);
+                    for (int i = 0; i < 300; i++)
+                    {
+                        logMonthLongs.Add(new LogMonthLong()
+                        {
+                            Id = Guid.NewGuid().ToString("n"),
+                            Body = $"body_{i}",
+                            LogTime = ShardingCoreHelper.ConvertDateTimeToLong(begin5)
+                        });
+                        begin5 = begin5.AddDays(1);
+                    }
+
+                    List<LogYearLong> logYearkLongs = new List<LogYearLong>(300);
+                    var begin6 = new DateTime(2021, 1, 1);
+                    for (int i = 0; i < 300; i++)
+                    {
+                        logYearkLongs.Add(new LogYearLong()
+                        {
+                            Id = Guid.NewGuid().ToString("n"),
+                            LogBody = $"body_{i}",
+                            LogTime = ShardingCoreHelper.ConvertDateTimeToLong(begin6)
+                        });
+                        begin6 = begin6.AddDays(1);
+                    }
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
+                        await virtualDbContext.AddRangeAsync(userModInts);
                         await virtualDbContext.AddRangeAsync(userSalaries);
                         await virtualDbContext.AddRangeAsync(orders);
                         await virtualDbContext.AddRangeAsync(logDays);
+                        await virtualDbContext.AddRangeAsync(logDayLongs);
                         await virtualDbContext.AddRangeAsync(logWeeks);
                         await virtualDbContext.AddRangeAsync(logWeekLongs);
                         await virtualDbContext.AddRangeAsync(logYears);
+                        await virtualDbContext.AddRangeAsync(logMonthLongs);
+                        await virtualDbContext.AddRangeAsync(logYearkLongs);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();
