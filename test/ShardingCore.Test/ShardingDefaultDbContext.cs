@@ -33,6 +33,7 @@ namespace ShardingCore.Test
             modelBuilder.ApplyConfiguration(new LogMonthLongMap());
             modelBuilder.ApplyConfiguration(new LogYearLongMap());
             modelBuilder.ApplyConfiguration(new SysUserModIntMap());
+            modelBuilder.ApplyConfiguration(new LogDayLongMap());
         }
 
         public IRouteTail RouteTail { get; set; }

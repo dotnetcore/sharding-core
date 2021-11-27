@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShardingCore.Core
 {
@@ -10,6 +11,7 @@ namespace ShardingCore.Core
 */
     public class Check
     {
+        [ExcludeFromCodeCoverage]
         private Check(){}
         /// <summary>
         /// ²»ÄÜÎª¿Õ

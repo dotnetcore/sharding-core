@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -45,16 +46,19 @@ namespace ShardingCore.EFCores
                 return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
         }
 
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
 
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
 
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
@@ -74,17 +78,20 @@ namespace ShardingCore.EFCores
         {
             return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(_currentContext, query, cancellationToken);
         }
-
+        
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
-
+        
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, IAsyncEnumerable<TResult>> CreateCompiledAsyncEnumerableQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
-
+        
+        [ExcludeFromCodeCoverage]
         public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();

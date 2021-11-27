@@ -38,8 +38,8 @@ namespace ShardingCore.Test
                 .Begin(o =>
                 {
 #if DEBUG
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
+                    //o.CreateShardingTableOnStart = true;
+                    //o.EnsureCreatedWithOutShardingTable = true;
 
 #endif
                     o.AutoTrackEntity = true;
@@ -71,6 +71,7 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<LogMonthLongvirtualRoute>();
                     op.AddShardingTableRoute<LogYearLongVirtualRoute>();
                     op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
+                    op.AddShardingTableRoute<LogDayLongVirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, ISet<string>>()
@@ -175,6 +176,7 @@ namespace ShardingCore.Test
                     }
 
                     List<LogDay> logDays = new List<LogDay>(3600);
+                    List<LogDayLong> logDayLongs = new List<LogDayLong>(3600);
 
                     var levels = new List<string>(){"info","warning","error"};
                     var begin1 = new DateTime(2021, 1, 1);
@@ -189,6 +191,13 @@ namespace ShardingCore.Test
                                 LogLevel = levels[j%3],
                                 LogBody = $"{i}_{j}",
                                 LogTime = ltime.AddHours(1)
+                            });
+                            logDayLongs.Add(new LogDayLong()
+                            {
+                                Id = Guid.NewGuid(),
+                                LogLevel = levels[j%3],
+                                LogBody = $"{i}_{j}",
+                                LogTime = ShardingCoreHelper.ConvertDateTimeToLong(ltime.AddHours(1))
                             });
                             ltime = ltime.AddHours(1);
                         }
@@ -265,6 +274,7 @@ namespace ShardingCore.Test
                         await virtualDbContext.AddRangeAsync(userSalaries);
                         await virtualDbContext.AddRangeAsync(orders);
                         await virtualDbContext.AddRangeAsync(logDays);
+                        await virtualDbContext.AddRangeAsync(logDayLongs);
                         await virtualDbContext.AddRangeAsync(logWeeks);
                         await virtualDbContext.AddRangeAsync(logWeekLongs);
                         await virtualDbContext.AddRangeAsync(logYears);

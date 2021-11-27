@@ -67,7 +67,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             // compile to Func<Data, Data>
             return lambda.Compile();
         }
-
+        [ExcludeFromCodeCoverage]
         public static object Count(this IQueryable source, PropertyInfo property)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -89,6 +89,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Provider.Execute(callExpression);
         }
+        [ExcludeFromCodeCoverage]
         public static object Count(this IQueryable source, string propertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -119,6 +120,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Provider.Execute(callExpression);
         }
+        [ExcludeFromCodeCoverage]
         public static object Sum(this IQueryable source, string propertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -176,6 +178,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         //    // do.
         //    return source.Provider.Execute(callExpression);
         //}
+        [ExcludeFromCodeCoverage]
         public static object Max(this IQueryable source, string propertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -209,6 +212,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Provider.Execute(callExpression);
         }
+        [ExcludeFromCodeCoverage]
         public static object Min(this IQueryable source, string propertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -249,6 +253,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         /// <param name="source">数据源</param>
         /// <param name="averagePropertyName">聚合函数average属性名</param>
         /// <param name="countPropertyName">聚合函数count属性名</param>
+        [ExcludeFromCodeCoverage]
         public static object AverageWithCount(this IQueryable source, string averagePropertyName, string countPropertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -279,6 +284,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         /// <param name="source">数据源</param>
         /// <param name="averagePropertyName">聚合函数average属性名</param>
         /// <param name="sumPropertyName">聚合函数sum属性名</param>
+        [ExcludeFromCodeCoverage]
         public static object AverageWithSum(this IQueryable source, string averagePropertyName, string sumPropertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));

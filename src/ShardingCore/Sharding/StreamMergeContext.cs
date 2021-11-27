@@ -146,10 +146,10 @@ namespace ShardingCore.Sharding
             return dbContext;
         }
 
-        public IRouteTail Create(TableRouteResult tableRouteResult)
-        {
-            return _routeTailFactory.Create(tableRouteResult);
-        }
+        //public IRouteTail Create(TableRouteResult tableRouteResult)
+        //{
+        //    return _routeTailFactory.Create(tableRouteResult);
+        //}
 
         public IQueryable<T> GetReWriteQueryable()
         {
@@ -160,10 +160,10 @@ namespace ShardingCore.Sharding
             return _source;
         }
 
-        public bool HasSkipTake()
-        {
-            return Skip.HasValue || Take.HasValue;
-        }
+        //public bool HasSkipTake()
+        //{
+        //    return Skip.HasValue || Take.HasValue;
+        //}
 
         public bool IsPaginationQuery()
         {
@@ -176,10 +176,10 @@ namespace ShardingCore.Sharding
             return this.GroupByContext.GroupExpression != null;
         }
 
-        public bool HasAggregateQuery()
-        {
-            return this.SelectContext.HasAverage();
-        }
+        //public bool HasAggregateQuery()
+        //{
+        //    return this.SelectContext.HasAverage();
+        //}
 
         public IShardingDbContext GetShardingDbContext()
         {

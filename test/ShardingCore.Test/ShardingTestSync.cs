@@ -1053,16 +1053,16 @@ namespace ShardingCore.Test
         [Fact]
         public async Task LogYearLongCountTest()
         {
-            var countAsync = await _virtualDbContext.Set<LogYearLong>().CountAsync();
+            var countAsync =  _virtualDbContext.Set<LogYearLong>().Count();
             Assert.Equal(300, countAsync);
             var fourBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 4, 1).Date);
             var fiveBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 5, 1).Date);
-            var fourCount = await _virtualDbContext.Set<LogYearLong>().Where(o => o.LogTime >= fourBegin && o.LogTime < fiveBegin).CountAsync();
+            var fourCount =  _virtualDbContext.Set<LogYearLong>().Where(o => o.LogTime >= fourBegin && o.LogTime < fiveBegin).Count();
             Assert.Equal(30, fourCount);
             using (_shardingRouteManager.CreateScope())
             {
                 _shardingRouteManager.Current.TryCreateOrAddMustTail<LogYearLong>("2021");
-                var countAsync1 = await _virtualDbContext.Set<LogYearLong>().CountAsync();
+                var countAsync1 =  _virtualDbContext.Set<LogYearLong>().Count();
                 Assert.Equal(300, countAsync1);
             }
             Assert.Null(_shardingRouteManager.Current);
@@ -1072,13 +1072,13 @@ namespace ShardingCore.Test
         {
             var fourBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 4, 1).Date);
             var fiveBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 5, 1).Date);
-            var page = await _virtualDbContext.Set<LogWeekTimeLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
-                .ToShardingPageAsync(2, 10);
+            var page =  _virtualDbContext.Set<LogWeekTimeLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
+                .ToShardingPage(2, 10);
             Assert.Equal(10, page.Data.Count);
             Assert.Equal(31, page.Total);
 
-            var page1 = await _virtualDbContext.Set<LogWeekTimeLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
-                .ToShardingPageAsync(2, 10);
+            var page1 =  _virtualDbContext.Set<LogWeekTimeLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
+                .ToShardingPage(2, 10);
             Assert.Equal(10, page1.Data.Count);
             Assert.Equal(31, page1.Total);
         }
@@ -1282,6 +1282,47 @@ namespace ShardingCore.Test
                 Assert.Equal(pageDescAge, sysUserMod.Age);
                 pageDescAge--;
             }
+        }
+
+
+        [Fact]
+        public void LogDayLongCountTest()
+        {
+            var countAsync =  _virtualDbContext.Set<LogDayLong>().Count();
+            Assert.Equal(3000, countAsync);
+            var fourBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 4, 1).Date);
+            var fiveBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 5, 1).Date);
+            var fourCount =  _virtualDbContext.Set<LogDayLong>().Where(o => o.LogTime >= fourBegin && o.LogTime < fiveBegin).Count();
+            Assert.Equal(300, fourCount);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<LogDayLong>("20210102");
+                var countAsync1 =  _virtualDbContext.Set<LogDayLong>().Count();
+                Assert.Equal(10, countAsync1);
+            }
+            Assert.Null(_shardingRouteManager.Current);
+            using (_shardingRouteManager.CreateScope())
+            {
+                _shardingRouteManager.Current.TryCreateOrAddHintTail<LogDayLong>("20210103", "20210104");
+                var countAsync2 =  _virtualDbContext.Set<LogDayLong>().Count();
+                Assert.Equal(20, countAsync2);
+            }
+        }
+
+        [Fact]
+        public void LogDayLongShardingPage()
+        {
+            var fourBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 4, 1).Date);
+            var fiveBegin = ShardingCoreHelper.ConvertDateTimeToLong(new DateTime(2021, 5, 1).Date);
+            var page =  _virtualDbContext.Set<LogDayLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin).OrderBy(o => o.LogTime)
+                 .ToShardingPage(2, 10);
+            Assert.Equal(10, page.Data.Count);
+            Assert.Equal(300, page.Total);
+
+            var page1 =  _virtualDbContext.Set<LogDayLong>().Where(o => o.LogTime >= fourBegin && o.LogTime <= fiveBegin)
+                .ToShardingPage(2, 10);
+            Assert.Equal(10, page1.Data.Count);
+            Assert.Equal(300, page1.Total);
         }
         // [Fact]
         // public void Group_API_Test()
