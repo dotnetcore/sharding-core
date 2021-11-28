@@ -38,8 +38,8 @@ namespace ShardingCore.Test
                 .Begin(o =>
                 {
 #if DEBUG
-                    //o.CreateShardingTableOnStart = true;
-                    //o.EnsureCreatedWithOutShardingTable = true;
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
 
 #endif
                     o.AutoTrackEntity = true;
