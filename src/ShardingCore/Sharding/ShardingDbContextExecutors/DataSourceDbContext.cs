@@ -14,6 +14,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
 using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
 using ShardingCore.Sharding.Abstractions;
 
@@ -28,6 +29,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     */
     public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
         public bool IsDefault { get; }
         public int DbContextCount => _dataSourceDbContexts.Count;
         private readonly IShardingDbContextOptionsBuilderConfig<TShardingDbContext> _shardingDbContextOptionsBuilderConfig;
@@ -39,8 +41,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// </summary>
         public string DataSourceName { get; }
 
-        private ConcurrentDictionary<string, DbContext> _dataSourceDbContexts =
-            new ConcurrentDictionary<string, DbContext>();
+        private SortedDictionary<string, DbContext> _dataSourceDbContexts =
+            new SortedDictionary<string, DbContext>(_comparer);
 
 
         private bool _isBeginTransaction => _shardingDbContext.Database.CurrentTransaction != null;
@@ -117,7 +119,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
                 else
                 {
-                    if (_dataSourceDbContexts.IsEmpty)
+                    if (_dataSourceDbContexts.IsEmpty())
                     {
                         var connectionString =
                             _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
@@ -166,7 +168,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
                 dbContext = _shardingDbContextFactory.Create(CreateShareDbContextOptionsBuilder(), routeTail);
-                _dataSourceDbContexts.TryAdd(cacheKey, dbContext);
+                _dataSourceDbContexts.Add(cacheKey, dbContext);
                 ShardingDbTransaction();
             }
             return dbContext;
@@ -203,7 +205,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 if (!IsDefault)
                 {
-                    if (!_dataSourceDbContexts.IsEmpty)
+                    if (!_dataSourceDbContexts.IsEmpty())
                     {
                         var isolationLevel = _shardingContextTransaction.GetDbTransaction().IsolationLevel;
                         var firstTransaction = _dataSourceDbContexts.Values
