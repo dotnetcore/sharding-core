@@ -21,6 +21,7 @@ namespace Sample.Migrations
                     (conn, o) =>
                         o.UseSqlServer(conn)
                             .ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>()
+                            .ReplaceService<IMigrationsModelDiffer,RemoveForeignKeyMigrationsModelDiffer>()
                 ).Begin(o =>
                 {
                     o.CreateShardingTableOnStart = false;
