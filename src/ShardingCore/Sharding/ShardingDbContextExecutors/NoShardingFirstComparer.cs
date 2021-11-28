@@ -25,8 +25,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             if (_defaultTail.Equals(x))
                 return -1;
             if (_defaultTail.Equals(y))
-                return -1;
-            return x.SafeCompareToWith(y,true);
+                return 1;
+            return Comparer<string>.Default.Compare(x, y);
         }
     }
 }
