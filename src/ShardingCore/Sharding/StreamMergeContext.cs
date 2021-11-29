@@ -215,7 +215,7 @@ namespace ShardingCore.Sharding
         /// 是否使用并行查询
         /// </summary>
         /// <returns></returns>
-        private bool IsParallelQuery()
+        public bool IsParallelQuery()
         {
             return !_shardingConfigOption.AutoTrackEntity|| IsCrossQuery() || IsUseReadWriteSeparation();
         }

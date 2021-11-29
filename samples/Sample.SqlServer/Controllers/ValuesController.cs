@@ -56,7 +56,7 @@ namespace Sample.SqlServer.Controllers
                           userId = u.Id
                       };
             var listAsync = await sql.ToListAsync();
-            var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().CountAsync();
+            var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
             var resultx112331 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
             var resultx11233411 = _defaultTableDbContext.Set<SysUserMod>().Count();
             var resultx11231 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).ContainsAsync("1981");

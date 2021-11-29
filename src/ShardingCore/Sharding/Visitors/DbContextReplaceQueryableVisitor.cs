@@ -19,11 +19,13 @@ namespace ShardingCore.Core.Internal.Visitors
     internal class DbContextReplaceQueryableVisitor : ExpressionVisitor
     {
         private readonly DbContext _dbContext;
+        private readonly bool _isParallelQuery;
         public IQueryable Source;
 
-        public DbContextReplaceQueryableVisitor(DbContext dbContext)
+        public DbContextReplaceQueryableVisitor(DbContext dbContext, bool isParallelQuery)
         {
             _dbContext = dbContext;
+            _isParallelQuery = isParallelQuery;
         }
 
         protected override Expression VisitConstant(ConstantExpression node)
@@ -32,11 +34,14 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 var dbContextDependencies = typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as IDbContextDependencies;
                 var targetIQ = (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryable.ElementType);
-                //var newQueryable = targetIQ.Provider.CreateQuery((Expression) Expression.Call((Expression) null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod("AsNoTracking").MakeGenericMethod(queryable.ElementType), targetIQ.Expression));
-                var newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
+                IQueryable newQueryable = null;
+                if (_isParallelQuery)
+                    newQueryable = targetIQ.Provider.CreateQuery((Expression)Expression.Call((Expression)null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod(nameof(EntityFrameworkQueryableExtensions.AsNoTracking)).MakeGenericMethod(queryable.ElementType), targetIQ.Expression));
+                else
+                    newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
                 Source = newQueryable;
 // return base.Visit(Expression.Constant(newQueryable));
-                 return Expression.Constant(newQueryable);
+                return Expression.Constant(newQueryable);
             }
 
             return base.VisitConstant(node);
@@ -45,15 +50,16 @@ namespace ShardingCore.Core.Internal.Visitors
 #endif
 
 #if EFCORE5 || EFCORE6
-
     internal class DbContextReplaceQueryableVisitor : ExpressionVisitor
     {
         private readonly DbContext _dbContext;
+        private readonly bool _isParallelQuery;
         public IQueryable Source;
 
-        public DbContextReplaceQueryableVisitor(DbContext dbContext)
+        public DbContextReplaceQueryableVisitor(DbContext dbContext, bool isParallelQuery)
         {
             _dbContext = dbContext;
+            _isParallelQuery = isParallelQuery;
         }
 
         protected override Expression VisitExtension(Expression node)
@@ -61,10 +67,13 @@ namespace ShardingCore.Core.Internal.Visitors
             if (node is QueryRootExpression queryRootExpression)
             {
                 var dbContextDependencies = typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as IDbContextDependencies;
-                var targetIQ = (IQueryable) ((IDbSetCache) _dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.EntityType.ClrType);
+                var targetIQ = (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.EntityType.ClrType);
                 //AsNoTracking
-                //(Expression)Expression.Call((Expression)null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod("AsNoTracking").MakeGenericMethod(queryRootExpression.EntityType.ClrType), targetIQ.Expression)
-                var newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
+                IQueryable newQueryable = null;
+                if (_isParallelQuery)
+                    newQueryable = targetIQ.Provider.CreateQuery((Expression)Expression.Call((Expression)null, typeof(EntityFrameworkQueryableExtensions).GetTypeInfo().GetDeclaredMethod(nameof(EntityFrameworkQueryableExtensions.AsNoTracking)).MakeGenericMethod(queryRootExpression.EntityType.ClrType), targetIQ.Expression));
+                else
+                    newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
                 Source = newQueryable;
                 //如何替换ef5的set
                 var replaceQueryRoot = new ReplaceSingleQueryRootExpressionVisitor();

@@ -49,7 +49,8 @@ namespace ShardingCore.Core.EntityMetadatas
             return this;
         }
         /// <summary>
-        /// 是否启动建表
+        /// 是否启动的时候创建表，仅在启动时判断该属性，如果你是按时间分表的那么这个属性将不会在特定时间创建对应的表信息需要手动进行表创建和添加
+        /// 当然您也可以使用系统默认的时间路由，通过重写AutoCreateByTime方法重写返回true来保证sharding_core开启定时任务并且已经集成自动创建表和库
         /// </summary>
         /// <param name="autoCreate"></param>
         /// <returns></returns>

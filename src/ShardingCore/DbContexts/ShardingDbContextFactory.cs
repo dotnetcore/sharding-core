@@ -23,20 +23,11 @@ namespace ShardingCore.DbContexts
         {
             var routeTail=shardingDbContextOptions.RouteTail;
             
-             var dbContext = _shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
+            var dbContext = _shardingDbContextCreatorConfig.Creator(shardingDbContextOptions);
             if (dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.RouteTail = routeTail;
             }
-
-            //if (dbContext is IShardingDbContext shardingDbContext)
-            //{
-            //    shardingDbContext.ShardingUpgrade();
-            //}
-            //else
-            //{
-            //    throw new ShardingCoreException($"{dbContext.GetType().FullName} should implements {nameof(IShardingDbContext)}");
-            //}
             var dbContextModel = dbContext.Model;
             return dbContext;
         }

@@ -86,6 +86,9 @@ namespace ShardingCore.DIExtensions
         public bool? CreateShardingTableOnStart { get; set; }
         /// <summary>
         /// 是否自动追踪实体
+        /// 譬如本次查询涉及到a1,a2,a3这三张表，会创建3个dbcontext进行查询，如果AutoTrackEntity=false那么针对被创建的dbcontext不会有任何变化，还是以追踪的形式查询
+        /// 因为会同时创建3个dbcontext所以针对跨表查询完成后dbcontext会被回收，但是查询还是按原先的行为查询，所以如果不启用建议在查询的时候使用notracking
+        /// 如果AutoTrackEntity=true，那么被创建的三个dbcontext还是以原先的表现行为进行查询，在查询完成后会再次各自创建对应的dbcontext进行对象的追踪
         /// </summary>
         public bool AutoTrackEntity { get; set; }
 

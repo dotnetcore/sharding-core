@@ -18,6 +18,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    /// <summary>
+    /// 同数据源下的dbcontext管理者
+    /// </summary>
     public interface IDataSourceDbContext : IDisposable
 #if !EFCORE2
         , IAsyncDisposable

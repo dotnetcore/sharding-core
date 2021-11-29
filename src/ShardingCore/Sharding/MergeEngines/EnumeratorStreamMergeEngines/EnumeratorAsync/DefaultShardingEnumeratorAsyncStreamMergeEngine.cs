@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
             var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetReWriteQueryable()
-                .ReplaceDbContextQueryable(shardingDbContext);
+                .ReplaceDbContextQueryable(shardingDbContext,StreamMergeContext.IsParallelQuery());
             return newQueryable;
         }
 
