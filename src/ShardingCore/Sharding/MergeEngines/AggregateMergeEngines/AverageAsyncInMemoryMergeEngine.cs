@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -15,6 +6,12 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
 using ShardingCore.Sharding.MergeEngines.AggregateMergeEngines;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -55,14 +52,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 },
                 cancellationToken)).Where(o => o.QueryResult != null).ToList();
         }
-
-        private TEnsureResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
-        {
-            if (source.IsEmpty())
-                return default;
-            var sum = source.AsQueryable().SumByPropertyName(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
-            return ConvertSum(sum);
-        }
+        
         private async Task<T> GetSumAsync<T>(IQueryable queryable,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -95,27 +85,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                     Sum = o.QueryResult.Sum,
                     Count = o.QueryResult.Count
                 }).AsQueryable();
-                var sum = queryable.SumByPropertyName("Sum");
-                var count = queryable.SumByPropertyName("Count");
+                var sum = queryable.SumByPropertyName(nameof(AverageResult<object>.Sum));
+                var count = queryable.SumByPropertyName(nameof(AverageResult<object>.Count));
                 return (TEnsureResult)AggregateExtension.AverageConstant(sum, count,typeof(TEnsureResult));
             }
             
-        }
-
-        private TEnsureResult ConvertSum<TNumber>(TNumber number)
-        {
-            if (number == null)
-                return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TEnsureResult));
-            return Expression.Lambda<Func<TEnsureResult>>(convertExpr).Compile()();
-        }
-
-        private TSum ConvertSum<TSum, TNumber>(TNumber number)
-        {
-            if (number == null)
-                return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TSum));
-            return Expression.Lambda<Func<TSum>>(convertExpr).Compile()();
         }
     }
 }
