@@ -164,7 +164,7 @@ namespace ShardingCore.Test
                 {
                     dics.Add(tail, null);
                 }
-                Assert.Equal(",a,b", string.Join(",", dics.Keys));
+                Assert.Equal($"{emptyTailIdentity},{aTailIdentity},{bTailIdentity}", string.Join(",", dics.Keys));
             }
         }
 

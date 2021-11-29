@@ -4,9 +4,6 @@
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
-		<DefineConstants>TRACE;DEBUG;EFCORE5Test;</DefineConstants>
-		<AssemblyName>ShardingCore.Test</AssemblyName>
-		<RootNamespace>ShardingCore.Test</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -22,12 +19,6 @@
 		</PackageReference>
 	</ItemGroup>
 
-
-	<ItemGroup>
-		<Compile Include="..\ShardingCore.Test\**\*.cs" />
-		<Compile Remove="..\ShardingCore.Test\obj\**" />
-		<Compile Remove="..\ShardingCore.Test\bin\**" />
-	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\src5x\ShardingCore.5x\ShardingCore.5x.csproj" />
 	</ItemGroup>

@@ -164,6 +164,7 @@ namespace ShardingCore.Bootstrapers
                 {
                     try
                     {
+
                         //添加物理表
                         virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
                         _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);

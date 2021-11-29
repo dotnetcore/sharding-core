@@ -10,6 +10,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
@@ -17,6 +18,7 @@ using ShardingCore.Helpers;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 using ShardingCore.TableCreator;
 using ShardingCore.Test2x.Domain.Entities;
 using Xunit;
@@ -150,6 +152,21 @@ namespace ShardingCore.Test2x
             var virtualTable = _virtualTableManager.GetVirtualTable<SysUserMod>();
             Assert.NotNull(virtualTable);
 
+            var emptyTailIdentity = new SingleQueryRouteTail(string.Empty).GetRouteTailIdentity();
+            var aTailIdentity = new SingleQueryRouteTail("a").GetRouteTailIdentity();
+            var bTailIdentity = new SingleQueryRouteTail("b").GetRouteTailIdentity();
+            var dics = new SortedDictionary<string, string>(new NoShardingFirstComparer());
+            var dicTails = new List<string>() { emptyTailIdentity, aTailIdentity, bTailIdentity };
+            for (int i = 0; i < 10; i++)
+            {
+                dics.Clear();
+                var reOrderList = dicTails.OrderBy(o => Guid.NewGuid()).ToList();
+                foreach (var tail in reOrderList)
+                {
+                    dics.Add(tail, null);
+                }
+                Assert.Equal($"{emptyTailIdentity},{aTailIdentity},{bTailIdentity}", string.Join(",", dics.Keys));
+            }
         }
 
         public class SequenceClass

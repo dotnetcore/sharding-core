@@ -3,6 +3,8 @@ using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.VirtualRoutes.Days
 {
@@ -20,7 +22,8 @@ namespace ShardingCore.VirtualRoutes.Days
         /// <returns></returns>
         public abstract DateTime GetBeginTime();
         /// <summary>
-        /// return all tails in database
+        /// 这个方法会在程序启动的时候被调用,后续整个生命周期将不会被调用,仅用来告诉框架启动的时候有多少张TEntity对象的后缀表,
+        /// 然后会在启动的时候添加到 <see cref="IVirtualTable{TEntity}.AddPhysicTable(IPhysicTable physicTable)"/>
         /// </summary>
         /// <returns></returns>
         public override List<string> GetAllTails()

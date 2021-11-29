@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Test2x.Domain.Entities;
@@ -31,6 +32,24 @@ namespace ShardingCore.Test2x.Shardings
         public override bool AutoCreateTableByTime()
         {
             return true;
+        }
+        public override List<string> GetAllTails()
+        {
+            var beginTime = GetBeginTime().Date;
+
+            var tails = new List<string>();
+            //提前创建表
+            var nowTimeStamp = new DateTime(2021, 11, 20).Date;
+            if (beginTime > nowTimeStamp)
+                throw new ArgumentException("begin time error");
+            var currentTimeStamp = beginTime;
+            while (currentTimeStamp <= nowTimeStamp)
+            {
+                var tail = ShardingKeyToTail(currentTimeStamp);
+                tails.Add(tail);
+                currentTimeStamp = currentTimeStamp.AddDays(1);
+            }
+            return tails;
         }
     }
 }

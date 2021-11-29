@@ -37,11 +37,6 @@ namespace ShardingCore.Test2x
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
-#if DEBUG
-                    //o.CreateShardingTableOnStart = true;
-                    //o.EnsureCreatedWithOutShardingTable = true;
-
-#endif
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
