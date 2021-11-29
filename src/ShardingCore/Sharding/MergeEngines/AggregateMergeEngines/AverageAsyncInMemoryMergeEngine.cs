@@ -12,6 +12,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
 using ShardingCore.Sharding.MergeEngines.AggregateMergeEngines;
 
@@ -55,178 +56,50 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 cancellationToken)).Where(o => o.QueryResult != null).ToList();
         }
 
+        private TEnsureResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
+        {
+            if (source.IsEmpty())
+                return default;
+            var sum = source.AsQueryable().SumByPropertyName(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
+            return ConvertSum(sum);
+        }
         private async Task<T> GetSumAsync<T>(IQueryable queryable,
             CancellationToken cancellationToken = new CancellationToken())
         {
-
-            if (typeof(decimal) == typeof(T))
-            {
-                var sum = await ((IQueryable<decimal>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, decimal>(sum);
-            }
-
-            if (typeof(decimal?) == typeof(T))
-            {
-                var sum = await ((IQueryable<decimal?>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, decimal?>(sum);
-            }
-
-            if (typeof(int) == typeof(T))
-            {
-                var sum = await ((IQueryable<int>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, int>(sum);
-            }
-
-            if (typeof(int?) == typeof(T))
-            {
-                var sum = await ((IQueryable<int?>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, int?>(sum);
-            }
-
-            if (typeof(long) == typeof(T))
-            {
-                var sum = await ((IQueryable<long>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, long>(sum);
-            }
-
-            if (typeof(long?) == typeof(T))
-            {
-                var sum = await ((IQueryable<long?>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, long?>(sum);
-            }
-
-            if (typeof(double) == typeof(T))
-            {
-                var sum = await ((IQueryable<double>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, double>(sum);
-            }
-
-            if (typeof(double?) == typeof(T))
-            {
-                var sum = await ((IQueryable<double?>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, double?>(sum);
-            }
-
-            if (typeof(float) == typeof(T))
-            {
-                var sum = await ((IQueryable<float>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, float>(sum);
-            }
-
-            if (typeof(float?) == typeof(T))
-            {
-                var sum=await ((IQueryable<float?>)queryable).SumAsync(cancellationToken);
-                return ConvertSum<T, float?>(sum);
-            }
-
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(T)} cant call sum method");
+            var resultType = typeof(T);
+            if (!resultType.IsNumericType())
+                throw new ShardingCoreException(
+                    $"not support {GetMethodCallExpression().ShardingPrint()} result {resultType}");
+#if !EFCORE2
+            return await ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<T, Task<T>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<T>)queryable, (Expression)null, cancellationToken);
+#endif
+#if EFCORE2
+            return await ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<T, T>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<T>)queryable, cancellationToken);
+#endif
+            
         }
         public override async Task<TEnsureResult> MergeResultAsync(
             CancellationToken cancellationToken = new CancellationToken())
         {
-            if (typeof(decimal) == typeof(TSelect))
             {
-                var result = await AggregateAverageResultAsync<decimal>(cancellationToken);
+                if (!typeof(TSelect).IsNumericType())
+                {
+                    throw new ShardingCoreException(
+                        $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(TSelect)}");
+                }
+                var result = await AggregateAverageResultAsync<TSelect>(cancellationToken);
                 if (result.IsEmpty())
                     throw new InvalidOperationException("Sequence contains no elements.");
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
+                var queryable = result.Select(o => new
+                {
+                    Sum = o.QueryResult.Sum,
+                    Count = o.QueryResult.Count
+                }).AsQueryable();
+                var sum = queryable.SumByPropertyName("Sum");
+                var count = queryable.SumByPropertyName("Count");
+                return (TEnsureResult)AggregateExtension.AverageConstant(sum, count,typeof(TEnsureResult));
             }
-
-            if (typeof(decimal?) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<decimal?>(cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(int) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<int>(cancellationToken);
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(int?) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<int?>(cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(long) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<long>(cancellationToken);
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(long?) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<long?>(cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(double) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<double>(cancellationToken);
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(double?) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<double?>(cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(float) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<float>(cancellationToken);
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            if (typeof(float?) == typeof(TSelect))
-            {
-                var result = await AggregateAverageResultAsync<float?>(cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult.Sum);
-                var count = result.Sum(o => o.QueryResult.Count);
-                return ConvertSum(sum / count);
-            }
-
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(TEnsureResult)}");
+            
         }
 
         private TEnsureResult ConvertSum<TNumber>(TNumber number)

@@ -33,84 +33,77 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             return AsyncHelper.RunSync(() => MergeResultAsync<TResult>());
         }
 
+
+        private TResult GetMinTResult<TInnerSelect, TResult>(List<RouteQueryResult<TInnerSelect>> source)
+        {
+            var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
+            if (routeQueryResults.IsEmpty())
+                throw new InvalidOperationException("Sequence contains no elements.");
+            var min = routeQueryResults.Min(o => o.QueryResult);
+
+            return ConvertMin<TResult, TInnerSelect>(min);
+        }
         public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (typeof(decimal) == typeof(TResult))
+
+            var resultType = typeof(TResult);
+            if (!resultType.IsNullableType())
             {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var min = result.Min(o => o.QueryResult.GetValueOrDefault());
+                if (typeof(decimal) == typeof(TResult))
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MinAsync(cancellationToken), cancellationToken);
+                    return GetMinTResult<decimal?, TResult>(result);
+                }
+                if (typeof(float) == typeof(TResult))
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<float>)queryable).Select(o => (float?)o).MinAsync(cancellationToken),cancellationToken);
+                    return GetMinTResult<float?, TResult>(result);
+                }
+                if (typeof(int) == typeof(TResult))
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<int>)queryable).Select(o => (int?)o).MinAsync(cancellationToken),
+                        cancellationToken);
 
-                return ConvertMin<TResult, decimal>(min);
+
+                    return GetMinTResult<int?, TResult>(result);
+                }
+                if (typeof(long) == typeof(TResult))
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<long>)queryable).Select(o => (long?)o).MinAsync(cancellationToken),
+                        cancellationToken);
+
+                    return GetMinTResult<long?, TResult>(result);
+                }
+                if (typeof(double) == typeof(TResult))
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<double>)queryable).Select(o => (double?)o).MinAsync(cancellationToken),
+                        cancellationToken);
+                    return GetMinTResult<double?, TResult>(result);
+                }
+                throw new ShardingCoreException($"cant calc min value, type:[{resultType}]");
             }
-            if (typeof(float) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<float>)queryable).Select(o => (float?)o).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var min = result.Min(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMin<TResult, float>(min);
-            }
-            if (typeof(int) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<int>)queryable).Select(o => (int?)o).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var min = result.Min(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMin<TResult, int>(min);
-            }
-            if (typeof(long) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<long>)queryable).Select(o => (long?)o).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var min = result.Min(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMin<TResult, long>(min);
-            }
-            if (typeof(double) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<double>)queryable).Select(o => (double?)o).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var min = result.Min(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMin<TResult, double>(min);
-            }
-
+            //返回结果是否可以为空
+            //可以为空
+            else
             {
                 var result = (await base.ExecuteAsync(queryable => ((IQueryable<TResult>)queryable).MinAsync(cancellationToken), cancellationToken))
                     .Where(o => o.QueryResult != null)
                     .ToList();
-                if (result.IsEmpty())
-                    return default;
                 return result.Min(o => o.QueryResult);
             }
+
         }
-        private TSum ConvertMin<TSum, TNumber>(TNumber number)
+        private TResult ConvertMin<TResult, TNumber>(TNumber number)
         {
             if (number == null)
                 return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TSum));
-            return Expression.Lambda<Func<TSum>>(convertExpr).Compile()();
+            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
+            return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
         }
     }
 }

@@ -105,6 +105,8 @@ namespace Sample.SqlServer.Controllers
             }
             //_defaultTableDbContext.RemoveRange(_defaultTableDbContext.Set<SysUserMod>());
             //await _defaultTableDbContext.SaveChangesAsync();
+
+            var sresultx1121222 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").MaxAsync(o => o.Age);
             return Ok();
         }
         [HttpGet]

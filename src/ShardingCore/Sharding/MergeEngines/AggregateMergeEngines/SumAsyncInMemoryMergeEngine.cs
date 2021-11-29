@@ -7,10 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
@@ -36,89 +38,27 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 
         public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (typeof(decimal) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o=>o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(decimal?) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<decimal?>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o=>o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(int) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<int>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o=>o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(int?) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<int?>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(long) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<long>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(long?) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<long?>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(double) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<double>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(double?) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<double?>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(float) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<float>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
-            if (typeof(float?) == typeof(TEnsureResult))
-            {
-                var result = await base.ExecuteAsync(queryable => ((IQueryable<float?>)queryable).SumAsync(cancellationToken), cancellationToken);
-                if (result.IsEmpty())
-                    return default;
-                var sum = result.Sum(o => o.QueryResult);
-                return ConvertSum(sum);
-            }
+            var resultType = typeof(TEnsureResult);
+            if(!resultType.IsNumericType())
+                throw new ShardingCoreException(
+                    $"not support {GetMethodCallExpression().ShardingPrint()} result {resultType}");
+#if !EFCORE2
+            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEnsureResult, Task<TEnsureResult>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEnsureResult>)queryable, (Expression)null, cancellationToken), cancellationToken);
+            return GetSumResult(result);
+#endif
+#if EFCORE2
+            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEnsureResult, TEnsureResult>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEnsureResult>)queryable, cancellationToken), cancellationToken);
+            return GetSumResult(result);
+#endif
 
-            throw new ShardingCoreException(
-                $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(TEnsureResult)}");
+        }
+
+        private TEnsureResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
+        {
+            if (source.IsEmpty())
+                return default;
+            var sum = source.AsQueryable().SumByPropertyName(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
+            return ConvertSum(sum);
         }
         private TEnsureResult ConvertSum<TNumber>(TNumber number)
         {

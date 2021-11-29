@@ -182,7 +182,7 @@ namespace ShardingCore.Sharding.Enumerators
                             object aggregateValue = null;
                             if (aggregate is SelectCountProperty  || aggregate is SelectSumProperty)
                             {
-                                aggregateValue = aggregateValues.AsQueryable().Sum(aggregate.Property);
+                                aggregateValue = aggregateValues.AsQueryable().SumByProperty(aggregate.Property);
                             }
                             else if (aggregate is SelectMaxProperty)
                             {
@@ -196,11 +196,11 @@ namespace ShardingCore.Sharding.Enumerators
                             {
                                 if (selectAverageProperty.CountProperty!=null)
                                 {
-                                    aggregateValue = aggregateValues.AsQueryable().AverageWithCount(selectAverageProperty.Property, selectAverageProperty.CountProperty);
+                                    aggregateValue = aggregateValues.AsQueryable().AverageWithCount(selectAverageProperty.Property, selectAverageProperty.CountProperty,selectAverageProperty.Property.PropertyType);
                                 }
                                 else if (selectAverageProperty.SumProperty != null)
                                 {
-                                    aggregateValue = aggregateValues.AsQueryable().AverageWithSum(selectAverageProperty.Property, selectAverageProperty.SumProperty);
+                                    aggregateValue = aggregateValues.AsQueryable().AverageWithSum(selectAverageProperty.Property, selectAverageProperty.SumProperty, selectAverageProperty.Property.PropertyType);
                                 }
                                 else
                                 {

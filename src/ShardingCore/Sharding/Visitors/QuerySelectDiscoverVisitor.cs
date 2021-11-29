@@ -28,7 +28,7 @@ namespace ShardingCore.Core.Internal.Visitors
         // protected override Expression VisitMethodCall(MethodCallExpression node)
         // {
         //     var method = node.Method;
-        //     if (method.Name == nameof(Queryable.Count)||method.Name == nameof(Queryable.Sum)||method.Name == nameof(Queryable.Max)||method.Name == nameof(Queryable.Min)||method.Name == nameof(Queryable.Average))
+        //     if (method.Name == nameof(Queryable.Count)||method.Name == nameof(Queryable.SumByProperty)||method.Name == nameof(Queryable.Max)||method.Name == nameof(Queryable.Min)||method.Name == nameof(Queryable.Average))
         //     {
         //         _groupBySelectContext.GroupByAggregateMethods.Add(new GroupByAggregateMethod(method.Name));
         //     } 

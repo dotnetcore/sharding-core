@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
@@ -98,11 +99,20 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Count(property);
         }
-        public static object Sum(this IQueryable source, PropertyInfo property)
+        /// <summary>
+        /// 根据属性求和
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object SumByProperty(this IQueryable source, PropertyInfo property)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (property == null) throw new ArgumentNullException(nameof(property));
-
+            if (!property.PropertyType.IsNumericType())
+                throw new ShardingCoreInvalidOperationException(
+                    $"method sum cant calc type :[{property.PropertyType}]");
             ParameterExpression parameter = Expression.Parameter(source.ElementType, "s");
             MemberExpression getter = Expression.MakeMemberAccess(parameter, property);
             Expression selector = Expression.Lambda(getter, parameter);
@@ -120,14 +130,20 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Provider.Execute(callExpression);
         }
-        [ExcludeFromCodeCoverage]
-        public static object Sum(this IQueryable source, string propertyName)
+        /// <summary>
+        /// 根据属性求和
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object SumByPropertyName(this IQueryable source, string propertyName)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
 
             PropertyInfo property = source.ElementType.GetProperty(propertyName);
-            return source.Sum(property);
+            return source.SumByProperty(property);
         }
         //public static object Average(this IQueryable source, string member)
         //{
@@ -160,7 +176,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         //             && m.IsGenericMethod);
 
         //    // Now that we have the correct method, we need to know how to call the method.
-        //    // Note that the Queryable.Sum<TSource>(source, selector) has a generic type,
+        //    // Note that the Queryable.SumByProperty<TSource>(source, selector) has a generic type,
         //    // which we haven't resolved yet. Good thing is that we can use copy the one from
         //    // our initial source expression.
         //    var genericAvgMethod = avgMethod.MakeGenericMethod(new[] {source.ElementType});
@@ -253,28 +269,46 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         /// <param name="source">数据源</param>
         /// <param name="averagePropertyName">聚合函数average属性名</param>
         /// <param name="countPropertyName">聚合函数count属性名</param>
+        /// <param name="resultType">平均值返回结果:int/int=double</param>
         [ExcludeFromCodeCoverage]
-        public static object AverageWithCount(this IQueryable source, string averagePropertyName, string countPropertyName)
+        public static object AverageWithCount(this IQueryable source, string averagePropertyName, string countPropertyName, Type resultType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averagePropertyName == null) throw new ArgumentNullException(nameof(averagePropertyName));
             if (countPropertyName == null) throw new ArgumentNullException(nameof(countPropertyName));
             var averageProperty = source.ElementType.GetProperty(averagePropertyName);
             var countProperty = source.ElementType.GetProperty(countPropertyName);
-            return source.AverageWithCount(averageProperty, countProperty);
+            return source.AverageWithCount(averageProperty, countProperty, resultType);
         }
-        public static object AverageWithCount(this IQueryable source, PropertyInfo averageProperty, PropertyInfo countProperty)
+        public static object AverageWithCount(this IQueryable source, PropertyInfo averageProperty, PropertyInfo countProperty, Type resultType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averageProperty == null) throw new ArgumentNullException(nameof(averageProperty));
             if (countProperty == null) throw new ArgumentNullException(nameof(countProperty));
             //获取sum
             var sum = source.AverageSum(averageProperty, countProperty);
-            var count = source.Sum(countProperty);
-            var constantSum = Expression.Constant(sum);
-            var constantCount = Expression.Constant(count);
-            var unaryExpression = Expression.Convert(constantCount, sum.GetType());
-            var binaryExpression = Expression.Divide(constantSum, unaryExpression);
+            var count = source.SumByProperty(countProperty);
+            return AverageConstant(sum, count,resultType);
+            //var constantSum = Expression.Constant(sum);
+            //var constantCount = Expression.Constant(count);
+            //var unaryExpression = Expression.Convert(constantCount, sum.GetType());
+            //var binaryExpression = Expression.Divide(constantSum, unaryExpression);
+            //var invoke = Expression.Lambda(binaryExpression).Compile().DynamicInvoke();
+            //return invoke;
+        }
+
+        public static object AverageConstant(object sum, object count,Type resultType)
+        {
+
+            Expression constantSum = Expression.Constant(sum);
+            //如果计算类型和返回类型不一致先转成一致
+            if(sum.GetType()!=resultType)
+                constantSum = Expression.Convert(constantSum, resultType);
+            Expression constantCount = Expression.Constant(count);
+            //如果计算类型和返回类型不一致先转成一致
+            if (count.GetType() != resultType)
+                constantCount = Expression.Convert(constantCount, resultType);
+            var binaryExpression = Expression.Divide(constantSum, constantCount);
             var invoke = Expression.Lambda(binaryExpression).Compile().DynamicInvoke();
             return invoke;
         }
@@ -284,29 +318,25 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         /// <param name="source">数据源</param>
         /// <param name="averagePropertyName">聚合函数average属性名</param>
         /// <param name="sumPropertyName">聚合函数sum属性名</param>
+        /// <param name="resultType">平均值返回结果:int/int=double</param>
         [ExcludeFromCodeCoverage]
-        public static object AverageWithSum(this IQueryable source, string averagePropertyName, string sumPropertyName)
+        public static object AverageWithSum(this IQueryable source, string averagePropertyName, string sumPropertyName, Type resultType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averagePropertyName == null) throw new ArgumentNullException(nameof(averagePropertyName));
             if (sumPropertyName == null) throw new ArgumentNullException(nameof(sumPropertyName));
             var averageProperty = source.ElementType.GetProperty(averagePropertyName);
             var sumProperty = source.ElementType.GetProperty(sumPropertyName);
-            return source.AverageWithSum(averageProperty, sumProperty);
+            return source.AverageWithSum(averageProperty, sumProperty, resultType);
         }
-        public static object AverageWithSum(this IQueryable source, PropertyInfo averageProperty, PropertyInfo sumProperty)
+        public static object AverageWithSum(this IQueryable source, PropertyInfo averageProperty, PropertyInfo sumProperty, Type resultType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averageProperty == null) throw new ArgumentNullException(nameof(averageProperty));
             if (sumProperty == null) throw new ArgumentNullException(nameof(sumProperty));
             var count = source.AverageCount(averageProperty, sumProperty);
-            var sum = source.Sum(sumProperty);
-            var constantCount = Expression.Constant(count);
-            var constantSum = Expression.Constant(sum);
-            var unaryExpression = Expression.Convert(constantCount, constantSum.GetType());
-            var binaryExpression = Expression.Divide(constantSum, unaryExpression);
-            var invoke = Expression.Lambda(binaryExpression).Compile().DynamicInvoke();
-            return invoke;
+            var sum = source.SumByProperty(sumProperty);
+            return AverageConstant(sum, count, resultType);
         }
         /// <summary>
         /// 获取平均数和 [{avg1,count1},{avg2,count2}....]=>sum(avg1...n*count1...n)/sum(count1...n)

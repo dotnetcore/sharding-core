@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
@@ -31,69 +32,56 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             return MergeResultAsync<TResult>().WaitAndUnwrapException();
         }
 
+        private TResult GetMaxTResult<TInnerSelect, TResult>(List<RouteQueryResult<TInnerSelect>> source)
+        {
+            var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
+            if (routeQueryResults.IsEmpty())
+                throw new InvalidOperationException("Sequence contains no elements.");
+            var max = routeQueryResults.Max(o => o.QueryResult);
+
+            return ConvertMax<TResult, TInnerSelect>(max);
+        }
         public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (typeof(decimal) == typeof(TResult))
+            var resultType = typeof(TResult);
+            if (!resultType.IsNullableType())
             {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var max = result.Max(o => o.QueryResult.GetValueOrDefault());
+                if (typeof(decimal) == resultType)
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MaxAsync(cancellationToken), cancellationToken);
+                    return GetMaxTResult<decimal?, TResult>(result);
+                }
+                if (typeof(float) == resultType)
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                        ((IQueryable<float>)queryable).Select(o => (float?)o).MaxAsync(cancellationToken), cancellationToken);
 
-                return ConvertMax<TResult, decimal>(max);
+                    return GetMaxTResult<float?, TResult>(result);
+                }
+                if (typeof(int) == resultType)
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<int>)queryable).Select(o => (int?)o).MaxAsync(cancellationToken),cancellationToken);
+                    return GetMaxTResult<int?, TResult>(result);
+                }
+                if (typeof(long) == resultType)
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<long>)queryable).Select(o => (long?)o).MaxAsync(cancellationToken), cancellationToken);
+
+                    return GetMaxTResult<long?, TResult>(result);
+                }
+                if (typeof(double) == resultType)
+                {
+                    var result = await base.ExecuteAsync(queryable =>
+                            ((IQueryable<double>)queryable).Select(o => (double?)o).MaxAsync(cancellationToken), cancellationToken);
+                    return GetMaxTResult<double?, TResult>(result);
+                }
+
+                throw new ShardingCoreException($"cant calc max value, type:[{resultType}]");
             }
-            if (typeof(float) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<float>)queryable).Select(o => (float?)o).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var max = result.Max(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMax<TResult, float>(max);
-            }
-            if (typeof(int) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<int>)queryable).Select(o => (int?)o).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var max = result.Max(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMax<TResult, int>(max);
-            }
-            if (typeof(long) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<long>)queryable).Select(o => (long?)o).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var max = result.Max(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMax<TResult, long>(max);
-            }
-            if (typeof(double) == typeof(TResult))
-            {
-                var result = (await base.ExecuteAsync(queryable =>
-                        ((IQueryable<double>)queryable).Select(o => (double?)o).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var max = result.Max(o => o.QueryResult.GetValueOrDefault());
-
-                return ConvertMax<TResult, double>(max);
-            }
-
+            else
             {
 
                 var result = (await base.ExecuteAsync(queryable => ((IQueryable<TResult>)queryable).MaxAsync(cancellationToken), cancellationToken))

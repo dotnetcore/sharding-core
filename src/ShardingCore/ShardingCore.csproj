@@ -4,12 +4,16 @@
         <Version>$(EFCORE6)</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE6;</DefineConstants>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>10</LangVersion>
 	    <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\Release\ShardingCore.xml</DocumentationFile>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
