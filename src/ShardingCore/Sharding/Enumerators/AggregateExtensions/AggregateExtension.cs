@@ -99,14 +99,8 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             return source.Count(property);
         }
-        /// <summary>
-        /// 根据属性求和
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static object SumByProperty(this IQueryable source, PropertyInfo property)
+
+        private static MethodCallExpression CreateSumByProperty(this IQueryable source, PropertyInfo property)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (property == null) throw new ArgumentNullException(nameof(property));
@@ -121,14 +115,30 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
                      && m.ReturnType == property.PropertyType
                      && m.IsGenericMethod);
 
-            var genericSumMethod = sumMethod.MakeGenericMethod(new[] {source.ElementType});
+            var genericSumMethod = sumMethod.MakeGenericMethod(new[] { source.ElementType });
 
             var callExpression = Expression.Call(
                 null,
                 genericSumMethod,
-                new[] {source.Expression, Expression.Quote(selector)});
-
+                new[] { source.Expression, Expression.Quote(selector) });
+            return callExpression;
+        }
+        /// <summary>
+        /// 根据属性求和
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static object SumByProperty(this IQueryable source, PropertyInfo property)
+        {
+            var callExpression = CreateSumByProperty(source, property);
             return source.Provider.Execute(callExpression);
+        }
+        public static TSelect SumByProperty<TSelect>(this IQueryable source, PropertyInfo property)
+        {
+            var callExpression = CreateSumByProperty(source, property);
+            return source.Provider.Execute<TSelect>(callExpression);
         }
         /// <summary>
         /// 根据属性求和
@@ -144,6 +154,22 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
             PropertyInfo property = source.ElementType.GetProperty(propertyName);
             return source.SumByProperty(property);
+        }
+        /// <summary>
+        /// 对
+        /// </summary>
+        /// <typeparam name="TSelect"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static TSelect SumByPropertyName<TSelect>(this IQueryable source, string propertyName)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
+
+            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            return source.SumByProperty<TSelect>(property);
         }
         //public static object Average(this IQueryable source, string member)
         //{
@@ -312,6 +338,35 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             var invoke = Expression.Lambda(binaryExpression).Compile().DynamicInvoke();
             return invoke;
         }
+        public static TResult AverageConstant<TSum,TCount,TResult>(TSum sum, TCount count)
+        {
+            var resultType = typeof(TResult);
+            Expression constantSum = Expression.Constant(sum);
+            //如果计算类型和返回类型不一致先转成一致
+            if (sum.GetType() != resultType)
+                constantSum = Expression.Convert(constantSum, resultType);
+            Expression constantCount = Expression.Constant(count);
+            //如果计算类型和返回类型不一致先转成一致
+            if (count.GetType() != resultType)
+                constantCount = Expression.Convert(constantCount, resultType);
+            var binaryExpression = Expression.Divide(constantSum, constantCount);
+            var invoke = Expression.Lambda<Func<TResult>>(binaryExpression).Compile()();
+            return invoke;
+        }
+        //private static readonly Type _divideFirstDecimalType=typeof(decimal);
+        //private static readonly Type _divideSecondDoubleType=typeof(double);
+        //private static readonly Type _divideThirdFloatType=typeof(float);
+        //private static Type GetConvertPriorityType(Type sum, Type count, Type result)
+        //{
+        //    if (_divideFirstDecimalType == sum || _divideFirstDecimalType == count || _divideFirstDecimalType == result)
+        //        return _divideFirstDecimalType;
+        //    if (_divideSecondDoubleType == sum || _divideSecondDoubleType == count || _divideSecondDoubleType == result)
+        //        return _divideSecondDoubleType;
+        //    if (_divideThirdFloatType == sum || _divideThirdFloatType == count || _divideThirdFloatType == result)
+        //        return _divideThirdFloatType;
+        //    return result;
+        //}
+
         /// <summary>
         /// 获取平均数和 [{avg1,sum1},{avg2,sum2}....]=>sum(sum1...n)/sum(sum1...n/avg1...n)
         /// </summary>

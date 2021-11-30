@@ -73,7 +73,7 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<LogDayLongVirtualRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
-                    return new Dictionary<string, ISet<string>>()
+                    return new Dictionary<string, IEnumerable<string>>()
                     {
                         {
                             "A", new HashSet<string>()

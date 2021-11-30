@@ -85,9 +85,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                     Sum = o.QueryResult.Sum,
                     Count = o.QueryResult.Count
                 }).AsQueryable();
-                var sum = queryable.SumByPropertyName(nameof(AverageResult<object>.Sum));
-                var count = queryable.SumByPropertyName(nameof(AverageResult<object>.Count));
-                return (TEnsureResult)AggregateExtension.AverageConstant(sum, count,typeof(TEnsureResult));
+                var sum = queryable.SumByPropertyName<TSelect>(nameof(AverageResult<object>.Sum));
+                var count = queryable.Sum(o => o.Count);
+                return AggregateExtension.AverageConstant<TSelect, long, TEnsureResult>(sum, count);
             }
             
         }

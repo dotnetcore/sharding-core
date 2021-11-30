@@ -71,7 +71,7 @@ namespace ShardingCore
         //}
 
         public bool UseReadWrite => ReadConnStringConfigure != null;
-        public Func<IServiceProvider, IDictionary<string, ISet<string>>> ReadConnStringConfigure { get; private set; }
+        public Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> ReadConnStringConfigure { get; private set; }
         public ReadStrategyEnum ReadStrategyEnum { get; private set; }
         public bool ReadWriteDefaultEnable { get; private set; }
         public int ReadWriteDefaultPriority { get; private set; }
@@ -85,7 +85,7 @@ namespace ShardingCore
         /// <param name="defaultEnable">考虑到很多时候读写分离的延迟需要马上用到写入的数据所以默认关闭需要的话自己开启或者通过IShardingReadWriteManager,false表示默认不走读写分离除非你自己开启,true表示默认走读写分离除非你禁用,</param>
         /// <param name="defaultPriority">IShardingReadWriteManager.CreateScope()会判断dbcontext的priority然后判断是否启用readwrite</param>
         /// <param name="readConnStringGetStrategy">读写分离可能会造成每次查询不一样甚至分表后的分页会有错位问题，因为他不是一个原子操作,所以如果整个请求为一次读写切换大多数更加合适</param>
-        public void UseReadWriteConfiguration(Func<IServiceProvider, IDictionary<string, ISet<string>>> readConnStringConfigure, ReadStrategyEnum readStrategyEnum, bool defaultEnable = false, int defaultPriority = 10, ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
+        public void UseReadWriteConfiguration(Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> readConnStringConfigure, ReadStrategyEnum readStrategyEnum, bool defaultEnable = false, int defaultPriority = 10, ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
         {
             ReadConnStringConfigure = readConnStringConfigure ?? throw new ArgumentNullException(nameof(readConnStringConfigure));
             ReadStrategyEnum = readStrategyEnum;

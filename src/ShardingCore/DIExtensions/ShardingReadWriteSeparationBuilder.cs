@@ -26,7 +26,7 @@ namespace ShardingCore.DIExtensions
         }
 
         public ShardingCoreConfigEndBuilder<TShardingDbContext> AddReadWriteSeparation(
-            Func<IServiceProvider, IDictionary<string, ISet<string>>> readWriteSeparationConfigure,
+            Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
             int defaultPriority = 10,

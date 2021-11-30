@@ -899,6 +899,7 @@ namespace ShardingCore.Test
         [Fact]
         public async Task OrderReadWrite()
         {
+
             //切换到只读数据库，只读数据库又只配置了A数据源读取B数据源
             _virtualDbContext.ReadWriteSeparationReadOnly();
             var list = await _virtualDbContext.Set<Order>().Where(o => o.Money == 1).ToListAsync();

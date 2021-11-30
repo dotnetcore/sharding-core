@@ -51,7 +51,7 @@ namespace Sample.SqlServer
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
-                    return new Dictionary<string, ISet<string>>()
+                    return new Dictionary<string, IEnumerable<string>>()
                     {
                         {"ds0",new HashSet<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;"}}
                     };

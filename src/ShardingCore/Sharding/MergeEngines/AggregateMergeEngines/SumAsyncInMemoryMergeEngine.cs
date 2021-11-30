@@ -57,7 +57,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         {
             if (source.IsEmpty())
                 return default;
-            var sum = source.AsQueryable().SumByPropertyName(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
+            var sum = source.AsQueryable().SumByPropertyName<TInnerSelect>(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
             return ConvertSum(sum);
         }
         private TEnsureResult ConvertSum<TNumber>(TNumber number)
