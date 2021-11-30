@@ -4,7 +4,7 @@
         <Version>$(EFCORE6)</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE6;</DefineConstants>
-        <LangVersion>10</LangVersion>
+        <LangVersion>9.0</LangVersion>
 	    <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
