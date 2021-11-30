@@ -38,6 +38,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             _semaphore = new SemaphoreSlim(Math.Max(1, streamMergeContext.GetParallelQueryMaxThreadCount()));
             _parallelQueryTimeOut = streamMergeContext.GetParallelQueryTimeOut();
         }
+
         /// <summary>
         /// 异步多线程控制并发
         /// </summary>
@@ -45,37 +46,32 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         /// <param name="executeAsync"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<TResult> AsyncParallelLimitExecuteAsync<TResult>(Func<Task<TResult>> executeAsync,CancellationToken cancellationToken=new CancellationToken())
+        public async Task<TResult> AsyncParallelLimitExecuteAsync<TResult>(Func<Task<TResult>> executeAsync,CancellationToken cancellationToken=new CancellationToken())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var parallelTimeOut = _parallelQueryTimeOut.TotalMilliseconds;
-            var acquired = this._semaphore.Wait((int)parallelTimeOut);
+            var acquired = await this._semaphore.WaitAsync((int)parallelTimeOut, cancellationToken);
             if (acquired)
             {
                 var once = new SemaphoreReleaseOnlyOnce(this._semaphore);
                 try
                 {
-                    return Task.Run(async () =>
-                    {
-                        try
-                        {
-                            return await executeAsync();
-                        }
-                        finally
-                        {
-                            once.Release();
-                        }
-                    }, cancellationToken);
+                    return await executeAsync();
                 }
-                catch (Exception e)
+                finally
                 {
                     once.Release();
-                    throw e;
                 }
             }
             else
             {
                 throw new ShardingCoreParallelQueryTimeOutException(_executeExpression.ShardingPrint());
             }
+        }
+
+        public void Dispose()
+        {
+            _semaphore?.Dispose();
         }
     }
 }

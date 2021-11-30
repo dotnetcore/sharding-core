@@ -7,13 +7,9 @@ using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
 using ShardingCore;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Sample.SqlServer.Domain.Entities;
-using ShardingCore.Extensions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Sharding.ShardingComparision;
+using System;
+using System.Collections.Generic;
 
 namespace Sample.SqlServer
 {
