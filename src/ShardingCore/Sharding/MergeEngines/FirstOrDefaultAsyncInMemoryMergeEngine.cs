@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -13,6 +14,7 @@ using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines;
+using ShardingCore.Utils;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -36,8 +38,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override async Task<TResult> DoMergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
+
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TResult>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
-            var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
+           
+            var notNullResult = result.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 return default;

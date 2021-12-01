@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
@@ -19,6 +21,7 @@ using ShardingCore.Sharding;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
+using ShardingCore.Sharding.StreamMergeEngines;
 using ShardingCore.TableCreator;
 using ShardingCore.Test.Domain.Entities;
 using Xunit;
@@ -43,12 +46,13 @@ namespace ShardingCore.Test
         private readonly IVirtualTableManager<ShardingDefaultDbContext> _virtualTableManager;
         private readonly IShardingTableCreator<ShardingDefaultDbContext> _shardingTableCreator;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
+        private readonly IRouteTailFactory _routeTailFactory;
 
         public ShardingTest(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConfiguration configuration,
             IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
             IShardingComparer<ShardingDefaultDbContext> shardingComparer, IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource,
             IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
-            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager)
+            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager,IRouteTailFactory routeTailFactory)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -60,6 +64,7 @@ namespace ShardingCore.Test
             _virtualTableManager = virtualTableManager;
             _shardingTableCreator = shardingTableCreator;
             _shardingReadWriteManager = shardingReadWriteManager;
+            _routeTailFactory = routeTailFactory;
         }
 
         [Fact]
@@ -435,9 +440,9 @@ namespace ShardingCore.Test
             var sysUserModDesc = await _virtualDbContext.Set<SysUserMod>().OrderByDescending(o => o.Id).FirstOrDefaultAsync();
             Assert.True(sysUserModDesc != null && sysUserModDesc.Id == "999");
 
-        }
+        } 
 
-        [Fact]
+[Fact]
         public async Task FirstOrDefault2()
         {
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefaultAsync();

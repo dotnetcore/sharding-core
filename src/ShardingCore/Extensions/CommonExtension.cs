@@ -91,7 +91,7 @@ namespace ShardingCore.Extensions
             return  express.Method.DeclaringType.Namespace.IsIn("System.Linq", "System.Collections.Generic") && methodName == nameof(IList.Contains);
         }
 
-        public static ISet<Type> ParseQueryableRoute(this IQueryable queryable)
+        public static ISet<Type> ParseQueryableEntities(this IQueryable queryable)
         {
             return ShardingUtil.GetQueryEntitiesFilter(queryable);
         }

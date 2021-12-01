@@ -37,7 +37,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             _routeQueryResults = routeQueryResults;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async,CancellationToken cancellationToken=new CancellationToken())
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             var noPaginationQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 //if sharding data source 
                 var appendAsc = _dataSourceSequenceOrderConfig.AppendAsc;
                 //if sharding table
-                var useThenBy =  _tableSequenceOrderConfig != null;
+                var useThenBy = _tableSequenceOrderConfig != null;
                 if (appendAsc)
                 {
                     sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
@@ -104,8 +104,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             StreamMergeContext.ReSetOrders(reSetOrders);
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult, reSetOrders);
-                return AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                return Task.Run(async () =>
+                {
+                    var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult, reSetOrders);
+                    return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                });
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
@@ -116,7 +119,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(dsname, sequenceResult.TableRouteResult);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(reSetOrders))
-                .ReplaceDbContextQueryable(shardingDbContext,StreamMergeContext.IsParallelQuery());
+                .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
 

@@ -10,9 +10,6 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
-#if !EFCORE5
-using ShardingCore.Extensions;
-#endif
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -36,7 +33,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
-            var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableRoute();
+            var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableEntities();
 
 
             var shardingEntities = queryEntities.Where(o => _entityMetadataManager.IsShardingTable(o));

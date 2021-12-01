@@ -14,14 +14,9 @@ namespace Sample.SqlServer.Shardings
 {
     public class TestVRoute : AbstractShardingOperatorVirtualTableRoute<SysUserMod, string> 
     {
-        protected override string ConvertToShardingKey(object shardingKey)
-        {
-            return shardingKey.ToString();
-        }
-
         public override string ShardingKeyToTail(object shardingKey)
         {
-            throw new NotImplementedException();
+            return shardingKey.ToString();
         }
 
         //数据库已经存在的tail

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -51,9 +52,10 @@ namespace ShardingCore.Utils
         /// <param name="keyToTailExpression"></param>
         /// <param name="shardingTableRoute">sharding table or data source</param>
         /// <returns></returns>
-        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression,bool shardingTableRoute)
+        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression,bool shardingTableRoute)
         {
-            QueryableRouteShardingTableDiscoverVisitor<TKey> visitor = new QueryableRouteShardingTableDiscoverVisitor<TKey>(entityMetadata, shardingKeyConvert, keyToTailExpression, shardingTableRoute);
+
+            QueryableRouteShardingTableDiscoverVisitor<TKey> visitor = new QueryableRouteShardingTableDiscoverVisitor<TKey>(entityMetadata, keyToTailExpression, shardingTableRoute);
 
             visitor.Visit(queryable.Expression);
 

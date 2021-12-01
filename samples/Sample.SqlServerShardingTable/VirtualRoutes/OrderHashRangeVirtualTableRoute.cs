@@ -14,10 +14,6 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
 {
     public class OrderHashRangeVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<Order,string>
     {
-        protected override string ConvertToShardingKey(object shardingKey)
-        {
-            return shardingKey.ToString();
-        }
 
         public override string ShardingKeyToTail(object shardingKey)
         {

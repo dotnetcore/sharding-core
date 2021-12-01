@@ -13,22 +13,13 @@ namespace ShardingCore.VirtualRoutes.Abstractions
     public abstract class AbstractShardingTimeKeyLongVirtualTableRoute<TEntity> : AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, long> where TEntity : class
     {
         /// <summary>
-        /// how convert object to long
-        /// </summary>
-        /// <param name="shardingKey"></param>
-        /// <returns></returns>
-        protected override long ConvertToShardingKey(object shardingKey)
-        {
-            return (long)shardingKey;
-        }
-        /// <summary>
         /// how convert sharding key to tail
         /// </summary>
         /// <param name="shardingKey"></param>
         /// <returns></returns>
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var time = ConvertToShardingKey(shardingKey);
+            var time = (long)shardingKey;
             return TimeFormatToTail(time);
         }
         /// <summary>

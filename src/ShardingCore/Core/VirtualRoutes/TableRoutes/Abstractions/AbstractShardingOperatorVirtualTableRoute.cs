@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Core.EntityMetadatas;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
@@ -22,7 +21,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         protected override List<IPhysicTable> DoRouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
-            var filter = ShardingUtil.GetRouteShardingTableFilter(queryable, EntityMetadata, ConvertToShardingKey, GetRouteToFilter,true);
+            var filter = ShardingUtil.GetRouteShardingTableFilter<TKey>(queryable, EntityMetadata, GetRouteToFilter,true);
             var physicTables = allPhysicTables.Where(o => filter(o.Tail)).ToList();
             return physicTables;
         }

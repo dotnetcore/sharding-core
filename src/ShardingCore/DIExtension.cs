@@ -25,11 +25,16 @@ using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Bootstrapers;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 using ShardingCore.Jobs;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore
 {

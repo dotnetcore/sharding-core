@@ -1,27 +1,34 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Monday, 28 December 2020 22:09:39
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Monday, 28 December 2020 22:09:39
+    * @Email: 326308290@qq.com
+    */
     public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
     {
+
+        private static readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeFilter =
+            new ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>>(new RouteFilterComparer());
         private readonly EntityMetadata _entityMetadata;
-        private readonly Func<object, TKey> _shardingKeyConvert;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
         /// <summary>
         /// 是否是分表路由
@@ -29,16 +36,32 @@ namespace ShardingCore.Core.Internal.Visitors
         private readonly bool _shardingTableRoute;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter,bool shardingTableRoute)
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
-            _shardingKeyConvert = shardingKeyConvert;
             _keyToTailWithFilter = keyToTailWithFilter;
             _shardingTableRoute = shardingTableRoute;
         }
 
         public Func<string, bool> GetStringFilterTail()
         {
+            //if (_lastExpression == null)
+            //{
+            //    _lastExpression = _where;
+            //}
+            //else
+            //{
+            //    var startNew = Stopwatch.StartNew();
+            //    for (int i = 0; i < 300; i++)
+            //    {
+            //        var exxq = LambdaCompare.Eq(_lastExpression, _where);
+            //    }
+            //    startNew.Stop();
+            //    var x = startNew.ElapsedMilliseconds;
+            //    var eq = LambdaCompare.Eq(_lastExpression, _where);
+            //    _lastExpression = _where;
+            //}
+            //return _routeFilter.GetOrAdd(_where, key => _where.Compile());
             return _where.Compile();
         }
 
@@ -46,7 +69,7 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             return expression is MemberExpression member
                    && member.Expression.Type == _entityMetadata.EntityType
-                   && member.Member.Name == (_shardingTableRoute?_entityMetadata.ShardingTableProperty.Name:_entityMetadata.ShardingDataSourceProperty.Name);
+                   && member.Member.Name == (_shardingTableRoute ? _entityMetadata.ShardingTableProperty.Name : _entityMetadata.ShardingDataSourceProperty.Name);
         }
         /// <summary>
         /// 方法是否包含shardingKey
@@ -80,31 +103,28 @@ namespace ShardingCore.Core.Internal.Visitors
             return expression is MethodCallExpression;
         }
 
-        private object GetShardingKeyValue(Expression expression)
+        private TKey GetShardingKeyValue(Expression expression)
         {
-            if (expression is ConstantExpression)
-                return (expression as ConstantExpression).Value;
-            if (expression is UnaryExpression)
+            if (expression is ConstantExpression constantExpression)
+                return (TKey)constantExpression.Value;
+            if (expression is UnaryExpression unaryExpression)
             {
-                UnaryExpression unary = expression as UnaryExpression;
-                LambdaExpression lambda = Expression.Lambda(unary.Operand);
-                Delegate fn = lambda.Compile();
-                return fn.DynamicInvoke(null);
+                return Expression.Lambda<Func<TKey>>(unaryExpression.Operand).Compile()();
             }
 
             if (expression is MemberExpression member1Expression)
             {
-                var target = GetShardingKeyValue(member1Expression.Expression);
-                if (member1Expression.Member is FieldInfo field)
-                    return field.GetValue(target);
-                if (member1Expression.Member is PropertyInfo property)
-                    return property.GetValue(target);
-                return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+                //var target = GetShardingKeyValue(member1Expression.Expression);
+                //if (member1Expression.Member is FieldInfo field)
+                //    return field.GetValue(target);
+                //if (member1Expression.Member is PropertyInfo property)
+                //    return property.GetValue(target);
+                return Expression.Lambda<Func<TKey>>(member1Expression).Compile()();
             }
 
             if (expression is MethodCallExpression methodCallExpression)
             {
-                return Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
+                return Expression.Lambda<Func<TKey>>(methodCallExpression).Compile()();
                 //return methodCallExpression.Method.Invoke(
                 //    GetShardingKeyValue(methodCallExpression.Object),
                 //    methodCallExpression.Arguments
@@ -192,14 +212,13 @@ namespace ShardingCore.Core.Internal.Visitors
 
                 if (arrayObject != null)
                 {
-                    var enumerable = (IEnumerable) arrayObject;
+                    var enumerable = (IEnumerable<TKey>)arrayObject;
                     Expression<Func<string, bool>> contains = x => false;
                     if (!@in)
                         contains = x => true;
                     foreach (var item in enumerable)
                     {
-                        var keyValue = _shardingKeyConvert(item);
-                        var eq = _keyToTailWithFilter(keyValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
+                        var eq = _keyToTailWithFilter(item, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
                         if (@in)
                             contains = contains.Or(eq);
                         else
@@ -243,12 +262,13 @@ namespace ShardingCore.Core.Internal.Visitors
             else
             {
                 //条件在右边
-                bool conditionOnRight=false;
-                object value = null;
+                bool conditionOnRight = false;
+                TKey value = default;
 
-                if (IsShardingKey(binaryExpression.Left)&&IsConstantOrMember(binaryExpression.Right))
+                if (IsShardingKey(binaryExpression.Left) && IsConstantOrMember(binaryExpression.Right))
                 {
                     conditionOnRight = true;
+             
                     value = GetShardingKeyValue(binaryExpression.Right);
                 }
                 else if (IsConstantOrMember(binaryExpression.Left) && IsShardingKey(binaryExpression.Right))
@@ -270,12 +290,11 @@ namespace ShardingCore.Core.Internal.Visitors
                     _ => ShardingOperatorEnum.UnKnown
                 };
 
-                if (value == null)
+                if (EqualityComparer<TKey>.Default.Equals(value, default))
                     return x => true;
 
 
-                var keyValue = _shardingKeyConvert(value);
-                return _keyToTailWithFilter(keyValue, op);
+                return _keyToTailWithFilter(value, op);
             }
         }
     }

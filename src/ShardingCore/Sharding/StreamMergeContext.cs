@@ -26,17 +26,17 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<T>:IDisposable
+    public class StreamMergeContext<TEntity>:IDisposable
 #if !EFCORE2
         ,IAsyncDisposable
 #endif
     {
         //private readonly IShardingScopeFactory _shardingScopeFactory;
-        private readonly IQueryable<T> _source;
+        private readonly IQueryable<TEntity> _source;
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        private readonly IQueryable<T> _reWriteSource;
+        private readonly IQueryable<TEntity> _reWriteSource;
         //public IEnumerable<TableRouteResult> RouteResults { get; }
         //public DataSourceRouteResult RoutingResult { get; }
         public int? Skip { get; private set; }
@@ -71,7 +71,7 @@ namespace ShardingCore.Sharding
 
         private readonly IShardingComparer _shardingComparer;
 
-        public StreamMergeContext(IQueryable<T> source, IShardingDbContext shardingDbContext,
+        public StreamMergeContext(IQueryable<TEntity> source, IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
             IEnumerable<TableRouteResult> tableRouteResults,
             IRouteTailFactory routeTailFactory)
@@ -84,7 +84,7 @@ namespace ShardingCore.Sharding
             TableRouteResults = tableRouteResults;
             IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
             IsCrossTable = tableRouteResults.Count() > 1;
-            var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
+            var reWriteResult = new ReWriteEngine<TEntity>(source).ReWrite();
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
             Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
@@ -92,7 +92,7 @@ namespace ShardingCore.Sharding
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
-            QueryEntities = source.ParseQueryableRoute();
+            QueryEntities = source.ParseQueryableEntities();
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));
@@ -151,11 +151,11 @@ namespace ShardingCore.Sharding
         //    return _routeTailFactory.Create(tableRouteResult);
         //}
 
-        public IQueryable<T> GetReWriteQueryable()
+        public IQueryable<TEntity> GetReWriteQueryable()
         {
             return _reWriteSource;
         }
-        public IQueryable<T> GetOriginalQueryable()
+        public IQueryable<TEntity> GetOriginalQueryable()
         {
             return _source;
         }

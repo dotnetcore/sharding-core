@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core.EntityMetadatas;
@@ -26,7 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {
             //获取所有需要路由的表后缀
-            var filter = ShardingUtil.GetRouteShardingTableFilter(queryable, EntityMetadata, ConvertToShardingKey, GetRouteToFilter,false);
+            var filter = ShardingUtil.GetRouteShardingTableFilter<TKey>(queryable, EntityMetadata, GetRouteToFilter,false);
             var dataSources = allDataSourceNames.Where(o => filter(o)).ToList();
             return dataSources;
         }

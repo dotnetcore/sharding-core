@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -53,6 +54,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             {
                 if (_secondExpression == null)
                     throw new ShardingCoreInvalidOperationException(methodCallExpression.ShardingPrint());
+               
                 // ReSharper disable once VirtualMemberCallInConstructor
                 _queryable = CombineQueryable(_queryable, _secondExpression);
             }
@@ -72,7 +74,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         {
             var shardingDbContext = _mergeContext.CreateDbContext(dsname, tableRouteResult);
             var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
-                .ReplaceDbContextQueryable(shardingDbContext,_mergeContext.IsParallelQuery());
+                .ReplaceDbContextQueryable(shardingDbContext);
             var newCombineQueryable = DoCombineQueryable<TResult>(newQueryable);
             return newCombineQueryable
 ;
@@ -86,9 +88,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             {
                 return _mergeContext.TableRouteResults.Select(routeResult =>
                 {
-                    var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
+                    return Task.Run(async () =>
+                    {
+                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
 
-                    return AsyncParallelResultExecute(asyncExecuteQueryable,dataSourceName,routeResult,efQuery, cancellationToken);
+                        return await AsyncParallelResultExecute(asyncExecuteQueryable, dataSourceName, routeResult, efQuery,
+                            cancellationToken);
+                    });
 
                 });
             }).ToArray();

@@ -67,6 +67,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             {
                 throw new ShardingCoreParallelQueryTimeOutException(_executeExpression.ShardingPrint());
             }
+
         }
 
         public void Dispose()

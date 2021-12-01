@@ -36,14 +36,10 @@ namespace ShardingCore.VirtualRoutes.Mods
             Mod = mod;
             PaddingChar = paddingChar;
         }
-        protected override int ConvertToShardingKey(object shardingKey)
-        {
-            return Convert.ToInt32(shardingKey);
-        }
 
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var shardingKeyInt = ConvertToShardingKey(shardingKey);
+            var shardingKeyInt = Convert.ToInt32(shardingKey);
             return Math.Abs(shardingKeyInt % Mod).ToString().PadLeft(TailLength,PaddingChar);
         }
 

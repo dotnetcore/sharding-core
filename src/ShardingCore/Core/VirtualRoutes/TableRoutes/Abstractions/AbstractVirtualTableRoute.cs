@@ -33,14 +33,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             return null;
         }
 
-        /// <summary>
-        /// 如何将分表字段转成对应的类型
-        /// </summary>
-        /// <param name="shardingKey"></param>
-        /// <returns></returns>
-
-        protected abstract TKey ConvertToShardingKey(object shardingKey);
-
         public EntityMetadata EntityMetadata { get; private set; }
 
         /// <summary>

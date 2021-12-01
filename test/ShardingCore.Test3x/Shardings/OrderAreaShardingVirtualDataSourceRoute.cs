@@ -16,14 +16,10 @@ namespace ShardingCore.Test3x.Shardings
         {
             "A", "B", "C"
         };
-        protected override string ConvertToShardingKey(object shardingKey)
-        {
-            return shardingKey?.ToString() ?? string.Empty;
-        }
         //我们设置区域就是数据库
         public override string ShardingKeyToDataSourceName(object shardingKey)
         {
-            return ConvertToShardingKey(shardingKey);
+            return shardingKey?.ToString() ?? string.Empty;
         }
 
         public override List<string> GetAllDataSourceNames()

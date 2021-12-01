@@ -78,11 +78,10 @@ namespace ShardingCore.Extensions
         /// </summary>
         /// <param name="source">元数据源</param>
         /// <param name="dbContext">新数据源</param>
-        /// <param name="isParallelQuery">是否是并行查询,是的话直接启用asnotracking</param>
         /// <returns></returns>
-        internal static IQueryable ReplaceDbContextQueryable(this IQueryable source, DbContext dbContext,bool isParallelQuery)
+        internal static IQueryable ReplaceDbContextQueryable(this IQueryable source, DbContext dbContext)
         {
-            DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext,isParallelQuery);
+            DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);
             var newExpression = replaceQueryableVisitor.Visit(source.Expression);
             return replaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
         }

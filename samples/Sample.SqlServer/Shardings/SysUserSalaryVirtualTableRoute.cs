@@ -17,14 +17,10 @@ namespace Sample.SqlServer.Shardings
 */
     public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int>
     {
-        protected override int ConvertToShardingKey(object shardingKey)
-        {
-            return Convert.ToInt32(shardingKey);
-        }
 
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var time = ConvertToShardingKey(shardingKey);
+            var time = Convert.ToInt32(shardingKey);
             return TimeFormatToTail(time);
         }
 

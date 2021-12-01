@@ -23,7 +23,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         public DataSourceRouteRuleContext(IQueryable<T> queryable)
         {
             Queryable = queryable;
-            QueryEntities = queryable.ParseQueryableRoute();
+            QueryEntities = queryable.ParseQueryableEntities();
         }
         /// <summary>
         /// 查询条件

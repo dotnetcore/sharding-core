@@ -44,12 +44,6 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         public bool EnablePagination => PaginationMetadata != null;
 
         /// <summary>
-        /// 分库字段object类型的如何转成对应的泛型类型how convert sharding key to generic type key value
-        /// </summary>
-        /// <param name="shardingKey"></param>
-        /// <returns></returns>
-        protected abstract TKey ConvertToShardingKey(object shardingKey);
-        /// <summary>
         /// 分库字段如何转成对应的数据源名称 how  convert sharding data source key to data source name
         /// </summary>
         /// <param name="shardingKey"></param>

@@ -48,17 +48,8 @@ namespace ShardingCore.VirtualRoutes.Mods
         /// <returns></returns>
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var shardingKeyStr = ConvertToShardingKey(shardingKey);
+            var shardingKeyStr = shardingKey.ToString();
             return Math.Abs(ShardingCoreHelper.GetStringHashCode(shardingKeyStr) % Mod).ToString().PadLeft(TailLength,PaddingChar);
-        }
-        /// <summary>
-        /// 将shardingKey转成对应的字符串
-        /// </summary>
-        /// <param name="shardingKey"></param>
-        /// <returns></returns>
-        protected override string ConvertToShardingKey(object shardingKey)
-        {
-            return shardingKey.ToString();
         }
         /// <summary>
         /// 获取对应类型在数据库中的所有后缀

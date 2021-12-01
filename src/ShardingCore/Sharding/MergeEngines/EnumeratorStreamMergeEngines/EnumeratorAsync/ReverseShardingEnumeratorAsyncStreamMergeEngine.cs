@@ -50,8 +50,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             {
                 return StreamMergeContext.TableRouteResults.Select(routeResult =>
                 {
-                    var newQueryable = CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult);
-                    return AsyncParallelEnumerator(newQueryable, async,cancellationToken);
+                    return Task.Run(async () =>
+                    {
+                        var newQueryable =
+                            CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult);
+                        return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                    });
                 });
             }).ToArray();;
 
@@ -63,7 +67,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
             var newQueryable = (IQueryable<TEntity>)reverseOrderQueryable
-                .ReplaceDbContextQueryable(shardingDbContext,StreamMergeContext.IsParallelQuery());
+                .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
 

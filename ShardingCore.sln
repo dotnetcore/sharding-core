@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31019.35
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{490FAE47-4476-4508-B216-505FC850447F}"
 EndProject
@@ -49,7 +49,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test3x", "test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test2x", "test\ShardingCore.Test2x\ShardingCore.Test2x.csproj", "{5ED4AF17-F16D-4857-B19C-018831109991}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test", "test\ShardingCore.Test\ShardingCore.Test.csproj", "{32EA64CC-0877-4B4D-BFBA-504EDB2237D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test", "test\ShardingCore.Test\ShardingCore.Test.csproj", "{32EA64CC-0877-4B4D-BFBA-504EDB2237D6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{B458D737-33C5-4C10-9687-0BED2E7CD346}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCoreBenchmark", "benchmarks\ShardingCoreBenchmark\ShardingCoreBenchmark.csproj", "{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +133,10 @@ Global
 		{32EA64CC-0877-4B4D-BFBA-504EDB2237D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32EA64CC-0877-4B4D-BFBA-504EDB2237D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32EA64CC-0877-4B4D-BFBA-504EDB2237D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +160,7 @@ Global
 		{E64E09EF-2DC0-4948-A948-256EF5F95C53} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{5ED4AF17-F16D-4857-B19C-018831109991} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{32EA64CC-0877-4B4D-BFBA-504EDB2237D6} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
+		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846} = {B458D737-33C5-4C10-9687-0BED2E7CD346}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

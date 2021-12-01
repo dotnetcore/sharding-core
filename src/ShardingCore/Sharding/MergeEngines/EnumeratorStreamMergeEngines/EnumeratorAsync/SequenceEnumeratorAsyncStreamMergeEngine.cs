@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly PaginationSequenceConfig _dataSourceSequenceMatchOrderConfig;
@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             _isAsc = isAsc;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async,CancellationToken cancellationToken=new CancellationToken())
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             var noPaginationQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
@@ -53,7 +53,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var dataSourceOrderMain = _dataSourceSequenceMatchOrderConfig != null;
             var sortRouteResults = _routeQueryResults.Select(o => new
             {
-                DataSourceName=o.DataSourceName,
+                DataSourceName = o.DataSourceName,
                 Tail = o.TableRouteResult.ReplaceTables.First().Tail,
                 RouteQueryResult = o
             });
@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 if (_isAsc)
                 {
                     sortRouteResults = sortRouteResults.OrderBy(o => o.DataSourceName,
-                        _dataSourceSequenceMatchOrderConfig.RouteComparer).ThenByIf(o=>o.Tail, useThenBy, _tableSequenceMatchOrderConfig.RouteComparer);
+                        _dataSourceSequenceMatchOrderConfig.RouteComparer).ThenByIf(o => o.Tail, useThenBy, _tableSequenceMatchOrderConfig.RouteComparer);
                 }
                 else
                 {
@@ -91,19 +91,23 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             var enumeratorTasks = sequenceResults.Select(sequenceResult =>
             {
-                var newQueryable = CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
-                return AsyncParallelEnumerator(newQueryable, async,cancellationToken);
+                return Task.Run(async () =>
+                {
+                    var newQueryable =
+                        CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
+                    return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                });
             }).ToArray();
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
+        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname, IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,sequenceResult.TableRouteResult);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname, sequenceResult.TableRouteResult);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take))
-                .ReplaceDbContextQueryable(shardingDbContext,StreamMergeContext.IsParallelQuery());
+                .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;
         }
 
