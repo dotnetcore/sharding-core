@@ -16,12 +16,15 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     * @Date: Saturday, 19 December 2020 19:55:24
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractShardingOperatorVirtualTableRoute<TEntity, TKey> : AbstractShardingFilterVirtualTableRoute<TEntity, TKey> where TEntity : class
+    public abstract class AbstractShardingOperatorVirtualTableRoute<TEntity, TKey> : AbstractShardingRouteParseCompileCacheVirtualTableRoute<TEntity, TKey> where TEntity : class
     {
         protected override List<IPhysicTable> DoRouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
-            //获取所有需要路由的表后缀 
-            var filter = ShardingUtil.GetRouteShardingTableFilter<TKey>(queryable, EntityMetadata, GetRouteToFilter,true);
+            //获取路由后缀表达式
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression<TKey>(queryable, EntityMetadata, GetRouteToFilter,true);
+            //表达式缓存编译
+            var filter=CachingCompile(routeParseExpression);
+            //通过编译结果进行过滤
             var physicTables = allPhysicTables.Where(o => filter(o.Tail)).ToList();
             return physicTables;
         }

@@ -20,22 +20,22 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     /// <summary>
     /// 过滤虚拟路由用于处理强制路由、提示路由、路由断言
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingFilterVirtualDataSourceRoute<T, TKey> : AbstractVirtualDataSourceRoute<T, TKey> where T : class
+    public abstract class AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> : AbstractVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
 
-        public  ShardingRouteContext CurrentShardingRouteContext =>
+        public ShardingRouteContext CurrentShardingRouteContext =>
             ShardingContainer.GetService<IShardingRouteManager>().Current;
         /// <summary>
         /// 启用提示路由
         /// </summary>
-         protected virtual bool EnableHintRoute => false;
+        protected virtual bool EnableHintRoute => false;
         /// <summary>
         /// 启用断言路由
         /// </summary>
         protected virtual bool EnableAssertRoute => false;
-        public override List<string> RouteWithPredicate(IQueryable queryable,bool isQuery)
+        public override List<string> RouteWithPredicate(IQueryable queryable, bool isQuery)
         {
             var allDataSourceNames = GetAllDataSourceNames();
             if (!isQuery)
@@ -48,44 +48,55 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             {
                 if (CurrentShardingRouteContext != null)
                 {
-                    if (CurrentShardingRouteContext.TryGetMustDataSource<T>(out HashSet<string> mustDataSources) && mustDataSources.IsNotEmpty())
+                    if (CurrentShardingRouteContext.TryGetMustDataSource<TEntity>(out HashSet<string> mustDataSources) && mustDataSources.IsNotEmpty())
                     {
                         var dataSources = allDataSourceNames.Where(o => mustDataSources.Contains(o)).ToList();
-                        if (dataSources.IsEmpty()||dataSources.Count!=mustDataSources.Count)
+                        if (dataSources.IsEmpty() || dataSources.Count != mustDataSources.Count)
                             throw new ShardingCoreException(
-                                $" sharding data source route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustDataSources)}]");
+                                $" sharding data source route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",", mustDataSources)}]");
                         return dataSources;
                     }
 
-                    if (CurrentShardingRouteContext.TryGetHintDataSource<T>(out HashSet<string> hintDataSources) && hintDataSources.IsNotEmpty())
+                    if (CurrentShardingRouteContext.TryGetHintDataSource<TEntity>(out HashSet<string> hintDataSources) && hintDataSources.IsNotEmpty())
                     {
                         var dataSources = allDataSourceNames.Where(o => hintDataSources.Contains(o)).ToList();
-                        if (dataSources.IsEmpty()||dataSources.Count!=hintDataSources.Count)
+                        if (dataSources.IsEmpty() || dataSources.Count != hintDataSources.Count)
                             throw new ShardingCoreException(
-                                $" sharding data source route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintDataSources)}]");
+                                $" sharding data source route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",", hintDataSources)}]");
 
                         return GetFilterDataSourceNames(allDataSourceNames, dataSources);
                     }
                 }
             }
             var filterDataSources = DoRouteWithPredicate(allDataSourceNames, queryable);
-            return GetFilterDataSourceNames(allDataSourceNames,filterDataSources);
+            return GetFilterDataSourceNames(allDataSourceNames, filterDataSources);
         }
-
+        /// <summary>
+        /// 判断是调用全局还是内部断言
+        /// </summary>
+        /// <param name="allDataSourceNames"></param>
+        /// <param name="filterDataSources"></param>
+        /// <returns></returns>
         private List<string> GetFilterDataSourceNames(List<string> allDataSourceNames, List<string> filterDataSources)
         {
-            //后拦截器
-            var resultDataSources = AfterDataSourceFilter(allDataSourceNames, filterDataSources);
-            //最后处理断言
-            ProcessAssertRoutes(allDataSourceNames, resultDataSources);
-            return resultDataSources;
+            if (UseAssertRoute)
+            {
+                //最后处理断言
+                ProcessAssertRoutes(allDataSourceNames, filterDataSources);
+                return filterDataSources;
+            }
+            else
+            {
+                return AfterDataSourceFilter(allDataSourceNames, filterDataSources);
+            }
         }
+        private bool UseAssertRoute => EnableAssertRoute && CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertDataSource<TEntity>(out ICollection<IDataSourceRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty();
 
-        private void ProcessAssertRoutes(List<string> allDataSources,List<string> filterDataSources)
+        private void ProcessAssertRoutes(List<string> allDataSources, List<string> filterDataSources)
         {
             if (EnableAssertRoute)
             {
-                if (CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertDataSource<T>(out ICollection<IDataSourceRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty())
+                if (CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertDataSource<TEntity>(out ICollection<IDataSourceRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty())
                 {
                     foreach (var routeAssert in routeAsserts)
                     {

@@ -27,17 +27,8 @@ namespace ShardingCore.Core.Internal.Visitors
     public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
     {
 
-        private static readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeFilter = new(new ExtensionExpressionComparer.ExpressionEqualityComparer());
         private readonly EntityMetadata _entityMetadata;
         private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
-        static QueryableRouteShardingTableDiscoverVisitor()
-        {
-            Expression<Func<string, bool>> defaultWhere1 = x => true;
-            _routeFilter.TryAdd(defaultWhere1, defaultWhere1.Compile());
-            Expression<Func<string, bool>> defaultWhere2 = x => true;
-            var expression = defaultWhere1.And(defaultWhere2);
-            _routeFilter.TryAdd(expression, expression.Compile());
-        }
         /// <summary>
         /// 是否是分表路由
         /// </summary>
@@ -51,42 +42,11 @@ namespace ShardingCore.Core.Internal.Visitors
             _shardingTableRoute = shardingTableRoute;
         }
 
-        public Func<string, bool> GetStringFilterTail()
+        public Expression<Func<string, bool>> GetRouteParseExpression()
         {
-            //if (_lastExpression == null)
-            //{
-            //    _lastExpression = _where;
-            //}
-            //else
-            //{
-            //    var startNew = Stopwatch.StartNew();
-            //    for (int i = 0; i < 300; i++)
-            //    {
-            //        var exxq = LambdaCompare.Eq(_lastExpression, _where);
-            //    }
-            //    startNew.Stop();
-            //    var x = startNew.ElapsedMilliseconds;
-            //    var eq = LambdaCompare.Eq(_lastExpression, _where);
-            //    _lastExpression = _where;
-            //}
-            return _where.Compile();
-            //var shouldCache = ShouldCache(_where);
-            //if (shouldCache)
-            //    return _routeFilter.GetOrAdd(_where, key => _where.Compile());
-            //return _where.Compile();
+            return _where;
         }
 
-        private bool ShouldCache(Expression whereExpression)
-        {
-            var routeParseCacheExpressionVisitor = new RouteParseCacheExpressionVisitor();
-            routeParseCacheExpressionVisitor.Visit(whereExpression);
-            if (routeParseCacheExpressionVisitor.HasOrElse())
-                return false;
-            var hasAndAlsoCount = routeParseCacheExpressionVisitor.HasAndAlsoCount();
-            if (hasAndAlsoCount > 1)
-                return false;
-            return true;
-        }
 
         private bool IsShardingKey(Expression expression)
         {

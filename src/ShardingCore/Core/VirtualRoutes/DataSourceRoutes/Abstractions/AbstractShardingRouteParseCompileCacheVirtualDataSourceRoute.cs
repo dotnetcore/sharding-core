@@ -5,23 +5,21 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Visitors;
 
-namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
+namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 {
     /// <summary>
-    /// 路由解析缓存
+    /// 分库路由表达式解析缓存
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingRouteParseCompileCacheVirtualTableRoute<TEntity, TKey> : AbstractShardingFilterVirtualTableRoute<TEntity, TKey> where TEntity : class
+    public abstract class AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute<TEntity, TKey> : AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
-        private  readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeCompileCaches = new(new ExtensionExpressionComparer.ExpressionEqualityComparer());
+        private static readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeCompileCaches = new(new ExtensionExpressionComparer.ExpressionEqualityComparer());
 
-        protected AbstractShardingRouteParseCompileCacheVirtualTableRoute()
+        static AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute()
         {
             Expression<Func<string, bool>> defaultWhere1 = x => true;
             _routeCompileCaches.TryAdd(defaultWhere1, defaultWhere1.Compile());
@@ -61,7 +59,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         protected virtual Func<string, bool> DoCachingCompile(Expression<Func<string, bool>> parseWhere)
         {
             var shouldCache = ShouldCache(parseWhere);
-            if(shouldCache)
+            if (shouldCache)
                 return _routeCompileCaches.GetOrAdd(parseWhere, key => parseWhere.Compile());
             return null;
         }

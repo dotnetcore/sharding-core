@@ -118,18 +118,16 @@ namespace ShardingCore6x
         public int N;
 
 
-        //[Benchmark]
-        //public async Task NoShardingFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 3000000).ToString();
-        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
-        //        var queryable1 = _defaultShardingDbContext.Set<Order>().Where(o => next== o.Id);
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
-        //    }
-        //}
+        [Benchmark]
+        public async Task NoRouteParseCache()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 3000000).ToString();
+                var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
+                _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
+            }
+        }
 
         //[Benchmark]
         //public async Task ShardingFirstOrDefaultAsync()

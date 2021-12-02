@@ -12,6 +12,7 @@ namespace ShardingCore.Test.Shardings
 {
     public class LogDayLongVirtualRoute:AbstractSimpleShardingDayKeyLongVirtualTableRoute<LogDayLong>
     {
+        public override bool EnableRouteParseCompileCache => true;
         protected override bool EnableHintRoute => true;
 
         public override void Configure(EntityMetadataTableBuilder<LogDayLong> builder)

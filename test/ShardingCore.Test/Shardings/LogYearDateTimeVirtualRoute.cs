@@ -11,6 +11,7 @@ namespace ShardingCore.Test.Shardings
 {
     public class LogYearDateTimeVirtualRoute:AbstractSimpleShardingYearKeyDateTimeVirtualTableRoute<LogYearDateTime>
     {
+        public override bool EnableRouteParseCompileCache => true;
         protected override bool EnableHintRoute => true;
 
         public override bool AutoCreateTableByTime()

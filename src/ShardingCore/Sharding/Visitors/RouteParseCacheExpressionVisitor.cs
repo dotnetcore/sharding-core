@@ -10,7 +10,8 @@ namespace ShardingCore.Sharding.Visitors
     internal class RouteParseCacheExpressionVisitor : ExpressionVisitor
     {
         private bool _hasOrElse = false;
-        private int _hasAndAlsoCount = 0;
+        private int _andAlsoCount = 0;
+        private int _equalCount = 0;
         protected override Expression VisitBinary(BinaryExpression node)
         {
             if (node.NodeType == ExpressionType.OrElse)
@@ -21,7 +22,10 @@ namespace ShardingCore.Sharding.Visitors
                 }
             }else if (node.NodeType == ExpressionType.AndAlso)
             {
-                _hasAndAlsoCount++;
+                _andAlsoCount++;
+            }else if (node.NodeType == ExpressionType.Equal)
+            {
+                _equalCount++;
             }
             return base.VisitBinary(node);
         }
@@ -31,9 +35,13 @@ namespace ShardingCore.Sharding.Visitors
             return _hasOrElse;
         }
 
-        public int HasAndAlsoCount()
+        public int AndAlsoCount()
         {
-            return _hasAndAlsoCount;
+            return _andAlsoCount;
+        }
+        public int EqualCount()
+        {
+            return _equalCount;
         }
     }
 }

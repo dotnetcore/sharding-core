@@ -20,14 +20,17 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     /// <summary>
     /// 抽象类型抽象出对应的条件表达式
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingOperatorVirtualDataSourceRoute<T, TKey> : AbstractShardingFilterVirtualDataSourceRoute<T, TKey> where T : class
+    public abstract class AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey> : AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {
-            //获取所有需要路由的表后缀
-            var filter = ShardingUtil.GetRouteShardingTableFilter<TKey>(queryable, EntityMetadata, GetRouteToFilter,false);
+            //获取路由后缀表达式
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression<TKey>(queryable, EntityMetadata, GetRouteToFilter, false);
+            //表达式缓存编译
+            var filter = CachingCompile(routeParseExpression);
+            //通过编译结果进行过滤
             var dataSources = allDataSourceNames.Where(o => filter(o)).ToList();
             return dataSources;
         }

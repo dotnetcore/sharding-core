@@ -63,22 +63,24 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (physicTables.IsEmpty()||physicTables.Count!=hintTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
-                        if (UseAssertRoute)
-                        {
-                            ProcessAssertRoutes(allPhysicTables, physicTables);
-                            return physicTables;
-                        }
-                        else
-                        {
-                            //后拦截器
-                            return AfterPhysicTableFilter(allPhysicTables, physicTables);
-                        }
+                        return GetFilterTableNames(allPhysicTables, physicTables);
                     }
                 }
             }
 
 
             var filterPhysicTables = DoRouteWithPredicate(allPhysicTables,queryable);
+            return GetFilterTableNames(allPhysicTables, filterPhysicTables);
+        }
+
+        /// <summary>
+        /// 判断是调用全局过滤器还是调用内部断言
+        /// </summary>
+        /// <param name="allPhysicTables"></param>
+        /// <param name="filterPhysicTables"></param>
+        /// <returns></returns>
+        private List<IPhysicTable> GetFilterTableNames(List<IPhysicTable> allPhysicTables, List<IPhysicTable> filterPhysicTables)
+        {
             if (UseAssertRoute)
             {
                 //最后处理断言

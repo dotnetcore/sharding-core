@@ -52,14 +52,14 @@ namespace ShardingCore.Utils
         /// <param name="keyToTailExpression"></param>
         /// <param name="shardingTableRoute">sharding table or data source</param>
         /// <returns></returns>
-        public static Func<string, bool> GetRouteShardingTableFilter<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression,bool shardingTableRoute)
+        public static Expression<Func<string, bool>> GetRouteParseExpression<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression,bool shardingTableRoute)
         {
 
             QueryableRouteShardingTableDiscoverVisitor<TKey> visitor = new QueryableRouteShardingTableDiscoverVisitor<TKey>(entityMetadata, keyToTailExpression, shardingTableRoute);
 
             visitor.Visit(queryable.Expression);
 
-            return visitor.GetStringFilterTail();
+            return visitor.GetRouteParseExpression();
         }
         /// <summary>
         /// 获取本次查询的所有涉及到的对象

@@ -445,6 +445,7 @@ namespace ShardingCore.Test
         [Fact]
         public async Task FirstOrDefault2()
         {
+            var sysUserModabxxxxx = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth>=202102).FirstOrDefaultAsync();
             var sysUserModabxxx = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").FirstOrDefaultAsync();
             var sysUserModabxxx11 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2"|| o.Name == "name_3").FirstOrDefaultAsync();
             var x=new Object [] { "1", "2" };
