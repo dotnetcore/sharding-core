@@ -106,7 +106,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             if (IsDefault(dataSourceName))
                 return DefaultConnectionString;
-            return GetPhysicDataSource(DefaultDataSourceName).ConnectionString;
+            return GetPhysicDataSource(dataSourceName).ConnectionString;
         }
 
         public bool AddPhysicDataSource(IPhysicDataSource physicDataSource)
