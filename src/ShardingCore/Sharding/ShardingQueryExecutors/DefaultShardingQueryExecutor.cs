@@ -166,6 +166,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         private TResult GenericShardingDbContextMergeExecute<TResult>(Type streamMergeEngineType, IShardingDbContext shardingDbContext, MethodCallExpression query, bool async, CancellationToken cancellationToken)
         {
             //{
+
+            //    var startNew1 = Stopwatch.StartNew();
             //    var queryEntityType = query.GetQueryEntityType();
             //    var newStreamMergeEngineType = streamMergeEngineType.MakeGenericType(shardingDbContext.GetType(), queryEntityType);
 
@@ -181,21 +183,19 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             //    //    var x = startNew.ElapsedMilliseconds;
             //    //}
             //    {
-
-            //        //获取所有需要路由的表后缀
-            //        var startNew1 = Stopwatch.StartNew();
-            //        for (int i = 0; i < 1; i++)
+            //        for (int i = 0; i < 10; i++)
             //        {
             //            var streamEngine = Activator.CreateInstance(typeof(AAA), shardingDbContext, query);
             //        }
-            //        startNew1.Stop();
-            //        var x = startNew1.ElapsedMilliseconds;
             //    }
             //    var methodName = async ? nameof(IGenericMergeResult.MergeResultAsync) : nameof(IGenericMergeResult.MergeResult);
             //    var streamEngineMethod = newStreamMergeEngineType.GetMethod(methodName);
             //    if (streamEngineMethod == null)
             //        throw new ShardingCoreException($"cant found InMemoryAsyncStreamMergeEngine method [{methodName}]");
             //    var @params = async ? new object[] { cancellationToken } : new object[0];
+            //    startNew1.Stop();
+            //    var x = startNew1.ElapsedMilliseconds;
+            //    Console.WriteLine("----------------------"+x);
             //}
 
             {

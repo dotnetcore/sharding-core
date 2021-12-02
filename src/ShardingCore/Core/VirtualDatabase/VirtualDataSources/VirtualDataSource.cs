@@ -32,6 +32,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             new ConcurrentDictionary<string, IPhysicDataSource>();
 
         public string DefaultDataSourceName { get; private set; }
+        public string DefaultConnectionString { get; private set; }
 
         public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
@@ -101,6 +102,13 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return physicDataSource;
         }
 
+        public string GetConnectionString(string dataSourceName)
+        {
+            if (IsDefault(dataSourceName))
+                return DefaultConnectionString;
+            return GetPhysicDataSource(DefaultDataSourceName).ConnectionString;
+        }
+
         public bool AddPhysicDataSource(IPhysicDataSource physicDataSource)
         {
             if (physicDataSource.IsDefault)
@@ -109,8 +117,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 {
                     throw new ShardingCoreInvalidOperationException($"default data source name:[{DefaultDataSourceName}],add physic default data source name:[{physicDataSource.DataSourceName}]");
                 }
-
                 DefaultDataSourceName = physicDataSource.DataSourceName;
+                DefaultConnectionString = physicDataSource.ConnectionString;
             }
             return _physicDataSources.TryAdd(physicDataSource.DataSourceName, physicDataSource);
         }
@@ -125,12 +133,19 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public bool IsDefault(string dataSourceName)
         {
-            if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
-            {
-                throw new ShardingCoreInvalidOperationException("virtual data source not inited");
-            }
 
-            return DefaultDataSourceName== dataSourceName;
+            return DefaultDataSourceName == dataSourceName;
+        }
+
+        public void CheckVirtualDataSource()
+        {
+
+            if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
+                throw new ShardingCoreInvalidOperationException(
+                    $"virtual data source not inited {nameof(DefaultDataSourceName)} in IShardingDbContext null");
+            if (string.IsNullOrWhiteSpace(DefaultConnectionString))
+                throw new ShardingCoreInvalidOperationException(
+                    $"virtual data source not inited {nameof(DefaultConnectionString)} in IShardingDbContext null");
         }
     }
 }

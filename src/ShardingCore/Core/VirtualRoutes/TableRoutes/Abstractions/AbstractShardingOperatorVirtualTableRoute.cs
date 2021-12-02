@@ -23,7 +23,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             //获取路由后缀表达式
             var routeParseExpression = ShardingUtil.GetRouteParseExpression<TKey>(queryable, EntityMetadata, GetRouteToFilter,true);
             //表达式缓存编译
-            var filter=CachingCompile(routeParseExpression);
+            var filter =CachingCompile(routeParseExpression);
             //通过编译结果进行过滤
             var physicTables = allPhysicTables.Where(o => filter(o.Tail)).ToList();
             return physicTables;

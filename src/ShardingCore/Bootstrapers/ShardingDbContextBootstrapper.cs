@@ -78,6 +78,7 @@ namespace ShardingCore.Bootstrapers
             _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
             InitializeEntityMetadata();
             InitializeConfigure();
+            _virtualDataSource.CheckVirtualDataSource();
         }
 
         private void InitializeEntityMetadata()

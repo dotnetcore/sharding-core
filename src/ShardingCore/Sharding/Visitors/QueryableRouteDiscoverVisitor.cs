@@ -94,7 +94,9 @@ namespace ShardingCore.Core.Internal.Visitors
         private TKey GetShardingKeyValue(Expression expression)
         {
             if (expression is ConstantExpression constantExpression)
+            {
                 return (TKey)constantExpression.Value;
+            }
             if (expression is UnaryExpression unaryExpression)
             {
                 return Expression.Lambda<Func<TKey>>(unaryExpression.Operand).Compile()();
@@ -102,11 +104,24 @@ namespace ShardingCore.Core.Internal.Visitors
 
             if (expression is MemberExpression member1Expression)
             {
-                //var target = GetShardingKeyValue(member1Expression.Expression);
-                //if (member1Expression.Member is FieldInfo field)
-                //    return field.GetValue(target);
-                //if (member1Expression.Member is PropertyInfo property)
-                //    return property.GetValue(target);
+
+                if (member1Expression.Expression is ConstantExpression memberConstantExpression)
+                {
+                    if (member1Expression.Member is FieldInfo memberFieldInfo)
+                    {
+                        object container = memberConstantExpression.Value;
+                        return (TKey)memberFieldInfo.GetValue(container);
+                    }
+                    if (member1Expression.Member is PropertyInfo memberPropertyInfo)
+                    {
+                        object container = memberConstantExpression.Value;
+                        return (TKey)memberPropertyInfo.GetValue(container);
+                    }
+                    else if (memberConstantExpression.Value is TKey shardingKeyValue)
+                    {
+                        return shardingKeyValue;
+                    }
+                }
                 return Expression.Lambda<Func<TKey>>(member1Expression).Compile()();
             }
 

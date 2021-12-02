@@ -60,7 +60,7 @@ namespace ShardingCore.Sharding
         }
         private string GetWriteConnectionString(string dataSourceName)
         {
-            return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
+            return _virtualDataSource.GetConnectionString(dataSourceName);
         }
 
         private string GetReadWriteSeparationConnectString(string dataSourceName)

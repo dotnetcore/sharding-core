@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding
         }
         public string GetConnectionString(string dataSourceName)
         {
-            return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
+            return _virtualDataSource.GetConnectionString(dataSourceName);
         }
     }
 }

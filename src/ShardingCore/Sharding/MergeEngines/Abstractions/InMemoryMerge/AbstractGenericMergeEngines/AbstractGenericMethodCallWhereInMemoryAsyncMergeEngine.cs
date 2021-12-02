@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
         {
             if (secondExpression is UnaryExpression where)
             {
-                if (where.Operand is LambdaExpression lambdaExpression && lambdaExpression is Expression<Func<TEntity, bool>> predicate)
+                if (@where.Operand is LambdaExpression lambdaExpression and Expression<Func<TEntity, bool>> predicate)
                 {
                     return queryable.Where(predicate);
                 }

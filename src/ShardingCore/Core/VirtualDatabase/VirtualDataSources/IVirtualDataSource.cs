@@ -46,6 +46,12 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// </exception>
         /// <returns></returns>
         IPhysicDataSource GetPhysicDataSource(string dataSourceName);
+        /// <summary>
+        /// 获取数据库链接字符串
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        string GetConnectionString(string dataSourceName);
 
         /// <summary>
         /// 添加物理表 add physic data source
@@ -56,6 +62,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
         bool IsDefault(string dataSourceName);
+        /// <summary>
+        /// 初始化检查数据源
+        /// </summary>
+        void CheckVirtualDataSource();
     }
     /// <summary>
     /// 虚拟数据源 连接所有的实际数据源

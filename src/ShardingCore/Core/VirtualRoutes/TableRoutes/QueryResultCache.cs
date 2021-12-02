@@ -21,13 +21,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// </summary>
         public static Func<string, bool> FromCache(this Expression<Func<string,bool>> query)
         {
-            var startNew = Stopwatch.StartNew();
-            for (int i = 0; i < 300; i++)
-            {
-                string key1 = query.GetCacheKey();
-            }
-            startNew.Stop();
-            var x = startNew.ElapsedMilliseconds;
             string key = query.GetCacheKey();
 
             return _routeFilter.GetOrAdd(key, k => query.Compile());
