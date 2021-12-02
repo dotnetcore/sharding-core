@@ -34,6 +34,8 @@ namespace ShardingCore.Sharding
             _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
             _shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
             _useReadWriteSeparation = _connectionStringManager is ReadWriteConnectionStringManager<TShardingDbContext>;
+            ReadWriteSeparationPriority = _readWriteOptions.ReadWritePriority;
+            ReadWriteSeparation = _readWriteOptions.ReadWriteSupport;
 
         }
         //public bool IsUseReadWriteSeparation()

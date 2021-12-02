@@ -442,10 +442,24 @@ namespace ShardingCore.Test
 
         } 
 
-[Fact]
+        [Fact]
         public async Task FirstOrDefault2()
         {
+            var sysUserModabxxx = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").FirstOrDefaultAsync();
+            var sysUserModabxxx11 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2"|| o.Name == "name_3").FirstOrDefaultAsync();
+            var x=new Object [] { "1", "2" };
+            var sysUserModab = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id.Equals("1")).FirstOrDefaultAsync();
+            Assert.NotNull(sysUserModab);
+            Assert.True(sysUserModab.Id == "1");
+            var sysUserModaa = await _virtualDbContext.Set<SysUserMod>().Where(o => "1".Equals(o.Id)).FirstOrDefaultAsync();
+            Assert.NotNull(sysUserModaa);
+            Assert.True(sysUserModaa.Id == "1");
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefaultAsync();
+            Assert.NotNull(sysUserMod);
+            Assert.True(sysUserMod.Id == "1");
+            var sysUserModxx = await _virtualDbContext.Set<SysUserMod>().Where(o =>x.Contains(o.Id)).FirstOrDefaultAsync();
+            Assert.NotNull(sysUserModxx);
+            Assert.True(x.Contains(sysUserModxx.Id) );
             Assert.NotNull(sysUserMod);
             var userMod = _virtualDbContext.Set<SysUserMod>().Find("1");
             Assert.Equal(sysUserMod, userMod);
@@ -904,7 +918,6 @@ namespace ShardingCore.Test
         [Fact]
         public async Task OrderReadWrite()
         {
-
             //切换到只读数据库，只读数据库又只配置了A数据源读取B数据源
             _virtualDbContext.ReadWriteSeparationReadOnly();
             var list = await _virtualDbContext.Set<Order>().Where(o => o.Money == 1).ToListAsync();

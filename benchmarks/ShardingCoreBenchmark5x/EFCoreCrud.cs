@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Jobs;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,14 +13,12 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
-using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore6x.NoShardingDbContexts;
-using ShardingCore6x.ShardingDbContexts;
+using ShardingCoreBenchmark5x.NoShardingDbContexts;
+using ShardingCoreBenchmark5x.ShardingDbContexts;
 
-
-namespace ShardingCore6x
+namespace ShardingCoreBenchmark5x
 {
     public class EFCoreCrud
     {
@@ -110,38 +106,16 @@ namespace ShardingCore6x
             _routeTailFactory= ShardingContainer.GetService<IRouteTailFactory>();
             _streamMergeContextFactory =
                 ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
-
+            var queryable1 = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "0");
+            _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
+            var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "1000");
+            _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
         }
 
 
         [Params(10)]
         public int N;
 
-
-        //[Benchmark]
-        //public async Task NoShardingFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 3000000).ToString();
-        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
-        //        var queryable1 = _defaultShardingDbContext.Set<Order>().Where(o => next== o.Id);
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
-        //    }
-        //}
-
-        //[Benchmark]
-        //public async Task ShardingFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "1000");
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
-        //        var queryable1 = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "1000004");
-        //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
-        //    }
-        //}
         [Benchmark]
         public async Task NoShardingFirstOrDefaultAsync()
         {

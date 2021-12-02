@@ -405,14 +405,27 @@ namespace ShardingCore.Test3x
         [Fact]
         public void FirstOrDefault2()
         {
-            var sysUserMod =  _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefault();
+
+            var x = new Object[] { "1", "2" };
+            var sysUserModab = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id.Equals("1")).FirstOrDefault();
+            Assert.NotNull(sysUserModab);
+            Assert.True(sysUserModab.Id == "1");
+            var sysUserModaa = _virtualDbContext.Set<SysUserMod>().Where(o => "1".Equals(o.Id)).FirstOrDefault();
+            Assert.NotNull(sysUserModaa);
+            Assert.True(sysUserModaa.Id == "1");
+            var sysUserMod = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefault();
+            Assert.NotNull(sysUserMod);
+            Assert.True(sysUserMod.Id == "1");
+            var sysUserModxx = _virtualDbContext.Set<SysUserMod>().Where(o => x.Contains(o.Id)).FirstOrDefault();
+            Assert.NotNull(sysUserModxx);
+            Assert.True(x.Contains(sysUserModxx.Id));
             Assert.NotNull(sysUserMod);
             var userMod = _virtualDbContext.Set<SysUserMod>().Find("1");
             Assert.Equal(sysUserMod, userMod);
             Assert.True(sysUserMod.Id == "1");
-            var user198 =  _virtualDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
+            var user198 = _virtualDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
             Assert.True(user198.Id == "198");
-            var userId198 =  _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
+            var userId198 = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
             Assert.Equal(userId198, "198");
         }
 

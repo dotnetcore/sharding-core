@@ -90,6 +90,15 @@ namespace ShardingCore.Extensions
         {
             return  express.Method.DeclaringType.Namespace.IsIn("System.Linq", "System.Collections.Generic") && methodName == nameof(IList.Contains);
         }
+        /// <summary>
+        /// 是否是equal方法
+        /// </summary>
+        /// <param name="express"></param>
+        /// <returns></returns>
+        public static bool IsNamedEquals(this MethodCallExpression express)
+        {
+            return nameof(object.Equals).Equals(express.Method.Name);
+        }
 
         public static ISet<Type> ParseQueryableEntities(this IQueryable queryable)
         {

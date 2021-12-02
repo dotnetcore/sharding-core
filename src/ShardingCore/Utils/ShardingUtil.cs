@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal;
@@ -48,7 +49,6 @@ namespace ShardingCore.Utils
         /// <typeparam name="TKey"></typeparam>
         /// <param name="queryable"></param>
         /// <param name="entityMetadata"></param>
-        /// <param name="shardingKeyConvert"></param>
         /// <param name="keyToTailExpression"></param>
         /// <param name="shardingTableRoute">sharding table or data source</param>
         /// <returns></returns>

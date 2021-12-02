@@ -63,26 +63,45 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (physicTables.IsEmpty()||physicTables.Count!=hintTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
-                        ProcessAssertRoutes(allPhysicTables, physicTables);
-                        return physicTables;
+                        if (UseAssertRoute)
+                        {
+                            ProcessAssertRoutes(allPhysicTables, physicTables);
+                            return physicTables;
+                        }
+                        else
+                        {
+                            //后拦截器
+                            return AfterPhysicTableFilter(allPhysicTables, physicTables);
+                        }
                     }
                 }
             }
 
 
             var filterPhysicTables = DoRouteWithPredicate(allPhysicTables,queryable);
-            //后拦截器
-            var resultPhysicTables = AfterPhysicTableFilter(allPhysicTables,filterPhysicTables);
-            //最后处理断言
-            ProcessAssertRoutes(allPhysicTables, resultPhysicTables);
-            return resultPhysicTables;
+            if (UseAssertRoute)
+            {
+                //最后处理断言
+                ProcessAssertRoutes(allPhysicTables, filterPhysicTables);
+                return filterPhysicTables;
+            }
+            else
+            {
+                //后拦截器
+                return AfterPhysicTableFilter(allPhysicTables, filterPhysicTables);
+            }
         }
+
+        private bool UseAssertRoute => EnableAssertRoute && CurrentShardingRouteContext != null &&
+                                       CurrentShardingRouteContext.TryGetAssertTail<T>(
+                                           out ICollection<ITableRouteAssert> routeAsserts) &&
+                                       routeAsserts.IsNotEmpty();
 
         private void ProcessAssertRoutes(List<IPhysicTable> allPhysicTables,List<IPhysicTable> filterPhysicTables)
         {
-            if (EnableAssertRoute)
+            if (UseAssertRoute)
             {
-                if (CurrentShardingRouteContext != null && CurrentShardingRouteContext.TryGetAssertTail<T>(out ICollection<ITableRouteAssert> routeAsserts) && routeAsserts.IsNotEmpty())
+                if (CurrentShardingRouteContext.TryGetAssertTail<T>(out ICollection<ITableRouteAssert> routeAsserts))
                 {
                     foreach (var routeAssert in routeAsserts)
                     {

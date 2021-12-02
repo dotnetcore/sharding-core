@@ -53,7 +53,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test", "test\S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{B458D737-33C5-4C10-9687-0BED2E7CD346}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCoreBenchmark", "benchmarks\ShardingCoreBenchmark\ShardingCoreBenchmark.csproj", "{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCoreBenchmark", "benchmarks\ShardingCoreBenchmark\ShardingCoreBenchmark.csproj", "{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCoreBenchmark5x", "benchmarks\ShardingCoreBenchmark5x\ShardingCoreBenchmark5x.csproj", "{ED191305-AB19-4863-A48A-7BA4C21F467B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +139,10 @@ Global
 		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED191305-AB19-4863-A48A-7BA4C21F467B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED191305-AB19-4863-A48A-7BA4C21F467B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED191305-AB19-4863-A48A-7BA4C21F467B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED191305-AB19-4863-A48A-7BA4C21F467B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -161,6 +167,7 @@ Global
 		{5ED4AF17-F16D-4857-B19C-018831109991} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{32EA64CC-0877-4B4D-BFBA-504EDB2237D6} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846} = {B458D737-33C5-4C10-9687-0BED2E7CD346}
+		{ED191305-AB19-4863-A48A-7BA4C21F467B} = {B458D737-33C5-4C10-9687-0BED2E7CD346}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}
