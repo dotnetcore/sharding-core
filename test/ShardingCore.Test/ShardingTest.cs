@@ -446,12 +446,14 @@ namespace ShardingCore.Test
         public async Task FirstOrDefault2()
         {
             var sysUserModabxxxxx1 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202102).FirstOrDefaultAsync();
+            var sysUserModabxxxxx71 = await _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= 202102).FirstOrDefaultAsync();
+            var xxxx1 = 202102;
+            var sysUserModabxxxxx72 = await _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= xxxx1).FirstOrDefaultAsync();
             var sysUserModabxxxxx2 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202101).FirstOrDefaultAsync();
             var sysUserModabxxxxx3 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth > 202102).FirstOrDefaultAsync();
             var sysUserModabxxxxx4 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth == 202102).FirstOrDefaultAsync();
             var sysUserModabxxxxx5 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth < 202102).FirstOrDefaultAsync();
             var sysUserModabxxxxx6 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth <= 202102).FirstOrDefaultAsync();
-            var sysUserModabxxxxx7 = await _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202102).FirstOrDefaultAsync();
             var next = "1";
             var sysUserMod1 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == next).FirstOrDefaultAsync();
             var sysUserModabxxx = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").FirstOrDefaultAsync();

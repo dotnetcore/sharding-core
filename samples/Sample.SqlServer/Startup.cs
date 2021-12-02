@@ -42,8 +42,15 @@ namespace Sample.SqlServer
                 //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;")
+                .AddDefaultDataSource("A",
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;")
+                .AddShardingDataSource(sp =>
+                {
+                    return new Dictionary<string, string>()
+                    {
+                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" }
+                    };
+                }).AddShardingDataSourceRoute(op=>{})
                 .AddShardingTableRoute(o =>
                 {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
@@ -53,9 +60,10 @@ namespace Sample.SqlServer
                 {
                     return new Dictionary<string, IEnumerable<string>>()
                     {
-                        {"ds0",new HashSet<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDB1;Integrated Security=True;"}}
+                        {"A",new List<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDBA1;Integrated Security=True;","Data Source=localhost;Initial Catalog=ShardingCoreDBA2;Integrated Security=True;"}},
+                        {"B",new List<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDBB1;Integrated Security=True;"}}
                     };
-                },ReadStrategyEnum.Loop,true).End();
+                },ReadStrategyEnum.Loop,true,defaultPriority:10,ReadConnStringGetStrategyEnum.LatestFirstTime).End();
 
             services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(

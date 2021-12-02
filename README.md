@@ -92,7 +92,7 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
 |            NoShardingNoIndexToListAsync | 10 | 25,865.136 ms | 115.6391 ms | 102.5111 ms | 25,847.258 ms |
 |              ShardingNoIndexToListAsync | 10 |  5,502.922 ms |  92.7201 ms |  86.7305 ms |  5,483.847 ms |
 
-具体可以通过first前两次结果来计算得出结论单次查询的的损耗为0.3-0.4毫秒之间,通过数据聚合和数据路由的损耗单次在0.3ms-0.4ms,其中创建dbcontext为0.1毫秒目前没有好的优化方案,0.2毫秒左右是路由表达式解析和编译,复杂表达式可能更加耗时。P
+具体可以通过first前两次结果来计算得出结论单次查询的的损耗为0.3-0.4毫秒之间,通过数据聚合和数据路由的损耗单次在0.3ms-0.4ms,其中创建dbcontext为0.1毫秒目前没有好的优化方案,0.013毫秒左右是路由表达式解析和编译,复杂表达式可能更加耗时,剩下的0.28毫秒为数据源和表后缀的解析等操作包括实例的反射创建和数据的聚合，
 sqlserver的各项数据在分表和未分表的情况下都几乎差不多可以得出在770w数据集情况下数据库还并未是数据瓶颈的关键，但是mysql可以看到在分表和未分表的情况下如果涉及到没有索引的全表扫描那么性能的差距将是分表后的表数目之多，测试中为5-6倍，也就是分表数目
 
 
@@ -687,7 +687,12 @@ var list = new List<SysUserMod>();
 ## 读写分离
 该框架目前已经支持一主多从的读写分离`AddReadWriteSeparation`,支持轮询 Loop和随机 Random两种读写分离策略,又因为读写分离多链接的时候会导致数据读写不一致,(如分页其实是2步第一步获取count，第二部获取list)会导致数据量在最后几页出现缺量的问题,
 针对这个问题框架目前实现了自定义读链接获取策略`ReadConnStringGetStrategyEnum.LatestEveryTime`表示为每次都是新的(这个情况下会出现上述问题),`ReadConnStringGetStrategyEnum.LatestFirstTime`表示以dbcontext作为单位获取一次(同dbcontext不会出现问题),
-又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否使用读写分离如果false默认选择写字符串去读取`_defaultTableDbContext.ReadWriteSeparation=false`
+又因为各节点读写分离网络等一系列问题会导致刚刚写入的数据没办法获取到所以系统默认在dbcontext上添加是否使用读写分离如果false默认选择写字符串去读取`_defaultTableDbContext.ReadWriteSeparation=false`或者使用两个封装好的方法
+```c#
+ //切换到只读数据库，只读数据库又只配置了A数据源读取B数据源
+            _virtualDbContext.ReadWriteSeparationReadOnly();
+            _virtualDbContext.ReadWriteSeparationWriteOnly();
+```
 
 ```c#
 services.AddShardingDbContext<DefaultShardingDbContext>(
@@ -714,11 +719,12 @@ services.AddShardingDbContext<DefaultShardingDbContext>(
                             "Data Source=localhost;Initial Catalog=ShardingCoreDBReadOnly2;Integrated Security=True;"}
                         }
                     };
-                }, ReadStrategyEnum.Loop).End();
+                }, ReadStrategyEnum.Loop,defaultEnable:true).End();
 
+            _virtualDbContext.ReadWriteSeparationReadOnly();
                 //reslove read write delay data not found
-                _defaultTableDbContext.ReadWriteSeparation=false;
                 //dbcontext use write connection string 
+            _virtualDbContext.ReadWriteSeparationWriteOnly();
 ```
 
 ## 高性能分页
