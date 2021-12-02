@@ -41,7 +41,7 @@ namespace ShardingCore6x
         {
             var services = new ServiceCollection();
 
-            services.AddDbContext<DefaultDbContext>(o => o.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=;", new MySqlServerVersion(new Version()))
+            services.AddDbContext<DefaultDbContext>(o => o.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
                 //UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
                 , ServiceLifetime.Transient, ServiceLifetime.Transient);
             services.AddLogging();
@@ -52,7 +52,7 @@ namespace ShardingCore6x
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = false;
                 }).AddShardingTransaction((connection, builder) => builder.UseMySql(connection, new MySqlServerVersion(new Version())))
-                .AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=;")//"Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
+                .AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")//"Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
                 .AddShardingTableRoute(op =>
                 {
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();

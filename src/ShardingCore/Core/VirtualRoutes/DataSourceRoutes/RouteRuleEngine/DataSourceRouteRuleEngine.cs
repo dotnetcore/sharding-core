@@ -38,11 +38,14 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
                 dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { _virtualDataSource.DefaultDataSourceName });
 
 
-            var queryEntities = routeRuleContext.QueryEntities.Where(o => _entityMetadataManager.IsShardingDataSource(o)).ToList();
             //if (queryEntities.Count > 1)
             //    throw new ShardingCoreNotSupportedException($"{routeRuleContext.Queryable.ShardingPrint()}");
-            foreach (var queryEntity in queryEntities)
+            foreach (var queryEntity in routeRuleContext.QueryEntities)
             {
+                if (!_entityMetadataManager.IsShardingDataSource(queryEntity))
+                {
+                    continue;
+                }
                 var dataSourceConfigs = _virtualDataSource.RouteTo(queryEntity,new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
                 if (!dataSourceMaps.ContainsKey(queryEntity))
                 {
