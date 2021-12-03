@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 {
     //inspired by 
+    //https://github.com/Poltuu/RouteParseExpressionEqualityComparer
     //https://github.com/yuriy-nelipovich/LambdaCompare/blob/master/Neleus.LambdaCompare/Comparer.cs
     //https://github.com/yesmarket/yesmarket.Linq.Expressions/blob/master/yesmarket.Linq.Expressions/Support/ExpressionValueComparer.cs
+    [ExcludeFromCodeCoverage]
     sealed class ExpressionValueComparer : ExpressionVisitor
     {
         private Queue<Expression> _tracked;

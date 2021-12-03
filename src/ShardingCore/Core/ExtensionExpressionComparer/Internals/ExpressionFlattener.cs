@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 {
+    [ExcludeFromCodeCoverage]
     class ExpressionFlattener : ExpressionVisitor
     {
         private List<Expression> _result;

@@ -58,7 +58,7 @@ namespace ShardingCore.Test3x
         [Fact]
         public void RouteParseCompileCacheTest()
         {
-            var expressionEqualityComparer = new ExpressionEqualityComparer();
+            var expressionEqualityComparer = new RouteParseExpressionEqualityComparer();
             var virtualTable = _virtualTableManager.GetVirtualTable<SysUserSalary>();
             var virtualTableRoute = (AbstractShardingOperatorVirtualTableRoute<SysUserSalary, int>)virtualTable.GetVirtualRoute();
 

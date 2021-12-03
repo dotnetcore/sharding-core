@@ -9,7 +9,7 @@ using ShardingCore.Core.VirtualRoutes;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer
 {
-    public class ExpressionEqualityComparer : IEqualityComparer<Expression>
+    public class RouteParseExpressionEqualityComparer : IEqualityComparer<Expression>
     {
 
         public bool Equals(Expression x, Expression y) =>

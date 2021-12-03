@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 {
+    [ExcludeFromCodeCoverage]
     static class ExpressionExtensions
     {
         public static bool IsEqualTo<TExpression, TMember>(this TExpression value, TExpression other, Func<TExpression, TMember> reader)

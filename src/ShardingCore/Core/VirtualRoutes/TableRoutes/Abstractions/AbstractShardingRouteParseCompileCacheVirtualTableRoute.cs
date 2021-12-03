@@ -19,7 +19,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     /// <typeparam name="TKey"></typeparam>
     public abstract class AbstractShardingRouteParseCompileCacheVirtualTableRoute<TEntity, TKey> : AbstractShardingFilterVirtualTableRoute<TEntity, TKey> where TEntity : class
     {
-        private  readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeCompileCaches = new(new ExtensionExpressionComparer.ExpressionEqualityComparer());
+        private  readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeCompileCaches = new(new ExtensionExpressionComparer.RouteParseExpressionEqualityComparer());
 
         protected AbstractShardingRouteParseCompileCacheVirtualTableRoute()
         {

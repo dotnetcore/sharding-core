@@ -68,14 +68,19 @@ namespace ShardingCore.Test
             _shardingTableCreator = shardingTableCreator;
             _shardingReadWriteManager = shardingReadWriteManager;
             _routeTailFactory = routeTailFactory;
+
+            //var dataSource = ShardingContainer.GetService<IVirtualDataSource<ShardingDefaultDbContext>>();
+            //dataSource.AddPhysicDataSource(new DefaultPhysicDataSource("E", "XXXXX", false));
+            //var virtualDataSourceRoute = dataSource.GetRoute<Order>();
+            //virtualDataSourceRoute.AddDataSourceName("E");
         }
         [Fact]
         public void RouteParseCompileCacheTest()
         {
-            var expressionEqualityComparer = new ExpressionEqualityComparer();
+            var expressionEqualityComparer = new RouteParseExpressionEqualityComparer();
             var virtualTable = _virtualTableManager.GetVirtualTable<SysUserSalary>();
             var virtualTableRoute = (AbstractShardingOperatorVirtualTableRoute<SysUserSalary, int>)virtualTable.GetVirtualRoute();
-
+            var xxxx = "202102";
             var queryable1 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202102);
             var routeParseExpression1 = ShardingUtil.GetRouteParseExpression<int>(queryable1, virtualTableRoute.EntityMetadata,
                 (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 {
+    [ExcludeFromCodeCoverage]
     class ExpressionHashCodeResolver : ExpressionVisitor
     {
         private int _result;
