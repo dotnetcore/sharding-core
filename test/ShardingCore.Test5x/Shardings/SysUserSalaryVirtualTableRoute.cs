@@ -45,7 +45,7 @@ namespace ShardingCore.Test5x.Shardings
             return $"{dateOfMonth:yyyyMM}";
         }
 
-        protected override Expression<Func<string, bool>> GetRouteToFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

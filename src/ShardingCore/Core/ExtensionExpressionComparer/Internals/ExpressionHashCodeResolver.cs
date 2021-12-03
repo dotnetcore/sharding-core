@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 {
@@ -36,7 +37,7 @@ namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 
         protected override Expression VisitConstant(ConstantExpression node)
         {
-            if (node.Value is bool)
+            if (node.Value.IsSimpleType())
                 _result += node.GetHashCodeFor(node.Value);
             return base.VisitConstant(node);
         }
@@ -97,12 +98,12 @@ namespace ShardingCore.Core.ExtensionExpressionComparer.Internals
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            if (node.Expression is ConstantExpression &&
-                node.Member is FieldInfo)
+            if (node.Expression is ConstantExpression constantExpression&&
+                node.Member is FieldInfo fieldInfo)
             {
                 object container =
-                    ((ConstantExpression)node.Expression).Value;
-                object value = ((FieldInfo)node.Member).GetValue(container);
+                    constantExpression.Value;
+                object value = fieldInfo.GetValue(container);
                 _result += node.GetHashCodeFor(value);
             }
             else

@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ExtensionExpressionComparer;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -21,6 +23,7 @@ using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 using ShardingCore.TableCreator;
 using ShardingCore.Test3x.Domain.Entities;
+using ShardingCore.Utils;
 using Xunit;
 
 namespace ShardingCore.Test3x
@@ -60,6 +63,47 @@ namespace ShardingCore.Test3x
             _virtualTableManager = virtualTableManager;
             _shardingTableCreator = shardingTableCreator;
             _shardingReadWriteManager = shardingReadWriteManager;
+        }
+        [Fact]
+        public void RouteParseCompileCacheTest()
+        {
+            var expressionEqualityComparer = new ExpressionEqualityComparer();
+            var virtualTable = _virtualTableManager.GetVirtualTable<SysUserSalary>();
+            var virtualTableRoute = (AbstractShardingOperatorVirtualTableRoute<SysUserSalary, int>)virtualTable.GetVirtualRoute();
+
+            var queryable1 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202102);
+            var routeParseExpression1 = ShardingUtil.GetRouteParseExpression<int>(queryable1, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable2 = _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= 202102);
+            var routeParseExpression2 = ShardingUtil.GetRouteParseExpression<int>(queryable2, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var xxxx1 = 202102;
+            var queryable3 = _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= xxxx1);
+            var routeParseExpression3 = ShardingUtil.GetRouteParseExpression<int>(queryable3, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable4 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202101);
+            var routeParseExpression4 = ShardingUtil.GetRouteParseExpression<int>(queryable4, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable5 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth > 202101);
+            var routeParseExpression5 = ShardingUtil.GetRouteParseExpression<int>(queryable5, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable6 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth == 202101);
+            var routeParseExpression6 = ShardingUtil.GetRouteParseExpression<int>(queryable6, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable7 = _virtualDbContext.Set<SysUserSalary>().Where(o => 202101 <= o.DateOfMonth);
+            var routeParseExpression7 = ShardingUtil.GetRouteParseExpression<int>(queryable7, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            var queryable8 = _virtualDbContext.Set<SysUserSalary>().Where(o => 202101 == o.DateOfMonth);
+            var routeParseExpression8 = ShardingUtil.GetRouteParseExpression<int>(queryable8, virtualTableRoute.EntityMetadata,
+                (i, op) => virtualTableRoute.GetRouteToFilter(i, op), true);
+            Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression2));
+            Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression3));
+            Assert.NotEqual(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression4));
+            Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression4), expressionEqualityComparer.GetHashCode(routeParseExpression5));
+            Assert.NotEqual(expressionEqualityComparer.GetHashCode(routeParseExpression5), expressionEqualityComparer.GetHashCode(routeParseExpression6));
+            Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression4), expressionEqualityComparer.GetHashCode(routeParseExpression7));
+            Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression6), expressionEqualityComparer.GetHashCode(routeParseExpression8));
+
         }
 
         [Fact]

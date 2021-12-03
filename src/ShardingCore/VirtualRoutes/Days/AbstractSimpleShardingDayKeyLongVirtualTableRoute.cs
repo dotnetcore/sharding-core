@@ -41,7 +41,7 @@ namespace ShardingCore.VirtualRoutes.Days
             return $"{dateTime:yyyyMMdd}";
         }
 
-        protected override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

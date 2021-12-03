@@ -42,7 +42,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// <param name="shardingKey">分表的值</param>
         /// <param name="shardingOperator">操作</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        protected abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
+        public abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
 
         public override string RouteWithValue(object shardingKey)
         {

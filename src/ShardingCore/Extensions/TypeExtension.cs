@@ -54,6 +54,26 @@ namespace ShardingCore.Extensions
             return false;
         }
         /// <summary>
+        /// 是否是简单类型
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static bool IsSimpleType(this object obj)
+        {
+            if(null==obj)
+                return false;
+            return obj.GetType().IsSimpleType();
+        }
+        /// <summary>
+        /// 是否是简单类型
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        public static bool IsSimpleType(this Type t)
+        {
+            return t.IsPrimitive || t.IsValueType || (t == typeof(string));
+        }
+        /// <summary>
         /// 是否是bool类型
         /// </summary>
         /// <param name="type"></param>

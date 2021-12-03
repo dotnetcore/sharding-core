@@ -30,7 +30,7 @@ namespace Sample.SqlServer.Shardings
             
         }
 
-        protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = ShardingKeyToTail(shardingKey);
             switch (shardingOperator)

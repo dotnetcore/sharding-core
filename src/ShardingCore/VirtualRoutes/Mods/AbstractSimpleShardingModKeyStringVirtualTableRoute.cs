@@ -65,7 +65,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         /// <param name="shardingKey"></param>
         /// <param name="shardingOperator"></param>
         /// <returns></returns>
-        protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = ShardingKeyToTail(shardingKey);
             switch (shardingOperator)
