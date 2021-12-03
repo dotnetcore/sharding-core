@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         public string GetConnectionString(string dataSourceName)
         {
             if (!_shardingConnectionStringResolver.ContainsReadWriteDataSourceName(dataSourceName))
-                return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
+                return _virtualDataSource.GetConnectionString(dataSourceName);
             return _shardingConnectionStringResolver.GetConnectionString(dataSourceName);
            
         }
