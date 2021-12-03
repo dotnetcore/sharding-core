@@ -65,6 +65,5 @@ namespace Sample.SqlServerShardingDataSource
                 }
             }
         }
-
     }
 }

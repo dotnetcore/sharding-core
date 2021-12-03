@@ -32,6 +32,11 @@ namespace ShardingCore.Infrastructures
         {
             return Interlocked.CompareExchange(ref runStatus, running, unrunning) == unrunning;
         }
+
+        public bool IsRunning()
+        {
+            return runStatus == running;
+        }
         /// <summary>
         /// 
         /// </summary>

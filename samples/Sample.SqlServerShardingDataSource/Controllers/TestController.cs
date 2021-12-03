@@ -17,6 +17,15 @@ namespace Sample.SqlServerShardingDataSource.Controllers
         {
             _myDbContext = myDbContext;
         }
+        /// <summary>
+        /// 动态追加分库
+        /// </summary>
+        /// <returns></returns>
+        //public  IActionResult Queryabc()
+        //{
+        //    DbContextHelper.CreateSubDb("X", "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBX;Integrated Security=True;");
+        //    return Ok();
+        //}
         public async Task<IActionResult> Query()
         {
             var sysUser =await _myDbContext.Set<SysUser>().Where(o=>o.Id=="1").FirstOrDefaultAsync();

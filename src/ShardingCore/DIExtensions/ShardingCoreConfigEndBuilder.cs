@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
@@ -74,33 +75,32 @@ namespace ShardingCore.DIExtensions
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
+                bool isLoop = false;
+
                 if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Loop)
                 {
-                    services
-                        .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
-                            LoopShardingConnectionStringResolver<TShardingDbContext>>(sp =>
-                        {
-
-                            var readConnString = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
-                            var readWriteLoopConnectors = readConnString.Select(o => new ReadWriteLoopConnector(o.Key, o.Value));
-
-                            return new LoopShardingConnectionStringResolver<TShardingDbContext>(
-                                readWriteLoopConnectors);
-                        });
+                    isLoop = true;
                 }
                 else if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Random)
                 {
-                    services
-                        .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
-                            RandomShardingConnectionStringResolver<TShardingDbContext>>(sp =>
-                        {
-                            var readConnString = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
-                            var readWriteRandomConnectors = readConnString.Select(o => new ReadWriteRandomConnector(o.Key, o.Value));
-                            return new RandomShardingConnectionStringResolver<TShardingDbContext>(
-                                readWriteRandomConnectors);
-                        });
+                    isLoop = false;
+                }
+                else
+                {
+                    throw new ShardingCoreInvalidOperationException($"unknow ReadStrategyEnum confgure:{_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum}");
                 }
 
+                services
+                    .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
+                        ReadWriteShardingConnectionStringResolver<TShardingDbContext>>(sp =>
+                    {
+
+                        var readConnString = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
+                        var readWriteLoopConnectors = readConnString.Select(o => (IReadWriteConnector)(isLoop ? new ReadWriteLoopConnector(o.Key, o.Value) : new ReadWriteRandomConnector(o.Key, o.Value)));
+
+                        return new ReadWriteShardingConnectionStringResolver<TShardingDbContext>(
+                            readWriteLoopConnectors);
+                    });
 
                 services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
                 services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();

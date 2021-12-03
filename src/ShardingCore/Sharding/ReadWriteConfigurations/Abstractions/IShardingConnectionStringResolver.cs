@@ -22,5 +22,12 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     {
         bool ContainsReadWriteDataSourceName(string dataSourceName);
         string GetConnectionString(string dataSourceName);
+        /// <summary>
+        /// 添加数据源从库读字符串
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
+        bool AddConnectionString(string dataSourceName, string connectionString);
     }
 }

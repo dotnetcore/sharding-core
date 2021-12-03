@@ -92,6 +92,9 @@ namespace ShardingCore.Bootstrapers
             }
             if (_shardingConfigOption.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
             {
+                if (!typeof(TShardingDbContext).IsShardingTableDbContext())
+                    throw new ShardingCoreInvalidOperationException(
+                        $"{typeof(TShardingDbContext)} is not impl {nameof(IShardingTableDbContext)},not support sharding table");
                 var entityMetadataTableBuilder = EntityMetadataTableBuilder<TEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
                 //配置属性分表信息
                 EntityMetadataHelper.Configure(entityMetadataTableBuilder);

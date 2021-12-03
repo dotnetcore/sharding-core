@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ReadWriteConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ReadWriteConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext>, IReadWriteAppendConnectionString where TShardingDbContext : DbContext, IShardingDbContext
     {
         private IShardingConnectionStringResolver<TShardingDbContext> _shardingConnectionStringResolver;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
@@ -33,6 +33,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                 return _virtualDataSource.GetConnectionString(dataSourceName);
             return _shardingConnectionStringResolver.GetConnectionString(dataSourceName);
            
+        }
+
+        public bool AddReadConnectionString(string dataSourceName, string connectionString)
+        {
+            return _shardingConnectionStringResolver.AddConnectionString(dataSourceName, connectionString);
         }
     }
 }
