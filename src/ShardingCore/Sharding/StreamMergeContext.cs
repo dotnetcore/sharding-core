@@ -133,18 +133,36 @@ namespace ShardingCore.Sharding
         /// </summary>
         /// <param name="dataSourceName">data source name</param>
         /// <param name="tableRouteResult"></param>
+        /// <param name="connectionMode"></param>
         /// <returns></returns>
-        public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult)
+        public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
             //如果开启了读写分离或者本次查询是跨表或者跨库的表示本次查询的dbcontext是不存储的用完后就直接dispose
             var parallelQuery = IsParallelQuery();
             var dbContext = _shardingDbContext.GetDbContext(dataSourceName, parallelQuery, routeTail);
-            if (parallelQuery)
+            if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.STREAM_MERGE)
             {
                 _parallelDbContexts.TryAdd(dbContext, null);
             }
             return dbContext;
+        }
+        /// <summary>
+        /// 因为并发查询情况下那么你是内存就是内存你是流式就是流式
+        /// 如果不是并发查询的情况下系统会将当前dbcontext进行利用起来所以只能是流式
+        /// </summary>
+        /// <param name="connectionMode"></param>
+        /// <returns></returns>
+        public ConnectionModeEnum RealConnectionMode(ConnectionModeEnum connectionMode)
+        {
+            if (IsParallelQuery())
+            {
+                return connectionMode;
+            }
+            else
+            {
+                return ConnectionModeEnum.STREAM_MERGE;
+            }
         }
 
         //public IRouteTail Create(TableRouteResult tableRouteResult)

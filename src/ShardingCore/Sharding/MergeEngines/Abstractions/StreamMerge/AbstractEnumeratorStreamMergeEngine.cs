@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -26,6 +28,10 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     {
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
 
+        protected override StreamMergeContext<TEntity> GetStreamMergeContext()
+        {
+            return StreamMergeContext;
+        }
 
         public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
@@ -98,21 +104,22 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// </summary>
         /// <param name="queryable"></param>
         /// <param name="async"></param>
+        /// <param name="connectionMode"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<StreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,
+        public async Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,ConnectionModeEnum connectionMode,
             CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (async)
             {
                 var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+                return connectionMode==ConnectionModeEnum.STREAM_MERGE? new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
             }
             else
             {
                 var enumerator = GetEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
+                return connectionMode == ConnectionModeEnum.STREAM_MERGE ? new StreamMergeAsyncEnumerator<TEntity>(enumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(enumerator);
             }
         }
 

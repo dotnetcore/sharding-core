@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
@@ -45,30 +46,28 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             StreamMergeContext.ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
 
-            var dataSourceRouteResult = StreamMergeContext.DataSourceRouteResult;
-            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
-            {
-                return StreamMergeContext.TableRouteResults.Select(routeResult =>
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<TEntity, IStreamMergeAsyncEnumerator<TEntity>>(
+                async sqlExecutorUnit =>
                 {
-                    return Task.Run(async () =>
-                    {
-                        var newQueryable =
-                            CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult);
-                        return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
-                    });
+                    var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
+                    var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
+                    var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
+                    var (newQueryable,dbContext) =
+                        CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult, connectionMode);
+                    return await AsyncParallelEnumerator(newQueryable, async, connectionMode, cancellationToken).ReleaseConnectionAsync(dbContext,connectionMode);
                 });
-            }).ToArray();;
+        
 
-            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException();
+            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
             return streamEnumerators;
         }
 
-        private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> reverseOrderQueryable, TableRouteResult tableRouteResult)
+        private (IQueryable<TEntity>,DbContext) CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> reverseOrderQueryable, TableRouteResult tableRouteResult,ConnectionModeEnum connectionMode)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult, connectionMode);
             var newQueryable = (IQueryable<TEntity>)reverseOrderQueryable
                 .ReplaceDbContextQueryable(shardingDbContext);
-            return newQueryable;
+            return (newQueryable,shardingDbContext);
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)

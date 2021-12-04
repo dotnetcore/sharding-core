@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
@@ -23,7 +24,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>,IInMemoryAsyncMergeEngine<TEntity>
+    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine<TEntity>
     {
         private readonly MethodCallExpression _methodCallExpression;
         private readonly StreamMergeContext<TEntity> _mergeContext;
@@ -56,7 +57,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             {
                 if (_secondExpression == null)
                     throw new ShardingCoreInvalidOperationException(methodCallExpression.ShardingPrint());
-               
+
                 // ReSharper disable once VirtualMemberCallInConstructor
                 _queryable = CombineQueryable(_queryable, _secondExpression);
             }
@@ -72,80 +73,33 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         /// <returns></returns>
         protected abstract IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression);
 
-        private IQueryable CreateAsyncExecuteQueryable<TResult>(string dsname, TableRouteResult tableRouteResult)
+        private (IQueryable queryable, DbContext dbContext) CreateAsyncExecuteQueryable<TResult>(string dsname, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
         {
-            var shardingDbContext = _mergeContext.CreateDbContext(dsname, tableRouteResult);
+            var shardingDbContext = _mergeContext.CreateDbContext(dsname, tableRouteResult, connectionMode);
             var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
             var newCombineQueryable = DoCombineQueryable<TResult>(newQueryable);
-            return newCombineQueryable
-;
+            return (newCombineQueryable, shardingDbContext);
+            ;
         }
 
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var dataSourceRouteResult = _mergeContext.DataSourceRouteResult;
-            var maxQueryConnectionsLimit = _mergeContext.GetMaxQueryConnectionsLimit();
-
-            var waitExecuteQueue = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
-            {
-                return _mergeContext.TableRouteResults.Select(routeResult =>new SqlRouteUnit(dataSourceName,routeResult));
-            }).GroupBy(o=>o.DataSourceName).Select(sqlGroups =>
-            {
-                var sqlCount = sqlGroups.Count();
-                //根据用户配置单次查询期望并发数
-                int exceptCount =
-                    Math.Max(
-                        0 == sqlCount % maxQueryConnectionsLimit
-                            ? sqlCount / maxQueryConnectionsLimit
-                            : sqlCount / maxQueryConnectionsLimit + 1, 1);
-                //计算应该使用那种链接模式
-                ConnectionModeEnum connectionMode = CalcConnectionMode(_mergeContext.GetConnectionMode(),
-                    _mergeContext.GetUseMemoryLimitWhileSkip(), maxQueryConnectionsLimit, sqlCount, 0);
-                var sqlExecutorUnitPartitions = sqlGroups
-                    .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
-                    .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode,g.Obj)).ToList()).ToList();
-                return sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(o)).ToList();
-            })
-                .Select(executorGroups =>
-                {
-                    return Task.Run(async() =>
+            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<TResult, RouteQueryResult<TResult>>(
+                   async sqlExecutorUnit =>
                     {
-                        LinkedList<RouteQueryResult<TResult>> result = new LinkedList<RouteQueryResult<TResult>>();
-                        foreach (var executorGroup in executorGroups)
-                        {
-                            var executorGroupParallelExecuteTasks = executorGroup.Groups.Select(executor =>
-                            {
-                                return Task.Run(async () =>
-                                {
-                                    var dataSourceName = executor.RouteUnit.DataSourceName;
-                                    var routeResult = executor.RouteUnit.TableRouteResult;
+                        var connectionMode = _mergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
+                        var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
+                        var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
-                                    var asyncExecuteQueryable =
-                                        CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
+                        var (asyncExecuteQueryable, dbContext) =
+                            CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult, connectionMode);
 
+                        var queryResult = await efQuery(asyncExecuteQueryable).ReleaseConnectionAsync(dbContext, connectionMode);
+                        return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+                    }).ToArray();
 
-                                    var queryResult = await efQuery(asyncExecuteQueryable);
-
-                                    return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-                                    //return await AsyncParallelResultExecute(asyncExecuteQueryable, dataSourceName,
-                                    //    routeResult, efQuery,
-                                    //    cancellationToken);
-
-                                },cancellationToken);
-                            }).ToArray();
-                            var routeQueryResults = (await Task.WhenAll(executorGroupParallelExecuteTasks)).ToList();
-                            foreach (var routeQueryResult in routeQueryResults)
-                            {
-                                result.AddLast(routeQueryResult);
-                            }
-                        }
-
-                        return result;
-                    },cancellationToken);
-                }).ToArray();
-
-            return (await Task.WhenAll(waitExecuteQueue)).SelectMany(o=>o).ToList();
+            return (await Task.WhenAll(waitExecuteQueue)).SelectMany(o => o).ToList();
         }
 
 
@@ -173,7 +127,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             return queryable;
         }
 
-        public StreamMergeContext<TEntity> GetStreamMergeContext()
+        protected override StreamMergeContext<TEntity> GetStreamMergeContext()
         {
             return _mergeContext;
         }

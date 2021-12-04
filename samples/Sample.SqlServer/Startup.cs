@@ -43,27 +43,13 @@ namespace Sample.SqlServer
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
                 .AddDefaultDataSource("A",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;")
-                .AddShardingDataSource(sp =>
-                {
-                    return new Dictionary<string, string>()
-                    {
-                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" }
-                    };
-                }).AddShardingDataSourceRoute(op=>{})
+                    "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;")
                 .AddShardingTableRoute(o =>
                 {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
-                }).AddReadWriteSeparation(sp =>
-                {
-                    return new Dictionary<string, IEnumerable<string>>()
-                    {
-                        {"A",new List<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDBA1;Integrated Security=True;","Data Source=localhost;Initial Catalog=ShardingCoreDBA2;Integrated Security=True;"}},
-                        {"B",new List<string>(){"Data Source=localhost;Initial Catalog=ShardingCoreDBB1;Integrated Security=True;"}}
-                    };
-                },ReadStrategyEnum.Loop,true,defaultPriority:10,ReadConnStringGetStrategyEnum.LatestFirstTime).End();
+                }).End();
 
             services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(

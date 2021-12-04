@@ -16,7 +16,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     */
     internal interface IInMemoryAsyncMergeEngine<TEntity>
     {
-        StreamMergeContext<TEntity> GetStreamMergeContext();
         Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery,
             CancellationToken cancellationToken = new CancellationToken());
     }

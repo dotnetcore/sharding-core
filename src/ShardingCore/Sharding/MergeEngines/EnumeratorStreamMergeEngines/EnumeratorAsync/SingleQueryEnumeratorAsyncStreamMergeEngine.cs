@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -27,7 +28,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             cancellationToken.ThrowIfCancellationRequested();
             var dataSourceName = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
             var routeResult = StreamMergeContext.TableRouteResults.First();
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult,ConnectionModeEnum.STREAM_MERGE);
             var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
             if (async)
             {
@@ -48,5 +49,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 throw new ShardingCoreException($"{nameof(SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity>)} has more {nameof(IStreamMergeAsyncEnumerator<TEntity>)}");
             return streamsAsyncEnumerators[0];
         }
+
     }
 }

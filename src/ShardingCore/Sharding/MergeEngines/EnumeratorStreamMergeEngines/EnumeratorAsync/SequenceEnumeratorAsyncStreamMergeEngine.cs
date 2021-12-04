@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
@@ -95,7 +96,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                 {
                     var newQueryable =
                         CreateAsyncExecuteQueryable(sequenceResult.DSName, noPaginationQueryable, sequenceResult);
-                    return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                    return await AsyncParallelEnumerator(newQueryable, async, ConnectionModeEnum.STREAM_MERGE, cancellationToken);
                 });
             }).ToArray();
 
@@ -105,7 +106,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
         private IQueryable<TEntity> CreateAsyncExecuteQueryable(string dsname, IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname, sequenceResult.TableRouteResult);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname, sequenceResult.TableRouteResult, ConnectionModeEnum.STREAM_MERGE);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take))
                 .ReplaceDbContextQueryable(shardingDbContext);
             return newQueryable;

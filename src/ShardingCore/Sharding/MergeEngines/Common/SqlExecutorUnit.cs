@@ -9,6 +9,7 @@ namespace ShardingCore.Sharding.MergeEngines.Common
 {
     public class SqlExecutorUnit
     {
+
         public SqlExecutorUnit(ConnectionModeEnum connectionMode, SqlRouteUnit routeUnit)
         {
             ConnectionMode = connectionMode;
