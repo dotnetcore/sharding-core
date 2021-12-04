@@ -33,11 +33,22 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
+        /// <summary>
+        /// 替换比较表达式
+        /// 比较表达式用于将数据库的数据获取到内存后进行排序，由于数据库排序和内存排序针对某种类型可能不一致导致结果和预期不符，如guid和unique identifier
+        /// 默认已经将此类型的比较器已经修复如果有后续其他数据库类型和c#类型排序不一致的请自行实现 <see cref="IShardingComparer<TShardingDbContext>"/>
+        /// </summary>
+        /// <param name="newShardingComparerFactory"></param>
+        /// <returns></returns>
         public ShardingCoreConfigEndBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
             return this;
         }
+        /// <summary>
+        /// 是否启用读写分离
+        /// </summary>
+        protected bool UseReadWrite => _shardingCoreConfigBuilder.ShardingConfigOption.UseReadWrite;
         public IServiceCollection End()
         {
             var services = _shardingCoreConfigBuilder.Services;
@@ -53,31 +64,43 @@ namespace ShardingCore.DIExtensions
                 .AddSingleton<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>,
                     ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp => config);
 
-            if (_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory != null)
+            if (_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory == null)
             {
-                services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
+                throw new ShardingCoreConfigException($"{nameof(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory)}  is null");
             }
-            else
-            {
-                services.AddSingleton<IShardingComparer<TShardingDbContext>, CSharpLanguageShardingComparer<TShardingDbContext>>();
-            }
+            services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
 
-            if (!_shardingCoreConfigBuilder.ShardingConfigOption.UseReadWrite)
+
+            if (!UseReadWrite)
             {
                 services.AddTransient<IConnectionStringManager<TShardingDbContext>, DefaultConnectionStringManager<TShardingDbContext>>();
             }
             else
             {
                 services.AddTransient<IConnectionStringManager<TShardingDbContext>, ReadWriteConnectionStringManager<TShardingDbContext>>();
+                RegisterReadWriteConfigure(services);
+            }
+            services.AddInternalShardingCore();
 
+            return services;
+
+        }
+        /// <summary>
+        /// 配置读写分离
+        /// </summary>
+        /// <param name="services"></param>
+        /// <exception cref="ShardingCoreInvalidOperationException"></exception>
+        private void RegisterReadWriteConfigure(IServiceCollection services)
+        {
                 services.AddSingleton<IReadWriteOptions<TShardingDbContext>, ReadWriteOptions<TShardingDbContext>>(sp =>
                     new ReadWriteOptions<TShardingDbContext>(
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
                 bool isLoop = false;
+                var readStrategyEnum = _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum;
 
-                if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Loop)
+                if ( readStrategyEnum== ReadStrategyEnum.Loop)
                 {
                     isLoop = true;
                 }
@@ -104,17 +127,6 @@ namespace ShardingCore.DIExtensions
 
                 services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
                 services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
-
-                //foreach (var dataSourceKv in dataSources)
-                //{
-                //    if (dataSourceKv.Key == _shardingCoreConfigBuilder.DefaultDataSourceName)
-                //        throw new ShardingCoreInvalidOperationException($"{nameof(AddShardingDataSource)} include default data source name:{_shardingCoreConfigBuilder.DefaultDataSourceName}");
-                //    _shardingCoreConfigBuilder.AddShardingDataSource.Add(dataSourceKv.Key, dataSourceKv.Value);
-                //}
-            }
-            services.AddInternalShardingCore();
-
-            return services;
 
         }
     }

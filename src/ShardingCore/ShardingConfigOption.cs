@@ -10,6 +10,7 @@ using System.Linq;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore
@@ -46,7 +47,8 @@ namespace ShardingCore
         {
             DataSourcesConfigure = dataSourcesConfigure ?? throw new ArgumentNullException(nameof(dataSourcesConfigure));
         }
-        public Func<IServiceProvider, IShardingComparer<TShardingDbContext>> ReplaceShardingComparerFactory { get; private set; }
+
+        public Func<IServiceProvider, IShardingComparer<TShardingDbContext>> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer<TShardingDbContext>();
         /// <summary>
         /// 替换默认的比较器
         /// </summary>
