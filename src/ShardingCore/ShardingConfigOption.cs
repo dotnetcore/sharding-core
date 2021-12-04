@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -240,5 +241,8 @@ namespace ShardingCore
 
         public string DefaultDataSourceName { get; set; }
         public string DefaultConnectionString { get; set; }
+        public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
+        public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+        public int UseMemoryLimitWhileSkip { get; set; } = 10000;
     }
 }

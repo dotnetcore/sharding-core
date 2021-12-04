@@ -36,7 +36,7 @@ namespace ShardingCore.DIExtensions
         /// <summary>
         /// 替换比较表达式
         /// 比较表达式用于将数据库的数据获取到内存后进行排序，由于数据库排序和内存排序针对某种类型可能不一致导致结果和预期不符，如guid和unique identifier
-        /// 默认已经将此类型的比较器已经修复如果有后续其他数据库类型和c#类型排序不一致的请自行实现 <see cref="IShardingComparer<TShardingDbContext>"/>
+        /// 默认已经将此类型的比较器已经修复如果有后续其他数据库类型和c#类型排序不一致的请自行实现 <see cref="IShardingComparer"/>
         /// </summary>
         /// <param name="newShardingComparerFactory"></param>
         /// <returns></returns>

@@ -136,7 +136,7 @@ namespace ShardingCore.Test2x
             }
             catch (Exception e)
             {
-                Assert.Equal(typeof(ShardingCoreInvalidOperationException), e.GetType());
+                Assert.Equal(typeof(ShardingCoreNotFoundException), e.GetType());
             }
 
             var queryable = new List<string>().Select(o => new SequenceClass { Id = "123", T = o }).AsQueryable();

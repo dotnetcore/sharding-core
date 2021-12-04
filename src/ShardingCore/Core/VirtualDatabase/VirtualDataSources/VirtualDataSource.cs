@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ShardingEnumerableQueries;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -28,8 +29,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
 
-        private readonly ConcurrentDictionary<string, IPhysicDataSource> _physicDataSources =
-            new ConcurrentDictionary<string, IPhysicDataSource>();
+        private readonly IPhysicDataSourcePool _physicDataSourcePool;
 
         public string DefaultDataSourceName { get; private set; }
         public string DefaultConnectionString { get; private set; }
@@ -37,6 +37,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
+            _physicDataSourcePool = new PhysicDataSourcePool();
         }
 
 
@@ -82,33 +83,56 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                     $"entity type :[{entityType.FullName}] not found virtual data source route");
             return dataSourceVirtualRoute;
         }
-
-        public ISet<IPhysicDataSource> GetAllPhysicDataSources()
-        {
-            return _physicDataSources.Select(o=>o.Value).ToHashSet();
-        }
-
+        /// <summary>
+        /// 获取默认的数据源信息
+        /// </summary>
+        /// <returns></returns>
         public IPhysicDataSource GetDefaultDataSource()
         {
             return GetPhysicDataSource(DefaultDataSourceName);
         }
-
+        /// <summary>
+        /// 获取物理数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreNotFoundException"></exception>
         public IPhysicDataSource GetPhysicDataSource(string dataSourceName)
         {
             Check.NotNull(dataSourceName, "data source name is null,plz confirm IShardingBootstrapper.Star()");
-            if (!_physicDataSources.TryGetValue(dataSourceName, out var physicDataSource))
-                throw new ShardingCoreInvalidOperationException($"not found  data source that name is :[{dataSourceName}]");
+            var dataSource = _physicDataSourcePool.TryGet(dataSourceName);
+            if (null== dataSource)
+                throw new ShardingCoreNotFoundException($"data source:[{dataSourceName}]");
 
-            return physicDataSource;
+            return dataSource;
+        }
+        /// <summary>
+        /// 获取所有的数据源名称
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetAllDataSourceNames()
+        {
+            return _physicDataSourcePool.GetAllDataSourceNames();
         }
 
+        /// <summary>
+        /// 获取数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreNotFoundException"></exception>
         public string GetConnectionString(string dataSourceName)
         {
             if (IsDefault(dataSourceName))
                 return DefaultConnectionString;
             return GetPhysicDataSource(dataSourceName).ConnectionString;
         }
-
+        /// <summary>
+        /// 添加数据源
+        /// </summary>
+        /// <param name="physicDataSource"></param>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreInvalidOperationException">重复添加默认数据源</exception>
         public bool AddPhysicDataSource(IPhysicDataSource physicDataSource)
         {
             if (physicDataSource.IsDefault)
@@ -120,9 +144,15 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 DefaultDataSourceName = physicDataSource.DataSourceName;
                 DefaultConnectionString = physicDataSource.ConnectionString;
             }
-            return _physicDataSources.TryAdd(physicDataSource.DataSourceName, physicDataSource);
-        }
 
+            return _physicDataSourcePool.TryAdd(physicDataSource);
+        }
+        /// <summary>
+        /// 添加分库路由
+        /// </summary>
+        /// <param name="virtualDataSourceRoute"></param>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreInvalidOperationException">对象未配置分库</exception>
         public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
         {
             if (!virtualDataSourceRoute.EntityMetadata.IsShardingDataSource())
@@ -130,16 +160,21 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
             return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityMetadata.EntityType, virtualDataSourceRoute);
         }
-
+        /// <summary>
+        /// 是否是默认数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
         public bool IsDefault(string dataSourceName)
         {
-
             return DefaultDataSourceName == dataSourceName;
         }
-
+        /// <summary>
+        /// 检查是否配置默认数据源和默认链接字符串
+        /// </summary>
+        /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public void CheckVirtualDataSource()
         {
-
             if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
                 throw new ShardingCoreInvalidOperationException(
                     $"virtual data source not inited {nameof(DefaultDataSourceName)} in IShardingDbContext null");

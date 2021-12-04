@@ -19,6 +19,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
     public interface IVirtualDataSource
     {
+        /// <summary>
+        /// 默认的数据源名称
+        /// </summary>
         string DefaultDataSourceName { get; }
         /// <summary>
         /// 路由到具体的物理数据源
@@ -34,37 +37,60 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// <returns></returns>
         IVirtualDataSourceRoute GetRoute(Type entityType);
 
-        ISet<IPhysicDataSource> GetAllPhysicDataSources();
+        /// <summary>
+        /// 获取默认的数据源信息
+        /// </summary>
+        /// <returns></returns>
         IPhysicDataSource GetDefaultDataSource();
         /// <summary>
         /// 获取数据源
         /// </summary>
         /// <param name="dataSourceName"></param>
-        /// <exception cref="ShardingCoreInvalidOperationException">
+        /// <exception cref="ShardingCoreNotFoundException">
         ///     thrown if data source name is not in virtual data source
         ///     the length of the buffer
         /// </exception>
         /// <returns></returns>
         IPhysicDataSource GetPhysicDataSource(string dataSourceName);
         /// <summary>
-        /// 获取数据库链接字符串
+        /// 获取所有的数据源名称
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetAllDataSourceNames();
+
+        /// <summary>
+        /// 获取连接字符串
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <returns></returns>
+        /// <exception cref="ShardingCoreNotFoundException"></exception>
         string GetConnectionString(string dataSourceName);
 
         /// <summary>
-        /// 添加物理表 add physic data source
+        /// 添加数据源
         /// </summary>
         /// <param name="physicDataSource"></param>
-        /// <returns>是否添加成功</returns>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreInvalidOperationException">重复添加默认数据源</exception>
         bool AddPhysicDataSource(IPhysicDataSource physicDataSource);
 
+        /// <summary>
+        /// 添加分库路由
+        /// </summary>
+        /// <param name="virtualDataSourceRoute"></param>
+        /// <returns></returns>
+        /// <exception cref="ShardingCoreInvalidOperationException">对象未配置分库</exception>
         bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
+        /// <summary>
+        /// 是否默认数据源
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
         bool IsDefault(string dataSourceName);
         /// <summary>
-        /// 初始化检查数据源
+        /// 检查是否配置默认数据源和默认链接字符串
         /// </summary>
+        /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         void CheckVirtualDataSource();
     }
     /// <summary>

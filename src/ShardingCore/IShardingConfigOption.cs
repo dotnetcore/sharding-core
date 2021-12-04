@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Sharding.Abstractions;
 
@@ -70,9 +71,26 @@ namespace ShardingCore
         /// 并发查询超时时间
         /// </summary>
         public TimeSpan ParallelQueryTimeOut { get; set; }
-
+        /// <summary>
+        /// 默认数据源名称
+        /// </summary>
         public string DefaultDataSourceName { get; set; }
+        /// <summary>
+        /// 默认数据库链接字符串
+        /// </summary>
         public string DefaultConnectionString { get; set; }
+        /// <summary>
+        /// 最大查询连接数限制
+        /// </summary>
+        public int MaxQueryConnectionsLimit { get; set; }
+        /// <summary>
+        /// 连接数限制
+        /// </summary>
+        public ConnectionModeEnum ConnectionMode { get; set; }
+        /// <summary>
+        /// 当ConnectionMode == SYSTEM_AUTO时生效
+        /// </summary>
+        public int UseMemoryLimitWhileSkip { get; set; }
     }
 
     public interface IShardingConfigOption<TShardingDbContext>: IShardingConfigOption where TShardingDbContext : DbContext, IShardingDbContext

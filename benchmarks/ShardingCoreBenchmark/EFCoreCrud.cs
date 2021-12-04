@@ -45,18 +45,26 @@ namespace ShardingCore6x
         {
             var services = new ServiceCollection();
 
-            services.AddDbContext<DefaultDbContext>(o => o.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
-                //UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
+            services.AddDbContext<DefaultDbContext>(o => o
+                    //.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
+                .UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
                 , ServiceLifetime.Transient, ServiceLifetime.Transient);
             services.AddLogging();
-            services.AddShardingDbContext<DefaultShardingDbContext>((conStr, builder) => builder.UseMySql(conStr, new MySqlServerVersion(new Version())), ServiceLifetime.Transient, ServiceLifetime.Transient)
+            services.AddShardingDbContext<DefaultShardingDbContext>((conStr, builder) => builder
+                    //.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                    .UseSqlServer(conStr)
+                    , ServiceLifetime.Transient, ServiceLifetime.Transient)
                 .Begin(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = false;
-                }).AddShardingTransaction((connection, builder) => builder.UseMySql(connection, new MySqlServerVersion(new Version())))
-                .AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")//"Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
+                }).AddShardingTransaction((connection, builder) => builder
+                    //.UseMySql(connection, new MySqlServerVersion(new Version()))
+                    .UseSqlServer(connection)
+                )
+                //.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
+                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
                 .AddShardingTableRoute(op =>
                 {
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
@@ -152,45 +160,45 @@ namespace ShardingCore6x
         //        var connectionString = _actualConnectionStringManager.GetConnectionString("ds0", false);
         //    }
         //}
-        [Benchmark]
-        public async Task CreateQueryable()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1000000, 3000000).ToString();
-                var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-            }
-        }
-        [Benchmark]
-        public async Task DataSourceRouteRuleEngineFactory()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1000000, 3000000).ToString();
-                var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-                _dataSourceRouteRuleEngineFactory.Route(queryable);
-            }
-        }
-        [Benchmark]
-        public async Task TableRouteRuleEngineFactory()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1000000, 3000000).ToString();
-                var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-                _tableRouteRuleEngineFactory.Route(queryable);
-            }
-        }
-        [Benchmark]
-        public async Task ShardingCreateStreamMergeContext()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1000000, 3000000).ToString();
-                var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
-                var firstOrDefaultAsync = _streamMergeContextFactory.Create(queryable, _defaultShardingDbContext);
-            }
-        }
+        //[Benchmark]
+        //public async Task CreateQueryable()
+        //{
+        //    for (int i = 0; i < N; i++)
+        //    {
+        //        var next = new Random().Next(1000000, 3000000).ToString();
+        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
+        //    }
+        //}
+        //[Benchmark]
+        //public async Task DataSourceRouteRuleEngineFactory()
+        //{
+        //    for (int i = 0; i < N; i++)
+        //    {
+        //        var next = new Random().Next(1000000, 3000000).ToString();
+        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
+        //        _dataSourceRouteRuleEngineFactory.Route(queryable);
+        //    }
+        //}
+        //[Benchmark]
+        //public async Task TableRouteRuleEngineFactory()
+        //{
+        //    for (int i = 0; i < N; i++)
+        //    {
+        //        var next = new Random().Next(1000000, 3000000).ToString();
+        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
+        //        _tableRouteRuleEngineFactory.Route(queryable);
+        //    }
+        //}
+        //[Benchmark]
+        //public async Task ShardingCreateStreamMergeContext()
+        //{
+        //    for (int i = 0; i < N; i++)
+        //    {
+        //        var next = new Random().Next(1000000, 3000000).ToString();
+        //        var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == next);
+        //        var firstOrDefaultAsync = _streamMergeContextFactory.Create(queryable, _defaultShardingDbContext);
+        //    }
+        //}
         //[Benchmark]
         //public async Task NoRouteParseCache()
         //{
@@ -213,24 +221,24 @@ namespace ShardingCore6x
         //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
         //    }
         //}
-        //[Benchmark]
-        //public async Task NoShardingFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000).ToString();
-        //        var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
-        //    }
-        //}
-        //[Benchmark]
-        //public async Task ShardingFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000).ToString();
-        //        var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
-        //    }
-        //}
+        [Benchmark]
+        public async Task NoShardingFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
+            }
+        }
+        [Benchmark]
+        public async Task ShardingFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
+            }
+        }
         //[Benchmark]
         //public async Task NoShardingIndexFirstOrDefaultAsync()
         //{

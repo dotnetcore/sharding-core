@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
                     {
                         var newQueryable = CreateAsyncExecuteQueryable(dataSourceName, routeResult);
                         return await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
-                    });
+                    },cancellationToken);
                 });
 
             }).ToArray();

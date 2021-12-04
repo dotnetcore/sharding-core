@@ -5,11 +5,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
@@ -28,7 +30,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         private readonly IQueryable<TEntity> _queryable;
         private readonly Expression _secondExpression;
 
-        public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext):base(methodCallExpression,shardingDbContext)
+        public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
         {
             _methodCallExpression = methodCallExpression;
             if (methodCallExpression.Arguments.Count < 1 || methodCallExpression.Arguments.Count > 2)
@@ -83,46 +85,88 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
             var dataSourceRouteResult = _mergeContext.DataSourceRouteResult;
+            var maxQueryConnectionsLimit = _mergeContext.GetMaxQueryConnectionsLimit();
 
-            var enumeratorTasks = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
+            var waitExecuteQueue = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName =>
             {
-                return _mergeContext.TableRouteResults.Select(routeResult =>
+                return _mergeContext.TableRouteResults.Select(routeResult =>new SqlRouteUnit(dataSourceName,routeResult));
+            }).GroupBy(o=>o.DataSourceName).Select(sqlGroups =>
+            {
+                var sqlCount = sqlGroups.Count();
+                //根据用户配置单次查询期望并发数
+                int exceptCount =
+                    Math.Max(
+                        0 == sqlCount % maxQueryConnectionsLimit
+                            ? sqlCount / maxQueryConnectionsLimit
+                            : sqlCount / maxQueryConnectionsLimit + 1, 1);
+                //计算应该使用那种链接模式
+                ConnectionModeEnum connectionMode = CalcConnectionMode(_mergeContext.GetConnectionMode(),
+                    _mergeContext.GetUseMemoryLimitWhileSkip(), maxQueryConnectionsLimit, sqlCount, 0);
+                var sqlExecutorUnitPartitions = sqlGroups
+                    .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
+                    .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode,g.Obj)).ToList()).ToList();
+                return sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(o)).ToList();
+            })
+                .Select(executorGroups =>
                 {
-                    return Task.Run(async () =>
+                    return Task.Run(async() =>
                     {
-                        //return new RouteQueryResult<TResult>(dataSourceName, routeResult, default);
-                        var asyncExecuteQueryable = CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
+                        LinkedList<RouteQueryResult<TResult>> result = new LinkedList<RouteQueryResult<TResult>>();
+                        foreach (var executorGroup in executorGroups)
+                        {
+                            var executorGroupParallelExecuteTasks = executorGroup.Groups.Select(executor =>
+                            {
+                                return Task.Run(async () =>
+                                {
+                                    var dataSourceName = executor.RouteUnit.DataSourceName;
+                                    var routeResult = executor.RouteUnit.TableRouteResult;
 
-                        return await AsyncParallelResultExecute(asyncExecuteQueryable, dataSourceName, routeResult, efQuery,
-                            cancellationToken);
-                    });
+                                    var asyncExecuteQueryable =
+                                        CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
 
-                });
-            }).ToArray();
 
-            return (await Task.WhenAll(enumeratorTasks)).ToList();
+                                    var queryResult = await efQuery(asyncExecuteQueryable);
+
+                                    return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+                                    //return await AsyncParallelResultExecute(asyncExecuteQueryable, dataSourceName,
+                                    //    routeResult, efQuery,
+                                    //    cancellationToken);
+
+                                },cancellationToken);
+                            }).ToArray();
+                            var routeQueryResults = (await Task.WhenAll(executorGroupParallelExecuteTasks)).ToList();
+                            foreach (var routeQueryResult in routeQueryResults)
+                            {
+                                result.AddLast(routeQueryResult);
+                            }
+                        }
+
+                        return result;
+                    },cancellationToken);
+                }).ToArray();
+
+            return (await Task.WhenAll(waitExecuteQueue)).SelectMany(o=>o).ToList();
         }
 
-        /// <summary>
-        /// 异步并发查询
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="dataSourceName"></param>
-        /// <param name="routeResult"></param>
-        /// <param name="efQuery"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<RouteQueryResult<TResult>> AsyncParallelResultExecute<TResult>(IQueryable queryable,string dataSourceName,TableRouteResult routeResult, Func<IQueryable, Task<TResult>> efQuery,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            return AsyncParallelLimitExecuteAsync(async () =>
-            {
-                var queryResult = await efQuery(queryable);
 
-                return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-            },cancellationToken);
-        }
+        ///// <summary>
+        ///// 异步并发查询
+        ///// </summary>
+        ///// <typeparam name="TResult"></typeparam>
+        ///// <param name="queryable"></param>
+        ///// <param name="dataSourceName"></param>
+        ///// <param name="routeResult"></param>
+        ///// <param name="efQuery"></param>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //public async Task<RouteQueryResult<TResult>> AsyncParallelResultExecute<TResult>(IQueryable queryable,string dataSourceName,TableRouteResult routeResult, Func<IQueryable, Task<TResult>> efQuery,
+        //    CancellationToken cancellationToken = new CancellationToken())
+        //{
+        //    cancellationToken.ThrowIfCancellationRequested();
+        //    var queryResult = await efQuery(queryable);
+
+        //    return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+        //}
 
         public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {

@@ -19,6 +19,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources
         /// 数据源链接
         /// </summary>
         string ConnectionString { get; }
+        /// <summary>
+        /// 是否是默认的数据源
+        /// </summary>
         bool IsDefault { get; }
     }
 }

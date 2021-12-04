@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DIExtensions
@@ -47,6 +48,9 @@ namespace ShardingCore.DIExtensions
             ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
+            ShardingConfigOption.MaxQueryConnectionsLimit = shardingCoreBeginOptions.MaxQueryConnectionsLimit;
+            ShardingConfigOption.ConnectionMode = shardingCoreBeginOptions.ConnectionMode;
+            ShardingConfigOption.UseMemoryLimitWhileSkip = shardingCoreBeginOptions.UseMemoryLimitWhileSkip;
             foreach (var entityType in shardingCoreBeginOptions.GetCreateTableEntities())
             {
                 ShardingConfigOption.AddEntityTryCreateTable(entityType);
@@ -105,6 +109,9 @@ namespace ShardingCore.DIExtensions
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; } = true;
+        public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
+        public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+        public int UseMemoryLimitWhileSkip { get; set; } = 10000;
 
         private readonly  ISet<Type> _createTableEntities = new HashSet<Type>();
 

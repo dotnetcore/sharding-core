@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
 
 
-        public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext):base(streamMergeContext)
+        public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
             StreamMergeContext = streamMergeContext;
         }
@@ -100,22 +100,20 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// <param name="async"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public  Task<StreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,
+        public async Task<StreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            return AsyncParallelLimitExecuteAsync(async () =>
+            cancellationToken.ThrowIfCancellationRequested();
+            if (async)
             {
-                if (async)
-                {
-                    var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                    return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-                }
-                else
-                {
-                    var enumerator = GetEnumerator0(queryable);
-                    return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
-                }
-            }, cancellationToken);
+                var asyncEnumerator = await GetAsyncEnumerator0(queryable);
+                return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+            }
+            else
+            {
+                var enumerator = GetEnumerator0(queryable);
+                return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
+            }
         }
 
         /// <summary>

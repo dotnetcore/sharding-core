@@ -10,6 +10,7 @@ using ShardingCore.Sharding.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore.Core;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
@@ -193,6 +194,18 @@ namespace ShardingCore.Sharding
         public TimeSpan GetParallelQueryTimeOut()
         {
             return _shardingConfigOption.ParallelQueryTimeOut;
+        }
+        public int GetMaxQueryConnectionsLimit()
+        {
+            return _shardingConfigOption.MaxQueryConnectionsLimit;
+        }
+        public ConnectionModeEnum GetConnectionMode()
+        {
+            return _shardingConfigOption.ConnectionMode;
+        }
+        public int GetUseMemoryLimitWhileSkip()
+        {
+            return _shardingConfigOption.UseMemoryLimitWhileSkip;
         }
         /// <summary>
         /// 是否是跨资源查询
