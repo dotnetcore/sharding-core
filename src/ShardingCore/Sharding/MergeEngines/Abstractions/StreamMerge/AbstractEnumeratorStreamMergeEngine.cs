@@ -114,12 +114,12 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
             if (async)
             {
                 var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                return connectionMode==ConnectionModeEnum.STREAM_MERGE? new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
+                return connectionMode==ConnectionModeEnum.MEMORY_STRICTLY? new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
             }
             else
             {
                 var enumerator = GetEnumerator0(queryable);
-                return connectionMode == ConnectionModeEnum.STREAM_MERGE ? new StreamMergeAsyncEnumerator<TEntity>(enumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(enumerator);
+                return connectionMode == ConnectionModeEnum.MEMORY_STRICTLY ? new StreamMergeAsyncEnumerator<TEntity>(enumerator):new InMemoryStreamMergeAsyncEnumerator<TEntity>(enumerator);
             }
         }
 

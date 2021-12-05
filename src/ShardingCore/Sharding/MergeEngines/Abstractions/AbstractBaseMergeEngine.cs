@@ -9,7 +9,9 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions
@@ -66,62 +68,16 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
 
         //}
 
-        public Task<LinkedList<TResult2>>[] GetDataSourceGroupAndExecutorGroup<TResult,TResult2>(Func<SqlExecutorUnit,Task<TResult2>> sqlExecutorUnitExecuteAsync,CancellationToken cancellationToken=new CancellationToken())
+        public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(IEnumerable<ISqlRouteUnit> sqlRouteUnits,Func<SqlExecutorUnit,Task<TResult>> sqlExecutorUnitExecuteAsync,CancellationToken cancellationToken=new CancellationToken())
         {
-            var streamMergeContext = GetStreamMergeContext();
-            var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
-
-            var waitTaskQueue = streamMergeContext.DataSourceRouteResult.IntersectDataSources.SelectMany(
-                dataSourceName =>
-                {
-                    return streamMergeContext.TableRouteResults.Select(routeResult =>
-                        new SqlRouteUnit(dataSourceName, routeResult));
-                }).GroupBy(o => o.DataSourceName).Select(sqlGroups =>
-            {
-                var sqlCount = sqlGroups.Count();
-                //根据用户配置单次查询期望并发数
-                int exceptCount =
-                    Math.Max(
-                        0 == sqlCount % maxQueryConnectionsLimit
-                            ? sqlCount / maxQueryConnectionsLimit
-                            : sqlCount / maxQueryConnectionsLimit + 1, 1);
-                //计算应该使用那种链接模式
-                ConnectionModeEnum connectionMode = CalcConnectionMode(streamMergeContext.GetConnectionMode(),
-                    streamMergeContext.GetUseMemoryLimitWhileSkip(), maxQueryConnectionsLimit, sqlCount,
-                    streamMergeContext.Skip);
-                var sqlExecutorUnitPartitions = sqlGroups
-                    .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
-                    .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode, g.Obj)).ToList()).ToList();
-                return sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(o)).ToList();
-            }).Select(executorGroups =>
+            var waitTaskQueue = AggregateQueryByDataSourceName(sqlRouteUnits).Select(GetSqlExecutorGroups).Select(executorGroups =>
             {
                 return Task.Run(async () =>
                 {
-                    LinkedList<TResult2> result = new LinkedList<TResult2>();
+                    LinkedList<TResult> result = new LinkedList<TResult>();
                     foreach (var executorGroup in executorGroups)
                     {
-                        var executorGroupParallelExecuteTasks = executorGroup.Groups.Select(executor =>
-                        {
-                            return Task.Run(async () =>
-                            {
-                                return await sqlExecutorUnitExecuteAsync(executor);
-                                //var dataSourceName = executor.RouteUnit.DataSourceName;
-                                //var routeResult = executor.RouteUnit.TableRouteResult;
-
-                                //var asyncExecuteQueryable =
-                                //    CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult);
-
-
-                                //var queryResult = await efQuery(asyncExecuteQueryable);
-
-                                //return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-                                //return await AsyncParallelResultExecute(asyncExecuteQueryable, dataSourceName,
-                                //    routeResult, efQuery,
-                                //    cancellationToken);
-
-                            }, cancellationToken);
-                        }).ToArray();
-                        var routeQueryResults = (await Task.WhenAll(executorGroupParallelExecuteTasks)).ToList();
+                        var routeQueryResults = await ExecuteAsync<TResult>(executorGroup.Groups, sqlExecutorUnitExecuteAsync,cancellationToken);
                         foreach (var routeQueryResult in routeQueryResults)
                         {
                             result.AddLast(routeQueryResult);
@@ -134,25 +90,78 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             return waitTaskQueue;
         }
 
-
-
-        protected ConnectionModeEnum CalcConnectionMode(ConnectionModeEnum currentConnectionMode, int useMemoryLimitWhileSkip, int maxQueryConnectionsLimit, int sqlCount,int? skip)
+        protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
         {
-            switch (currentConnectionMode)
-            {
-                case ConnectionModeEnum.STREAM_MERGE:
-                case ConnectionModeEnum.IN_MEMORY_MERGE: return currentConnectionMode;
-                default:
+
+            var streamMergeContext = GetStreamMergeContext();
+
+            return streamMergeContext.DataSourceRouteResult.IntersectDataSources.SelectMany(
+                dataSourceName =>
                 {
-                    if (skip.HasValue && skip.Value > useMemoryLimitWhileSkip)
-                    {
-                        return ConnectionModeEnum.STREAM_MERGE;
-                    }
-                    return maxQueryConnectionsLimit < sqlCount
-                        ? ConnectionModeEnum.IN_MEMORY_MERGE
-                        : ConnectionModeEnum.STREAM_MERGE; ;
-                }
+                    return streamMergeContext.TableRouteResults.Select(routeResult =>
+                        new SqlRouteUnit(dataSourceName, routeResult));
+                });
+        }
+        protected virtual IEnumerable<IGrouping<string, ISqlRouteUnit>> AggregateQueryByDataSourceName(IEnumerable<ISqlRouteUnit> sqlRouteUnits)
+        {
+            return sqlRouteUnits.GroupBy(o => o.DataSourceName);
+        }
+
+        protected List<SqlExecutorGroup<SqlExecutorUnit>> GetSqlExecutorGroups(IGrouping<string, ISqlRouteUnit> sqlGroups)
+        {
+            var streamMergeContext = GetStreamMergeContext();
+            var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
+            var sqlCount = sqlGroups.Count();
+            //根据用户配置单次查询期望并发数
+            int exceptCount =
+                Math.Max(
+                    0 == sqlCount % maxQueryConnectionsLimit
+                        ? sqlCount / maxQueryConnectionsLimit
+                        : sqlCount / maxQueryConnectionsLimit + 1, 1);
+            //计算应该使用那种链接模式
+            ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode(sqlCount);
+            var sqlExecutorUnitPartitions = sqlGroups
+                .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
+                .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode, g.Obj)).ToList()).ToList();
+            return sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(o)).ToList();
+        }
+
+        protected async Task<LinkedList<TResult>> ExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<TResult>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
+        {
+            if (sqlExecutorUnits.Count <= 0)
+            {
+                return new LinkedList<TResult>();
             }
+            else
+            {
+                var result=new LinkedList<TResult>();
+                Task<TResult>[] tasks=null;
+                if (sqlExecutorUnits.Count > 1)
+                {
+                    tasks  = sqlExecutorUnits.Skip(1).Select(sqlExecutorUnit =>
+                    {
+                        return Task.Run(async () =>
+                        {
+                            return await sqlExecutorUnitExecuteAsync(sqlExecutorUnit);
+
+                        }, cancellationToken);
+                    }).ToArray();
+                }
+                else
+                {
+                    tasks = Array.Empty<Task<TResult>>();
+                }
+                var firstResult = await sqlExecutorUnitExecuteAsync(sqlExecutorUnits[0]);
+                result.AddLast(firstResult);
+                var otherResults = await Task.WhenAll(tasks);
+                foreach (var otherResult in otherResults)
+                {
+                    result.AddLast(otherResult);
+                }
+
+                return result;
+            }
+
         }
     }
 }

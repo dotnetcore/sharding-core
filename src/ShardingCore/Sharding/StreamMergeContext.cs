@@ -141,7 +141,7 @@ namespace ShardingCore.Sharding
             //如果开启了读写分离或者本次查询是跨表或者跨库的表示本次查询的dbcontext是不存储的用完后就直接dispose
             var parallelQuery = IsParallelQuery();
             var dbContext = _shardingDbContext.GetDbContext(dataSourceName, parallelQuery, routeTail);
-            if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.STREAM_MERGE)
+            if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.MEMORY_STRICTLY)
             {
                 _parallelDbContexts.TryAdd(dbContext, null);
             }
@@ -161,7 +161,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                return ConnectionModeEnum.STREAM_MERGE;
+                return ConnectionModeEnum.MEMORY_STRICTLY;
             }
         }
 
@@ -205,21 +205,32 @@ namespace ShardingCore.Sharding
             return _shardingDbContext;
         }
 
-        public int GetParallelQueryMaxThreadCount()
-        {
-            return _shardingConfigOption.ParallelQueryMaxThreadCount;
-        }
-        public TimeSpan GetParallelQueryTimeOut()
-        {
-            return _shardingConfigOption.ParallelQueryTimeOut;
-        }
         public int GetMaxQueryConnectionsLimit()
         {
             return _shardingConfigOption.MaxQueryConnectionsLimit;
         }
-        public ConnectionModeEnum GetConnectionMode()
+        public ConnectionModeEnum GetConnectionMode(int sqlCount)
         {
-            return _shardingConfigOption.ConnectionMode;
+            return CalcConnectionMode(sqlCount);
+        }
+
+        private ConnectionModeEnum CalcConnectionMode(int sqlCount)
+        {
+            switch (_shardingConfigOption.ConnectionMode)
+            {
+                case ConnectionModeEnum.MEMORY_STRICTLY:
+                case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingConfigOption.ConnectionMode;
+                default:
+                {
+                    if (Skip.HasValue && Skip.Value > _shardingConfigOption.UseMemoryLimitWhileSkip)
+                    {
+                        return ConnectionModeEnum.MEMORY_STRICTLY;
+                    }
+                    return _shardingConfigOption.MaxQueryConnectionsLimit < sqlCount
+                        ? ConnectionModeEnum.CONNECTION_STRICTLY
+                        : ConnectionModeEnum.MEMORY_STRICTLY; ;
+                }
+            }
         }
         public int GetUseMemoryLimitWhileSkip()
         {

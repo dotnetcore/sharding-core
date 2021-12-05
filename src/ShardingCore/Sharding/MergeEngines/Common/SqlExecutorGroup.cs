@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.Sharding.MergeEngines.Common
 {
-    public sealed class SqlExecutorGroup<T>
+    internal sealed class SqlExecutorGroup<T>
     {
         public SqlExecutorGroup(List<T> groups)
         {

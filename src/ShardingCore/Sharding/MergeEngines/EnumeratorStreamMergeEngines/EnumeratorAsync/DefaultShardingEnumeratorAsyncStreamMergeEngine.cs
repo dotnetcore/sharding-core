@@ -29,7 +29,8 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<TEntity, IStreamMergeAsyncEnumerator<TEntity>>(
+            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(defaultSqlRouteUnits,
                 async sqlExecutorUnit =>
                 {
                     var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);

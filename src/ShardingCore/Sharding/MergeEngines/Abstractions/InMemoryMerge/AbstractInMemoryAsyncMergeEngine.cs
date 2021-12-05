@@ -85,7 +85,8 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
-            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<TResult, RouteQueryResult<TResult>>(
+            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
+            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(defaultSqlRouteUnits,
                    async sqlExecutorUnit =>
                     {
                         var connectionMode = _mergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);

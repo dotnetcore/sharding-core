@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             cancellationToken.ThrowIfCancellationRequested();
             var dataSourceName = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
             var routeResult = StreamMergeContext.TableRouteResults.First();
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult,ConnectionModeEnum.STREAM_MERGE);
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult,ConnectionModeEnum.MEMORY_STRICTLY);
             var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
             if (async)
             {

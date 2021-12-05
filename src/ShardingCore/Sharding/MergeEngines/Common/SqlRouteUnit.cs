@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Common
 {
-    public sealed class SqlRouteUnit
+    internal  class SqlRouteUnit: ISqlRouteUnit
     {
+
         public SqlRouteUnit(string dataSourceName, TableRouteResult tableRouteResult)
         {
             DataSourceName = dataSourceName;

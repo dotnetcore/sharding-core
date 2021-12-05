@@ -4,19 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Common
 {
-    public class SqlExecutorUnit
+    internal class SqlExecutorUnit
     {
 
-        public SqlExecutorUnit(ConnectionModeEnum connectionMode, SqlRouteUnit routeUnit)
+        public SqlExecutorUnit(ConnectionModeEnum connectionMode, ISqlRouteUnit routeUnit)
         {
             ConnectionMode = connectionMode;
             RouteUnit = routeUnit;
         }
 
-        public SqlRouteUnit RouteUnit { get; }
+        public ISqlRouteUnit RouteUnit { get; }
         public ConnectionModeEnum ConnectionMode { get; }
     }
 }

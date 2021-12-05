@@ -46,7 +46,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             StreamMergeContext.ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
 
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<TEntity, IStreamMergeAsyncEnumerator<TEntity>>(
+            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(defaultSqlRouteUnits,
                 async sqlExecutorUnit =>
                 {
                     var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);

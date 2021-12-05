@@ -19,7 +19,7 @@ namespace ShardingCore.Extensions
             }
             finally
             {
-                if (connectionMode == ConnectionModeEnum.IN_MEMORY_MERGE)
+                if (connectionMode == ConnectionModeEnum.CONNECTION_STRICTLY)
                 {
 #if !EFCORE2
                     await dbContext.DisposeAsync();
