@@ -12,6 +12,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
@@ -47,7 +48,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
 
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(defaultSqlRouteUnits,
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits,
                 async sqlExecutorUnit =>
                 {
                     var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
@@ -55,7 +56,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
                     var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
                     var (newQueryable,dbContext) =
                         CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult, connectionMode);
-                    return await AsyncParallelEnumerator(newQueryable, async, connectionMode, cancellationToken).ReleaseConnectionAsync(dbContext,connectionMode);
+                    var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, async,cancellationToken);
+                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext,
+                        streamMergeAsyncEnumerator);
                 });
         
 
@@ -84,6 +87,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             if (StreamMergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
             return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
+        }
+        public override IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
+            IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
+        {
+            if (StreamMergeContext.IsPaginationQuery())
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators, 0, StreamMergeContext.Skip.GetValueOrDefault() + StreamMergeContext.Take.GetValueOrDefault());
+            return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
         }
     }
 }

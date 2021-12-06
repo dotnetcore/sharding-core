@@ -36,16 +36,11 @@ namespace ShardingCore.DIExtensions
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
             shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
-            if (shardingCoreBeginOptions.ParallelQueryMaxThreadCount <= 0)
+            if (shardingCoreBeginOptions.MaxQueryConnectionsLimit <= 0)
                 throw new ArgumentException(
-                    $"{nameof(shardingCoreBeginOptions.ParallelQueryMaxThreadCount)} should greater than zero thread count");
-            if (shardingCoreBeginOptions.ParallelQueryTimeOut.TotalMilliseconds <= 0)
-                throw new ArgumentException(
-                    $"{nameof(shardingCoreBeginOptions.ParallelQueryTimeOut)} should greater than zero milliseconds");
+                    $"{nameof(shardingCoreBeginOptions.MaxQueryConnectionsLimit)} should greater than and equal 1");
             ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
             ShardingConfigOption.AutoTrackEntity = shardingCoreBeginOptions.AutoTrackEntity;
-            ShardingConfigOption.ParallelQueryMaxThreadCount = shardingCoreBeginOptions.ParallelQueryMaxThreadCount;
-            ShardingConfigOption.ParallelQueryTimeOut = shardingCoreBeginOptions.ParallelQueryTimeOut;
             ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
             ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
             ShardingConfigOption.MaxQueryConnectionsLimit = shardingCoreBeginOptions.MaxQueryConnectionsLimit;
@@ -95,15 +90,6 @@ namespace ShardingCore.DIExtensions
         /// 如果AutoTrackEntity=true，那么被创建的三个dbcontext还是以原先的表现行为进行查询，在查询完成后会再次各自创建对应的dbcontext进行对象的追踪
         /// </summary>
         public bool AutoTrackEntity { get; set; }
-
-        /// <summary>
-        /// 单次查询并发线程数目(最小1)默认cpu核心数*2
-        /// </summary>
-        public int ParallelQueryMaxThreadCount { get; set; } = Environment.ProcessorCount*2;
-        /// <summary>
-        /// 默认30秒超时
-        /// </summary>
-        public TimeSpan ParallelQueryTimeOut { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// 忽略建表时的错误

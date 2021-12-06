@@ -86,7 +86,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(defaultSqlRouteUnits,
+            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true,defaultSqlRouteUnits,
                    async sqlExecutorUnit =>
                     {
                         var connectionMode = _mergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
@@ -96,8 +96,9 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
                         var (asyncExecuteQueryable, dbContext) =
                             CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult, connectionMode);
 
-                        var queryResult = await efQuery(asyncExecuteQueryable).ReleaseConnectionAsync(dbContext, connectionMode);
-                        return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+                        var queryResult = await efQuery(asyncExecuteQueryable);
+                        var routeQueryResult = new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+                        return new ShardingMergeResult<RouteQueryResult<TResult>>(dbContext, routeQueryResult);
                     }).ToArray();
 
             return (await Task.WhenAll(waitExecuteQueue)).SelectMany(o => o).ToList();
@@ -133,10 +134,10 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             return _mergeContext;
         }
 
-        public IQueryable<TEntity> GetQueryable()
-        {
-            return _queryable;
-        }
+        //public IQueryable<TEntity> GetQueryable()
+        //{
+        //    return _queryable;
+        //}
 
         protected MethodCallExpression GetMethodCallExpression()
         {

@@ -62,15 +62,6 @@ namespace ShardingCore
         /// 自动追踪实体
         /// </summary>
         public bool AutoTrackEntity { get; set; }
-
-        /// <summary>
-        /// 单次查询并发线程数目(1-65536)
-        /// </summary>
-        public int ParallelQueryMaxThreadCount { get; set; }
-        /// <summary>
-        /// 并发查询超时时间
-        /// </summary>
-        public TimeSpan ParallelQueryTimeOut { get; set; }
         /// <summary>
         /// 默认数据源名称
         /// </summary>

@@ -34,8 +34,6 @@ namespace Sample.SqlServer
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
-                    o.ParallelQueryMaxThreadCount = 100;
-                    o.ParallelQueryTimeOut = TimeSpan.FromSeconds(10);
                     //if SysTest entity not exists in db and db is exists
                     //o.AddEntityTryCreateTable<SysTest>(); // or `o.AddEntitiesTryCreateTable(typeof(SysTest));`
                 })

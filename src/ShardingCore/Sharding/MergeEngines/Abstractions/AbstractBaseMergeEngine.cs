@@ -68,19 +68,43 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
 
         //}
 
-        public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(IEnumerable<ISqlRouteUnit> sqlRouteUnits,Func<SqlExecutorUnit,Task<TResult>> sqlExecutorUnitExecuteAsync,CancellationToken cancellationToken=new CancellationToken())
+        public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(bool async,IEnumerable<ISqlRouteUnit> sqlRouteUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
         {
-            var waitTaskQueue = AggregateQueryByDataSourceName(sqlRouteUnits).Select(GetSqlExecutorGroups).Select(executorGroups =>
+            var waitTaskQueue = AggregateQueryByDataSourceName(sqlRouteUnits)
+                .Select(GetSqlExecutorGroups)
+                .Select(dataSourceSqlExecutorUnit =>
             {
                 return Task.Run(async () =>
                 {
+                    var executorGroups = dataSourceSqlExecutorUnit.SqlExecutorGroups;
                     LinkedList<TResult> result = new LinkedList<TResult>();
+                    //同数据库下多组数据间采用串行
                     foreach (var executorGroup in executorGroups)
                     {
-                        var routeQueryResults = await ExecuteAsync<TResult>(executorGroup.Groups, sqlExecutorUnitExecuteAsync,cancellationToken);
-                        foreach (var routeQueryResult in routeQueryResults)
+                        //同组采用并行最大化用户配置链接数
+                        var routeQueryResults = await ExecuteAsync<TResult>(executorGroup.Groups, sqlExecutorUnitExecuteAsync, cancellationToken);
+                        //严格限制连接数就在内存中进行聚合并且直接回收掉当前dbcontext
+                        if (dataSourceSqlExecutorUnit.ConnectionMode == ConnectionModeEnum.CONNECTION_STRICTLY)
                         {
-                            result.AddLast(routeQueryResult);
+                            MergeParallelExecuteResult(result, routeQueryResults.Select(o => o.MergeResult), async);
+                            var dbContexts = routeQueryResults.Select(o => o.DbContext);
+                            foreach (var dbContext in dbContexts)
+                            {
+#if !EFCORE2
+                                await dbContext.DisposeAsync();
+                                
+#endif
+#if EFCORE2
+                                dbContext.Dispose();
+#endif
+                            }
+                        }
+                        else
+                        {
+                            foreach (var routeQueryResult in routeQueryResults)
+                            {
+                                result.AddLast(routeQueryResult.MergeResult);
+                            }
                         }
                     }
 
@@ -88,6 +112,14 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
                 }, cancellationToken);
             }).ToArray();
             return waitTaskQueue;
+        }
+
+        public virtual void MergeParallelExecuteResult<TResult>(LinkedList<TResult> previewResults, IEnumerable<TResult> parallelResults, bool async)
+        {
+            foreach (var parallelResult in parallelResults)
+            {
+                previewResults.AddLast(parallelResult);
+            }
         }
 
         protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
@@ -107,7 +139,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             return sqlRouteUnits.GroupBy(o => o.DataSourceName);
         }
 
-        protected List<SqlExecutorGroup<SqlExecutorUnit>> GetSqlExecutorGroups(IGrouping<string, ISqlRouteUnit> sqlGroups)
+        protected DataSourceSqlExecutorUnit GetSqlExecutorGroups(IGrouping<string, ISqlRouteUnit> sqlGroups)
         {
             var streamMergeContext = GetStreamMergeContext();
             var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
@@ -123,33 +155,41 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             var sqlExecutorUnitPartitions = sqlGroups
                 .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
                 .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode, g.Obj)).ToList()).ToList();
-            return sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(o)).ToList();
+            var sqlExecutorGroups = sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(connectionMode, o)).ToList();
+            return new DataSourceSqlExecutorUnit(connectionMode, sqlExecutorGroups);
         }
-
-        protected async Task<LinkedList<TResult>> ExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<TResult>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
+        /// <summary>
+        /// 同库同组下面的并行异步执行，需要归并成一个结果
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="sqlExecutorUnits"></param>
+        /// <param name="sqlExecutorUnitExecuteAsync"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected async Task<LinkedList<ShardingMergeResult<TResult>>> ExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
         {
             if (sqlExecutorUnits.Count <= 0)
             {
-                return new LinkedList<TResult>();
+                return new LinkedList<ShardingMergeResult<TResult>>();
             }
             else
             {
-                var result=new LinkedList<TResult>();
-                Task<TResult>[] tasks=null;
+                var result = new LinkedList<ShardingMergeResult<TResult>>();
+                Task<ShardingMergeResult<TResult>>[] tasks = null;
                 if (sqlExecutorUnits.Count > 1)
                 {
-                    tasks  = sqlExecutorUnits.Skip(1).Select(sqlExecutorUnit =>
-                    {
-                        return Task.Run(async () =>
-                        {
-                            return await sqlExecutorUnitExecuteAsync(sqlExecutorUnit);
+                    tasks = sqlExecutorUnits.Skip(1).Select(sqlExecutorUnit =>
+                   {
+                       return Task.Run(async () =>
+                       {
+                           return await sqlExecutorUnitExecuteAsync(sqlExecutorUnit);
 
-                        }, cancellationToken);
-                    }).ToArray();
+                       }, cancellationToken);
+                   }).ToArray();
                 }
                 else
                 {
-                    tasks = Array.Empty<Task<TResult>>();
+                    tasks = Array.Empty<Task<ShardingMergeResult<TResult>>>();
                 }
                 var firstResult = await sqlExecutorUnitExecuteAsync(sqlExecutorUnits[0]);
                 result.AddLast(firstResult);

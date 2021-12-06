@@ -163,14 +163,6 @@ namespace ShardingCore.Test2x
             Assert.False(isKey3);
             var isKey4 = userModMetadata.ShardingTableFieldIsKey();
             Assert.True(isKey4);
-            try
-            {
-                throw new ShardingCoreParallelQueryTimeOutException("test");
-            }
-            catch (Exception e)
-            {
-                Assert.Equal(typeof(ShardingCoreParallelQueryTimeOutException), e.GetType());
-            }
 
             await _virtualDbContext.AddRangeAsync(logDays);
             var bulkShardingExpression = _virtualDbContext.BulkShardingExpression<ShardingDefaultDbContext, Order>(o => new[] { "A", "B" }.Contains(o.Area));

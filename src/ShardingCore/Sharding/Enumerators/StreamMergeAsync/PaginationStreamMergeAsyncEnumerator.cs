@@ -21,11 +21,14 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         private int realSkip = 0;
         private int realTake = 0;
 
-        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources)
+        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources):this(mergeContext, sources,mergeContext.Skip, mergeContext.Take)
+        {
+        }
+        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources,int? skip,int? take)
         {
             _mergeContext = mergeContext;
-            _skip = mergeContext.Skip;
-            _take = mergeContext.Take;
+            _skip = skip;
+            _take = take;
             if (_mergeContext.HasGroupQuery())
                 _enumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<T>(_mergeContext, sources);
             else

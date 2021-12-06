@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
@@ -30,15 +33,15 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(defaultSqlRouteUnits,
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits,
                 async sqlExecutorUnit =>
                 {
                     var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
                     var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
                     var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
                     var (newQueryable,dbContext) = CreateAsyncExecuteQueryable(dataSourceName, routeResult, connectionMode);
-                    return await AsyncParallelEnumerator(newQueryable, async,connectionMode, cancellationToken)
-                        .ReleaseConnectionAsync(dbContext, connectionMode);
+                    var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext, streamMergeAsyncEnumerator);
                 }, cancellationToken);
 
             var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
@@ -53,6 +56,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
             return (newQueryable,shardingDbContext);
         }
 
+
         public override IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             if (StreamMergeContext.IsPaginationQuery())
@@ -60,6 +64,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
             if (StreamMergeContext.HasGroupQuery())
                 return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
             return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
+        }
+
+        public override IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
+            IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
+        {
+            if (StreamMergeContext.IsPaginationQuery())
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.Skip.GetValueOrDefault() + StreamMergeContext.Take.GetValueOrDefault());
+            return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
         }
     }
 }

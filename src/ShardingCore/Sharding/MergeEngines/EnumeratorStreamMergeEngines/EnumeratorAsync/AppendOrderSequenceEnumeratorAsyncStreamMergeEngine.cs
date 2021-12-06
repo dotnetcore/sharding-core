@@ -12,6 +12,7 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -105,21 +106,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             StreamMergeContext.ReSetOrders(reSetOrders);
             var sqlSequenceRouteUnits = sequenceResults.Select(sequenceResult => new SqlSequenceRouteUnit(sequenceResult));
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(sqlSequenceRouteUnits,
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,sqlSequenceRouteUnits,
                 async sqlExecutorUnit =>
                 {
                     var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
                     var (newQueryable, dbContext) = CreateAsyncExecuteQueryable(noPaginationQueryable,
                         ((SqlSequenceRouteUnit)sqlExecutorUnit.RouteUnit).SequenceResult, reSetOrders, connectionMode);
-                    return await AsyncParallelEnumerator(newQueryable, async, connectionMode, cancellationToken)
-                        .ReleaseConnectionAsync(dbContext, connectionMode);
+                    var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
+                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext,
+                        streamMergeAsyncEnumerator);
                 }, cancellationToken);
-        
-            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
+
+            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o => o).ToArray();
             return streamEnumerators;
         }
 
-        private (IQueryable<TEntity>,DbContext) CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult, IEnumerable<PropertyOrder> reSetOrders,ConnectionModeEnum connectionMode)
+        private (IQueryable<TEntity>, DbContext) CreateAsyncExecuteQueryable(IQueryable<TEntity> noPaginationQueryable, SequenceResult sequenceResult, IEnumerable<PropertyOrder> reSetOrders, ConnectionModeEnum connectionMode)
         {
             var shardingDbContext = StreamMergeContext.CreateDbContext(sequenceResult.DSName, sequenceResult.TableRouteResult, connectionMode);
             var newQueryable = (IQueryable<TEntity>)(noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(reSetOrders))

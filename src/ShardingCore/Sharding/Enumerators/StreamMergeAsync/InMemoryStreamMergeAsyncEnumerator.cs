@@ -11,57 +11,50 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
     internal class InMemoryStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
+        private readonly bool _async;
         private readonly IEnumerator<T> _inMemoryEnumerator;
         private bool skip;
 
-        public InMemoryStreamMergeAsyncEnumerator(IAsyncEnumerator<T> asyncSource)
+        public InMemoryStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> asyncSource, bool async)
         {
             if (_inMemoryEnumerator != null)
                 throw new ArgumentNullException(nameof(_inMemoryEnumerator));
+            _async = async;
 
-            _inMemoryEnumerator = GetAllRowsAsync(asyncSource).WaitAndUnwrapException();
+            if (_async)
+                _inMemoryEnumerator = GetAllRowsAsync(asyncSource).WaitAndUnwrapException();
+            else
+                _inMemoryEnumerator = GetAllRows(asyncSource);
             _inMemoryEnumerator.MoveNext();
             skip = true;
         }
 
-        private async Task<IEnumerator<T>> GetAllRowsAsync(IAsyncEnumerator<T> asyncSource)
+        private async Task<IEnumerator<T>> GetAllRowsAsync(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
             var linkedList = new LinkedList<T>();
-            if (asyncSource.Current != null)
-            {
-                linkedList.AddLast(asyncSource.Current);
 #if !EFCORE2
-                while (await asyncSource.MoveNextAsync())
+            while (await streamMergeAsyncEnumerator.MoveNextAsync())
 #endif
 #if EFCORE2
-                while (await asyncSource.MoveNext())
+            while (await streamMergeAsyncEnumerator.MoveNext(new CancellationToken()))
 #endif
-                {
-                    linkedList.AddLast(asyncSource.Current);
-                }
+            {
+                linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
             }
 
             return linkedList.GetEnumerator();
         }
-
-        public InMemoryStreamMergeAsyncEnumerator(IEnumerator<T> syncSource)
-        {
-            if (_inMemoryEnumerator != null)
-                throw new ArgumentNullException(nameof(_inMemoryEnumerator));
-            _inMemoryEnumerator = GetAllRows(syncSource);
-            _inMemoryEnumerator.MoveNext();
-            skip = true;
-        }
-        private IEnumerator<T> GetAllRows(IEnumerator<T> syncSource)
+        private IEnumerator<T> GetAllRows(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
             var linkedList = new LinkedList<T>();
-            if (syncSource.Current != null)
+#if !EFCORE2
+            while ( streamMergeAsyncEnumerator.MoveNext())
+#endif
+#if EFCORE2
+            while (streamMergeAsyncEnumerator.MoveNext())
+#endif
             {
-                linkedList.AddLast(syncSource.Current);
-                while (syncSource.MoveNext())
-                {
-                    linkedList.AddLast(syncSource.Current);
-                }
+                linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
             }
 
             return linkedList.GetEnumerator();
@@ -77,20 +70,20 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return false;
         }
 #if !EFCORE2
-        public   ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             _inMemoryEnumerator.Dispose();
             return new ValueTask();
         }
 
-        public  ValueTask<bool> MoveNextAsync()
+        public ValueTask<bool> MoveNextAsync()
         {
             if (skip)
             {
                 skip = false;
                 return new ValueTask<bool>(null != _inMemoryEnumerator.Current);
             }
-            return  new ValueTask<bool>(_inMemoryEnumerator.MoveNext());
+            return new ValueTask<bool>(_inMemoryEnumerator.MoveNext());
         }
 
         public void Dispose()
@@ -139,7 +132,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             _inMemoryEnumerator?.Dispose();
         }
 
-        public  Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
+        public Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (skip)
@@ -147,7 +140,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 skip = false;
                 return Task.FromResult(null != _inMemoryEnumerator.Current);
             }
-            return  Task.FromResult(_inMemoryEnumerator.MoveNext());
+            return Task.FromResult(_inMemoryEnumerator.MoveNext());
         }
 
 
