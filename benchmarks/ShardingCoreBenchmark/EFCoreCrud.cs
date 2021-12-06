@@ -64,76 +64,75 @@ namespace ShardingCore6x
                     .UseSqlServer(connection)
                 )
                 //.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
-                //.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
-                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
+                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
                 .AddShardingTableRoute(op =>
                 {
-                    //op.AddShardingTableRoute<OrderVirtualTableRoute>();
+                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 }).End();
 
             var buildServiceProvider = services.BuildServiceProvider();
             buildServiceProvider.GetRequiredService<IShardingBootstrapper>().Start();
-            //ICollection<Order> orders = new LinkedList<Order>();
+            ICollection<Order> orders = new LinkedList<Order>();
 
-            //using (var scope = buildServiceProvider.CreateScope())
-            //{
-            //    var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
-            //    defaultShardingDbContext.Database.EnsureCreated();
-            //    if (!defaultShardingDbContext.Set<Order>().Any())
-            //    {
-            //        var begin = DateTime.Now.Date.AddDays(-8);
-            //        var now = DateTime.Now;
-            //        var current = begin;
-            //        int i = 0;
-            //        var x = new OrderStatusEnum[] { OrderStatusEnum.Failed, OrderStatusEnum.NotPay, OrderStatusEnum.Succeed };
-            //        while (current < now)
-            //        {
-            //            orders.Add(new Order()
-            //            {
-            //                Id = i.ToString(),
-            //                Amount = i,
-            //                Body = $"今天购买了的东西呀：{i}",
-            //                CreateTime = current,
-            //                Remark = $"这是我的备注哦备注哦备注哦：{i}",
-            //                Payer = Guid.NewGuid().ToString("n"),
-            //                OrderStatus = x[i % 3]
-            //            });
-            //            i++;
-            //            current = current.AddMilliseconds(100);
-            //        }
-            //        var sp = Stopwatch.StartNew();
-            //        defaultShardingDbContext.BulkInsert<Order>(orders.ToList());
-            //        sp.Stop();
-            //        Console.WriteLine($"批量插入订单数据:{orders.Count},用时:{sp.ElapsedMilliseconds}");
-            //    }
+            using (var scope = buildServiceProvider.CreateScope())
+            {
+                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultDbContext>();
+                defaultShardingDbContext.Database.EnsureCreated();
+                if (!defaultShardingDbContext.Set<Order>().Any())
+                {
+                    var begin = DateTime.Now.Date.AddDays(-8);
+                    var now = DateTime.Now;
+                    var current = begin;
+                    int i = 0;
+                    var x = new OrderStatusEnum[] { OrderStatusEnum.Failed, OrderStatusEnum.NotPay, OrderStatusEnum.Succeed };
+                    while (current < now)
+                    {
+                        orders.Add(new Order()
+                        {
+                            Id = i.ToString(),
+                            Amount = i,
+                            Body = $"今天购买了的东西呀：{i}",
+                            CreateTime = current,
+                            Remark = $"这是我的备注哦备注哦备注哦：{i}",
+                            Payer = Guid.NewGuid().ToString("n"),
+                            OrderStatus = x[i % 3]
+                        });
+                        i++;
+                        current = current.AddMilliseconds(100);
+                    }
+                    var sp = Stopwatch.StartNew();
+                    defaultShardingDbContext.BulkInsert<Order>(orders.ToList());
+                    sp.Stop();
+                    Console.WriteLine($"批量插入订单数据:{orders.Count},用时:{sp.ElapsedMilliseconds}");
+                }
 
-            //}
-            //using (var scope = buildServiceProvider.CreateScope())
-            //{
-            //    var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-            //    if (!defaultShardingDbContext.Set<Order>().Any())
-            //    {
-            //        var sp = Stopwatch.StartNew();
-            //        var bulkShardingEnumerable = defaultShardingDbContext.BulkShardingTableEnumerable(orders.ToList());
-            //        foreach (var keyValuePair in bulkShardingEnumerable)
-            //        {
-            //            keyValuePair.Key.BulkInsert(keyValuePair.Value.ToList());
-            //        }
-            //        sp.Stop();
-            //        Console.WriteLine($"批量插入订单数据:{orders.Count},用时:{sp.ElapsedMilliseconds}");
-            //    }
-            //}
+            }
+            using (var scope = buildServiceProvider.CreateScope())
+            {
+                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+                if (!defaultShardingDbContext.Set<Order>().Any())
+                {
+                    var sp = Stopwatch.StartNew();
+                    var bulkShardingEnumerable = defaultShardingDbContext.BulkShardingTableEnumerable(orders.ToList());
+                    foreach (var keyValuePair in bulkShardingEnumerable)
+                    {
+                        keyValuePair.Key.BulkInsert(keyValuePair.Value.ToList());
+                    }
+                    sp.Stop();
+                    Console.WriteLine($"批量插入订单数据:{orders.Count},用时:{sp.ElapsedMilliseconds}");
+                }
+            }
             _defaultDbContext = ShardingContainer.GetService<DefaultDbContext>();
             _defaultShardingDbContext = ShardingContainer.GetService<DefaultShardingDbContext>();
-            //_virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
-            //_virtualTable = _virtualTableManager.GetVirtualTable<Order>();
-            //_routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            //_streamMergeContextFactory =
-            //    ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
-            //_actualConnectionStringManager = new ActualConnectionStringManager<DefaultShardingDbContext>();
-            //_virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<DefaultShardingDbContext>>();
-            // _dataSourceRouteRuleEngineFactory = ShardingContainer.GetService<IDataSourceRouteRuleEngineFactory<DefaultShardingDbContext>>();
-            // _tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
+            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
+            _virtualTable = _virtualTableManager.GetVirtualTable<Order>();
+            _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+            _streamMergeContextFactory =
+                ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
+            _actualConnectionStringManager = new ActualConnectionStringManager<DefaultShardingDbContext>();
+            _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<DefaultShardingDbContext>>();
+             _dataSourceRouteRuleEngineFactory = ShardingContainer.GetService<IDataSourceRouteRuleEngineFactory<DefaultShardingDbContext>>();
+             _tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
 
         }
 
