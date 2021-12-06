@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
@@ -20,10 +14,11 @@ using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Jobs.Impls;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.TableCreator;
-using ShardingCore.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 /*
 * @Author: xjm
@@ -33,6 +28,11 @@ using ShardingCore.Utils;
 */
 namespace ShardingCore.Bootstrapers
 {
+    /// <summary>
+    /// 对象元数据初始化器
+    /// </summary>
+    /// <typeparam name="TShardingDbContext"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
     {
         private readonly IEntityType _entityType;
@@ -42,26 +42,31 @@ namespace ShardingCore.Bootstrapers
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger;
 
         public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams
-            , IShardingConfigOption shardingConfigOption,
+            , IEnumerable<IShardingConfigOption> shardingConfigOptions,
             ITrackerManager<TShardingDbContext> trackerManager,IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
-            IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IShardingTableCreator<TShardingDbContext> tableCreator,
+            IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
             )
         {
             _entityType = entityMetadataEnsureParams.EntityType;
             _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
-            _shardingConfigOption = shardingConfigOption;
+            _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o=>o.ShardingDbContextType==typeof(TShardingDbContext));
             _trackerManager = trackerManager;
             _virtualDataSource = virtualDataSource;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
-            _tableCreator = tableCreator;
             _logger = logger;
         }
+        /// <summary>
+        /// 初始化
+        /// 针对对象在dbcontext中的主键获取
+        /// 并且针对分库下的特性加接口的支持，然后是分库路由的配置覆盖
+        /// 分表下的特性加接口的支持，然后是分表下的路由的配置覆盖
+        /// </summary>
+        /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public void Initialize()
         {
             var shardingEntityType = _entityType.ClrType;

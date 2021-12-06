@@ -16,6 +16,12 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\Release\ShardingCore.3x.xml</DocumentationFile>
     </PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\Logo\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 
     <ItemGroup>

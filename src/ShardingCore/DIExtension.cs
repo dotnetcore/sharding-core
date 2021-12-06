@@ -53,7 +53,7 @@ namespace ShardingCore
             Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
             {
                 var virtualDataSource = sp.GetRequiredService<IVirtualDataSource<TShardingDbContext>> ();
-                var connectionString = virtualDataSource.GetDefaultDataSource().ConnectionString;
+                var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
                 optionsAction?.Invoke(connectionString, option);
                 option.UseSharding<TShardingDbContext>();
             };

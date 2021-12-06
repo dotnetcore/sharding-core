@@ -55,7 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCoreBenchmark", "benchmarks\ShardingCoreBenchmark\ShardingCoreBenchmark.csproj", "{8CE5E8AF-DDB7-4989-8AA4-1D47E4226846}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCoreBenchmark5x", "benchmarks\ShardingCoreBenchmark5x\ShardingCoreBenchmark5x.csproj", "{ED191305-AB19-4863-A48A-7BA4C21F467B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCoreBenchmark5x", "benchmarks\ShardingCoreBenchmark5x\ShardingCoreBenchmark5x.csproj", "{ED191305-AB19-4863-A48A-7BA4C21F467B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

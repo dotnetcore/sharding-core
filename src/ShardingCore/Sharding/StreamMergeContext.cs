@@ -222,19 +222,11 @@ namespace ShardingCore.Sharding
                 case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingConfigOption.ConnectionMode;
                 default:
                 {
-                    if (Skip.HasValue && Skip.Value > _shardingConfigOption.UseMemoryLimitWhileSkip)
-                    {
-                        return ConnectionModeEnum.MEMORY_STRICTLY;
-                    }
                     return _shardingConfigOption.MaxQueryConnectionsLimit < sqlCount
                         ? ConnectionModeEnum.CONNECTION_STRICTLY
                         : ConnectionModeEnum.MEMORY_STRICTLY; ;
                 }
             }
-        }
-        public int GetUseMemoryLimitWhileSkip()
-        {
-            return _shardingConfigOption.UseMemoryLimitWhileSkip;
         }
         /// <summary>
         /// 是否是跨资源查询

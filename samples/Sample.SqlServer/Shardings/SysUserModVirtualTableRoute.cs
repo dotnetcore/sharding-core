@@ -43,7 +43,6 @@ namespace Sample.SqlServer.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
         {
-            
         }
     }
 }

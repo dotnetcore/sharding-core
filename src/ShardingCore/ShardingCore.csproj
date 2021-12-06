@@ -6,6 +6,7 @@
         <DefineConstants>TRACE;DEBUG;EFCORE6;</DefineConstants>
         <LangVersion>9.0</LangVersion>
 	    <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
+	    <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -15,6 +16,12 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <LangVersion>latest</LangVersion>
     </PropertyGroup>
+    <ItemGroup>
+      <None Include="..\..\Logo\logo.png">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0" />

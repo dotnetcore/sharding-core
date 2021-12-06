@@ -78,10 +78,6 @@ namespace ShardingCore
         /// 连接数限制
         /// </summary>
         public ConnectionModeEnum ConnectionMode { get; set; }
-        /// <summary>
-        /// 当ConnectionMode == SYSTEM_AUTO时生效
-        /// </summary>
-        public int UseMemoryLimitWhileSkip { get; set; }
     }
 
     public interface IShardingConfigOption<TShardingDbContext>: IShardingConfigOption where TShardingDbContext : DbContext, IShardingDbContext

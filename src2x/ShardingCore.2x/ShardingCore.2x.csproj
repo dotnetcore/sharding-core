@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 
 	<PropertyGroup>
@@ -16,6 +16,12 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<DocumentationFile>bin\Release\ShardingCore.2x.xml</DocumentationFile>
 	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\Logo\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 
 	<ItemGroup>
