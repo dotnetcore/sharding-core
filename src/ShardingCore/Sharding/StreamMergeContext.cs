@@ -179,6 +179,12 @@ namespace ShardingCore.Sharding
             return _source;
         }
 
+        public int? GetPaginationReWriteTake()
+        {
+            if (Take.HasValue)
+                return Skip.GetValueOrDefault() + Take.Value;
+            return default;
+        }
         //public bool HasSkipTake()
         //{
         //    return Skip.HasValue || Take.HasValue;

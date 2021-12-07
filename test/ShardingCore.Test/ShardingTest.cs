@@ -129,6 +129,7 @@ namespace ShardingCore.Test
             var logDays = Enumerable.Range(0, 100).Select(o => new LogDay() { Id = Guid.NewGuid(), LogLevel = "info", LogBody = o.ToString(), LogTime = dateTime.AddDays(o) }).ToList();
 
             var bulkShardingTableEnumerable = _virtualDbContext.BulkShardingTableEnumerable(logDays);
+            
             Assert.Equal(100, bulkShardingTableEnumerable.Count);
             var bulkShardingEnumerable = _virtualDbContext.BulkShardingEnumerable(logDays);
             Assert.Equal(1, bulkShardingEnumerable.Count);

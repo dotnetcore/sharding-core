@@ -40,7 +40,8 @@ namespace ShardingCore.Test
 #if DEBUG
                     //o.CreateShardingTableOnStart = true;
                     //o.EnsureCreatedWithOutShardingTable = true;
-#endif
+
+#endif                    //o.MaxQueryConnectionsLimit = 1;
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>

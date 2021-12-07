@@ -70,7 +70,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.Skip.GetValueOrDefault() + StreamMergeContext.Take.GetValueOrDefault());
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.GetPaginationReWriteTake());
             return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
         }
     }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ExtensionExpressionComparer;
@@ -21,6 +16,11 @@ using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableCreator;
 using ShardingCore.Test.Domain.Entities;
 using ShardingCore.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ShardingCore.Test
