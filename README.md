@@ -46,22 +46,18 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
   DefaultJob : .NET 6.0.0 (6.0.21.52210), X64 RyuJIT
 
 
-|                                  Method |  N |         Mean |       Error |      StdDev |       Median |
-|---------------------------------------- |--- |-------------:|------------:|------------:|-------------:|
-|           NoShardingFirstOrDefaultAsync | 10 |     2.305 ms |   0.0419 ms |   0.0587 ms |     2.310 ms |
-|             ShardingFirstOrDefaultAsync | 10 |     4.200 ms |   0.0793 ms |   0.0815 ms |     4.205 ms |
-|    NoShardingNoIndexFirstOrDefaultAsync | 10 | 1,521.727 ms |  11.7909 ms |  11.0292 ms | 1,519.390 ms |
-|      ShardingNoIndexFirstOrDefaultAsync | 10 | 1,841.243 ms |  36.1808 ms |  49.5247 ms | 1,826.228 ms |
-|             NoShardingNoIndexCountAsync | 10 | 1,602.127 ms |  31.2448 ms |  26.0908 ms | 1,592.494 ms |
-|               ShardingNoIndexCountAsync | 10 | 1,946.878 ms |  33.9453 ms |  31.7525 ms | 1,948.952 ms |
-|  NoShardingNoIndexFirstOrDefaultAsync0w | 10 |   703.570 ms |  10.4157 ms |   9.2332 ms |   705.236 ms |
-|    ShardingNoIndexFirstOrDefaultAsync0w | 10 |   857.718 ms |  16.4004 ms |  15.3409 ms |   858.675 ms |
-| NoShardingNoIndexFirstOrDefaultAsync99w | 10 |   818.947 ms |  16.2501 ms |  24.8156 ms |   814.093 ms |
-|   ShardingNoIndexFirstOrDefaultAsync99w | 10 |   957.405 ms |  15.8800 ms |  16.9915 ms |   953.739 ms |
-|        NoShardingNoIndexLikeToListAsync | 10 | 7,247.554 ms | 140.2374 ms | 191.9586 ms | 7,292.292 ms |
-|          ShardingNoIndexLikeToListAsync | 10 | 7,232.702 ms | 106.7630 ms |  99.8662 ms | 7,184.900 ms |
-|            NoShardingNoIndexToListAsync | 10 |   815.207 ms |  14.6120 ms |  21.4181 ms |   804.195 ms |
-|              ShardingNoIndexToListAsync | 10 |   948.056 ms |   7.3526 ms |   6.8776 ms |   944.511 ms |
+|                               Method |  N |         Mean |       Error |      StdDev |       Median |
+|------------------------------------- |--- |-------------:|------------:|------------:|-------------:|
+|   NoShardingIndexFirstOrDefaultAsync | 10 |     2.154 ms |   0.1532 ms |   0.4443 ms |     1.978 ms |
+|     ShardingIndexFirstOrDefaultAsync | 10 |     4.293 ms |   0.1521 ms |   0.4485 ms |     4.077 ms |
+| NoShardingNoIndexFirstOrDefaultAsync | 10 |   823.382 ms |  16.0849 ms |  18.5233 ms |   821.221 ms |
+|   ShardingNoIndexFirstOrDefaultAsync | 10 |   892.276 ms |  17.8131 ms |  16.6623 ms |   894.880 ms |
+|          NoShardingNoIndexCountAsync | 10 |   830.754 ms |  16.5309 ms |  38.6405 ms |   821.736 ms |
+|            ShardingNoIndexCountAsync | 10 |   915.630 ms |   8.8511 ms |   7.3911 ms |   914.107 ms |
+|     NoShardingNoIndexLikeToListAsync | 10 | 7,008.918 ms | 139.4664 ms | 166.0248 ms | 6,955.674 ms |
+|       ShardingNoIndexLikeToListAsync | 10 | 7,044.168 ms | 135.3814 ms | 132.9626 ms | 7,008.057 ms |
+|         NoShardingNoIndexToListAsync | 10 |   787.129 ms |  10.5812 ms |   8.8357 ms |   785.798 ms |
+|           ShardingNoIndexToListAsync | 10 |   935.880 ms |  16.3354 ms |  15.2801 ms |   940.369 ms |
 
 #### mysql 5.7,data rows 7553790=755w innerdb_buffer_size=3G
 
@@ -75,22 +71,18 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
   DefaultJob : .NET 6.0.0 (6.0.21.52210), X64 RyuJIT
 
 
-|                                  Method |  N |          Mean |       Error |      StdDev |        Median |
-|---------------------------------------- |--- |--------------:|------------:|------------:|--------------:|
-|           NoShardingFirstOrDefaultAsync | 10 |     10.092 ms |   1.6571 ms |   4.5082 ms |      8.677 ms |
-|             ShardingFirstOrDefaultAsync | 10 |      9.082 ms |   0.1810 ms |   0.3445 ms |      9.096 ms |
-|    NoShardingNoIndexFirstOrDefaultAsync | 10 |      6.586 ms |   0.0795 ms |   0.0705 ms |      6.565 ms |
-|      ShardingNoIndexFirstOrDefaultAsync | 10 |     17.617 ms |   0.3345 ms |   0.3129 ms |     17.481 ms |
-|             NoShardingNoIndexCountAsync | 10 |      6.498 ms |   0.1188 ms |   0.1415 ms |      6.454 ms |
-|               ShardingNoIndexCountAsync | 10 |     17.791 ms |   0.2928 ms |   0.2739 ms |     17.805 ms |
-|  NoShardingNoIndexFirstOrDefaultAsync0w | 10 |      3.239 ms |   0.0285 ms |   0.0267 ms |      3.231 ms |
-|    ShardingNoIndexFirstOrDefaultAsync0w | 10 |      8.826 ms |   0.1719 ms |   0.1688 ms |      8.806 ms |
-| NoShardingNoIndexFirstOrDefaultAsync99w | 10 |      3.260 ms |   0.0208 ms |   0.0194 ms |      3.257 ms |
-|   ShardingNoIndexFirstOrDefaultAsync99w | 10 |      8.634 ms |   0.1062 ms |   0.0994 ms |      8.653 ms |
-|        NoShardingNoIndexLikeToListAsync | 10 | 26,941.543 ms | 138.5988 ms | 129.6454 ms | 26,920.578 ms |
-|          ShardingNoIndexLikeToListAsync | 10 |  5,840.364 ms | 112.0434 ms | 115.0604 ms |  5,797.137 ms |
-|            NoShardingNoIndexToListAsync | 10 | 25,865.136 ms | 115.6391 ms | 102.5111 ms | 25,847.258 ms |
-|              ShardingNoIndexToListAsync | 10 |  5,502.922 ms |  92.7201 ms |  86.7305 ms |  5,483.847 ms |
+|                               Method |  N |          Mean |       Error |        StdDev |        Median |
+|------------------------------------- |--- |--------------:|------------:|--------------:|--------------:|
+|   NoShardingIndexFirstOrDefaultAsync | 10 |      5.020 ms |   0.1245 ms |     0.3672 ms |      4.855 ms |
+|     ShardingIndexFirstOrDefaultAsync | 10 |      7.960 ms |   0.1585 ms |     0.2514 ms |      7.974 ms |
+| NoShardingNoIndexFirstOrDefaultAsync | 10 | 11,336.083 ms | 623.8044 ms | 1,829.5103 ms | 11,185.590 ms |
+|   ShardingNoIndexFirstOrDefaultAsync | 10 |  5,422.259 ms |  77.5386 ms |    72.5296 ms |  5,390.019 ms |
+|          NoShardingNoIndexCountAsync | 10 | 14,229.819 ms |  82.8929 ms |    77.5381 ms | 14,219.773 ms |
+|            ShardingNoIndexCountAsync | 10 |  3,085.268 ms |  55.5942 ms |    49.2828 ms |  3,087.704 ms |
+|     NoShardingNoIndexLikeToListAsync | 10 | 27,046.390 ms |  71.2034 ms |    59.4580 ms | 27,052.316 ms |
+|       ShardingNoIndexLikeToListAsync | 10 |  5,707.009 ms | 106.8713 ms |    99.9675 ms |  5,672.453 ms |
+|         NoShardingNoIndexToListAsync | 10 | 26,001.850 ms |  89.2787 ms |    69.7030 ms | 25,998.407 ms |
+|           ShardingNoIndexToListAsync | 10 |  5,490.659 ms |  71.8199 ms |    67.1804 ms |  5,477.891 ms |
 
 具体可以通过first前两次结果来计算得出结论单次查询的的损耗为0.2-0.3毫秒之间,通过数据聚合和数据路由的损耗单次在0.3ms-0.4ms,其中创建dbcontext为0.1毫秒目前没有好的优化方案,0.013毫秒左右是路由表达式解析和编译,复杂表达式可能更加耗时,剩下的0.2毫秒为数据源和表后缀的解析等操作包括实例的反射创建和数据的聚合，
 sqlserver的各项数据在分表和未分表的情况下都几乎差不多可以得出在770w数据集情况下数据库还并未是数据瓶颈的关键，但是mysql可以看到在分表和未分表的情况下如果涉及到没有索引的全表扫描那么性能的差距将是分表后的表数目之多，测试中为5-6倍，也就是分表数目

@@ -46,7 +46,7 @@ namespace ShardingCore6x
             var services = new ServiceCollection();
 
             services.AddDbContext<DefaultDbContext>(o => o
-                    //.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
+                //.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
                 .UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
                 , ServiceLifetime.Transient, ServiceLifetime.Transient);
             services.AddLogging();
@@ -221,84 +221,84 @@ namespace ShardingCore6x
         //        _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
         //    }
         //}
-        [Benchmark]
-        public async Task NoShardingFirstOrDefaultAsync()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1, 7000000).ToString();
-                var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
-            }
-        }
-        [Benchmark]
-        public async Task ShardingFirstOrDefaultAsync()
-        {
-            for (int i = 0; i < N; i++)
-            {
-                var next = new Random().Next(1, 7000000).ToString();
-                var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
-            }
-        }
         //[Benchmark]
-        //public async Task NoShardingIndexFirstOrDefaultAsync()
+        //public async Task NoShardingFirstOrDefaultAsync()
         //{
         //    for (int i = 0; i < N; i++)
         //    {
-        //        var next = new Random().Next(1000000, 7000000).ToString();
+        //        var next = new Random().Next(1, 7000000).ToString();
         //        var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
         //    }
         //}
-
-
         //[Benchmark]
-        //public async Task ShardingIndexFirstOrDefaultAsync()
+        //public async Task ShardingFirstOrDefaultAsync()
         //{
         //    for (int i = 0; i < N; i++)
         //    {
-        //        var next = new Random().Next(1000000, 7000000).ToString();
+        //        var next = new Random().Next(1, 7000000).ToString();
         //        var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
         //    }
         //}
-        //[Benchmark]
-        //public async Task NoShardingNoIndexFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var firstOrDefaultAsync1 = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == 0);
-        //        var firstOrDefaultAsync2 = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == 999999);
-        //    }
-        //}
+        [Benchmark]
+        public async Task NoShardingIndexFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
+            }
+        }
 
 
-        //[Benchmark]
-        //public async Task ShardingNoIndexFirstOrDefaultAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var firstOrDefaultAsync1 = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == 0);
-        //        var firstOrDefaultAsync2 = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == 999999);
-        //    }
-        //}
-        //[Benchmark]
-        //public async Task NoShardingNoIndexCountAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var firstOrDefaultAsync1 = await _defaultDbContext.Set<Order>().CountAsync(o => o.Amount == 0);
-        //        var firstOrDefaultAsync2 = await _defaultDbContext.Set<Order>().CountAsync(o => o.Amount == 999999);
-        //    }
-        //}
+        [Benchmark]
+        public async Task ShardingIndexFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == next);
+            }
+        }
+        [Benchmark]
+        public async Task NoShardingNoIndexFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000);
+                var firstOrDefaultAsync1 = await _defaultDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == next);
+            }
+        }
 
 
-        //[Benchmark]
-        //public async Task ShardingNoIndexCountAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var firstOrDefaultAsync1 = await _defaultShardingDbContext.Set<Order>().CountAsync(o => o.Amount == 0);
-        //        var firstOrDefaultAsync2 = await _defaultShardingDbContext.Set<Order>().CountAsync(o => o.Amount == 999999);
-        //    }
-        //}
+        [Benchmark]
+        public async Task ShardingNoIndexFirstOrDefaultAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000);
+                var firstOrDefaultAsync1 = await _defaultShardingDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Amount == next);
+            }
+        }
+        [Benchmark]
+        public async Task NoShardingNoIndexCountAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000);
+                var firstOrDefaultAsync1 = await _defaultDbContext.Set<Order>().CountAsync(o => o.Amount == next);
+            }
+        }
+
+
+        [Benchmark]
+        public async Task ShardingNoIndexCountAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1000000, 7000000);
+                var firstOrDefaultAsync1 = await _defaultShardingDbContext.Set<Order>().CountAsync(o => o.Amount == next);
+            }
+        }
         //[Benchmark]
         //public async Task NoShardingNoIndexFirstOrDefaultAsync0w()
         //{
@@ -333,46 +333,46 @@ namespace ShardingCore6x
         //}
 
 
-        //[Benchmark]
-        //public async Task NoShardingNoIndexLikeToListAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000).ToString();
-        //        var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().Where(o => o.Body.Contains(next)).ToListAsync();
-        //    }
-        //}
+        [Benchmark]
+        public async Task NoShardingNoIndexLikeToListAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().Where(o => o.Body.Contains(next)).ToListAsync();
+            }
+        }
 
 
-        //[Benchmark]
-        //public async Task ShardingNoIndexLikeToListAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000).ToString();
-        //        var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().Where(o => o.Body.Contains(next)).ToListAsync();
-        //    }
-        //}
-        //[Benchmark]
-        //public async Task NoShardingNoIndexToListAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000);
-        //        var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().Where(o => o.Amount == next).ToListAsync();
-        //    }
-        //}
+        [Benchmark]
+        public async Task ShardingNoIndexLikeToListAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000).ToString();
+                var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().Where(o => o.Body.Contains(next)).ToListAsync();
+            }
+        }
+        [Benchmark]
+        public async Task NoShardingNoIndexToListAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000);
+                var firstOrDefaultAsync = await _defaultDbContext.Set<Order>().Where(o => o.Amount == next).ToListAsync();
+            }
+        }
 
 
-        //[Benchmark]
-        //public async Task ShardingNoIndexToListAsync()
-        //{
-        //    for (int i = 0; i < N; i++)
-        //    {
-        //        var next = new Random().Next(1, 7000000);
-        //        var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().Where(o => o.Amount == next).ToListAsync();
-        //    }
-        //}
+        [Benchmark]
+        public async Task ShardingNoIndexToListAsync()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                var next = new Random().Next(1, 7000000);
+                var firstOrDefaultAsync = await _defaultShardingDbContext.Set<Order>().Where(o => o.Amount == next).ToListAsync();
+            }
+        }
         //[Benchmark]
         //public void ShardingRouteFirstOrDefault()
         //{
