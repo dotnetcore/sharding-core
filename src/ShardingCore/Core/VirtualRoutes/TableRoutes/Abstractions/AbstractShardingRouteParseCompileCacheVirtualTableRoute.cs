@@ -57,7 +57,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 系统默认永久单表达式缓存
         /// </summary>
         /// <param name="parseWhere"></param>
-        /// <returns>返回null会走<see cref="CustomerCachingCompile"/>这个方法如果还是null就会调用<see cref="Compile"/>方法</returns>
+        /// <returns>返回null会走<see cref="CustomerCachingCompile"/>这个方法如果还是null就会调用<see cref="LambdaExpression.Compile()"/>方法</returns>
         protected virtual Func<string, bool> DoCachingCompile(Expression<Func<string, bool>> parseWhere)
         {
             var shouldCache = ShouldCache(parseWhere);

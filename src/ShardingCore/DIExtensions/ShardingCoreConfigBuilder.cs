@@ -96,6 +96,8 @@ namespace ShardingCore.DIExtensions
         public bool? IgnoreCreateTableError { get; set; } = true;
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
         public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+        public bool? EnableTableRouteCompileCache { get; set; }
+        public bool? EnableDataSourceRouteCompileCache { get; set; }
 
         private readonly  ISet<Type> _createTableEntities = new HashSet<Type>();
 

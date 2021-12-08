@@ -78,6 +78,14 @@ namespace ShardingCore
         /// 连接数限制
         /// </summary>
         public ConnectionModeEnum ConnectionMode { get; set; }
+        ///// <summary>
+        ///// 是否启用表路由编译缓存
+        ///// </summary>
+        //public bool? EnableTableRouteCompileCache { get; set; }
+        ///// <summary>
+        ///// 是否启用分库路由编译缓存
+        ///// </summary>
+        //public bool? EnableDataSourceRouteCompileCache { get; set; }
     }
 
     public interface IShardingConfigOption<TShardingDbContext>: IShardingConfigOption where TShardingDbContext : DbContext, IShardingDbContext

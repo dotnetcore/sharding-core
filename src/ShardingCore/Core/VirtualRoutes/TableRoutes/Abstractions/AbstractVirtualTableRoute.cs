@@ -22,7 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     {
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
-        public void Initialize(EntityMetadata entityMetadata)
+        public virtual void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");

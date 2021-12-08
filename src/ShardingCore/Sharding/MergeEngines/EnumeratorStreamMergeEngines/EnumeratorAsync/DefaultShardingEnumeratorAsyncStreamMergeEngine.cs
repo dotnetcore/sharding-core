@@ -70,7 +70,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.GetPaginationReWriteTake());
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.GetPaginationReWriteTake());//内存聚合分页不可以直接获取skip必须获取skip+take的数目
             return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
         }
     }

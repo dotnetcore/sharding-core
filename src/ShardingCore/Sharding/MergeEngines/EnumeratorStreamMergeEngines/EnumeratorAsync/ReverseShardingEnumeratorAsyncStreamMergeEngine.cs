@@ -82,6 +82,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
         private IStreamMergeAsyncEnumerator<TEntity> DoGetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
+            if (StreamMergeContext.IsPaginationQuery() && StreamMergeContext.HasGroupQuery())
+            {
+                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, new[] { multiAggregateOrderStreamMergeAsyncEnumerator });
+            }
             if (StreamMergeContext.IsPaginationQuery())
                 return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
             if (StreamMergeContext.HasGroupQuery())
@@ -91,6 +96,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public override IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
+            if (StreamMergeContext.IsPaginationQuery() && StreamMergeContext.HasGroupQuery())
+            {
+                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, new[] { multiAggregateOrderStreamMergeAsyncEnumerator }, 0, StreamMergeContext.GetPaginationReWriteTake());
+            }
             if (StreamMergeContext.IsPaginationQuery())
                 return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators, 0, StreamMergeContext.GetPaginationReWriteTake());
             return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);

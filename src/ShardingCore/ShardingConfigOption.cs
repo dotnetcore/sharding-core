@@ -234,5 +234,7 @@ namespace ShardingCore
         public string DefaultConnectionString { get; set; }
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
         public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+        //public bool? EnableTableRouteCompileCache { get; set; }
+        //public bool? EnableDataSourceRouteCompileCache { get; set; }
     }
 }
