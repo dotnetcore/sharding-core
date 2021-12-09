@@ -78,6 +78,21 @@ namespace ShardingCore.Extensions
         /// <summary>
         /// Waits for the task to complete, unwrapping any exceptions.
         /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="task"></param>
+        /// <param name="continueOnCapturedContext"></param>
+        /// <returns>The result of the task.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static TResult WaitAndUnwrapException<TResult>(this Task<TResult> task,bool continueOnCapturedContext)
+        {
+            if (task == null)
+                throw new ArgumentNullException(nameof(task));
+            return task.ConfigureAwait(continueOnCapturedContext).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Waits for the task to complete, unwrapping any exceptions.
+        /// </summary>
         /// <typeparam name="TResult">The type of the result of the task.</typeparam>
         /// <param name="task">The task. May not be <c>null</c>.</param>
         /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>

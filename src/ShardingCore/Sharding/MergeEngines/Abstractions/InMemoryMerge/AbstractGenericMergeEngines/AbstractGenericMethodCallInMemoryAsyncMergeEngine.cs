@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines
@@ -20,7 +21,10 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
         {
         }
 
-        public abstract TResult MergeResult<TResult>();
+        public virtual TResult MergeResult<TResult>()
+        {
+            return MergeResultAsync<TResult>().WaitAndUnwrapException(false);
+        }
 
         public abstract Task<TResult> MergeResultAsync<TResult>(
             CancellationToken cancellationToken = new CancellationToken());

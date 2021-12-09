@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -26,13 +24,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         public MinAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
-
-        public override TResult MergeResult<TResult>()
-        {
-
-            return AsyncHelper.RunSync(() => MergeResultAsync<TResult>());
-        }
-
 
         private TResult GetMinTResult<TInnerSelect, TResult>(List<RouteQueryResult<TInnerSelect>> source)
         {

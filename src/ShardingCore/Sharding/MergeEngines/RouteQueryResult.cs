@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+﻿using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {

@@ -16,6 +16,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Helpers;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableCreator;
@@ -174,6 +175,13 @@ namespace ShardingCore.Test5x
             Assert.True(shardingTableDbContext);
             var virtualTable = _virtualTableManager.GetVirtualTable<SysUserMod>();
             Assert.NotNull(virtualTable);
+
+            var x1x1 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                { new ParallelTableComparerType(typeof(SysUserMod)), new ParallelTableComparerType(typeof(SysUserSalary)) });
+            var x2x2 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
+            Assert.Equal(x1x1, x2x2);
+            Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
 
         }
 

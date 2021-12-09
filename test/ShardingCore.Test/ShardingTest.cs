@@ -20,6 +20,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
@@ -214,6 +215,13 @@ namespace ShardingCore.Test
                 }
                 Assert.Equal($"{emptyTailIdentity},{aTailIdentity},{bTailIdentity}", string.Join(",", dics.Keys));
             }
+
+            var x1x1 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                { new ParallelTableComparerType(typeof(SysUserMod)), new ParallelTableComparerType(typeof(SysUserSalary)) });
+            var x2x2 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
+            Assert.Equal(x1x1, x2x2);
+            Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
         }
 
         public class SequenceClass
@@ -347,6 +355,17 @@ namespace ShardingCore.Test
         [Fact]
         public async Task ToList_Join_Test()
         {
+            var list111 = await (from u in _virtualDbContext.Set<SysUserMod>()
+                              join salary in _virtualDbContext.Set<SysUserSalary>()
+                                  on u.Id equals salary.UserId
+                              select new
+                              {
+                                  u.Id,
+                                  u.Age,
+                                  Salary = salary.Salary,
+                                  DateOfMonth = salary.DateOfMonth,
+                                  Name = u.Name
+                              }).CountAsync();
             var list = await (from u in _virtualDbContext.Set<SysUserMod>()
                               join salary in _virtualDbContext.Set<SysUserSalary>()
                                   on u.Id equals salary.UserId

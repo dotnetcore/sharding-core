@@ -19,11 +19,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
         protected AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
         }
-        public override TResult MergeResult<TResult>()
-        {
-            var current = DoMergeResult<TResult>();
-            return ProcessTrackResult(current);
-        }
 
         private TResult ProcessTrackResult<TResult>(TResult current)
         {
@@ -51,7 +46,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
             var current = await DoMergeResultAsync<TResult>(cancellationToken);
             return ProcessTrackResult(current);
         }
-        public abstract TResult DoMergeResult<TResult>();
 
         public abstract Task<TResult> DoMergeResultAsync<TResult>(
             CancellationToken cancellationToken = new CancellationToken());

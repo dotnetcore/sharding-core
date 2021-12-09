@@ -43,6 +43,7 @@ namespace ShardingCore.Test
 
 #endif                    //o.MaxQueryConnectionsLimit = 1;
                     o.AutoTrackEntity = true;
+                    //o.AddParallelTables(typeof(SysUserMod), typeof(SysUserSalary));
                 })
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))

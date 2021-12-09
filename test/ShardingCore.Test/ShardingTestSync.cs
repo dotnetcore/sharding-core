@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.ParallelTables;
 using Xunit;
 
 namespace ShardingCore.Test
@@ -174,6 +175,13 @@ namespace ShardingCore.Test
             Assert.True(shardingTableDbContext);
             var virtualTable = _virtualTableManager.GetVirtualTable<SysUserMod>();
             Assert.NotNull(virtualTable);
+
+            var x1x1 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                { new ParallelTableComparerType(typeof(SysUserMod)), new ParallelTableComparerType(typeof(SysUserSalary)) });
+            var x2x2 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
+                {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
+            Assert.Equal(x1x1, x2x2);
+            Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
 
         }
 

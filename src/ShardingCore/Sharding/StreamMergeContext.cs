@@ -11,11 +11,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 
@@ -71,20 +74,32 @@ namespace ShardingCore.Sharding
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
 
         private readonly IShardingComparer _shardingComparer;
+        private readonly IParallelTableManager _parallelTableManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
 
         public StreamMergeContext(IQueryable<TEntity> source, IShardingDbContext shardingDbContext,
             DataSourceRouteResult dataSourceRouteResult,
             IEnumerable<TableRouteResult> tableRouteResults,
             IRouteTailFactory routeTailFactory)
         {
+            QueryEntities = source.ParseQueryableEntities();
             //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;
             _routeTailFactory = routeTailFactory;
             DataSourceRouteResult = dataSourceRouteResult;
-            TableRouteResults = tableRouteResults;
+            _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(shardingDbContext.GetType()));
+            _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
+            if (_parallelTableManager.IsParallelTableQuery(QueryEntities.Where(o=> _entityMetadataManager.IsShardingTable(o))))
+            {
+                TableRouteResults = tableRouteResults.Where(o=> o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count==1);
+            }
+            else
+            {
+                TableRouteResults = tableRouteResults;
+            }
             IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            IsCrossTable = tableRouteResults.Count() > 1;
+            IsCrossTable = TableRouteResults.Count() > 1;
             var reWriteResult = new ReWriteEngine<TEntity>(source).ReWrite();
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
@@ -93,7 +108,6 @@ namespace ShardingCore.Sharding
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
-            QueryEntities = source.ParseQueryableEntities();
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(shardingDbContext.GetType()));

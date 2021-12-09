@@ -24,6 +24,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.TableCreator;
 using ShardingCore.Utils;
 
@@ -58,6 +59,7 @@ namespace ShardingCore.Bootstrapers
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
+        private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
         private readonly ILogger<ShardingDbContextBootstrapper<TShardingDbContext>> _logger;
 
         public ShardingDbContextBootstrapper(IShardingConfigOption shardingConfigOption)
@@ -68,6 +70,7 @@ namespace ShardingCore.Bootstrapers
             _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
             _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
             _virtualDataSource= ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
+            _parallelTableManager = ShardingContainer.GetService<IParallelTableManager<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
         }
         /// <summary>
@@ -76,9 +79,19 @@ namespace ShardingCore.Bootstrapers
         public void Init()
         {
             _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
+            InitializeParallelTables();
             InitializeEntityMetadata();
             InitializeConfigure();
             _virtualDataSource.CheckVirtualDataSource();
+        }
+
+        private void InitializeParallelTables()
+        {
+            foreach (var parallelTableGroupNode in _shardingConfigOption.GetParallelTableGroupNodes())
+            {
+                _parallelTableManager.AddParallelTable(parallelTableGroupNode);
+            }
+
         }
 
         private void InitializeEntityMetadata()

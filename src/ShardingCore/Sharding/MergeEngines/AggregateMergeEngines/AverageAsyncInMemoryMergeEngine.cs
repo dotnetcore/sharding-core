@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
@@ -28,11 +27,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         public AverageAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression,
             IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-        }
-
-        public override TEnsureResult MergeResult()
-        {
-            return AsyncHelper.RunSync(() => MergeResultAsync());
         }
 
         private async Task<List<RouteQueryResult<AverageResult<T>>>> AggregateAverageResultAsync<T>(CancellationToken cancellationToken = new CancellationToken())

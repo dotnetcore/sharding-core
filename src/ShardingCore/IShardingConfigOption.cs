@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore
 {
@@ -78,6 +79,10 @@ namespace ShardingCore
         /// 连接数限制
         /// </summary>
         public ConnectionModeEnum ConnectionMode { get; set; }
+
+        public bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode);
+
+        public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes();
         ///// <summary>
         ///// 是否启用表路由编译缓存
         ///// </summary>

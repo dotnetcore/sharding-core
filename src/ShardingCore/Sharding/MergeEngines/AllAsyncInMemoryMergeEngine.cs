@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -25,11 +20,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     {
         public AllAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
         {
-        }
-
-        public override bool MergeResult()
-        {
-            return AsyncHelper.RunSync(()=> MergeResultAsync());
         }
 
         public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

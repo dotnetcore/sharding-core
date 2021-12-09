@@ -29,6 +29,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore
 {
@@ -95,6 +96,7 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(ITableRouteRuleEngine<>),typeof(TableRouteRuleEngine<>));
             //分表引擎工程
             services.TryAddSingleton(typeof(ITableRouteRuleEngineFactory<>),typeof(TableRouteRuleEngineFactory<>));
+            services.TryAddSingleton(typeof(IParallelTableManager<>),typeof(ParallelTableManager<>));
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
 

@@ -11,6 +11,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
@@ -29,6 +30,7 @@ namespace ShardingCore
         private readonly Dictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly Dictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
         private readonly ISet<Type> _createTableEntities = new HashSet<Type>();
+        public readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
 
         public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; private set; }
         public Action<string, DbContextOptionsBuilder> DefaultQueryConfigure { get; private set; }
@@ -234,6 +236,17 @@ namespace ShardingCore
         public string DefaultConnectionString { get; set; }
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
         public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+
+
+        public bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode)
+        {
+            Check.NotNull(parallelTableGroupNode, $"{nameof(parallelTableGroupNode)}");
+            return _parallelTables.Add(parallelTableGroupNode);
+        }
+        public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes()
+        {
+            return _parallelTables;
+        }
         //public bool? EnableTableRouteCompileCache { get; set; }
         //public bool? EnableDataSourceRouteCompileCache { get; set; }
     }

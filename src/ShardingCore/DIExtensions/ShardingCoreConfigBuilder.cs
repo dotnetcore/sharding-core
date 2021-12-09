@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore.DIExtensions
 {
@@ -48,6 +51,10 @@ namespace ShardingCore.DIExtensions
             foreach (var entityType in shardingCoreBeginOptions.GetCreateTableEntities())
             {
                 ShardingConfigOption.AddEntityTryCreateTable(entityType);
+            }
+            foreach (var parallelTableGroupNode in shardingCoreBeginOptions.GetParallelTableGroupNodes())
+            {
+                ShardingConfigOption.AddParallelTableGroupNode(parallelTableGroupNode);
             }
 
             return new ShardingTransactionBuilder<TShardingDbContext>(this);
@@ -113,6 +120,20 @@ namespace ShardingCore.DIExtensions
         public ISet<Type> GetCreateTableEntities()
         {
             return _createTableEntities;
+        }
+
+        public readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
+
+        public bool AddParallelTables(params Type[] types)
+        {
+            if (types.Length <= 0)
+                throw new ShardingCoreInvalidOperationException(
+                    $"{nameof(AddParallelTables)} args :[{string.Join(",", types.Select(o => o.Name))}] should more than one length");
+            return _parallelTables.Add(new ParallelTableGroupNode(types.Select(o => new ParallelTableComparerType(o))));
+        }
+        public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes()
+        {
+            return _parallelTables;
         }
     }
 }

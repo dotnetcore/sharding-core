@@ -180,11 +180,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
                 {
                     tasks = sqlExecutorUnits.Skip(1).Select(sqlExecutorUnit =>
                    {
-                       return Task.Run(async () =>
-                       {
-                           return await sqlExecutorUnitExecuteAsync(sqlExecutorUnit);
-
-                       }, cancellationToken);
+                       return Task.Run(async () => await sqlExecutorUnitExecuteAsync(sqlExecutorUnit), cancellationToken);
                    }).ToArray();
                 }
                 else
