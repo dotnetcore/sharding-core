@@ -79,19 +79,10 @@ namespace ShardingCore.Bootstrapers
         public void Init()
         {
             _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
-            InitializeParallelTables();
             InitializeEntityMetadata();
+            InitializeParallelTables();
             InitializeConfigure();
             _virtualDataSource.CheckVirtualDataSource();
-        }
-
-        private void InitializeParallelTables()
-        {
-            foreach (var parallelTableGroupNode in _shardingConfigOption.GetParallelTableGroupNodes())
-            {
-                _parallelTableManager.AddParallelTable(parallelTableGroupNode);
-            }
-
         }
 
         private void InitializeEntityMetadata()
@@ -133,9 +124,22 @@ namespace ShardingCore.Bootstrapers
 
         }
 
+        private void InitializeParallelTables()
+        {
+            foreach (var parallelTableGroupNode in _shardingConfigOption.GetParallelTableGroupNodes())
+            {
+                var parallelTableComparerType = parallelTableGroupNode.GetEntities().FirstOrDefault(o => !_entityMetadataManager.IsShardingTable(o.Type));
+                if (parallelTableComparerType != null)
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"{parallelTableComparerType.Type.Name} must is sharding table type");
+                }
+                _parallelTableManager.AddParallelTable(parallelTableGroupNode);
+            }
+        }
+
         private void InitializeConfigure()
         {
-
             var dataSources = _shardingConfigOption.GetDataSources();
             foreach (var dataSourceKv in dataSources)
             {
@@ -230,7 +234,9 @@ namespace ShardingCore.Bootstrapers
             if (context is IShardingDbContext shardingDbContext)
             {
                 var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
-                
+
+                var isDefault = _virtualDataSource.IsDefault(dataSourceName);
+
                 var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
 
                 var acquire = Monitor.TryEnter(modelCacheSyncObject, TimeSpan.FromSeconds(3));
@@ -241,7 +247,14 @@ namespace ShardingCore.Bootstrapers
 
                 try
                 {
-                    dbContext.RemoveDbContextRelationModelThatIsShardingTable();
+                    if(isDefault)
+                    {
+                        dbContext.RemoveDbContextRelationModelThatIsShardingTable();
+                    }
+                    else
+                    {
+                        dbContext.RemoveDbContextAllRelationModel();
+                    }
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
                 }

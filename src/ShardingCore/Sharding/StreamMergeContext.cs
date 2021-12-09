@@ -89,7 +89,9 @@ namespace ShardingCore.Sharding
             _routeTailFactory = routeTailFactory;
             DataSourceRouteResult = dataSourceRouteResult;
             _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(shardingDbContext.GetType()));
-
+            _entityMetadataManager =
+                (IEntityMetadataManager)ShardingContainer.GetService(
+                    typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             TableRouteResults = GetTableRouteResults(tableRouteResults);
             IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
             IsCrossTable = TableRouteResults.Count() > 1;

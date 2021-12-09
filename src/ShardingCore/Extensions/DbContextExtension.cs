@@ -66,6 +66,35 @@ namespace ShardingCore.Extensions
             }
 #endif
         }
+        /// <summary>
+        /// 移除所有的分表关系的模型
+        /// </summary>
+        /// <param name="dbContext"></param>
+        public static void RemoveDbContextAllRelationModel(this DbContext dbContext)
+        {
+#if EFCORE6
+
+            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
+#endif
+#if EFCORE2 || EFCORE3 || EFCORE5
+
+            var contextModel = dbContext.Model as Model;
+#endif
+
+#if EFCORE6
+            var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
+            contextModelRelationalModel.Tables.Clear();
+#endif
+#if EFCORE5
+            var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
+            contextModelRelationalModel.Tables.Clear();
+#endif
+#if EFCORE2 || EFCORE3
+            var entityTypes =
+                contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
+            entityTypes.Clear();
+#endif
+        }
 
         /// <summary>
         /// 移除所有的除了我指定的那个类型

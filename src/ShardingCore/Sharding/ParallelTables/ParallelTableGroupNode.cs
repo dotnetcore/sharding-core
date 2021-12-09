@@ -18,6 +18,11 @@ namespace ShardingCore.Sharding.ParallelTables
         {
             _entities = new SortedSet<ParallelTableComparerType>(entities);
         }
+
+        public ISet<ParallelTableComparerType> GetEntities()
+        {
+            return _entities;
+        }
         protected bool Equals(ParallelTableGroupNode other)
         {
             return _entities.SequenceEqual(other._entities);
