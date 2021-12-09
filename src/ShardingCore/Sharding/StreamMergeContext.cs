@@ -30,9 +30,9 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity>:IDisposable
+    public class StreamMergeContext<TEntity> : IDisposable
 #if !EFCORE2
-        ,IAsyncDisposable
+        , IAsyncDisposable
 #endif
     {
         //private readonly IShardingScopeFactory _shardingScopeFactory;
@@ -89,15 +89,8 @@ namespace ShardingCore.Sharding
             _routeTailFactory = routeTailFactory;
             DataSourceRouteResult = dataSourceRouteResult;
             _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(shardingDbContext.GetType()));
-            _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
-            if (_parallelTableManager.IsParallelTableQuery(QueryEntities.Where(o=> _entityMetadataManager.IsShardingTable(o))))
-            {
-                TableRouteResults = tableRouteResults.Where(o=> o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count==1);
-            }
-            else
-            {
-                TableRouteResults = tableRouteResults;
-            }
+
+            TableRouteResults = GetTableRouteResults(tableRouteResults);
             IsCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
             IsCrossTable = TableRouteResults.Count() > 1;
             var reWriteResult = new ReWriteEngine<TEntity>(source).ReWrite();
@@ -117,6 +110,19 @@ namespace ShardingCore.Sharding
                 .FirstOrDefault(o => o.ShardingDbContextType == shardingDbContext.GetType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
+        }
+
+        private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
+        {
+            if (QueryEntities.Count > 1)
+            {
+                var queryShardingTables = QueryEntities.Where(o => _entityMetadataManager.IsShardingTable(o)).ToArray();
+                if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
+                {
+                    return tableRouteResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
+                }
+            }
+            return tableRouteResults;
         }
         //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
         //    IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
@@ -241,11 +247,11 @@ namespace ShardingCore.Sharding
                 case ConnectionModeEnum.MEMORY_STRICTLY:
                 case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingConfigOption.ConnectionMode;
                 default:
-                {
-                    return _shardingConfigOption.MaxQueryConnectionsLimit < sqlCount
-                        ? ConnectionModeEnum.CONNECTION_STRICTLY
-                        : ConnectionModeEnum.MEMORY_STRICTLY; ;
-                }
+                    {
+                        return _shardingConfigOption.MaxQueryConnectionsLimit < sqlCount
+                            ? ConnectionModeEnum.CONNECTION_STRICTLY
+                            : ConnectionModeEnum.MEMORY_STRICTLY; ;
+                    }
             }
         }
         /// <summary>
@@ -271,7 +277,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return !_shardingConfigOption.AutoTrackEntity|| IsCrossQuery() || IsUseReadWriteSeparation();
+            return !_shardingConfigOption.AutoTrackEntity || IsCrossQuery() || IsUseReadWriteSeparation();
         }
 
         /// <summary>
