@@ -7,7 +7,7 @@
     <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Company>xuejm</Company>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Description>high performance lightweight solution for efcore sharding table and sharding database support read-write-separation </Description>
   </PropertyGroup>
 
