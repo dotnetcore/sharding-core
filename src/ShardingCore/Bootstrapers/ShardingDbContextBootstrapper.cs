@@ -253,7 +253,7 @@ namespace ShardingCore.Bootstrapers
                     }
                     else
                     {
-                        dbContext.RemoveDbContextAllRelationModel();
+                        dbContext.RemoveDbContextAllRelationModelThatIsNoShardingTable();
                     }
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();

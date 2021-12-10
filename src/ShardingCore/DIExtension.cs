@@ -41,6 +41,16 @@ namespace ShardingCore
     */
     public static class DIExtension
     {
+        /// <summary>
+        /// 添加ShardingCore配置和EntityFrameworkCore的<![CDATA[services.AddDbContext<TShardingDbContext>]]>
+        /// </summary>
+        /// <typeparam name="TShardingDbContext"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="optionsAction"></param>
+        /// <param name="contextLifetime"></param>
+        /// <param name="optionsLifetime"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
         public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
             Action<string, DbContextOptionsBuilder> optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
