@@ -96,6 +96,7 @@ namespace ShardingCore.DIExtensions
                     new ReadWriteOptions<TShardingDbContext>(
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
+                        _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
                 bool isLoop = false;
                 var readStrategyEnum = _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum;

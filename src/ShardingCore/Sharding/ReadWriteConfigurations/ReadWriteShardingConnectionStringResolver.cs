@@ -16,6 +16,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         private readonly ConcurrentDictionary<string, IReadWriteConnector> _connectors =
             new ConcurrentDictionary<string, IReadWriteConnector>();
 
+        private readonly IReadWriteOptions<TShardingDbContext> _readWriteOptions;
         public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors)
         {
             var enumerator = connectors.GetEnumerator();
@@ -26,6 +27,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                     _connectors.TryAdd(currentConnector.DataSourceName, currentConnector);
             }
 
+            _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
         }
 
         public bool ContainsReadWriteDataSourceName(string dataSourceName)
@@ -43,8 +45,24 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         public bool AddConnectionString(string dataSourceName, string connectionString)
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
-                throw new ShardingCoreInvalidOperationException($"read write connector not found, data source name:[{dataSourceName}]");
-           return  connector.AddConnectionString(connectionString);
+            {
+                if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Loop)
+                {
+                    connector= new ReadWriteLoopConnector(dataSourceName, new List<string> { connectionString });
+                }
+                else if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Random)
+                {
+                    connector= new ReadWriteLoopConnector(dataSourceName, new List<string> { connectionString });
+                }
+
+                throw new ShardingCoreInvalidOperationException(
+                    $"unknown read write strategy:[{_readWriteOptions.ReadStrategy}]");
+
+            }
+            else
+            {
+                return connector.AddConnectionString(connectionString);
+            }
         }
     }
 }

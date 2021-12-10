@@ -18,10 +18,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     public class ReadWriteOptions<TShardingDbContext> : IReadWriteOptions<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ReadWriteOptions(int readWritePriority, bool readWriteSupport, ReadConnStringGetStrategyEnum readConnStringGetStrategy)
+        public ReadWriteOptions(int readWritePriority, bool readWriteSupport, ReadStrategyEnum readStrategy, ReadConnStringGetStrategyEnum readConnStringGetStrategy)
         {
             ReadWritePriority = readWritePriority;
             ReadWriteSupport = readWriteSupport;
+            ReadStrategy = readStrategy;
             ReadConnStringGetStrategy = readConnStringGetStrategy;
         }
         public Type ShardingDbContextType => typeof(TShardingDbContext);
@@ -33,6 +34,8 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         /// 默认是否开启读写分离
         /// </summary>
         public bool ReadWriteSupport { get; }
+
+        public ReadStrategyEnum ReadStrategy { get; }
         public ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; }
     }
 }

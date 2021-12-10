@@ -51,12 +51,13 @@ namespace ShardingCore.Test
         private readonly IShardingTableCreator<ShardingDefaultDbContext> _shardingTableCreator;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
         private readonly IRouteTailFactory _routeTailFactory;
+        private readonly IShardingConnectionStringResolver<ShardingDefaultDbContext> _shardingConnectionStringResolver;
 
         public ShardingTest(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConfiguration configuration,
             IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
             IShardingComparer<ShardingDefaultDbContext> shardingComparer, IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource,
             IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
-            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager,IRouteTailFactory routeTailFactory)
+            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager,IRouteTailFactory routeTailFactory,IShardingConnectionStringResolver<ShardingDefaultDbContext> shardingConnectionStringResolver)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -69,6 +70,7 @@ namespace ShardingCore.Test
             _shardingTableCreator = shardingTableCreator;
             _shardingReadWriteManager = shardingReadWriteManager;
             _routeTailFactory = routeTailFactory;
+            _shardingConnectionStringResolver = shardingConnectionStringResolver;
 
             //var dataSource = ShardingContainer.GetService<IVirtualDataSource<ShardingDefaultDbContext>>();
             //dataSource.AddPhysicDataSource(new DefaultPhysicDataSource("E", "XXXXX", false));
@@ -222,6 +224,9 @@ namespace ShardingCore.Test
                 {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
             Assert.Equal(x1x1, x2x2);
             Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
+            var succeedAddConnectionString = _shardingConnectionStringResolver.AddConnectionString("A", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;");
+            Assert.True(succeedAddConnectionString);
+
         }
 
         public class SequenceClass

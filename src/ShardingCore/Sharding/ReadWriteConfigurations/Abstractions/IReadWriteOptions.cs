@@ -24,6 +24,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
         /// 默认是否开启读写分离
         /// </summary>
         bool ReadWriteSupport { get; }
+        ReadStrategyEnum ReadStrategy { get; }
         ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; }
     }
 }
