@@ -71,15 +71,6 @@ namespace ShardingCore.Extensions
         /// 移除所有的没有分片的表
         /// </summary>
         /// <param name="dbContext"></param>
-        [Obsolete($"plz use {nameof(RemoveDbContextAllRelationModelThatIsNoSharding)}")]
-        public static void RemoveDbContextAllRelationModelThatIsNoShardingTable(this DbContext dbContext)
-        {
-            RemoveDbContextAllRelationModelThatIsNoSharding(dbContext);
-        }
-        /// <summary>
-        /// 移除所有的没有分片的表
-        /// </summary>
-        /// <param name="dbContext"></param>
         public static void RemoveDbContextAllRelationModelThatIsNoSharding(this DbContext dbContext)
         {
 #if EFCORE6

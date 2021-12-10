@@ -5,7 +5,7 @@
 		<Version>$(EFCORE5)</Version>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<DefineConstants>TRACE;DEBUG;EFCORE5;</DefineConstants>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>9.0</LangVersion>
 		<AssemblyName>ShardingCore</AssemblyName>
 		<RootNamespace>ShardingCore</RootNamespace>
 		<RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>

@@ -49,15 +49,20 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                 if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Loop)
                 {
                     connector= new ReadWriteLoopConnector(dataSourceName, new List<string> { connectionString });
+                    _connectors.TryAdd(dataSourceName, connector);
+                    return true;
                 }
                 else if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Random)
                 {
-                    connector= new ReadWriteLoopConnector(dataSourceName, new List<string> { connectionString });
+                    connector= new ReadWriteRandomConnector(dataSourceName, new List<string> { connectionString });
+                    _connectors.TryAdd(dataSourceName, connector);
+                    return true;
                 }
-
-                throw new ShardingCoreInvalidOperationException(
-                    $"unknown read write strategy:[{_readWriteOptions.ReadStrategy}]");
-
+                else
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"unknown read write strategy:[{_readWriteOptions.ReadStrategy}]");
+                }
             }
             else
             {
