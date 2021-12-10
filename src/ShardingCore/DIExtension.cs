@@ -29,7 +29,10 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.ParallelTables;
+using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace ShardingCore
 {
@@ -86,6 +89,7 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(IShardingDbContextCreatorConfig<>),typeof(DefaultShardingDbContextCreatorConfig<>));
 
 
+            services.TryAddSingleton(typeof(IDefaultDataSourceInitializer<>),typeof(DefaultDataSourceInitializer<>));
             services.TryAddSingleton(typeof(ITrackerManager<>),typeof(TrackerManager<>));
             services.TryAddSingleton(typeof(IStreamMergeContextFactory<>),typeof(StreamMergeContextFactory<>));
             services.TryAddSingleton(typeof(IShardingTableCreator<>),typeof(ShardingTableCreator<>));
@@ -109,6 +113,7 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(IParallelTableManager<>),typeof(ParallelTableManager<>));
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
+            services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //route manage
             services.TryAddSingleton<IShardingRouteManager, ShardingRouteManager>();

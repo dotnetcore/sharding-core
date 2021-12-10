@@ -17,6 +17,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             new ConcurrentDictionary<string, IReadWriteConnector>();
 
         private readonly IReadWriteOptions<TShardingDbContext> _readWriteOptions;
+        private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
         public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors)
         {
             var enumerator = connectors.GetEnumerator();
@@ -28,6 +29,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             }
 
             _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
+            _readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
         }
 
         public bool ContainsReadWriteDataSourceName(string dataSourceName)
@@ -46,23 +48,13 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
             {
-                if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Loop)
-                {
-                    connector= new ReadWriteLoopConnector(dataSourceName, new List<string> { connectionString });
-                    _connectors.TryAdd(dataSourceName, connector);
-                    return true;
-                }
-                else if (_readWriteOptions.ReadStrategy == ReadStrategyEnum.Random)
-                {
-                    connector= new ReadWriteRandomConnector(dataSourceName, new List<string> { connectionString });
-                    _connectors.TryAdd(dataSourceName, connector);
-                    return true;
-                }
-                else
-                {
-                    throw new ShardingCoreInvalidOperationException(
-                        $"unknown read write strategy:[{_readWriteOptions.ReadStrategy}]");
-                }
+                connector = _readWriteConnectorFactory.CreateConnector<TShardingDbContext>(_readWriteOptions.ReadStrategy,
+                    dataSourceName, new List<string>()
+                    {
+                        connectionString
+                    }); 
+                _connectors.TryAdd(dataSourceName, connector);
+                return true;
             }
             else
             {

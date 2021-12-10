@@ -71,7 +71,7 @@ namespace ShardingCore.Extensions
         /// 移除所有的没有分片的表
         /// </summary>
         /// <param name="dbContext"></param>
-        public static void RemoveDbContextAllRelationModelThatIsNoSharding(this DbContext dbContext)
+        public static void RemoveDbContextAllRelationModel(this DbContext dbContext)
         {
 #if EFCORE6
 
@@ -81,34 +81,18 @@ namespace ShardingCore.Extensions
 
             var contextModel = dbContext.Model as Model;
 #endif
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(dbContext.GetType()));
-
 #if EFCORE6
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
-            var valueTuples =
-                contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType) ||entityMetadataManager.TryGet(m.EntityType.ClrType)==null)).Select(o => o.Key).ToList();
-            for (int i = 0; i < valueTuples.Count; i++)
-            {
-                contextModelRelationalModel.Tables.Remove(valueTuples[i]);
-            }
+            contextModelRelationalModel.Tables.Clear();
 #endif
 #if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
-            var valueTuples =
- contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType)||entityMetadataManager.TryGet(m.EntityType.ClrType)==null)).Select(o => o.Key).ToList();
-            for (int i = 0; i < valueTuples.Count; i++)
-            {
-                contextModelRelationalModel.Tables.Remove(valueTuples[i]);
-            }
+            contextModelRelationalModel.Tables.Clear();
 #endif
 #if EFCORE2 || EFCORE3
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
-            var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)||entityMetadataManager.TryGet(o.Value.ClrType)==null).Select(o=>o.Key).ToList();
-            for (int i = 0; i < list.Count; i++)
-            {
-                entityTypes.Remove(list[i]);
-            }
+            entityTypes.Clear();
 #endif
         }
 

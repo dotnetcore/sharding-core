@@ -98,29 +98,14 @@ namespace ShardingCore.DIExtensions
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,
                         _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
-                bool isLoop = false;
-                var readStrategyEnum = _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum;
-
-                if ( readStrategyEnum== ReadStrategyEnum.Loop)
-                {
-                    isLoop = true;
-                }
-                else if (_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum == ReadStrategyEnum.Random)
-                {
-                    isLoop = false;
-                }
-                else
-                {
-                    throw new ShardingCoreInvalidOperationException($"unknow ReadStrategyEnum confgure:{_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum}");
-                }
 
                 services
                     .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
                         ReadWriteShardingConnectionStringResolver<TShardingDbContext>>(sp =>
                     {
-
-                        var readConnString = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
-                        var readWriteLoopConnectors = readConnString.Select(o => (IReadWriteConnector)(isLoop ? new ReadWriteLoopConnector(o.Key, o.Value) : new ReadWriteRandomConnector(o.Key, o.Value)));
+                        var readWriteConnectorFactory = sp.GetRequiredService<IReadWriteConnectorFactory>();
+                        var readConnStrings = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
+                        var readWriteLoopConnectors = readConnStrings.Select(o => readWriteConnectorFactory.CreateConnector<TShardingDbContext>(_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,o.Key,o.Value));
 
                         return new ReadWriteShardingConnectionStringResolver<TShardingDbContext>(
                             readWriteLoopConnectors);

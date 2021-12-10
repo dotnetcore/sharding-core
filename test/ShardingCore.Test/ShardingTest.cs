@@ -224,9 +224,10 @@ namespace ShardingCore.Test
                 {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
             Assert.Equal(x1x1, x2x2);
             Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
-            var succeedAddConnectionString = _shardingConnectionStringResolver.AddConnectionString("A", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;");
+            var succeedAddConnectionString = _shardingConnectionStringResolver.AddConnectionString("X", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;");
             Assert.True(succeedAddConnectionString);
-
+            var connectionString = _shardingConnectionStringResolver.GetConnectionString("X");
+            Assert.Equal("Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;",connectionString);
         }
 
         public class SequenceClass
