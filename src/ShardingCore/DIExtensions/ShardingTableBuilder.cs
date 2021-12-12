@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists;
 
 namespace ShardingCore.DIExtensions
 {
@@ -39,6 +40,11 @@ namespace ShardingCore.DIExtensions
         public ShardingTableBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
+            return this;
+        }
+        public ShardingTableBuilder<TShardingDbContext> AddTableEnsureManager(Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> newTableEnsureManagerFactory)
+        {
+            _shardingCoreConfigBuilder.ShardingConfigOption.AddTableEnsureManager(newTableEnsureManagerFactory);
             return this;
         }
     }

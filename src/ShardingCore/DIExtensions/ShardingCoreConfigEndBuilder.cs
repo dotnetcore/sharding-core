@@ -12,6 +12,7 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists;
 
 namespace ShardingCore.DIExtensions
 {
@@ -45,6 +46,11 @@ namespace ShardingCore.DIExtensions
             _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
             return this;
         }
+        public ShardingCoreConfigEndBuilder<TShardingDbContext> AddTableEnsureManager(Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> newTableEnsureManagerFactory)
+        {
+            _shardingCoreConfigBuilder.ShardingConfigOption.AddTableEnsureManager(newTableEnsureManagerFactory);
+            return this;
+        }
         /// <summary>
         /// 是否启用读写分离
         /// </summary>
@@ -69,6 +75,11 @@ namespace ShardingCore.DIExtensions
                 throw new ShardingCoreConfigException($"{nameof(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory)}  is null");
             }
             services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
+            if (_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory == null)
+            {
+                throw new ShardingCoreConfigException($"{nameof(_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory)}  is null");
+            }
+            services.AddSingleton<ITableEnsureManager<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory);
 
 
             if (!UseReadWrite)

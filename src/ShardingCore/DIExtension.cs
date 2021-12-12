@@ -33,6 +33,7 @@ using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.TableExists;
 
 namespace ShardingCore
 {

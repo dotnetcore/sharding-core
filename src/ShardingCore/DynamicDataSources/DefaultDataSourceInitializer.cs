@@ -20,6 +20,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.TableCreator;
+using ShardingCore.TableExists;
 
 namespace ShardingCore.DynamicDataSources
 {
@@ -27,8 +28,8 @@ namespace ShardingCore.DynamicDataSources
     {
         void InitConfigure(string dataSourceName, string connectionString);
     }
-     
-    public class DefaultDataSourceInitializer<TShardingDbContext>: IDefaultDataSourceInitializer<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+
+    public class DefaultDataSourceInitializer<TShardingDbContext> : IDefaultDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
@@ -45,7 +46,7 @@ namespace ShardingCore.DynamicDataSources
             ILogger<DefaultDataSourceInitializer<TShardingDbContext>> logger)
         {
             _shardingConfigOption =
-                shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))??throw new ArgumentNullException($"{nameof(IShardingConfigOption)} cant been registered {typeof(TShardingDbContext)}");
+                shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext)) ?? throw new ArgumentNullException($"{nameof(IShardingConfigOption)} cant been registered {typeof(TShardingDbContext)}");
             _routeTailFactory = routeTailFactory;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
@@ -53,15 +54,17 @@ namespace ShardingCore.DynamicDataSources
             _virtualDataSource = virtualDataSource;
             _logger = logger;
         }
-        public void InitConfigure(string dataSourceName,string connectionString)
+        public void InitConfigure(string dataSourceName, string connectionString)
         {
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
                 _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
-                using var context =
-                    (DbContext)serviceScope.ServiceProvider.GetService(_shardingConfigOption.ShardingDbContextType);
+                using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                 if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
                     EnsureCreated(context, dataSourceName);
+                var tableEnsureManager = ShardingContainer.GetService<ITableEnsureManager<TShardingDbContext>>();
+                //获取数据库存在的所有的表
+                var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName)??new HashSet<string>();
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;
@@ -72,7 +75,7 @@ namespace ShardingCore.DynamicDataSources
                         {
                             var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
                             //创建表
-                            CreateDataTable(dataSourceName, virtualTable);
+                            CreateDataTable(dataSourceName, virtualTable, existTables);
                         }
                     }
                     else
@@ -86,7 +89,7 @@ namespace ShardingCore.DynamicDataSources
                                 {
                                     var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
                                     //创建表
-                                    CreateDataTable(dataSourceName, virtualTable);
+                                    CreateDataTable(dataSourceName, virtualTable, existTables);
                                 }
                             }
                         }
@@ -98,18 +101,20 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
-        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable)
+        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables)
         {
             var entityMetadata = virtualTable.EntityMetadata;
             foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
             {
+                var defaultPhysicTable = new DefaultPhysicTable(virtualTable, tail);
                 if (NeedCreateTable(entityMetadata))
                 {
                     try
                     {
                         //添加物理表
-                        virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
-                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
+                        virtualTable.AddPhysicTable(defaultPhysicTable);
+                        if (!existTables.Contains(defaultPhysicTable.FullName))
+                            _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
                     }
                     catch (Exception e)
                     {
@@ -123,9 +128,8 @@ namespace ShardingCore.DynamicDataSources
                 else
                 {
                     //添加物理表
-                    virtualTable.AddPhysicTable(new DefaultPhysicTable(virtualTable, tail));
+                    virtualTable.AddPhysicTable(defaultPhysicTable);
                 }
-
             }
         }
         private bool NeedCreateTable(EntityMetadata entityMetadata)

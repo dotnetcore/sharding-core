@@ -6,14 +6,14 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.TrackerEnumerators;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 
+/*
+* @Author: xjm
+* @Description: 迭代聚合流式引擎
+* @Date: Saturday, 14 August 2021 22:07:28
+* @Email: 326308290@qq.com
+*/
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 {
-    /*
-    * @Author: xjm
-    * @Description:
-    * @Date: Saturday, 14 August 2021 22:07:28
-    * @Email: 326308290@qq.com
-    */
     internal class AsyncEnumeratorStreamMergeEngine<TShardingDbContext,T> : IAsyncEnumerable<T>, IEnumerable<T>
     where  TShardingDbContext:DbContext,IShardingDbContext
     {

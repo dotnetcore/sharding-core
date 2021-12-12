@@ -10,7 +10,9 @@ using ShardingCore;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using ShardingCore.Core;
+using ShardingCore.TableExists;
 
 namespace Sample.SqlServer
 {
@@ -50,7 +52,9 @@ namespace Sample.SqlServer
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
-                }).End();
+                })
+                .AddTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>())
+                .End();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
             //            o.UseSqlServer(conn).UseLoggerFactory(efLogger)
@@ -104,8 +108,11 @@ namespace Sample.SqlServer
                 app.UseDeveloperExceptionPage();
             }
 
+            var startNew = Stopwatch.StartNew();
+            startNew.Start();
             app.UseShardingCore();
-
+            startNew.Stop();
+            Console.WriteLine($"UseShardingCore:"+startNew.ElapsedMilliseconds+"ms");
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

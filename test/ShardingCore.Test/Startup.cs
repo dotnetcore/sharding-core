@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.TableExists;
 using ShardingCore.Test.Domain.Entities;
 using ShardingCore.Test.Shardings;
 
@@ -37,11 +38,9 @@ namespace ShardingCore.Test
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
-#if DEBUG
-                    //o.CreateShardingTableOnStart = true;
-                    //o.EnsureCreatedWithOutShardingTable = true;
-
-#endif                    //o.MaxQueryConnectionsLimit = 1;
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                    //o.MaxQueryConnectionsLimit = 1;
                     o.AutoTrackEntity = true;
                     //o.AddParallelTables(typeof(SysUserMod), typeof(SysUserSalary));
                 })
@@ -84,7 +83,9 @@ namespace ShardingCore.Test
                             }
                         }
                     };
-                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime).End();
+                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime)
+                .AddTableEnsureManager(sp=>new SqlServerTableEnsureManager<ShardingDefaultDbContext>())
+                .End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
             //     {

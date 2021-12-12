@@ -14,6 +14,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists;
 
 namespace ShardingCore
 {
@@ -60,6 +61,12 @@ namespace ShardingCore
         public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
         {
             ReplaceShardingComparerFactory=newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
+        }
+
+        public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory { get; private set; } = sp => new EmptyTableEnsureManager< TShardingDbContext>();
+        public void AddTableEnsureManager(Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> newTableEnsureManagerFactory)
+        {
+            TableEnsureManagerFactory= newTableEnsureManagerFactory?? throw new ArgumentNullException(nameof(newTableEnsureManagerFactory));
         }
 
 

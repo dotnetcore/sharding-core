@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrapers;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.TableExists;
 using ShardingCore.Test3x.Domain.Entities;
 using ShardingCore.Test3x.Shardings;
 
@@ -37,6 +38,8 @@ namespace ShardingCore.Test3x
                     o.UseSqlServer(conn).UseLoggerFactory(efLogger))
                 .Begin(o =>
                 {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
@@ -78,7 +81,9 @@ namespace ShardingCore.Test3x
                             }
                         }
                     };
-                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime).End();
+                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime)
+                .AddTableEnsureManager(sp => new SqlServerTableEnsureManager<ShardingDefaultDbContext>())
+                .End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
             //     {
