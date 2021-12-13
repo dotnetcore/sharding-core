@@ -179,7 +179,7 @@ namespace ShardingCore.DynamicDataSources
                     }
                     else
                     {
-                        dbContext.RemoveDbContextAllRelationModel();
+                        dbContext.RemoveDbContextAllRelationModelThatIsNoSharding();
                     }
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
