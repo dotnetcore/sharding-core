@@ -61,7 +61,7 @@ namespace ShardingCore.Bootstrapers
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
-        private readonly IDefaultDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
+        private readonly IDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
         private readonly ILogger<ShardingDbContextBootstrapper<TShardingDbContext>> _logger;
 
         public ShardingDbContextBootstrapper(IShardingConfigOption shardingConfigOption)
@@ -73,7 +73,7 @@ namespace ShardingCore.Bootstrapers
             _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
             _virtualDataSource= ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _parallelTableManager = ShardingContainer.GetService<IParallelTableManager<TShardingDbContext>>();
-            _dataSourceInitializer = ShardingContainer.GetService<IDefaultDataSourceInitializer<TShardingDbContext>>();
+            _dataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
             _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
         }
         /// <summary>

@@ -13,7 +13,7 @@ namespace ShardingCore.DynamicDataSources
 
         public static void DynamicAppendDataSource<TShardingDbContext>(string dataSourceName, string connectionString) where TShardingDbContext:DbContext,IShardingDbContext
         {
-            var defaultDataSourceInitializer = ShardingContainer.GetService<IDefaultDataSourceInitializer<TShardingDbContext>>();
+            var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
             defaultDataSourceInitializer.InitConfigure(dataSourceName, connectionString);
         }
 

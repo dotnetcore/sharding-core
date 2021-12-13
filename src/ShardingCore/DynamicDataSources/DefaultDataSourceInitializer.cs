@@ -25,26 +25,22 @@ using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.DynamicDataSources
 {
-    public interface IDefaultDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
-    {
-        void InitConfigure(string dataSourceName, string connectionString);
-    }
 
-    public class DefaultDataSourceInitializer<TShardingDbContext> : IDefaultDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceInitializer<TShardingDbContext> : IDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
-        private readonly ILogger<DefaultDataSourceInitializer<TShardingDbContext>> _logger;
+        private readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger;
         private readonly IShardingConfigOption _shardingConfigOption;
-        public DefaultDataSourceInitializer(IEnumerable<IShardingConfigOption> shardingConfigOptions,
+        public DataSourceInitializer(IEnumerable<IShardingConfigOption> shardingConfigOptions,
             IRouteTailFactory routeTailFactory, IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             IShardingTableCreator<TShardingDbContext> shardingTableCreator,
             IVirtualDataSource<TShardingDbContext> virtualDataSource,
-            ILogger<DefaultDataSourceInitializer<TShardingDbContext>> logger)
+            ILogger<DataSourceInitializer<TShardingDbContext>> logger)
         {
             _shardingConfigOption =
                 shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext)) ?? throw new ArgumentNullException($"{nameof(IShardingConfigOption)} cant been registered {typeof(TShardingDbContext)}");

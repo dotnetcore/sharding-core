@@ -90,7 +90,7 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(IShardingDbContextCreatorConfig<>),typeof(DefaultShardingDbContextCreatorConfig<>));
 
 
-            services.TryAddSingleton(typeof(IDefaultDataSourceInitializer<>),typeof(DefaultDataSourceInitializer<>));
+            services.TryAddSingleton(typeof(IDataSourceInitializer<>),typeof(DataSourceInitializer<>));
             services.TryAddSingleton(typeof(ITrackerManager<>),typeof(TrackerManager<>));
             services.TryAddSingleton(typeof(IStreamMergeContextFactory<>),typeof(StreamMergeContextFactory<>));
             services.TryAddSingleton(typeof(IShardingTableCreator<>),typeof(ShardingTableCreator<>));
