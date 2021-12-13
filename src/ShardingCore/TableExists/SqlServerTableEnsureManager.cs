@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.TableExists
 {

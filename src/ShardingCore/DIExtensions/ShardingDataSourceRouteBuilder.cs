@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.DIExtensions
 {

@@ -13,6 +13,7 @@ using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.DIExtensions
 {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.TableExists
 {

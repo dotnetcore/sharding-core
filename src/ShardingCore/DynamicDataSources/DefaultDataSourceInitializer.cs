@@ -21,6 +21,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.TableCreator;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.DynamicDataSources
 {
@@ -68,7 +69,6 @@ namespace ShardingCore.DynamicDataSources
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;
-
                     if (_virtualDataSource.IsDefault(dataSourceName))
                     {
                         if (_entityMetadataManager.IsShardingTable(entityType))

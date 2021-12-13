@@ -10,7 +10,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.TableExists
+namespace ShardingCore.TableExists.Abstractions
 {
     public abstract class AbstractTableEnsureManager<TShardingDbContext> : ITableEnsureManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {

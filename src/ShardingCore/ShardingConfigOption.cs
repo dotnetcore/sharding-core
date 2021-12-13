@@ -15,6 +15,7 @@ using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore
 {

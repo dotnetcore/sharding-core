@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.TableExists
+namespace ShardingCore.TableExists.Abstractions
 {
     public interface ITableEnsureManager
     {
