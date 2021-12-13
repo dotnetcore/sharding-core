@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Extensions.InternalExtensions;
 
 /*
 * @Author: xjm
@@ -22,13 +23,7 @@ namespace ShardingCore.Bootstrapers
         {
             EntityType = entityType;
 
-#if !EFCORE2
-            var virtualTableName = entityType.GetTableName();
-#endif
-#if EFCORE2
-            var virtualTableName = entityType.Relational().TableName;
-#endif
-            VirtualTableName = virtualTableName;
+            VirtualTableName = entityType.GetEntityTypeTableName();
         }
 
         public IEntityType EntityType { get; }

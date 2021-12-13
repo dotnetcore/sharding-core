@@ -17,6 +17,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.TableCreator;
@@ -61,7 +62,7 @@ namespace ShardingCore.DynamicDataSources
                     EnsureCreated(context, dataSourceName);
                 var tableEnsureManager = ShardingContainer.GetService<ITableEnsureManager<TShardingDbContext>>();
                 //获取数据库存在的所有的表
-                var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName)??new HashSet<string>();
+                var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ?? new HashSet<string>();
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;
@@ -92,7 +93,8 @@ namespace ShardingCore.DynamicDataSources
                     }
                     if (_shardingConfigOption.NeedCreateTable(entityType))
                     {
-                        _tableCreator.CreateTable(dataSourceName, entityType, string.Empty);
+                        if (!existTables.Contains(entity.GetEntityTypeTableName()))
+                            _tableCreator.CreateTable(dataSourceName, entityType, string.Empty);
                     }
                 }
             }
