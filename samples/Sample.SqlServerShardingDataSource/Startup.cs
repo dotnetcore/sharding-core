@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Sample.SqlServerShardingDataSource.VirtualRoutes;
 using ShardingCore;
 using System.Collections.Generic;
+using ShardingCore.TableExists;
 
 namespace Sample.SqlServerShardingDataSource
 {
@@ -38,7 +39,7 @@ namespace Sample.SqlServerShardingDataSource
                     op.AutoTrackEntity = true;
                     //如果您使用code-first建议选择false
                     op.CreateShardingTableOnStart = true;
-                    //如果您使用code-first建议修改为fsle
+                    //如果您使用code-first建议修改为false
                     op.EnsureCreatedWithOutShardingTable = true;
                 }).AddShardingTransaction((connection, builder) =>
                 {
@@ -63,7 +64,8 @@ namespace Sample.SqlServerShardingDataSource
                 {
                     op.AddShardingDatabaseRoute<SysUserVirtualDataSourceRoute>();
                     op.AddShardingDatabaseRoute<OrderVirtualDataSourceRoute>();
-                }).End();
+                }).AddTableEnsureManager(sp=>new SqlServerTableEnsureManager<MyDbContext>())
+                .End();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

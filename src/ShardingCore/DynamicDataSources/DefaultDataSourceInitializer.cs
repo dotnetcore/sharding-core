@@ -54,11 +54,16 @@ namespace ShardingCore.DynamicDataSources
         }
         public void InitConfigure(string dataSourceName, string connectionString)
         {
+            InitConfigure(dataSourceName,connectionString, _shardingConfigOption.EnsureCreatedWithOutShardingTable);
+        }
+
+        public void InitConfigure(string dataSourceName, string connectionString, bool createDatabase)
+        {
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
                 _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
                 using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
-                if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
+                if (createDatabase)
                     EnsureCreated(context, dataSourceName);
                 var tableEnsureManager = ShardingContainer.GetService<ITableEnsureManager<TShardingDbContext>>();
                 //获取数据库存在的所有的表
@@ -99,6 +104,7 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
+
         private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables)
         {
             var entityMetadata = virtualTable.EntityMetadata;

@@ -43,7 +43,15 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// 显示错误日志
         /// </summary>
         public virtual bool DoLogError => false;
-
+        /// <summary>
+        /// 默认会在设置时间后10分钟获取tail
+        /// </summary>
+        public virtual int IncrementMinutes => 10;
+        /// <summary>
+        /// 重写改方法后请一起重写IncrementMinutes值，比如你按月分表但是你设置cron表达式为月中的时候建表，
+        /// 那么会在月中的时候 <code>DateTime.Now.AddMinutes(IncrementMinutes);</code>来获取tail会导致还是当月的所以不会建表
+        /// </summary>
+        /// <returns></returns>
         public abstract string[] GetCronExpressions();
         public Task ExecuteAsync()
         {
@@ -58,7 +66,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var now = DateTime.Now.AddMinutes(10);
+            var now = DateTime.Now.AddMinutes(IncrementMinutes);
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
             ISet<string> dataSources = new HashSet<string>();
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))

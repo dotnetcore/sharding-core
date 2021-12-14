@@ -11,5 +11,6 @@ namespace ShardingCore.DynamicDataSources
     public interface IDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         void InitConfigure(string dataSourceName, string connectionString);
+        void InitConfigure(string dataSourceName, string connectionString,bool createDatabase);
     }
 }
