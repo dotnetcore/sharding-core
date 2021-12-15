@@ -40,7 +40,7 @@ namespace ShardingCore.Test
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    //o.MaxQueryConnectionsLimit = 1;
+
                     o.AutoTrackEntity = true;
                     //o.AddParallelTables(typeof(SysUserMod), typeof(SysUserSalary));
                 })

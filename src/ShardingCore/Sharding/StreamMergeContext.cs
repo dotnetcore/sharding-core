@@ -160,7 +160,7 @@ namespace ShardingCore.Sharding
         public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
         {
             var routeTail = _routeTailFactory.Create(tableRouteResult);
-            //如果开启了读写分离或者本次查询是跨表或者跨库的表示本次查询的dbcontext是不存储的用完后就直接dispose
+            //如果开启了读写分离或者本次查询是跨表的表示本次查询的dbcontext是不存储的用完后就直接dispose
             var parallelQuery = IsParallelQuery();
             var dbContext = _shardingDbContext.GetDbContext(dataSourceName, parallelQuery, routeTail);
             if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.MEMORY_STRICTLY)
@@ -257,14 +257,6 @@ namespace ShardingCore.Sharding
             }
         }
         /// <summary>
-        /// 是否是跨资源查询
-        /// </summary>
-        /// <returns></returns>
-        private bool IsCrossQuery()
-        {
-            return IsCrossDataSource || IsCrossTable;
-        }
-        /// <summary>
         /// 是否启用读写分离
         /// </summary>
         /// <returns></returns>
@@ -279,7 +271,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return !_shardingConfigOption.AutoTrackEntity || IsCrossQuery() || IsUseReadWriteSeparation();
+            return !_shardingConfigOption.AutoTrackEntity || IsCrossTable || IsUseReadWriteSeparation();
         }
 
         /// <summary>
@@ -288,7 +280,6 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsUseShardingTrack(Type entityType)
         {
-            //没有跨dbcontext查询并且不是读写分离才可以那么是否追踪之类的由查询的dbcontext自行处理
             if (!IsParallelQuery())
                 return false;
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
