@@ -52,5 +52,14 @@ namespace ShardingCore.Core.EntityMetadatas
                 return null;
             return entityMetadata;
         }
+        /// <summary>
+        /// 是否是分片对象(包括分表或者分库)
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public bool IsSharding(Type entityType)
+        {
+            return _caches.ContainsKey(entityType);
+        }
     }
 }

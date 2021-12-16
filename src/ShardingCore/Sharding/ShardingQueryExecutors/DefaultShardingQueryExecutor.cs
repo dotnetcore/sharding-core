@@ -7,8 +7,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core;
+using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -16,6 +21,7 @@ using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines;
 using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
+using ShardingCore.Utils;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
@@ -53,6 +59,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
             throw new ShardingCoreException("db context operator is not IShardingDbContext");
         }
+
 
         public TResult ExecuteAsync<TResult>(ICurrentDbContext currentContext, Expression query, CancellationToken cancellationToken = new CancellationToken())
         {

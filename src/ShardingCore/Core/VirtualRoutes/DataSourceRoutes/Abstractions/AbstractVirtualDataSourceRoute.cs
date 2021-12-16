@@ -66,9 +66,12 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 
         public abstract List<string> GetAllDataSourceNames();
         public abstract bool AddDataSourceName(string dataSourceName);
-        public virtual void Configure(EntityMetadataDataSourceBuilder<T> builder)
-        {
-            
-        }
+        /// <summary>
+        /// 配置分库的一些信息
+        /// 1.ShardingProperty 哪个字段分库
+        /// 2.AutoCreateDataSource 启动时是否需要创建数据源
+        /// </summary>
+        /// <param name="builder"></param>
+        public abstract void Configure(EntityMetadataDataSourceBuilder<T> builder);
     }
 }

@@ -105,7 +105,8 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public override void MergeParallelExecuteResult<TResult>(LinkedList<TResult> previewResults, IEnumerable<TResult> parallelResults,bool async)
         {
-            if (previewResults.Count > 1)
+            var previewResultsCount = previewResults.Count;
+            if (previewResultsCount > 1)
             {
                 throw new ShardingCoreInvalidOperationException($"{typeof(TResult)} {nameof(previewResults)} has more than one element in container");
             }
@@ -117,7 +118,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
             if (previewResults is LinkedList<IStreamMergeAsyncEnumerator<TEntity>> previewInMemoryStreamEnumeratorResults && parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TEntity>> parallelStreamEnumeratorResults)
             {
                 var mergeAsyncEnumerators = new LinkedList<IStreamMergeAsyncEnumerator<TEntity>>();
-                if (previewInMemoryStreamEnumeratorResults.Count == 1)
+                if (previewResultsCount == 1)
                 {
                     mergeAsyncEnumerators.AddLast(previewInMemoryStreamEnumeratorResults.First());
                 }

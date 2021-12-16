@@ -33,5 +33,11 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <param name="entityType"></param>
         /// <returns></returns>
         EntityMetadata TryGet(Type entityType);
+        /// <summary>
+        /// 是否是分片对象(包括分表或者分库)
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        bool IsSharding(Type entityType);
     }
 }

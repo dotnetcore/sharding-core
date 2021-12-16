@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
 using ShardingCore.Test2x.Domain.Entities;
@@ -34,6 +35,11 @@ namespace ShardingCore.Test2x.Shardings
                 return false;
             _dataSources.Add(dataSourceName);
             return true;
+        }
+
+        public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
+        {
+            
         }
 
         public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

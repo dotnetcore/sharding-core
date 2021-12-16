@@ -67,7 +67,16 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         //    }
 
         //}
-
+        /// <summary>
+        /// 将查询分表分库结果按每个数据源进行分组
+        /// 每组大小为 启动配置的<see cref="IShardingConfigOption.MaxQueryConnectionsLimit"/>数目
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="async"></param>
+        /// <param name="sqlRouteUnits"></param>
+        /// <param name="sqlExecutorUnitExecuteAsync"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(bool async,IEnumerable<ISqlRouteUnit> sqlRouteUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
         {
             var waitTaskQueue = AggregateQueryByDataSourceName(sqlRouteUnits)
@@ -138,7 +147,12 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         {
             return sqlRouteUnits.GroupBy(o => o.DataSourceName);
         }
-
+        /// <summary>
+        /// 每个数据源下的分表结果按 maxQueryConnectionsLimit 进行组合分组每组大小 maxQueryConnectionsLimit
+        /// ConnectionModeEnum为用户配置或者系统自动计算,哪怕是用户指定也是按照maxQueryConnectionsLimit来进行分组。
+        /// </summary>
+        /// <param name="sqlGroups"></param>
+        /// <returns></returns>
         protected DataSourceSqlExecutorUnit GetSqlExecutorGroups(IGrouping<string, ISqlRouteUnit> sqlGroups)
         {
             var streamMergeContext = GetStreamMergeContext();

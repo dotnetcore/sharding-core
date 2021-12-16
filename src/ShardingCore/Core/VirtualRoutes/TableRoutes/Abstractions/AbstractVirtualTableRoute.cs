@@ -65,7 +65,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         public abstract List<string> GetAllTails();
 
         /// <summary>
-        /// 配置分表信息
+        /// 配置分表的一些信息
+        /// 1.ShardingProperty 哪个字段分表
+        /// 2.TableSeparator 分表的后缀和表名的连接符
+        /// 3.AutoCreateTable 启动时是否需要创建对应的分表信息
         /// </summary>
         /// <param name="builder"></param>
         public abstract void Configure(EntityMetadataTableBuilder<T> builder);

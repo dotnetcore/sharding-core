@@ -74,6 +74,14 @@ namespace ShardingCore.Utils
 
             return visitor.GetQueryEntities();
         }
+        public static ISet<Type> GetQueryEntitiesByExpression(Expression expression)
+        {
+            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor();
+
+            visitor.Visit(expression);
+
+            return visitor.GetQueryEntities();
+        }
 
     }
 }
