@@ -35,10 +35,13 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <returns></returns>
         public int Compare(string? x, string? y)
         {
-            if (_defaultTail.Equals(x))
-                return -1;
-            if (_defaultTail.Equals(y))
-                return 1;
+            if (!Object.Equals(x, y))
+            {
+                if (_defaultTail.Equals(x))
+                    return -1;
+                if (_defaultTail.Equals(y))
+                    return 1;
+            }
             return Comparer<string>.Default.Compare(x, y);
         }
     }

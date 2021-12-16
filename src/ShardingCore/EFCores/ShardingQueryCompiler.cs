@@ -81,17 +81,11 @@ namespace ShardingCore.EFCores
                 }
                 return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
             }
-                throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            throw new ShardingCoreException("db context operator is not IShardingDbContext");
         }
 
         [ExcludeFromCodeCoverage]
         public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
-        {
-            throw new NotImplementedException();
-        }
-
-        [ExcludeFromCodeCoverage]
-        public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }

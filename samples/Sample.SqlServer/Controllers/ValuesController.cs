@@ -47,16 +47,21 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var sql = from ut in _defaultTableDbContext.Set<SysTest>()
-                      join u in _defaultTableDbContext.Set<SysUserMod>()
-                          on ut.UserId equals u.Id
-                      select new
-                      {
-                          ut.Id,
-                          userId = u.Id
-                      };
-            var listAsync = await sql.ToListAsync();
-            var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
+            //var sql = from ut in _defaultTableDbContext.Set<SysTest>()
+            //          join u in _defaultTableDbContext.Set<SysUserMod>()
+            //              on ut.UserId equals u.Id
+            //          select new
+            //          {
+            //              ut.Id,
+            //              userId = u.Id
+            //          };
+            //var listAsync = await sql.ToListAsync();
+            //var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
+            var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o=>o.Id=="2");
+            var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o=>o.Id=="2");
+            resultx112331ttaa2.UserId = "zzzz";
+            var resultx112331tt2xx = await _defaultTableDbContext.Set<SysTest>().Where(o => o.Id == "2").FirstOrDefaultAsync();
+            resultx112331tt2xx.UserId = "xxxxx";
             var resultx112331 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
             var resultx11233411 = _defaultTableDbContext.Set<SysUserMod>().Count();
             var resultx11231 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).ContainsAsync("1981");
