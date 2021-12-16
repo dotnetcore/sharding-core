@@ -54,7 +54,7 @@ namespace ShardingCore.DynamicDataSources
         }
         public void InitConfigure(string dataSourceName, string connectionString)
         {
-            InitConfigure(dataSourceName,connectionString, _shardingConfigOption.EnsureCreatedWithOutShardingTable);
+            InitConfigure(dataSourceName,connectionString, true);
         }
 
         public void InitConfigure(string dataSourceName, string connectionString, bool createDatabase)
