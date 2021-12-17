@@ -462,6 +462,7 @@ namespace ShardingCore.Test
             Assert.True(sysUserMod.Id == "1");
             var sysUserModxx =  _virtualDbContext.Set<SysUserMod>().Where(o => x.Contains(o.Id)).FirstOrDefault();
             Assert.NotNull(sysUserModxx);
+            Assert.Equal(sysUserModaa, sysUserMod);
             Assert.True(x.Contains(sysUserModxx.Id));
             Assert.NotNull(sysUserMod);
             var userMod = _virtualDbContext.Set<SysUserMod>().Find("1");

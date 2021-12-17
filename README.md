@@ -30,7 +30,7 @@ Release  | EF Core | .NET  | .NET (Core)
 ## 快速开始
 5步实现按月分表,且支持自动化建表建库
 ### 第一步安装依赖
-
+`ShardingCore`版本表现形式为a.b.c.d,其中a表示`efcore`的版本号,b表示`ShardingCore`的主版本号,c表示`ShardingCore`次级版本号,d表示`ShardingCore`的修订版本号
 ```shell
 # 请对应安装您需要的版本
 PM> Install-Package ShardingCore
@@ -38,6 +38,7 @@ PM> Install-Package ShardingCore
 PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
 #  use mysql
 #PM> Install-Package Pomelo.EntityFrameworkCore.MySql
+# use other database driver,if efcore support
 ```
 
 ### 第二步创建查询对象
@@ -238,6 +239,7 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
 |----------------------------------- |--- |---------:|----------:|----------:|
 | NoShardingIndexFirstOrDefaultAsync | 10 | 1.512 ms | 0.0071 ms | 0.0063 ms |
 |   ShardingIndexFirstOrDefaultAsync | 10 | 1.567 ms | 0.0127 ms | 0.0113 ms |
+
 针对未分片数据的查询性能,可以看出10次查询差距为0.05ms,单次查询损耗约为5微妙=0.005毫秒,损耗占比为3%,
 
 结论：efcore 原生查询和sharding-core的查询在针对未分片对象查询上性能可达原先的97%具有极高的性能
