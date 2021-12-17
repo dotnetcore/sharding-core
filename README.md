@@ -192,10 +192,12 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
 这样所有的配置就完成了你可以愉快地对Order表进行按月分表了
 
 ```csharp
-
+[Route("api/[controller]")]
+public class ValuesController : Controller
+{
         private readonly MyDbContext _myDbContext;
 
-        public XXXXController(MyDbContext myDbContext)
+        public ValuesController(MyDbContext myDbContext)
         {
             _myDbContext = myDbContext;
         }
@@ -206,6 +208,7 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
             var order = await _myDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == "2");
             return OK(order)
         }
+}
 ```
 
 
