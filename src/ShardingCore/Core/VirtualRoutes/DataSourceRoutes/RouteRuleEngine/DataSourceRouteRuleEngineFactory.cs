@@ -36,7 +36,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// <returns></returns>
         public DataSourceRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
         {
-            return new DataSourceRouteRuleContext<T>(queryable);
+            return new DataSourceRouteRuleContext<T>(queryable,typeof(TShardingDbContext));
         }
         /// <summary>
         /// 路由到具体的物理数据源

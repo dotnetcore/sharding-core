@@ -40,7 +40,7 @@ namespace ShardingCore.Extensions
         {
             var entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
 
-            var queryEntities = streamMergeContext.GetOriginalQueryable().ParseQueryableEntities();
+            var queryEntities = streamMergeContext.GetOriginalQueryable().ParseQueryableEntities(typeof(TShardingDbContext));
             //仅一个对象支持分库或者分表的组合
             return queryEntities.Count(o=>(entityMetadataManager.IsShardingDataSource(o) &&!entityMetadataManager.IsShardingTable(o)) ||(entityMetadataManager.IsShardingDataSource(o)&& entityMetadataManager.IsShardingTable(o))|| (!entityMetadataManager.IsShardingDataSource(o) && entityMetadataManager.IsShardingTable(o))) ==1;
         }

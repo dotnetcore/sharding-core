@@ -11,6 +11,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.Internal.Visitors.Querys;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Extensions;
@@ -65,18 +66,17 @@ namespace ShardingCore.Utils
         /// 获取本次查询的所有涉及到的对象
         /// </summary>
         /// <param name="queryable"></param>
+        /// <param name="dbContextType"></param>
         /// <returns></returns>
-        public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable)
+        public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable,Type dbContextType)
         {
-            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor();
-
-            visitor.Visit(queryable.Expression);
-
-            return visitor.GetQueryEntities();
+            return GetQueryEntitiesByExpression(queryable.Expression, dbContextType);
         }
-        public static ISet<Type> GetQueryEntitiesByExpression(Expression expression)
+        public static ISet<Type> GetQueryEntitiesByExpression(Expression expression, Type dbContextType)
         {
-            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor();
+            var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
+
+            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor(trackerManager);
 
             visitor.Visit(expression);
 

@@ -14,16 +14,16 @@ namespace ShardingCore.Extensions
     */
     public static class GenericExtension
     {
-        //public static Type[] GetGenericArguments(this Type type, Type genericType)
-        //{
-        //    return type.GetInterfaces() //取类型的接口
-        //        .Where(i => IsGenericType(i)) //筛选出相应泛型接口
-        //        .SelectMany(i => i.GetGenericArguments()) //选择所有接口的泛型参数
-        //        .ToArray(); //ToArray
+        public static Type[] GetGenericArguments(this Type type, Type genericType)
+        {
+            return type.GetInterfaces() //取类型的接口
+                .Where(i => IsGenericType(i)) //筛选出相应泛型接口
+                .SelectMany(i => i.GetGenericArguments()) //选择所有接口的泛型参数
+                .ToArray(); //ToArray
 
-        //    bool IsGenericType(Type type1)
-        //        => type1.IsGenericType && type1.GetGenericTypeDefinition() == genericType;
-        //}
+            bool IsGenericType(Type type1)
+                => type1.IsGenericType && type1.GetGenericTypeDefinition() == genericType;
+        }
         public static bool HasImplementedRawGeneric(this Type type, Type generic)
 
         {

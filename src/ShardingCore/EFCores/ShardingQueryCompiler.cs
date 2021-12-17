@@ -54,7 +54,7 @@ namespace ShardingCore.EFCores
 
         private IQueryCompiler GetQueryCompilerIfNoShardingQuery(IShardingDbContext shardingDbContext, Expression query)
         {
-            var queryEntities = ShardingUtil.GetQueryEntitiesByExpression(query);
+            var queryEntities = ShardingUtil.GetQueryEntitiesByExpression(query, shardingDbContext.GetType());
             var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             if (queryEntities.All(o => !entityMetadataManager.IsSharding(o)))
             {

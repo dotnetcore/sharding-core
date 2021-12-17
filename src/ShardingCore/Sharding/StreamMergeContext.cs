@@ -82,7 +82,7 @@ namespace ShardingCore.Sharding
             IEnumerable<TableRouteResult> tableRouteResults,
             IRouteTailFactory routeTailFactory)
         {
-            QueryEntities = source.ParseQueryableEntities();
+            QueryEntities = source.ParseQueryableEntities(shardingDbContext.GetType());
             //_shardingScopeFactory = shardingScopeFactory;
             _source = source;
             _shardingDbContext = shardingDbContext;

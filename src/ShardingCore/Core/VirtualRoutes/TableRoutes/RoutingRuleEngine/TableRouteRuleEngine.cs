@@ -33,7 +33,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
-            var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableEntities();
+            var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableEntities(typeof(TShardingDbContext));
 
 
             foreach (var shardingEntity in queryEntities)

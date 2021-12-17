@@ -100,9 +100,9 @@ namespace ShardingCore.Extensions
             return nameof(object.Equals).Equals(express.Method.Name);
         }
 
-        public static ISet<Type> ParseQueryableEntities(this IQueryable queryable)
+        public static ISet<Type> ParseQueryableEntities(this IQueryable queryable, Type dbContextType)
         {
-            return ShardingUtil.GetQueryEntitiesFilter(queryable);
+            return ShardingUtil.GetQueryEntitiesFilter(queryable, dbContextType);
         }
 
 

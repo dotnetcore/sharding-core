@@ -34,5 +34,10 @@ namespace ShardingCore.Core.TrackerManagers
                 return false;
             return _dbContextModels.Contains(entityType);
         }
+
+        public bool IsDbContextModel(Type entityType)
+        {
+            return _dbContextModels.Contains(entityType);
+        }
     }
 }
