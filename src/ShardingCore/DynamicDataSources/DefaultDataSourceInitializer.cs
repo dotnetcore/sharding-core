@@ -52,10 +52,6 @@ namespace ShardingCore.DynamicDataSources
             _virtualDataSource = virtualDataSource;
             _logger = logger;
         }
-        public void InitConfigure(string dataSourceName, string connectionString)
-        {
-            InitConfigure(dataSourceName,connectionString, true);
-        }
 
         public void InitConfigure(string dataSourceName, string connectionString, bool createDatabase)
         {
