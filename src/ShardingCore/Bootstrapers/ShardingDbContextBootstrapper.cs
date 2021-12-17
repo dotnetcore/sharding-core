@@ -148,7 +148,7 @@ namespace ShardingCore.Bootstrapers
             {
                 var dataSourceName = dataSourceKv.Key;
                 var connectionString = dataSourceKv.Value;
-                _dataSourceInitializer.InitConfigure(dataSourceName, connectionString, _shardingConfigOption.EnsureCreatedWithOutShardingTable);
+                _dataSourceInitializer.InitConfigure(dataSourceName, connectionString, true);
             }
         }
     }
