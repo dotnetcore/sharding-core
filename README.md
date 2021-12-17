@@ -17,7 +17,7 @@
 
 
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
-### 依赖
+## 依赖
 
 Release  | EF Core | .NET  | .NET (Core) 
 --- | --- | --- | --- 
@@ -25,7 +25,192 @@ Release  | EF Core | .NET  | .NET (Core)
 [5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0.10 | Standard 2.1 | 5.0+ 
 [3.x.x.x](https://www.nuget.org/packages/ShardingCore) | 3.1.18 | Standard 2.0 | 2.0+ 
 [2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | Standard 2.0 | 2.0+ 
-### 性能测试
+
+
+## 快速开始
+5步实现按月分表,且支持自动化建表建库
+### 第一步安装依赖
+
+```shell
+# 请对应安装您需要的版本
+PM> Install-Package ShardingCore
+# use sqlserver
+PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
+#  use mysql
+#PM> Install-Package Pomelo.EntityFrameworkCore.MySql
+```
+
+### 第二步创建查询对象
+
+查询对象
+```csharp
+
+    /// <summary>
+    /// order table
+    /// </summary>
+    public class Order
+    {
+        /// <summary>
+        /// order Id
+        /// </summary>
+        public string Id { get; set; }
+        /// <summary>
+        /// payer id
+        /// </summary>
+        public string Payer { get; set; }
+        /// <summary>
+        /// pay money cent
+        /// </summary>
+        public long Money { get; set; }
+        /// <summary>
+        /// area
+        /// </summary>
+        public string Area { get; set; }
+        /// <summary>
+        /// order status
+        /// </summary>
+        public OrderStatusEnum OrderStatus { get; set; }
+        /// <summary>
+        /// CreationTime
+        /// </summary>
+        public DateTime CreationTime { get; set; }
+    }
+    public enum OrderStatusEnum
+    {
+        NoPay=1,
+        Paying=2,
+        Payed=3,
+        PayFail=4
+    }
+```
+### 第三步创建dbcontext
+dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普通的DbContext那么就继承`AbstractShardingDbContext`需要分表就实现`IShardingTableDbContext`,如果只有分库可以不实现`IShardingTableDbContext`接口
+```csharp
+
+    public class MyDbContext:AbstractShardingDbContext,IShardingTableDbContext
+    {
+        public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Id).IsRequired().IsUnicode(false).HasMaxLength(50);
+                entity.Property(o=>o.Payer).IsRequired().IsUnicode(false).HasMaxLength(50);
+                entity.Property(o => o.Area).IsRequired().IsUnicode(false).HasMaxLength(50);
+                entity.Property(o => o.OrderStatus).HasConversion<int>();
+                entity.ToTable(nameof(Order));
+            });
+        }
+        /// <summary>
+        /// empty impl if use sharding table
+        /// </summary>
+        public IRouteTail RouteTail { get; set; }
+    }
+```
+
+### 第四步添加分表路由
+
+```csharp
+
+    public class OrderVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
+    {
+        /// <summary>
+        /// fix value don't use DateTime.Now because if  if application restart this value where change
+        /// </summary>
+        /// <returns></returns>
+        public override DateTime GetBeginTime()
+        {
+            return new DateTime(2021, 1, 1);
+        }
+        /// <summary>
+        /// configure sharding property
+        /// </summary>
+        /// <param name="builder"></param>
+
+        public override void Configure(EntityMetadataTableBuilder<Order> builder)
+        {
+            builder.ShardingProperty(o => o.CreationTime);
+        }
+        /// <summary>
+        /// enable auto create table job
+        /// </summary>
+        /// <returns></returns>
+
+        public override bool AutoCreateTableByTime()
+        {
+            return true;
+        }
+    }
+```
+
+### 第五步配置启动项
+无论你是何种数据库只需要修改`AddDefaultDataSource`里面的链接字符串 请不要修改委托内部的UseXXX参数 `conStr` and `connection`
+```csharp
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+
+            services.AddShardingDbContext<MyDbContext>((conStr, builder) =>
+                {
+                    //don't modify conStr, params should use delegate input params
+                    builder.UseSqlServer(conStr);
+                }).Begin(op =>
+                {
+                    op.AutoTrackEntity = true;
+                    //if use code-first should false
+                    op.CreateShardingTableOnStart = true;
+                    //if use code-first should false
+                    op.EnsureCreatedWithOutShardingTable = true;
+                }).AddShardingTransaction((connection, builder) =>
+                {
+                    //don't modify connection, params should use delegate input params
+                    builder.UseSqlServer(connection);
+                }).AddDefaultDataSource("ds0",
+                    "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;")
+                .AddShardingTableRoute(op =>
+                {
+                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
+                }).End();
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            // it's importment don't forget it
+            app.ApplicationServices.GetRequiredService<IShardingBootstrapper>().Start();
+            // other configure....
+        }
+```
+这样所有的配置就完成了你可以愉快地对Order表进行按月分表了
+
+```csharp
+
+        private readonly MyDbContext _myDbContext;
+
+        public XXXXController(MyDbContext myDbContext)
+        {
+            _myDbContext = myDbContext;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var order = await _myDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == "2");
+            return OK(order)
+        }
+```
+
+
+## 性能
+
 
 以下所有数据均在开启了表达式编译缓存的情况下测试，并且电脑处于长时间未关机并且开着很多vs和idea的情况下仅供参考,所有测试都是基于ShardingCore x.3.1.63+ version
 
@@ -34,6 +219,28 @@ Release  | EF Core | .NET  | .NET (Core)
 efcore版本均为6.0 表结构为string型id的订单取模分成5张表
 
 N代表执行次数
+
+### 性能损耗 sql server 2012,data rows 7734363 =773w
+
+// * Summary *
+
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.18363.1500 (1909/November2019Update/19H2)
+AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
+.NET SDK=6.0.100
+  [Host]     : .NET 6.0.0 (6.0.21.52210), X64 RyuJIT
+  DefaultJob : .NET 6.0.0 (6.0.21.52210), X64 RyuJIT
+
+
+|                             Method |  N |     Mean |     Error |    StdDev |
+|----------------------------------- |--- |---------:|----------:|----------:|
+| NoShardingIndexFirstOrDefaultAsync | 10 | 1.512 ms | 0.0071 ms | 0.0063 ms |
+|   ShardingIndexFirstOrDefaultAsync | 10 | 1.567 ms | 0.0127 ms | 0.0113 ms |
+针对未分片数据的查询性能,可以看出10次查询差距为0.05ms,单次查询损耗约为5微妙=0.005毫秒,损耗占比为3%,
+
+结论：efcore 原生查询和sharding-core的查询在针对未分片对象查询上性能可达原先的97%具有极高的性能
+
+### 性能测试
+
 
 #### sql server 2012,data rows 7734363 =773w
 

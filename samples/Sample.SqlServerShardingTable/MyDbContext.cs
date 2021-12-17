@@ -41,7 +41,9 @@ namespace Sample.SqlServerShardingTable
                 entity.ToTable(nameof(Setting));
             });
         }
-
+        /// <summary>
+        /// empty impl
+        /// </summary>
         public IRouteTail RouteTail { get; set; }
     }
 }
