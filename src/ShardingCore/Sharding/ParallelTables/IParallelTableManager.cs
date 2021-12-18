@@ -8,7 +8,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ParallelTables
 {
-    internal interface IParallelTableManager
+    public interface IParallelTableManager
     {
         /// <summary>
         /// 添加平行表

@@ -2,21 +2,14 @@
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Utils;
 
 
 namespace ShardingCore.EFCores
@@ -29,42 +22,18 @@ namespace ShardingCore.EFCores
 	 **/
     public class ShardingQueryCompiler : IQueryCompiler
     {
-        private readonly ICurrentDbContext _currentContext;
-        private readonly IShardingQueryExecutor _shardingQueryExecutor;
+        private readonly IShardingDbContext _shardingDbContext;
+        private readonly IShardingComplierExecutor _shardingComplierExecutor;
 
         public ShardingQueryCompiler(ICurrentDbContext currentContext)
         {
-            _currentContext = currentContext;
-            _shardingQueryExecutor = ShardingContainer.GetService<IShardingQueryExecutor>();
+            _shardingDbContext = currentContext.Context as IShardingDbContext?? throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            _shardingComplierExecutor = ShardingContainer.GetService<IShardingComplierExecutor>();
         }
 
         public TResult Execute<TResult>(Expression query)
         {
-            if (_currentContext.Context is IShardingDbContext shardingDbContext)
-            {
-                var queryCompilerIfNoShardingQuery = GetQueryCompilerIfNoShardingQuery(shardingDbContext, query);
-                if (queryCompilerIfNoShardingQuery != null)
-                {
-                    return queryCompilerIfNoShardingQuery.Execute<TResult>(query);
-                }
-                return _shardingQueryExecutor.Execute<TResult>(_currentContext, query);
-            }
-            throw new ShardingCoreException("db context operator is not IShardingDbContext");
-        }
-
-        private IQueryCompiler GetQueryCompilerIfNoShardingQuery(IShardingDbContext shardingDbContext, Expression query)
-        {
-            var queryEntities = ShardingUtil.GetQueryEntitiesByExpression(query, shardingDbContext.GetType());
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
-            if (queryEntities.All(o => !entityMetadataManager.IsSharding(o)))
-            {
-                var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
-                    typeof(IVirtualDataSource<>).GetGenericType0(shardingDbContext.GetType()));
-                var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                var dbContext = shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, false, routeTailFactory.Create(string.Empty));
-                return dbContext.GetService<IQueryCompiler>();
-            }
-            return null;
+            return _shardingComplierExecutor.Execute<TResult>(_shardingDbContext, query);
         }
 
 
@@ -72,16 +41,7 @@ namespace ShardingCore.EFCores
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            if (_currentContext.Context is IShardingDbContext shardingDbContext)
-            {
-                var queryCompilerIfNoShardingQuery = GetQueryCompilerIfNoShardingQuery(shardingDbContext, query);
-                if (queryCompilerIfNoShardingQuery != null)
-                {
-                    return queryCompilerIfNoShardingQuery.ExecuteAsync<TResult>(query, cancellationToken);
-                }
-                return _shardingQueryExecutor.ExecuteAsync<TResult>(_currentContext, query, cancellationToken);
-            }
-            throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
 
         [ExcludeFromCodeCoverage]
@@ -103,30 +63,12 @@ namespace ShardingCore.EFCores
 
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
-            if (_currentContext.Context is IShardingDbContext shardingDbContext)
-            {
-                var queryCompilerIfNoShardingQuery = GetQueryCompilerIfNoShardingQuery(shardingDbContext, query);
-                if (queryCompilerIfNoShardingQuery != null)
-                {
-                    return queryCompilerIfNoShardingQuery.ExecuteAsync<TResult>(query);
-                }
-                return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(_currentContext, query);
-            }
-            throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);
         }
 
         public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            if (_currentContext.Context is IShardingDbContext shardingDbContext)
-            {
-                var queryCompilerIfNoShardingQuery = GetQueryCompilerIfNoShardingQuery(shardingDbContext, query);
-                if (queryCompilerIfNoShardingQuery != null)
-                {
-                    return queryCompilerIfNoShardingQuery.ExecuteAsync<TResult>(query,cancellationToken);
-                }
-                return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(_currentContext, query, cancellationToken);
-            }
-            throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
         
         [ExcludeFromCodeCoverage]

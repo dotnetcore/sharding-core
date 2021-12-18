@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.ShardingExecutors;
 
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
@@ -21,18 +22,16 @@ namespace ShardingCore.Sharding.Abstractions
         /// execute query
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
-        /// <param name="currentContext"></param>
-        /// <param name="query"></param>
+        /// <param name="queryCompilerContext"></param>
         /// <returns></returns>
-        TResult Execute<TResult>(ICurrentDbContext currentContext, Expression query);
+        TResult Execute<TResult>(QueryCompilerContext queryCompilerContext);
         /// <summary>
         /// execute query async
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
-        /// <param name="currentContext"></param>
-        /// <param name="query"></param>
+        /// <param name="queryCompilerContext"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        TResult ExecuteAsync<TResult>(ICurrentDbContext currentContext, Expression query, CancellationToken cancellationToken = new CancellationToken());
+        TResult ExecuteAsync<TResult>(QueryCompilerContext queryCompilerContext, CancellationToken cancellationToken = new CancellationToken());
     }
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Sharding.Visitors;
@@ -84,6 +85,11 @@ namespace ShardingCore.Extensions
             DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);
             var newExpression = replaceQueryableVisitor.Visit(source.Expression);
             return replaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
+        }
+        internal static Expression ReplaceDbContextExpression(this Expression queryExpression, DbContext dbContext)
+        {
+            DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);
+            return replaceQueryableVisitor.Visit(queryExpression);
         }
     }
 }
