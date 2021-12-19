@@ -825,8 +825,8 @@ namespace ShardingCore.Test2x
                 }
                 catch (Exception e)
                 {
-                    Assert.Equal(typeof(InvalidOperationException),e.InnerException.GetType());
-                    Assert.True(e.InnerException.Message.Contains("contains"));
+                    Assert.Equal(typeof(InvalidOperationException),e.GetType());
+                    Assert.True(e.Message.Contains("contains"));
                 }
             }
         }
@@ -876,8 +876,8 @@ namespace ShardingCore.Test2x
                 }
                 catch (Exception e)
                 {
-                    Assert.Equal(typeof(InvalidOperationException), e.InnerException.GetType());
-                    Assert.True(e.InnerException.Message.Contains("contains"));
+                    Assert.Equal(typeof(InvalidOperationException), e.GetType());
+                    Assert.True(e.Message.Contains("contains"));
                 }
             }
         }

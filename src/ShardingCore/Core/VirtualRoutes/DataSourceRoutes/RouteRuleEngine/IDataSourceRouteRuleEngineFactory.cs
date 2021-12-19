@@ -14,12 +14,14 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-
-    public interface IDataSourceRouteRuleEngineFactory<TShardingDbContext> 
+    public interface IDataSourceRouteRuleEngineFactory
+    {
+        DataSourceRouteRuleContext CreateContext(IQueryable queryable);
+        DataSourceRouteResult Route(IQueryable queryable);
+        DataSourceRouteResult Route(DataSourceRouteRuleContext ruleContext);
+    }
+    public interface IDataSourceRouteRuleEngineFactory<TShardingDbContext> : IDataSourceRouteRuleEngineFactory
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        DataSourceRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable);
-        DataSourceRouteResult Route<T>(IQueryable<T> queryable);
-        DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> ruleContext);
     }
 }

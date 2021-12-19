@@ -24,8 +24,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     internal class AverageAsyncInMemoryMergeEngine<TEntity, TEnsureResult,TSelect> :
             AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TEnsureResult, TSelect>
     {
-        public AverageAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression,
-            IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public AverageAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
@@ -53,7 +52,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             var resultType = typeof(T);
             if (!resultType.IsNumericType())
                 throw new ShardingCoreException(
-                    $"not support {GetMethodCallExpression().ShardingPrint()} result {resultType}");
+                    $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {resultType}");
 #if !EFCORE2
             return await ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<T, Task<T>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<T>)queryable, (Expression)null, cancellationToken);
 #endif
@@ -69,7 +68,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 if (!typeof(TSelect).IsNumericType())
                 {
                     throw new ShardingCoreException(
-                        $"not support {GetMethodCallExpression().ShardingPrint()} result {typeof(TSelect)}");
+                        $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {typeof(TSelect)}");
                 }
                 var result = await AggregateAverageResultAsync<TSelect>(cancellationToken);
                 if (result.IsEmpty())

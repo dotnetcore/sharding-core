@@ -16,10 +16,10 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class CountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity,int>
+    internal class CountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,int>
     {
         private readonly IShardingPageManager _shardingPageManager;
-        public CountAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public CountAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
         }
@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync(queryable =>((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
             if (_shardingPageManager.Current != null)
             {

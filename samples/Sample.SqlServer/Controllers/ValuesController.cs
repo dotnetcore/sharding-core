@@ -64,6 +64,7 @@ namespace Sample.SqlServer.Controllers
             resultx112331tt2xx.UserId = "xxxxx";
             var resultx112331 = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
             var resultx11233411 = _defaultTableDbContext.Set<SysUserMod>().Count();
+            var resultx11231xa = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198).Select(o => o.Id).ContainsAsync("198");
             var resultx11231 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age == 198198).Select(o => o.Id).ContainsAsync("1981");
             var resultx1121 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").SumAsync(o => o.Age);
             var resultx111 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");

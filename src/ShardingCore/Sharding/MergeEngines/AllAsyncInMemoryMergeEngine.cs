@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -18,27 +19,26 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class AllAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, bool>
     {
-        public AllAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public AllAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
         public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).AllAsync(_predicate, cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync(queryable =>
+            {
+                var allQueryCombineResult = (AllQueryCombineResult)GetStreamMergeContext().MergeQueryCompilerContext.GetQueryCombineResult();
+                Expression<Func<TEntity, bool>> allPredicate = x => true;
+                var predicate = allQueryCombineResult.GetAllPredicate();
+                if (predicate != null)
+                {
+                    allPredicate = (Expression<Func<TEntity, bool>>)predicate;
+                }
+                return ((IQueryable<TEntity>)queryable).AllAsync(allPredicate, cancellationToken);
+            }, cancellationToken);
 
             return result.All(o => o.QueryResult);
         }
 
-        private Expression<Func<TEntity, bool>> _predicate;
-        protected override IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression)
-        {
-
-            if (secondExpression is UnaryExpression where && where.Operand is LambdaExpression lambdaExpression && lambdaExpression is Expression<Func<TEntity, bool>> predicate)
-            {
-                _predicate=predicate;
-            }
-
-            return queryable;
-        }
     }
 }

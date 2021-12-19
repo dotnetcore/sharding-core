@@ -29,7 +29,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
             _virtualDataSource = virtualDataSource;
             _entityMetadataManager = entityMetadataManager;
         }
-        public DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> routeRuleContext)
+        public DataSourceRouteResult Route(DataSourceRouteRuleContext routeRuleContext)
         {
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
             var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !_entityMetadataManager.IsShardingDataSource(o));

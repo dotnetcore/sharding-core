@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class FirstAsyncInMemoryMergeEngine<TShardingDbContext,TEntity>: AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine<TShardingDbContext,TEntity> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        public FirstAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public FirstAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 

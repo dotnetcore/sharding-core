@@ -12,26 +12,28 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
-    public class QueryCompilerContext
+    public class QueryCompilerContext: IQueryCompilerContext
     {
-        public ISet<Type> QueryEntities { get; }
-        public IShardingDbContext ShardingDbContext { get; }
-        public Expression QueryExpression { get; }
-        public IEntityMetadataManager EntityMetadataManager { get; }
-        public Type ShardingDbContextType { get; }
-        private DbContext realDbContext;
+        private readonly ISet<Type> _queryEntities;
+        private readonly IShardingDbContext _shardingDbContext;
+        private readonly Expression _queryExpression;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly Type _shardingDbContextType;
+        private   QueryCompilerExecutor _queryCompilerExecutor;
+        private bool? hasQueryCompilerExecutor; 
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
         {
-            ShardingDbContextType = shardingDbContext.GetType();
-            QueryEntities = ShardingUtil.GetQueryEntitiesByExpression(queryExpression, ShardingDbContextType);
-            ShardingDbContext = shardingDbContext;
-            QueryExpression = queryExpression;
-            EntityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(ShardingDbContextType));
+            _shardingDbContextType = shardingDbContext.GetType();
+            _queryEntities = ShardingUtil.GetQueryEntitiesByExpression(queryExpression, _shardingDbContextType);
+            _shardingDbContext = shardingDbContext;
+            _queryExpression = queryExpression;
+            _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
         }
 
         public static QueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
@@ -39,23 +41,46 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return new QueryCompilerContext(shardingDbContext, queryExpression);
         }
 
-        public IQueryCompiler GetQueryCompiler()
+        public ISet<Type> GetQueryEntities()
         {
-            if (QueryEntities.All(o => !EntityMetadataManager.IsSharding(o)))
-            {
-                var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
-                    typeof(IVirtualDataSource<>).GetGenericType0(ShardingDbContextType));
-                var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                realDbContext = ShardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, false, routeTailFactory.Create(string.Empty));
-                return realDbContext.GetService<IQueryCompiler>();
-            }
-
-            return null;
+            return _queryEntities;
         }
 
-        public Expression NewQueryExpression()
+        public IShardingDbContext GetShardingDbContext()
         {
-            return QueryExpression.ReplaceDbContextExpression(realDbContext);
+            return _shardingDbContext;
+        }
+
+        public Expression GetQueryExpression()
+        {
+            return _queryExpression;
+        }
+
+        public IEntityMetadataManager GetEntityMetadataManager()
+        {
+            return _entityMetadataManager;
+        }
+
+        public Type GetShardingDbContextType()
+        {
+            return _shardingDbContextType;
+        }
+
+        public QueryCompilerExecutor GetQueryCompilerExecutor()
+        {
+            if (!hasQueryCompilerExecutor.HasValue)
+            {
+                if (_queryEntities.All(o => !_entityMetadataManager.IsSharding(o)))
+                {
+                    var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
+                        typeof(IVirtualDataSource<>).GetGenericType0(_shardingDbContextType));
+                    var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, false, routeTailFactory.Create(string.Empty));
+                    _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, _queryExpression);
+                }
+            }
+
+            return _queryCompilerExecutor;
         }
     }
 }

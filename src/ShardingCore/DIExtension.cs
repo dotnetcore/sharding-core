@@ -115,6 +115,7 @@ namespace ShardingCore
             services.TryAddSingleton(typeof(IParallelTableManager<>), typeof(ParallelTableManager<>));
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.TryAddSingleton<IShardingComplierExecutor, DefaultShardingComplierExecutor>();
+            services.TryAddSingleton<IQueryCompilerContextFactory, QueryCompilerContextFactory>();
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 

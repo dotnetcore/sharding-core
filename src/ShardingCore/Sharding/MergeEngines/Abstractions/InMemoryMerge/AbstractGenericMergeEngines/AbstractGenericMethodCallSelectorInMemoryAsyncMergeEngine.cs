@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines
 {
@@ -16,28 +17,14 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
     */
     internal abstract class AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity,TSelect>:AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity>
     {
-        public AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
         public override IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
         {
-            var secondExpression = GetSecondExpression();
-            if (secondExpression != null)
-            {
-                if (secondExpression is UnaryExpression unaryExpression && unaryExpression.Operand is LambdaExpression lambdaExpression && lambdaExpression is Expression<Func<TEntity, TSelect>> selector)
-                {
-                    return queryable.Select(selector);
-                }
-
-                throw new ShardingCoreException($"expression is not selector:{secondExpression.ShardingPrint()}");   
-            }
-            return queryable;
-        }
-
-        protected override IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression)
-        {
-            return queryable;
+            var selectQueryCombineResult = (SelectQueryCombineResult)GetStreamMergeContext().MergeQueryCompilerContext.GetQueryCombineResult();
+            return selectQueryCombineResult.GetSelectCombineQueryable<TEntity, TSelect>(queryable);
         }
 
     }

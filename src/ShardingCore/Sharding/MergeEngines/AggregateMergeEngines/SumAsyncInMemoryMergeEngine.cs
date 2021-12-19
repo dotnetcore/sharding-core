@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     */
     internal class SumAsyncInMemoryMergeEngine<TEntity, TEnsureResult> : AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TEnsureResult,TEnsureResult>
     {
-        public SumAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public SumAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             var resultType = typeof(TEnsureResult);
             if(!resultType.IsNumericType())
                 throw new ShardingCoreException(
-                    $"not support {GetMethodCallExpression().ShardingPrint()} result {resultType}");
+                    $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {resultType}");
 #if !EFCORE2
             var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEnsureResult, Task<TEnsureResult>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEnsureResult>)queryable, (Expression)null, cancellationToken), cancellationToken);
             return GetSumResult(result);

@@ -34,9 +34,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public DataSourceRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
+        public DataSourceRouteRuleContext CreateContext(IQueryable queryable)
         {
-            return new DataSourceRouteRuleContext<T>(queryable,typeof(TShardingDbContext));
+            return new DataSourceRouteRuleContext(queryable,typeof(TShardingDbContext));
         }
         /// <summary>
         /// 路由到具体的物理数据源
@@ -44,9 +44,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public DataSourceRouteResult Route<T>(IQueryable<T> queryable)
+        public DataSourceRouteResult Route(IQueryable queryable)
         {
-            var ruleContext = CreateContext<T>(queryable);
+            var ruleContext = CreateContext(queryable);
             return _dataSourceRouteRuleEngine.Route(ruleContext);
         }
         /// <summary>
@@ -55,7 +55,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// <typeparam name="T"></typeparam>
         /// <param name="ruleContext"></param>
         /// <returns></returns>
-        public DataSourceRouteResult Route<T>(DataSourceRouteRuleContext<T> ruleContext)
+        public DataSourceRouteResult Route(DataSourceRouteRuleContext ruleContext)
         {
             return _dataSourceRouteRuleEngine.Route(ruleContext);
         }

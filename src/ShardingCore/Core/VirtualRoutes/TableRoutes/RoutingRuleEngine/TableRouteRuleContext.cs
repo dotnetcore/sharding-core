@@ -10,15 +10,15 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:54:52
 * @Email: 326308290@qq.com
 */
-    public class TableRouteRuleContext<T>
+    public class TableRouteRuleContext
     {
 
-        public TableRouteRuleContext(IQueryable<T> queryable)
+        public TableRouteRuleContext(IQueryable queryable)
         {
             Queryable = queryable;
         }
 
-        public IQueryable<T> Queryable { get; }
+        public IQueryable Queryable { get; }
 
     }
 }

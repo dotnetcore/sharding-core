@@ -15,6 +15,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     public interface ITableRouteRuleEngine<TShardingDbContext> 
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext);
+        IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext);
     }
 }

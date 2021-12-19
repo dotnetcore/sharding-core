@@ -26,52 +26,12 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     */
     internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine<TEntity>
     {
-        private readonly MethodCallExpression _methodCallExpression;
         private readonly StreamMergeContext<TEntity> _mergeContext;
-        private readonly IQueryable<TEntity> _queryable;
-        private readonly Expression _secondExpression;
 
-        public AbstractInMemoryAsyncMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext)
+        public AbstractInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
-            _methodCallExpression = methodCallExpression;
-            if (methodCallExpression.Arguments.Count < 1 || methodCallExpression.Arguments.Count > 2)
-                throw new ArgumentException($"argument count must 1 or 2 :[{methodCallExpression.ShardingPrint()}]");
-            for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
-            {
-                var expression = methodCallExpression.Arguments[i];
-                if (typeof(IQueryable).IsAssignableFrom(expression.Type))
-                {
-                    if (_queryable != null)
-                        throw new ArgumentException(
-                            $"argument found more 1 IQueryable :[{methodCallExpression.ShardingPrint()}]");
-                    _queryable = new EnumerableQuery<TEntity>(expression);
-                }
-                else
-                {
-                    _secondExpression = expression;
-                }
-            }
-            if (_queryable == null)
-                throw new ArgumentException($"argument not found IQueryable :[{methodCallExpression.ShardingPrint()}]");
-            if (methodCallExpression.Arguments.Count == 2)
-            {
-                if (_secondExpression == null)
-                    throw new ShardingCoreInvalidOperationException(methodCallExpression.ShardingPrint());
-
-                // ReSharper disable once VirtualMemberCallInConstructor
-                _queryable = CombineQueryable(_queryable, _secondExpression);
-            }
-
-
-            _mergeContext = ((IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(shardingDbContext.GetType()))).Create(_queryable, shardingDbContext);
+            _mergeContext = streamMergeContext;
         }
-        /// <summary>
-        /// 合并queryable
-        /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="secondExpression"></param>
-        /// <returns></returns>
-        protected abstract IQueryable<TEntity> CombineQueryable(IQueryable<TEntity> queryable, Expression secondExpression);
 
         private (IQueryable queryable, DbContext dbContext) CreateAsyncExecuteQueryable<TResult>(string dsname, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
         {
@@ -132,21 +92,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
         protected override StreamMergeContext<TEntity> GetStreamMergeContext()
         {
             return _mergeContext;
-        }
-
-        //public IQueryable<TEntity> GetQueryable()
-        //{
-        //    return _queryable;
-        //}
-
-        protected MethodCallExpression GetMethodCallExpression()
-        {
-            return _methodCallExpression;
-        }
-
-        protected Expression GetSecondExpression()
-        {
-            return _secondExpression;
         }
     }
 }

@@ -69,7 +69,7 @@ namespace ShardingCore.Extensions
                 return expression.ToString();
 #endif
         }
-        public static string ShardingPrint<T>(this IQueryable<T> queryable)
+        public static string ShardingPrint(this IQueryable queryable)
         {
             return queryable.Expression.ShardingPrint();
         }

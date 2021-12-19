@@ -29,21 +29,20 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         /// 创建表路由上下文
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="dsname"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public TableRouteRuleContext<T> CreateContext<T>(IQueryable<T> queryable)
+        public TableRouteRuleContext CreateContext(IQueryable queryable)
         {
-            return new TableRouteRuleContext<T>(queryable);
+            return new TableRouteRuleContext(queryable);
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(IQueryable<T> queryable)
+        public IEnumerable<TableRouteResult> Route(IQueryable queryable)
         {
-            var ruleContext = CreateContext<T>(queryable);
-            return _tableRouteRuleEngine.Route(ruleContext);
+            var ruleContext = CreateContext(queryable);
+            return Route(ruleContext);
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> ruleContext)
+        public IEnumerable<TableRouteResult> Route(TableRouteRuleContext ruleContext)
         {
             return _tableRouteRuleEngine.Route(ruleContext);
         }

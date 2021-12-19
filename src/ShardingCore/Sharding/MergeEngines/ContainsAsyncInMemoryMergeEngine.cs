@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -15,16 +16,21 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class ContainsAsyncInMemoryMergeEngine<TEntity>: AbstractEnsureMethodCallConstantInMemoryAsyncMergeEngine<TEntity,bool>
+    internal class ContainsAsyncInMemoryMergeEngine<TEntity>: AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,bool>
     {
-        public ContainsAsyncInMemoryMergeEngine(MethodCallExpression methodCallExpression, IShardingDbContext shardingDbContext) : base(methodCallExpression, shardingDbContext)
+        public ContainsAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
 
         public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).ContainsAsync(GetConstantItem(), cancellationToken), cancellationToken);
+            var result = await base.ExecuteAsync(queryable =>
+            {
+                var constantQueryCombineResult = (ConstantQueryCombineResult)GetStreamMergeContext().MergeQueryCompilerContext.GetQueryCombineResult();
+                var constantItem = (TEntity)constantQueryCombineResult.GetConstantItem();
+                return ((IQueryable<TEntity>)queryable).ContainsAsync(constantItem, cancellationToken);
+            }, cancellationToken);
 
             return result.Any(o => o.QueryResult);
         }

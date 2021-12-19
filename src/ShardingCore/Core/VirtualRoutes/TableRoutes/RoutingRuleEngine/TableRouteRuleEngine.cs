@@ -30,7 +30,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             _entityMetadataManager = entityMetadataManager;
         }
 
-        public IEnumerable<TableRouteResult> Route<T>(TableRouteRuleContext<T> tableRouteRuleContext)
+        public IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
             var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableEntities(typeof(TShardingDbContext));

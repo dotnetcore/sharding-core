@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 namespace ShardingCore.Sharding
 {
@@ -16,22 +17,15 @@ namespace ShardingCore.Sharding
     */
     public class StreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        private readonly IDataSourceRouteRuleEngineFactory<TShardingDbContext> _dataSourceRouteRuleEngineFactory;
-        private readonly ITableRouteRuleEngineFactory<TShardingDbContext> _tableRouteRuleEngineFactory;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public StreamMergeContextFactory(IDataSourceRouteRuleEngineFactory<TShardingDbContext> dataSourceRouteRuleEngineFactory,
-            ITableRouteRuleEngineFactory<TShardingDbContext> tableRouteRuleEngineFactory,IRouteTailFactory routeTailFactory)
+        public StreamMergeContextFactory(IRouteTailFactory routeTailFactory)
         {
-            _dataSourceRouteRuleEngineFactory = dataSourceRouteRuleEngineFactory;
-            _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
             _routeTailFactory = routeTailFactory;
         }
-        public StreamMergeContext<T> Create<T>(IQueryable<T> queryable,IShardingDbContext shardingDbContext)
+        public StreamMergeContext<T> Create<T>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            var dataSourceRouteResult = _dataSourceRouteRuleEngineFactory.Route(queryable);
-            var tableRouteResults = _tableRouteRuleEngineFactory.Route(queryable);
-            return new StreamMergeContext<T>(queryable,shardingDbContext, dataSourceRouteResult, tableRouteResults, _routeTailFactory);
+            return new StreamMergeContext<T>(mergeQueryCompilerContext, _routeTailFactory);
         }
     }
 }
