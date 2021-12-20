@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
     }
         public IQueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
         {
-            IQueryCompilerContext queryCompilerContext =
+            var queryCompilerContext =
                 QueryCompilerContext.Create(shardingDbContext, queryExpression);
             if (queryCompilerContext.GetQueryCompilerExecutor() is not null)
             {

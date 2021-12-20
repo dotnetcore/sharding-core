@@ -155,6 +155,7 @@ namespace ShardingCore
         public static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
+                .ReplaceService<IModelSource,ShardingModelSource>()
                 .ReplaceService<IModelCustomizer, ShardingModelCustomizer<TShardingDbContext>>();
         }
     }

@@ -16,7 +16,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
 */
     public class MultiQueryRouteTail:IMultiQueryRouteTail
     {
-        private const string RANDOM_MODEL_CACHE_KEY = "RANDOM_MODEL_CACHE_KEY";
+        public const string RANDOM_MODEL_CACHE_KEY = "RANDOM_SHARDING_MODEL_CACHE_KEY";
         private readonly TableRouteResult _tableRouteResult;
         private readonly string _modelCacheKey;
         private readonly ISet<Type> _entityTypes;

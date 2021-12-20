@@ -235,7 +235,7 @@ namespace ShardingCore.Extensions
 #if EFCORE2
 
             var modelSource = dbContext.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as RelationalModelSource;
+            var modelSourceImpl = modelSource as ModelSource;
 
             var modelSourceDependencies =
                 modelSourceImpl.GetPropertyValue("Dependencies") as ModelSourceDependencies;
@@ -255,23 +255,20 @@ namespace ShardingCore.Extensions
         {
 #if  EFCORE6
             var dependencies = dbContext.GetService<ModelCreationDependencies>();
-            var dependenciesModelSource = dependencies.ModelSource as ModelSource;
 
-            var syncObject = dependenciesModelSource.GetFieldValue("_syncObject");
+            var syncObject = typeof(ModelSource).GetTypeFieldValue(dependencies.ModelSource, "_syncObject");
             return syncObject;
 #endif
 #if EFCORE5 
             var dependencies = dbContext.GetService<IModelCreationDependencies>();
-            var dependenciesModelSource = dependencies.ModelSource as ModelSource;
 
-            var syncObject = dependenciesModelSource.GetFieldValue("_syncObject");
+            var syncObject = typeof(ModelSource).GetTypeFieldValue(dependencies.ModelSource, "_syncObject");
             return syncObject;
 #endif
 #if EFCORE3
             var modelSource = dbContext.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as ModelSource;
 
-            var syncObject = modelSourceImpl.GetFieldValue("_syncObject");
+            var syncObject = typeof(ModelSource).GetTypeFieldValue(modelSource, "_syncObject");
             return syncObject;
 #endif
 #if EFCORE2
