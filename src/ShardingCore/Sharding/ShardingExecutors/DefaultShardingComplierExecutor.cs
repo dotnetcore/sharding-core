@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         }
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
-            var queryCompilerContext = _queryCompilerContextFactory.Create<TResult>(shardingDbContext, query, false);
+            var queryCompilerContext = _queryCompilerContextFactory.Create(shardingDbContext, query);
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor != null)
             {
@@ -45,7 +45,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public TResult ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var queryCompilerContext = _queryCompilerContextFactory.Create<TResult>(shardingDbContext, query, true);
+            var queryCompilerContext = _queryCompilerContextFactory.Create(shardingDbContext, query);
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor != null)
             {
@@ -61,7 +61,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 #if EFCORE2
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
-            var queryCompilerContext = _queryCompilerContextFactory.Create<IAsyncEnumerable<TResult>>(shardingDbContext, query, true);
+            var queryCompilerContext = _queryCompilerContextFactory.Create(shardingDbContext, query);
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor != null)
             {
@@ -76,7 +76,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken)
         {
-            var queryCompilerContext = _queryCompilerContextFactory.Create<Task<TResult>>(shardingDbContext, query, true);
+            var queryCompilerContext = _queryCompilerContextFactory.Create(shardingDbContext, query);
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor != null)
             {

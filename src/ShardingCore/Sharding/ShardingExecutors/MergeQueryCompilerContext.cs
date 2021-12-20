@@ -23,9 +23,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly IParallelTableManager _parallelTableManager;
         private readonly IQueryCompilerContext _queryCompilerContext;
         private readonly QueryCombineResult _queryCombineResult;
-        private readonly Type _queryEntityType;
         private readonly DataSourceRouteResult _dataSourceRouteResult;
-        private readonly bool _isEnumerableQuery;
         private readonly IEnumerable<TableRouteResult> _tableRouteResults;
 
         /// <summary>
@@ -41,14 +39,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
-        private MergeQueryCompilerContext(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult,Type queryEntityType, DataSourceRouteResult dataSourceRouteResult, IEnumerable<TableRouteResult> tableRouteResults,bool isEnumerableQuery)
+        private MergeQueryCompilerContext(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult, IEnumerable<TableRouteResult> tableRouteResults)
         {
             _queryCompilerContext = queryCompilerContext;
             _queryCombineResult = queryCombineResult;
-            _queryEntityType = queryEntityType;
             _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             _dataSourceRouteResult = dataSourceRouteResult;
-            _isEnumerableQuery = isEnumerableQuery;
             _tableRouteResults = GetTableRouteResults(tableRouteResults);
             _isCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
             _isCrossTable = _tableRouteResults.Count() > 1;
@@ -68,9 +64,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return tableRouteResults;
         }
 
-        public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, Type queryEntityType, DataSourceRouteResult dataSourceRouteResult,IEnumerable<TableRouteResult> tableRouteResults,bool isEnumerableQuery)
+        public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult,IEnumerable<TableRouteResult> tableRouteResults)
         {
-            return new MergeQueryCompilerContext(queryCompilerContext, queryCombineResult, queryEntityType,dataSourceRouteResult, tableRouteResults, isEnumerableQuery);
+            return new MergeQueryCompilerContext(queryCompilerContext, queryCombineResult,dataSourceRouteResult, tableRouteResults);
         }
         public ISet<Type> GetQueryEntities()
         {
@@ -118,11 +114,6 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCombineResult;
         }
 
-        public Type GetQueryEntityType()
-        {
-            return _queryEntityType;
-        }
-
         public IEnumerable<TableRouteResult> GetTableRouteResults()
         {
             return _tableRouteResults;
@@ -150,7 +141,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public bool IsEnumerableQuery()
         {
-            return _isEnumerableQuery;
+            return _queryCompilerContext.IsEnumerableQuery();
         }
     }
 }

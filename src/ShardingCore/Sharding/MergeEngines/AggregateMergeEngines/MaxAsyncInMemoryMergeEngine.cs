@@ -2,7 +2,7 @@
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,21 +19,21 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MaxAsyncInMemoryMergeEngine<TEntity, TSelect> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TSelect>
+    internal class MaxAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public MaxAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
-        private TResult GetMaxTResult<TInnerSelect, TResult>(List<RouteQueryResult<TInnerSelect>> source)
+        private TResult GetMaxTResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
         {
             var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
             if (routeQueryResults.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
             var max = routeQueryResults.Max(o => o.QueryResult);
 
-            return ConvertMax<TResult, TInnerSelect>(max);
+            return ConvertMax<TInnerSelect>(max);
         }
-        public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var resultType = typeof(TResult);
             if (!resultType.IsNullableType())
@@ -42,33 +42,33 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MaxAsync(cancellationToken), cancellationToken);
-                    return GetMaxTResult<decimal?, TResult>(result);
+                    return GetMaxTResult<decimal?>(result);
                 }
                 if (typeof(float) == resultType)
                 {
                     var result = await base.ExecuteAsync(queryable =>
                         ((IQueryable<float>)queryable).Select(o => (float?)o).MaxAsync(cancellationToken), cancellationToken);
 
-                    return GetMaxTResult<float?, TResult>(result);
+                    return GetMaxTResult<float?>(result);
                 }
                 if (typeof(int) == resultType)
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<int>)queryable).Select(o => (int?)o).MaxAsync(cancellationToken),cancellationToken);
-                    return GetMaxTResult<int?, TResult>(result);
+                    return GetMaxTResult<int?>(result);
                 }
                 if (typeof(long) == resultType)
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<long>)queryable).Select(o => (long?)o).MaxAsync(cancellationToken), cancellationToken);
 
-                    return GetMaxTResult<long?, TResult>(result);
+                    return GetMaxTResult<long?>(result);
                 }
                 if (typeof(double) == resultType)
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<double>)queryable).Select(o => (double?)o).MaxAsync(cancellationToken), cancellationToken);
-                    return GetMaxTResult<double?, TResult>(result);
+                    return GetMaxTResult<double?>(result);
                 }
 
                 throw new ShardingCoreException($"cant calc max value, type:[{resultType}]");
@@ -83,12 +83,12 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
         }
 
-        private TSum ConvertMax<TSum, TNumber>(TNumber number)
+        private TResult ConvertMax<TNumber>(TNumber number)
         {
             if (number == null)
                 return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TSum));
-            return Expression.Lambda<Func<TSum>>(convertExpr).Compile()();
+            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
+            return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
         }
     }
 }

@@ -82,5 +82,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
             return _queryCompilerExecutor;
         }
+
+        public bool IsEnumerableQuery()
+        {
+            return _queryExpression.Type
+                .HasImplementedRawGeneric(typeof(IQueryable<>));
+        }
     }
 }

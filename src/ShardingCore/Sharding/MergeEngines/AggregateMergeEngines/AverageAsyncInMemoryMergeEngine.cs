@@ -3,7 +3,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using ShardingCore.Sharding.MergeEngines.AggregateMergeEngines;
 using System;
 using System.Collections.Generic;
@@ -21,8 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class AverageAsyncInMemoryMergeEngine<TEntity, TEnsureResult,TSelect> :
-            AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TEnsureResult, TSelect>
+    internal class AverageAsyncInMemoryMergeEngine<TEntity, TResult,TSelect> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public AverageAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
@@ -61,7 +60,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 #endif
             
         }
-        public override async Task<TEnsureResult> MergeResultAsync(
+        public override async Task<TResult> MergeResultAsync(
             CancellationToken cancellationToken = new CancellationToken())
         {
             {
@@ -80,7 +79,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 }).AsQueryable();
                 var sum = queryable.SumByPropertyName<TSelect>(nameof(AverageResult<object>.Sum));
                 var count = queryable.Sum(o => o.Count);
-                return AggregateExtension.AverageConstant<TSelect, long, TEnsureResult>(sum, count);
+                return AggregateExtension.AverageConstant<TSelect, long, TResult>(sum, count);
             }
             
         }

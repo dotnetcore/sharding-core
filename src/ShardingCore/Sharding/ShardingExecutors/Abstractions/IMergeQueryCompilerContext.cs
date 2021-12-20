@@ -13,7 +13,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
     public interface IMergeQueryCompilerContext : IQueryCompilerContext
     {
         QueryCombineResult GetQueryCombineResult();
-        Type GetQueryEntityType();
         IEnumerable<TableRouteResult> GetTableRouteResults();
         DataSourceRouteResult GetDataSourceRouteResult();
 

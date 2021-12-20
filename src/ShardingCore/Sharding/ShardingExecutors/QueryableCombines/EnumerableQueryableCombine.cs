@@ -10,13 +10,13 @@ using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingExecutors.QueryableCombines
 {
-    public class EnumeratorQueryableCombine : IQueryableCombine
+    public class EnumerableQueryableCombine : AbstractBaseQueryCombine
     {
-        public QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext,Type queryEntityType)
+        public override QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext)
         {
 
             Type type = typeof(EnumerableQuery<>);
-            type = type.MakeGenericType(queryEntityType);
+            type = type.MakeGenericType(GetQueryableEntityType(queryCompilerContext));
            var queryable = (IQueryable)Activator.CreateInstance(type, queryCompilerContext.GetQueryExpression());
             return new QueryCombineResult(queryable, queryCompilerContext);
 

@@ -2,7 +2,7 @@
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,42 +19,40 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class SumAsyncInMemoryMergeEngine<TEntity, TEnsureResult> : AbstractEnsureMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TEnsureResult,TEnsureResult>
+    internal class SumAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public SumAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        public override async Task<TEnsureResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            var resultType = typeof(TEnsureResult);
+            var resultType = typeof(TResult);
             if(!resultType.IsNumericType())
                 throw new ShardingCoreException(
                     $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {resultType}");
 #if !EFCORE2
-            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEnsureResult, Task<TEnsureResult>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEnsureResult>)queryable, (Expression)null, cancellationToken), cancellationToken);
-            return GetSumResult(result);
+            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TResult, Task<TResult>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TResult>)queryable, (Expression)null, cancellationToken), cancellationToken);
 #endif
 #if EFCORE2
-            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEnsureResult, TEnsureResult>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEnsureResult>)queryable, cancellationToken), cancellationToken);
-            return GetSumResult(result);
+            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TResult, TResult>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TResult>)queryable, cancellationToken), cancellationToken);
 #endif
-
+            return GetSumResult(result);
         }
 
-        private TEnsureResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
+        private TResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
         {
             if (source.IsEmpty())
                 return default;
             var sum = source.AsQueryable().SumByPropertyName<TInnerSelect>(nameof(RouteQueryResult<TInnerSelect>.QueryResult));
             return ConvertSum(sum);
         }
-        private TEnsureResult ConvertSum<TNumber>(TNumber number)
+        private TResult ConvertSum<TNumber>(TNumber number)
         {
             if (number == null)
                 return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TEnsureResult));
-            return Expression.Lambda<Func<TEnsureResult>>(convertExpr).Compile()();
+            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
+            return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
         }
     }
 }

@@ -10,6 +10,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
 {
     public interface IQueryableCombine
     {
-        QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext,Type queryEntityType);
+        QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext);
     }
 }

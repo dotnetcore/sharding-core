@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines
+namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
     /*
     * @Author: xjm
@@ -14,13 +14,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract  class AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine<TShardingDbContext,TEntity> : AbstractGenericMethodCallInMemoryAsyncMergeEngine<TEntity> where TShardingDbContext:DbContext,IShardingDbContext
+    internal abstract  class AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TEntity>
     {
-        protected AbstractTrackGenericMethodCallWhereInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        protected AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        private TResult ProcessTrackResult<TResult>(TResult current)
+        private TEntity ProcessTrackResult(TEntity current)
         {
             if (current != null)
             {
@@ -33,21 +33,21 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.Abstract
                         genericDbContext.Attach(current);
                     else
                     {
-                        return (TResult)attachedEntity;
+                        return (TEntity)attachedEntity;
                     }
                 }
 
             }
             return current;
         }
-        public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var current = await DoMergeResultAsync<TResult>(cancellationToken);
+            var current = await DoMergeResultAsync(cancellationToken);
             return ProcessTrackResult(current);
         }
 
-        public abstract Task<TResult> DoMergeResultAsync<TResult>(
+        public abstract Task<TEntity> DoMergeResultAsync(
             CancellationToken cancellationToken = new CancellationToken());
 
 

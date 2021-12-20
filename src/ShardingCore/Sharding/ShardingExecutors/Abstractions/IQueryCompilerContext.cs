@@ -19,5 +19,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         IEntityMetadataManager GetEntityMetadataManager();
         Type GetShardingDbContextType();
         QueryCompilerExecutor GetQueryCompilerExecutor();
+        bool IsEnumerableQuery();
     }
 }

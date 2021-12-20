@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
@@ -16,20 +17,20 @@ namespace ShardingCore.Sharding.ShardingExecutors
 {
     public class QueryCompilerContextFactory: IQueryCompilerContextFactory
     {
-        private static readonly IQueryableCombine _enumeratorQueryableCombine;
+        private static readonly IQueryableCombine _enumerableQueryableCombine;
         private static readonly IQueryableCombine _allQueryableCombine;
         private static readonly IQueryableCombine _constantQueryableCombine;
         private static readonly IQueryableCombine _selectQueryableCombine;
         private static readonly IQueryableCombine _whereQueryableCombine;
         static QueryCompilerContextFactory()
         {
-            _enumeratorQueryableCombine = new EnumeratorQueryableCombine();
+            _enumerableQueryableCombine = new EnumerableQueryableCombine();
             _allQueryableCombine = new AllQueryableCombine();
             _constantQueryableCombine = new ConstantQueryableCombine();
             _selectQueryableCombine = new SelectQueryableCombine();
             _whereQueryableCombine = new WhereQueryableCombine();
     }
-        public IQueryCompilerContext Create<TResult>(IShardingDbContext shardingDbContext, Expression queryExpression,bool async)
+        public IQueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
         {
             IQueryCompilerContext queryCompilerContext =
                 QueryCompilerContext.Create(shardingDbContext, queryExpression);
@@ -37,55 +38,28 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 return queryCompilerContext;
             }
-            var (queryEntityType, queryableCombine, isEnumerableQuery) = GetQueryableCombine<TResult>(queryCompilerContext, async);
+            var queryableCombine = GetQueryableCombine(queryCompilerContext);
 
             var dataSourceRouteRuleEngineFactory = (IDataSourceRouteRuleEngineFactory)ShardingContainer.GetService(typeof(IDataSourceRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             var tableRouteRuleEngineFactory = (ITableRouteRuleEngineFactory)ShardingContainer.GetService(typeof(ITableRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-            var queryCombineResult = queryableCombine.Combine(queryCompilerContext, queryEntityType);
+            var queryCombineResult = queryableCombine.Combine(queryCompilerContext);
             var dataSourceRouteResult = dataSourceRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable());
             var tableRouteResults = tableRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable());
-            var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, queryEntityType, dataSourceRouteResult,
-                tableRouteResults, isEnumerableQuery);
+            var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, dataSourceRouteResult,
+                tableRouteResults);
             return mergeCombineCompilerContext;
         }
 
-        private (Type queryEntityType, IQueryableCombine queryableCombine,bool isEnumerableQuery) GetQueryableCombine<TResult>(IQueryCompilerContext queryCompilerContext, bool async)
+        private IQueryableCombine GetQueryableCombine(IQueryCompilerContext queryCompilerContext)
         {
-            var isEnumerableQuery = IsEnumerableQuery<TResult>(queryCompilerContext,async);
-            if (isEnumerableQuery)
+            if (queryCompilerContext.IsEnumerableQuery())
             {
-                var queryEntityType = GetEnumerableQueryEntityType<TResult>(queryCompilerContext,async);
-                return (queryEntityType, _enumeratorQueryableCombine, isEnumerableQuery);
+                return _enumerableQueryableCombine;
             }
             else
             {
-                var queryEntityType = (queryCompilerContext.GetQueryExpression() as MethodCallExpression)
-                    .GetQueryEntityType();
-                var queryableCombine = GetMethodQueryableCombine(queryCompilerContext);
-                return (queryEntityType, queryableCombine,isEnumerableQuery);
+                return GetMethodQueryableCombine(queryCompilerContext);
             }
-        }
-
-        private bool IsEnumerableQuery<TResult>(IQueryCompilerContext queryCompilerContext,bool async)
-        {
-            return !async && queryCompilerContext.GetQueryExpression().Type
-                       .HasImplementedRawGeneric(typeof(IQueryable<>))
-                   ||
-                   async && typeof(TResult).HasImplementedRawGeneric(typeof(IAsyncEnumerable<>));
-        }
-
-        private Type GetEnumerableQueryEntityType<TResult>(IQueryCompilerContext queryCompilerContext, bool async)
-        {
-
-            Type queryEntityType;
-            if (async)
-                queryEntityType = typeof(TResult).GetGenericArguments()[0];
-            else
-            {
-                queryEntityType = queryCompilerContext.GetQueryExpression().Type.GetSequenceType();
-            }
-
-            return queryEntityType;
         }
 
         private IQueryableCombine GetMethodQueryableCombine(IQueryCompilerContext queryCompilerContext)

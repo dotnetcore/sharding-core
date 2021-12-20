@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;

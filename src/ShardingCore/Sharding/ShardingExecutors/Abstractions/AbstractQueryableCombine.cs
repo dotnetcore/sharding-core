@@ -10,9 +10,9 @@ using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
 namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
 {
-    public abstract class AbstractQueryableCombine:IQueryableCombine
+    public abstract class AbstractQueryableCombine: AbstractBaseQueryCombine
     {
-        public QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext, Type queryEntityType)
+        public override QueryCombineResult Combine(IQueryCompilerContext queryCompilerContext)
         {
             if (!(queryCompilerContext.GetQueryExpression() is MethodCallExpression methodCallExpression))
                 throw new InvalidOperationException($"{nameof(queryCompilerContext)}'s is not {nameof(MethodCallExpression)}");
@@ -31,7 +31,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
                             $"argument found more one IQueryable :[{methodCallExpression.ShardingPrint()}]");
 
                     Type type = typeof(EnumerableQuery<>);
-                    type = type.MakeGenericType(queryEntityType);
+                    type = type.MakeGenericType(GetQueryableEntityType(queryCompilerContext));
                      queryable = (IQueryable)Activator.CreateInstance(type, expression);
                 }
                 else

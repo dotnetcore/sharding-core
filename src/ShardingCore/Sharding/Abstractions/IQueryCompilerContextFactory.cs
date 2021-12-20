@@ -10,6 +10,6 @@ namespace ShardingCore.Sharding.Abstractions
 {
     public interface IQueryCompilerContextFactory
     {
-        IQueryCompilerContext Create<TResult>(IShardingDbContext shardingDbContext, Expression queryExpression,bool async);
+        IQueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression);
     }
 }

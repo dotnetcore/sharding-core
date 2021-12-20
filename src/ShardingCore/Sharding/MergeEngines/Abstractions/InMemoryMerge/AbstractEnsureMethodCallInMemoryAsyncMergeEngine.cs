@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
-namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractEnsureMergeEngines
+namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
     /*
     * @Author: xjm

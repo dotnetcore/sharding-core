@@ -2,7 +2,7 @@
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge.AbstractGenericMergeEngines;
+using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,22 +19,22 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MinAsyncInMemoryMergeEngine<TEntity, TSelect> : AbstractGenericMethodCallSelectorInMemoryAsyncMergeEngine<TEntity, TSelect>
+    internal class MinAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TResult>
     {
         public MinAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        private TResult GetMinTResult<TInnerSelect, TResult>(List<RouteQueryResult<TInnerSelect>> source)
+        private TResult GetMinTResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
         {
             var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
             if (routeQueryResults.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
             var min = routeQueryResults.Min(o => o.QueryResult);
 
-            return ConvertMin<TResult, TInnerSelect>(min);
+            return ConvertMin<TInnerSelect>(min);
         }
-        public override async Task<TResult> MergeResultAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
 
             var resultType = typeof(TResult);
@@ -44,13 +44,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MinAsync(cancellationToken), cancellationToken);
-                    return GetMinTResult<decimal?, TResult>(result);
+                    return GetMinTResult<decimal?>(result);
                 }
                 if (typeof(float) == typeof(TResult))
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<float>)queryable).Select(o => (float?)o).MinAsync(cancellationToken),cancellationToken);
-                    return GetMinTResult<float?, TResult>(result);
+                    return GetMinTResult<float?>(result);
                 }
                 if (typeof(int) == typeof(TResult))
                 {
@@ -59,7 +59,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                         cancellationToken);
 
 
-                    return GetMinTResult<int?, TResult>(result);
+                    return GetMinTResult<int?>(result);
                 }
                 if (typeof(long) == typeof(TResult))
                 {
@@ -67,14 +67,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                             ((IQueryable<long>)queryable).Select(o => (long?)o).MinAsync(cancellationToken),
                         cancellationToken);
 
-                    return GetMinTResult<long?, TResult>(result);
+                    return GetMinTResult<long?>(result);
                 }
                 if (typeof(double) == typeof(TResult))
                 {
                     var result = await base.ExecuteAsync(queryable =>
                             ((IQueryable<double>)queryable).Select(o => (double?)o).MinAsync(cancellationToken),
                         cancellationToken);
-                    return GetMinTResult<double?, TResult>(result);
+                    return GetMinTResult<double?>(result);
                 }
                 throw new ShardingCoreException($"cant calc min value, type:[{resultType}]");
             }
@@ -89,7 +89,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
 
         }
-        private TResult ConvertMin<TResult, TNumber>(TNumber number)
+        private TResult ConvertMin<TNumber>(TNumber number)
         {
             if (number == null)
                 return default;

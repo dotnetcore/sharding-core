@@ -38,8 +38,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             var shardingDbContext = _mergeContext.CreateDbContext(dsname, tableRouteResult, connectionMode);
             var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
-            var newCombineQueryable = DoCombineQueryable<TResult>(newQueryable);
-            return (newCombineQueryable, shardingDbContext);
+            return (newQueryable, shardingDbContext);
             ;
         }
 
@@ -83,11 +82,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 
         //    return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
         //}
-
-        public virtual IQueryable DoCombineQueryable<TResult>(IQueryable<TEntity> queryable)
-        {
-            return queryable;
-        }
 
         protected override StreamMergeContext<TEntity> GetStreamMergeContext()
         {
