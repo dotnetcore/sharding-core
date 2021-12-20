@@ -58,9 +58,5 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
             return new QueryCombineResult(queryable,queryCompilerContext);
         }
         public abstract IQueryable DoCombineQueryable(IQueryable queryable,Expression secondExpression, IQueryCompilerContext queryCompilerContext);
-        public Type GetQueryEntityType()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

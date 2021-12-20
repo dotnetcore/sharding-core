@@ -121,7 +121,7 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
     public class OrderVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
         /// <summary>
-        /// fix value don't use DateTime.Now because if  if application restart this value where change
+        /// fixed value don't use DateTime.Now because if  if application restart this value where change
         /// </summary>
         /// <returns></returns>
         public override DateTime GetBeginTime()
@@ -260,18 +260,20 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
 
 |                               Method |  N |         Mean |       Error |      StdDev |       Median |
 |------------------------------------- |--- |-------------:|------------:|------------:|-------------:|
-|   NoShardingIndexFirstOrDefaultAsync | 10 |     2.154 ms |   0.1532 ms |   0.4443 ms |     1.978 ms |
-|     ShardingIndexFirstOrDefaultAsync | 10 |     4.293 ms |   0.1521 ms |   0.4485 ms |     4.077 ms |
-| NoShardingNoIndexFirstOrDefaultAsync | 10 |   823.382 ms |  16.0849 ms |  18.5233 ms |   821.221 ms |
-|   ShardingNoIndexFirstOrDefaultAsync | 10 |   892.276 ms |  17.8131 ms |  16.6623 ms |   894.880 ms |
-|          NoShardingNoIndexCountAsync | 10 |   830.754 ms |  16.5309 ms |  38.6405 ms |   821.736 ms |
-|            ShardingNoIndexCountAsync | 10 |   915.630 ms |   8.8511 ms |   7.3911 ms |   914.107 ms |
-|     NoShardingNoIndexLikeToListAsync | 10 | 7,008.918 ms | 139.4664 ms | 166.0248 ms | 6,955.674 ms |
-|       ShardingNoIndexLikeToListAsync | 10 | 7,044.168 ms | 135.3814 ms | 132.9626 ms | 7,008.057 ms |
-|         NoShardingNoIndexToListAsync | 10 |   787.129 ms |  10.5812 ms |   8.8357 ms |   785.798 ms |
-|           ShardingNoIndexToListAsync | 10 |   935.880 ms |  16.3354 ms |  15.2801 ms |   940.369 ms |
+|   NoShardingIndexFirstOrDefaultAsync | 10 |     1.739 ms |   0.0340 ms |   0.0540 ms |     1.739 ms |
+|     ShardingIndexFirstOrDefaultAsync | 10 |     2.373 ms |   0.0460 ms |   0.0452 ms |     2.379 ms |
+| NoShardingNoIndexFirstOrDefaultAsync | 10 |   579.584 ms |  15.7983 ms |  46.5816 ms |   564.566 ms |
+|   ShardingNoIndexFirstOrDefaultAsync | 10 |   628.567 ms |  12.5324 ms |  35.3478 ms |   615.352 ms |
+|          NoShardingNoIndexCountAsync | 10 |   521.954 ms |   9.7644 ms |  18.5778 ms |   523.128 ms |
+|            ShardingNoIndexCountAsync | 10 |   622.595 ms |  11.8567 ms |  10.5107 ms |   619.452 ms |
+|     NoShardingNoIndexLikeToListAsync | 10 | 6,352.417 ms | 123.3931 ms | 115.4220 ms | 6,360.908 ms |
+|       ShardingNoIndexLikeToListAsync | 10 | 6,260.610 ms | 122.6605 ms | 108.7353 ms | 6,236.577 ms |
+|         NoShardingNoIndexToListAsync | 10 |   491.013 ms |   4.0199 ms |   3.5635 ms |   490.473 ms |
+|           ShardingNoIndexToListAsync | 10 |   620.591 ms |   6.8447 ms |   5.7156 ms |   620.634 ms |
+
 
 #### mysql 5.7,data rows 7553790=755w innerdb_buffer_size=3G
+
 
 
 // * Summary *
@@ -285,18 +287,18 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
 
 |                               Method |  N |          Mean |       Error |        StdDev |        Median |
 |------------------------------------- |--- |--------------:|------------:|--------------:|--------------:|
-|   NoShardingIndexFirstOrDefaultAsync | 10 |      5.020 ms |   0.1245 ms |     0.3672 ms |      4.855 ms |
-|     ShardingIndexFirstOrDefaultAsync | 10 |      7.960 ms |   0.1585 ms |     0.2514 ms |      7.974 ms |
-| NoShardingNoIndexFirstOrDefaultAsync | 10 | 11,336.083 ms | 623.8044 ms | 1,829.5103 ms | 11,185.590 ms |
-|   ShardingNoIndexFirstOrDefaultAsync | 10 |  5,422.259 ms |  77.5386 ms |    72.5296 ms |  5,390.019 ms |
-|          NoShardingNoIndexCountAsync | 10 | 14,229.819 ms |  82.8929 ms |    77.5381 ms | 14,219.773 ms |
-|            ShardingNoIndexCountAsync | 10 |  3,085.268 ms |  55.5942 ms |    49.2828 ms |  3,087.704 ms |
-|     NoShardingNoIndexLikeToListAsync | 10 | 27,046.390 ms |  71.2034 ms |    59.4580 ms | 27,052.316 ms |
-|       ShardingNoIndexLikeToListAsync | 10 |  5,707.009 ms | 106.8713 ms |    99.9675 ms |  5,672.453 ms |
-|         NoShardingNoIndexToListAsync | 10 | 26,001.850 ms |  89.2787 ms |    69.7030 ms | 25,998.407 ms |
-|           ShardingNoIndexToListAsync | 10 |  5,490.659 ms |  71.8199 ms |    67.1804 ms |  5,477.891 ms |
+|   NoShardingIndexFirstOrDefaultAsync | 10 |      4.911 ms |   0.0952 ms |     0.1133 ms |      4.923 ms |
+|     ShardingIndexFirstOrDefaultAsync | 10 |      5.736 ms |   0.1139 ms |     0.3020 ms |      5.630 ms |
+| NoShardingNoIndexFirstOrDefaultAsync | 10 | 11,630.109 ms | 774.0088 ms | 2,282.1824 ms | 11,585.457 ms |
+|   ShardingNoIndexFirstOrDefaultAsync | 10 |  5,388.529 ms |  39.1442 ms |    36.6155 ms |  5,391.835 ms |
+|          NoShardingNoIndexCountAsync | 10 | 14,245.844 ms |  74.1221 ms |    69.3339 ms | 14,242.815 ms |
+|            ShardingNoIndexCountAsync | 10 |  3,007.845 ms |  24.6299 ms |    23.0388 ms |  3,007.830 ms |
+|     NoShardingNoIndexLikeToListAsync | 10 | 27,026.048 ms | 145.6814 ms |   121.6505 ms | 27,032.112 ms |
+|       ShardingNoIndexLikeToListAsync | 10 |  5,650.041 ms |  94.9405 ms |    88.8074 ms |  5,622.049 ms |
+|         NoShardingNoIndexToListAsync | 10 | 26,068.783 ms | 103.7831 ms |    97.0788 ms | 26,094.834 ms |
+|           ShardingNoIndexToListAsync | 10 |  5,414.644 ms |  71.2123 ms |    59.4655 ms |  5,395.306 ms |
 
-具体可以通过first前两次结果来计算得出结论单次查询的的损耗为0.2-0.3毫秒之间,通过数据聚合和数据路由的损耗单次在0.2ms-0.3ms,其中创建dbcontext为0.1毫秒目前没有好的优化方案,0.013毫秒左右是路由表达式解析和编译,复杂表达式可能更加耗时,剩下的0.2毫秒为数据源和表后缀的解析等操作包括实例的反射创建和数据的聚合，
+具体可以通过first前两次结果来计算得出结论单次查询的的损耗为0.06-0.08毫秒之间,聚合数据损耗在0.2ms-0.3左右通过数据聚合和数据路由的损耗单次在0.2ms-0.3ms,其中创建dbcontext为0.1毫秒目前没有好的优化方案,0.013毫秒左右是路由表达式解析和编译,复杂表达式可能更加耗时,剩下的0.2毫秒为数据源和表后缀的解析等操作包括实例的反射创建和数据的聚合，
 sqlserver的各项数据在分表和未分表的情况下都几乎差不多可以得出在770w数据集情况下数据库还并未是数据瓶颈的关键，但是mysql可以看到在分表和未分表的情况下如果涉及到没有索引的全表扫描那么性能的差距将是分表后的表数目之多，测试中为5-6倍，也就是分表数目
 
 
