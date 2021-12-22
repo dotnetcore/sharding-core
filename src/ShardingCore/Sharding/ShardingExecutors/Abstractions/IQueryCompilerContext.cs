@@ -20,6 +20,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         Type GetShardingDbContextType();
         QueryCompilerExecutor GetQueryCompilerExecutor();
         bool IsEnumerableQuery();
-        bool IsParallelQuery()；
+        bool IsParallelQuery();
     }
 }
