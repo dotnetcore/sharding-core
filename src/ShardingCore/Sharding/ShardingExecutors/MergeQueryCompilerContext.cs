@@ -29,12 +29,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// <summary>
         /// 本次查询跨库
         /// </summary>
-        public readonly bool _isCrossDataSource;
+        private readonly bool _isCrossDataSource;
 
         /// <summary>
         /// 本次查询跨表
         /// </summary>
-        public readonly bool _isCrossTable;
+        private readonly bool _isCrossTable;
 
 
         private QueryCompilerExecutor _queryCompilerExecutor;
@@ -92,6 +92,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _queryCompilerContext.GetShardingDbContextType();
         }
+        public bool IsParallelQuery()
+        {
+            return _queryCompilerContext.IsParallelQuery();
+        }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
@@ -100,7 +104,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 if (!IsMergeQuery())
                 {
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), false, routeTailFactory.Create(_tableRouteResults.First()));
+                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults.First()));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                 }
             }

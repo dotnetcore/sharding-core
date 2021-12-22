@@ -241,7 +241,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool IsUseReadWriteSeparation()
         {
-            return _shardingConfigOption.UseReadWrite;
+            return _shardingConfigOption.UseReadWrite&&_shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
         /// <summary>

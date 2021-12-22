@@ -74,5 +74,33 @@ namespace ShardingCore.Extensions
             shardingReadWriteContext.DefaultPriority = priority;
             shardingReadWriteContext.DefaultReadEnable = readOnly;
         }
+        /// <summary>
+        /// 当前dbcontext是否是启用了读写分离
+        /// </summary>
+        /// <param name="shardingDbContext"></param>
+        /// <returns></returns>
+        public static bool CurrentIsReadWriteSeparation(this IShardingDbContext shardingDbContext)
+        {
+            if (shardingDbContext is ISupportShardingReadWrite shardingReadWrite)
+            {
+                var shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
+                var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(shardingDbContext.GetType());
+                if (shardingReadWriteContext != null)
+                {
+                    if (shardingReadWriteContext.DefaultPriority > shardingReadWrite.ReadWriteSeparationPriority)
+                    {
+                        return shardingReadWriteContext.DefaultReadEnable;
+                    }
+                    else
+                    {
+                        return shardingReadWrite.ReadWriteSeparation;
+                    }
+                }
+
+                return shardingReadWrite.ReadWriteSeparation;
+            }
+
+            return false;
+        }
     }
 }

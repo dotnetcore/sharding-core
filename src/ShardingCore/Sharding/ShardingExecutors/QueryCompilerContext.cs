@@ -24,8 +24,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly Expression _queryExpression;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly Type _shardingDbContextType;
+        private readonly IShardingConfigOption _shardingConfigOption;
         private   QueryCompilerExecutor _queryCompilerExecutor;
-        private bool? hasQueryCompilerExecutor; 
+        private bool? hasQueryCompilerExecutor;
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
         {
@@ -34,6 +35,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _shardingDbContext = shardingDbContext;
             _queryExpression = queryExpression;
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
+
+            _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>()
+                .FirstOrDefault(o => o.ShardingDbContextType == _shardingDbContextType);
         }
 
         public static QueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
@@ -66,6 +70,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _shardingDbContextType;
         }
 
+        public bool IsParallelQuery()
+        {
+            return _shardingConfigOption.UseReadWrite&&_shardingDbContext.CurrentIsReadWriteSeparation();
+        }
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)
@@ -75,7 +83,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
                         typeof(IVirtualDataSource<>).GetGenericType0(_shardingDbContextType));
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, false, routeTailFactory.Create(string.Empty));
+                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, IsParallelQuery(), routeTailFactory.Create(string.Empty));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, _queryExpression);
                 }
             }
