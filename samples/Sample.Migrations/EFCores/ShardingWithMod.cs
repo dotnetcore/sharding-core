@@ -27,9 +27,8 @@ namespace Sample.Migrations.EFCores
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).IsRequired().IsUnicode(false).HasMaxLength(128);
-            builder.Property(o => o.Name).HasMaxLength(128);
-            builder.Property(o => o.Name).HasMaxLength(128);
-            builder.Property(o => o.TextStr).IsRequired().HasMaxLength(128).HasDefaultValue("");
+            builder.Property(o => o.Name).HasMaxLength(128).HasComment("用户姓名");
+            builder.Property(o => o.TextStr).IsRequired().HasMaxLength(128).HasDefaultValue("").HasComment("值123");
             builder.Property(o => o.TextStr1).IsRequired().HasMaxLength(128).HasDefaultValue("123");
             builder.Property(o => o.TextStr2).IsRequired().HasMaxLength(128).HasDefaultValue("123");
             builder.ToTable(nameof(ShardingWithMod));

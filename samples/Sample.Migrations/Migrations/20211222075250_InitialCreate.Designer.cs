@@ -7,19 +7,22 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sample.Migrations.EFCores;
 
+#nullable disable
+
 namespace Sample.Migrations.Migrations
 {
     [DbContext(typeof(DefaultShardingTableDbContext))]
-    [Migration("20211102072713_Init")]
-    partial class Init
+    [Migration("20211222075250_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.11")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("Sample.Migrations.EFCores.NoShardingTable", b =>
                 {
@@ -37,7 +40,7 @@ namespace Sample.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NoShardingTable");
+                    b.ToTable("NoShardingTable", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Migrations.EFCores.ShardingWithDateTime", b =>
@@ -55,11 +58,12 @@ namespace Sample.Migrations.Migrations
 
                     b.Property<string>("Name")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(128)")
+                        .HasComment("用户姓名");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShardingWithDateTime");
+                    b.ToTable("ShardingWithDateTime", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Migrations.EFCores.ShardingWithMod", b =>
@@ -74,14 +78,16 @@ namespace Sample.Migrations.Migrations
 
                     b.Property<string>("Name")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(128)")
+                        .HasComment("用户姓名");
 
                     b.Property<string>("TextStr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)")
-                        .HasDefaultValue("");
+                        .HasDefaultValue("")
+                        .HasComment("值123");
 
                     b.Property<string>("TextStr1")
                         .IsRequired()
@@ -99,7 +105,7 @@ namespace Sample.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShardingWithMod");
+                    b.ToTable("ShardingWithMod", (string)null);
                 });
 #pragma warning restore 612, 618
         }

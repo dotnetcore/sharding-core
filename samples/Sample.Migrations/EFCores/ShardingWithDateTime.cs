@@ -21,7 +21,7 @@ namespace Sample.Migrations.EFCores
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).IsRequired().IsUnicode(false).HasMaxLength(128);
-            builder.Property(o => o.Name).HasMaxLength(128);
+            builder.Property(o => o.Name).HasMaxLength(128).HasComment("用户姓名");
             builder.ToTable(nameof(ShardingWithDateTime));
         }
     }

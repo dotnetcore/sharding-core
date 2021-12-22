@@ -1,9 +1,11 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace Sample.Migrations.Migrations
 {
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -25,7 +27,7 @@ namespace Sample.Migrations.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(128)", unicode: false, maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true, comment: "用户姓名"),
                     Age = table.Column<int>(type: "int", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -39,9 +41,9 @@ namespace Sample.Migrations.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(128)", unicode: false, maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true, comment: "用户姓名"),
                     Age = table.Column<int>(type: "int", nullable: false),
-                    TextStr = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: ""),
+                    TextStr = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: "", comment: "值123"),
                     TextStr1 = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: "123"),
                     TextStr2 = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false, defaultValue: "123")
                 },

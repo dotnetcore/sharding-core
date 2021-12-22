@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.EFCores;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions
@@ -199,50 +200,33 @@ namespace ShardingCore.Extensions
         public static void RemoveModelCache(this DbContext dbContext)
         {
 #if EFCORE6
-            var dependencies = dbContext.GetService<ModelCreationDependencies>();
-            var dependenciesModelSource = dependencies.ModelSource as ModelSource;
-
-            var modelSourceDependencies =
-                dependenciesModelSource.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            IMemoryCache memoryCache = modelSourceDependencies.MemoryCache;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext,true);
-            memoryCache.Remove(key1);
-            object key2 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext,false);
-            memoryCache.Remove(key2);
+            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+            object key1 = modelCacheKeyFactory.Create(dbContext,true);
+            shardingModelSource.Remove(key1);
+            object key2 = modelCacheKeyFactory.Create(dbContext,false);
+            shardingModelSource.Remove(key2);
 #endif
 #if EFCORE5
-            var dependencies = dbContext.GetService<IModelCreationDependencies>();
-            var dependenciesModelSource = dependencies.ModelSource as ModelSource;
-
-            var modelSourceDependencies =
-                dependenciesModelSource.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            IMemoryCache memoryCache = modelSourceDependencies.MemoryCache;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
-            memoryCache.Remove(key1);
+            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+            object key1 = modelCacheKeyFactory.Create(dbContext);
+            shardingModelSource.Remove(key1);
 #endif
 #if EFCORE3
            
-            var modelSource = dbContext.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as ModelSource;
-            
-            var modelSourceDependencies =
-                modelSourceImpl.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            IMemoryCache memoryCache = modelSourceDependencies.MemoryCache;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
-            memoryCache.Remove(key1);
+            var shardingModelSource = dbContext.GetService<IModelSource>()  as IShardingModelSource;
+            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+            object key1 = modelCacheKeyFactory.Create(dbContext);
+            shardingModelSource.Remove(key1);
 #endif
 
 #if EFCORE2
 
-            var modelSource = dbContext.GetService<IModelSource>();
-            var modelSourceImpl = modelSource as ModelSource;
-
-            var modelSourceDependencies =
-                modelSourceImpl.GetPropertyValue("Dependencies") as ModelSourceDependencies;
-            var models =
-                typeof(ModelSource).GetTypeFieldValue(modelSourceImpl, "_models") as ConcurrentDictionary<object, Lazy<IModel>>;
-            object key1 = modelSourceDependencies.ModelCacheKeyFactory.Create(dbContext);
-            models.TryRemove(key1, out var del);
+            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+            object key1 = modelCacheKeyFactory.Create(dbContext);
+            shardingModelSource.Remove(key1);
 #endif
         }
 
@@ -253,31 +237,9 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static object GetModelCacheSyncObject(this DbContext dbContext)
         {
-#if  EFCORE6
-            var dependencies = dbContext.GetService<ModelCreationDependencies>();
-
-            var syncObject = typeof(ModelSource).GetTypeFieldValue(dependencies.ModelSource, "_syncObject");
-            return syncObject;
-#endif
-#if EFCORE5 
-            var dependencies = dbContext.GetService<IModelCreationDependencies>();
-
-            var syncObject = typeof(ModelSource).GetTypeFieldValue(dependencies.ModelSource, "_syncObject");
-            return syncObject;
-#endif
-#if EFCORE3
-            var modelSource = dbContext.GetService<IModelSource>();
-
-            var syncObject = typeof(ModelSource).GetTypeFieldValue(modelSource, "_syncObject");
-            return syncObject;
-#endif
-#if EFCORE2
-            return sLock;
-#endif
-
+            IShardingModelSource shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+            return shardingModelSource.GetSyncObject();
         }
-
-        private static object sLock = new object();
 
 
         public static IEnumerable<object> GetPrimaryKeyValues<TEntity>(TEntity entity,IKey primaryKey) where TEntity : class

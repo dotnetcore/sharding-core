@@ -97,6 +97,10 @@ namespace ShardingCore.Helpers
                             sqlGenerationHelper.DelimitIdentifier(aReplace.sourceName),
                             sqlGenerationHelper.DelimitIdentifier(aReplace.targetName));
                     });
+                    if (newCmd.Contains("EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE'"))
+                    {
+                        newCmd=newCmd.Replace($"EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'{absTableName}'", $"EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'{aShardingTable}'");
+                    }
                     resList.Add(newCmd);
                 });
             }
@@ -118,16 +122,19 @@ namespace ShardingCore.Helpers
                 };
 
             string name = operation.GetPropertyValue("Name") as string;
-            if (!string.IsNullOrWhiteSpace(name) && !(operation is ColumnOperation))
+            if (!string.IsNullOrWhiteSpace(name))
             {
-                string[] patterns = new string[] { $"^()({sourceTableName})()$", $"^()({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})()$" };
-                foreach (var aPattern in patterns)
+                if (!(operation is ColumnOperation columnOperation))
                 {
-                    if (Regex.IsMatch(name, aPattern))
+                    string[] patterns = new string[] { $"^()({sourceTableName})()$", $"^()({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})()$" };
+                    foreach (var aPattern in patterns)
                     {
-                        var newName = new Regex(aPattern).Replace(name, "${1}" + targetTableName + "$3");
-                        resList.Add((name, newName));
-                        break;
+                        if (Regex.IsMatch(name, aPattern))
+                        {
+                            var newName = new Regex(aPattern).Replace(name, "${1}" + targetTableName + "$3");
+                            resList.Add((name, newName));
+                            break;
+                        }
                     }
                 }
             }

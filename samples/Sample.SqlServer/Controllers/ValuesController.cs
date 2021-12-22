@@ -35,13 +35,21 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2x()
         {
-            await _defaultTableDbContext.AddAsync(new SysUserMod()
+            Console.WriteLine("------------------Get2x------------------------");
+            using (var dbContext =
+                   DbContextHelper.CreateDbContextByString(
+                       "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"))
             {
-                Id = Guid.NewGuid().ToString("n"),
-                Age = 9,
-                AgeGroup = 10, Name = "SysUserModTest"
-            });
-            await _defaultTableDbContext.SaveChangesAsync();
+                await dbContext.AddAsync(new SysUserMod()
+                {
+                    Id = Guid.NewGuid().ToString("n"),
+                    Age = 9,
+                    AgeGroup = 10,
+                    Name = "SysUserModTest"
+                });
+                await dbContext.SaveChangesAsync();
+            }
+            Console.WriteLine("------------------Get2x------------------------");
             return Ok();
         }
         [HttpGet]
