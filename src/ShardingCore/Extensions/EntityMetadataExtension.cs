@@ -21,5 +21,18 @@ namespace ShardingCore.Extensions
                 return false;
             return metadata.ShardingTableProperty.Name == metadata.PrimaryKeyProperties.First().Name;
         }
+
+        public static bool IsMainShardingTableKey(this EntityMetadata metadata, string shardingPropertyName)
+        {
+            if (metadata.ShardingTableProperty.Name == shardingPropertyName)
+                return true;
+            return false;
+        }
+        public static bool IsMainShardingDataSourceKey(this EntityMetadata metadata, string shardingPropertyName)
+        {
+            if (metadata.ShardingDataSourceProperty.Name == shardingPropertyName)
+                return true;
+            return false;
+        }
     }
 }

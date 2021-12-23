@@ -23,6 +23,7 @@ namespace ShardingCore.Core.Internal.Visitors
         private GroupByContext _groupByContext=new GroupByContext();
         private SelectContext _selectContext=new SelectContext();
 
+
         public SelectContext GetSelectContext()
         {
             return _selectContext;

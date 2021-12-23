@@ -27,7 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {
             //获取路由后缀表达式
-            var routeParseExpression = ShardingUtil.GetRouteParseExpression<TKey>(queryable, EntityMetadata, GetRouteToFilter, false);
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteToFilter, false);
             //表达式缓存编译
             var filter = CachingCompile(routeParseExpression);
             //通过编译结果进行过滤
@@ -41,8 +41,29 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// </summary>
         /// <param name="shardingKey">分表的值</param>
         /// <param name="shardingOperator">操作</param>
+        /// <param name="shardingPropertyName">操作</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        public abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
+        public Expression<Func<string, bool>> GetRouteToFilter(object shardingKey,
+            ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        {
+            if (EntityMetadata.IsMainShardingDataSourceKey(shardingPropertyName))
+            {
+                return GetMainRouteFilter((TKey)shardingKey, shardingOperator);
+            }
+            else
+            {
+                return GetExtraRouteFilter(shardingKey, shardingOperator, shardingPropertyName);
+            }
+        }
+
+        public abstract Expression<Func<string, bool>> GetMainRouteFilter(TKey shardingKey,
+            ShardingOperatorEnum shardingOperator);
+
+        public virtual Expression<Func<string, bool>> GetExtraRouteFilter(object shardingKey,
+            ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        {
+            throw new NotImplementedException(shardingPropertyName);
+        }
 
         public override string RouteWithValue(object shardingKey)
         {

@@ -24,18 +24,20 @@ namespace ShardingCore.Core.Internal.Visitors
     * @Date: Monday, 28 December 2020 22:09:39
     * @Email: 326308290@qq.com
     */
-    public class QueryableRouteShardingTableDiscoverVisitor<TKey> : ExpressionVisitor
+    public class QueryableRouteShardingTableDiscoverVisitor : ExpressionVisitor
     {
 
         private readonly EntityMetadata _entityMetadata;
-        private readonly Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> _keyToTailWithFilter;
+        private readonly Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> _keyToTailWithFilter;
         /// <summary>
         /// 是否是分表路由
         /// </summary>
         private readonly bool _shardingTableRoute;
         private Expression<Func<string, bool>> _where = x => true;
 
-        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
+        private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
+
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _keyToTailWithFilter = keyToTailWithFilter;
@@ -48,36 +50,53 @@ namespace ShardingCore.Core.Internal.Visitors
         }
 
 
-        private bool IsShardingKey(Expression expression)
+        private ShardingPredicateResult IsShardingKey(Expression expression)
         {
-            return expression is MemberExpression member
-                   && member.Expression.Type == _entityMetadata.EntityType
-                   && member.Member.Name == (_shardingTableRoute ? _entityMetadata.ShardingTableProperty.Name : _entityMetadata.ShardingDataSourceProperty.Name);
+            if (expression is MemberExpression member)
+            {
+                if (member.Expression.Type == _entityMetadata.EntityType)
+                {
+                    var isShardingKey = false;
+                    if (_shardingTableRoute)
+                    {
+                         isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(member.Member.Name);
+                    }
+                    else
+                    {
+                        isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(member.Member.Name);
+                    }
+                    return new ShardingPredicateResult(isShardingKey, isShardingKey?member.Member.Name:null);
+                }
+            }
+
+            return _noShardingPredicateResult;
         }
         /// <summary>
         /// 方法是否包含shardingKey xxx.invoke(shardingkey) eg. <code>o=>new[]{}.Contains(o.Id)</code>
         /// </summary>
         /// <param name="methodCallExpression"></param>
         /// <returns></returns>
-        private bool IsMethodWrapShardingKey(MethodCallExpression methodCallExpression)
+        private ShardingPredicateResult IsMethodWrapShardingKey(MethodCallExpression methodCallExpression)
         {
             if (methodCallExpression.Arguments.IsNotEmpty())
             {
                 for (int i = 0; i < methodCallExpression.Arguments.Count; i++)
                 {
-                    var isShardingKey = methodCallExpression.Arguments[i] is MemberExpression member
-                                        && member.Expression.Type == _entityMetadata.EntityType
-                                        && member.Member.Name == (_shardingTableRoute ? _entityMetadata.ShardingTableProperty.Name : _entityMetadata.ShardingDataSourceProperty.Name);
-                    if (isShardingKey) return true;
+                    var result = IsShardingKey(methodCallExpression.Arguments[i]);
+                    if (result.IsShardingKey)
+                        return result;
                 }
             }
-
-            return false;
+            return _noShardingPredicateResult;
         }
 
-        private bool IsShardingWrapConstant(MethodCallExpression methodCallExpression)
+        private ShardingPredicateResult IsShardingWrapConstant(MethodCallExpression methodCallExpression)
         {
-            return methodCallExpression.Object != null && IsShardingKey(methodCallExpression.Object);
+            if (methodCallExpression.Object != null)
+            {
+                return IsShardingKey(methodCallExpression.Object);
+            }
+            return _noShardingPredicateResult;
         }
         private bool IsConstantOrMember(Expression expression)
         {
@@ -91,15 +110,15 @@ namespace ShardingCore.Core.Internal.Visitors
             return expression is MethodCallExpression;
         }
 
-        private TKey GetShardingKeyValue(Expression expression)
+        private object GetShardingKeyValue(Expression expression)
         {
             if (expression is ConstantExpression constantExpression)
             {
-                return (TKey)constantExpression.Value;
+                return constantExpression.Value;
             }
             if (expression is UnaryExpression unaryExpression)
             {
-                return Expression.Lambda<Func<TKey>>(unaryExpression.Operand).Compile()();
+                return Expression.Lambda(unaryExpression.Operand).Compile().DynamicInvoke();
             }
 
             if (expression is MemberExpression member1Expression)
@@ -110,24 +129,24 @@ namespace ShardingCore.Core.Internal.Visitors
                     if (member1Expression.Member is FieldInfo memberFieldInfo)
                     {
                         object container = memberConstantExpression.Value;
-                        return (TKey)memberFieldInfo.GetValue(container);
+                        return memberFieldInfo.GetValue(container);
                     }
                     if (member1Expression.Member is PropertyInfo memberPropertyInfo)
                     {
                         object container = memberConstantExpression.Value;
-                        return (TKey)memberPropertyInfo.GetValue(container);
+                        return memberPropertyInfo.GetValue(container);
                     }
-                    else if (memberConstantExpression.Value is TKey shardingKeyValue)
+                    else
                     {
-                        return shardingKeyValue;
+                        return memberConstantExpression.Value;
                     }
                 }
-                return Expression.Lambda<Func<TKey>>(member1Expression).Compile()();
+                return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
             }
 
             if (expression is MethodCallExpression methodCallExpression)
             {
-                return Expression.Lambda<Func<TKey>>(methodCallExpression).Compile()();
+                return Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
                 //return methodCallExpression.Method.Invoke(
                 //    GetShardingKeyValue(methodCallExpression.Object),
                 //    methodCallExpression.Arguments
@@ -190,104 +209,108 @@ namespace ShardingCore.Core.Internal.Visitors
 
         private Expression<Func<string, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
         {
-            if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name) && IsMethodWrapShardingKey(methodCallExpression))
+            if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name))
             {
-                object arrayObject = null;
-                if (methodCallExpression.Object != null)
+                var shardingPredicateResult = IsMethodWrapShardingKey(methodCallExpression);
+                if (shardingPredicateResult.IsShardingKey)
                 {
-                    if (methodCallExpression.Object is MemberExpression member1Expression)
+                    object arrayObject = null;
+                    if (methodCallExpression.Object != null)
                     {
-                        arrayObject = Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+                        if (methodCallExpression.Object is MemberExpression member1Expression)
+                        {
+                            arrayObject = Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+                        }
+                        else if (methodCallExpression.Object is ListInitExpression member2Expression)
+                        {
+                            arrayObject = Expression.Lambda(member2Expression).Compile().DynamicInvoke();
+                        }
                     }
-                    else if (methodCallExpression.Object is ListInitExpression member2Expression)
+                    else if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
                     {
                         arrayObject = Expression.Lambda(member2Expression).Compile().DynamicInvoke();
                     }
-                }
-                else if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
-                {
-                    arrayObject = Expression.Lambda(member2Expression).Compile().DynamicInvoke();
-                }
-                else if (methodCallExpression.Arguments[0] is NewArrayExpression member3Expression)
-                {
-                    arrayObject = Expression.Lambda(member3Expression).Compile().DynamicInvoke();
-                }
-
-                if (arrayObject != null)
-                {
-                    Expression<Func<string, bool>> contains = x => false;
-                    if (!@in)
-                        contains = x => true;
-                    //if (arrayObject is IEnumerable<TKey> enumerableKey)
-                    //{
-                    //    foreach (var item in enumerableKey)
-                    //    {
-                    //        var eq = _keyToTailWithFilter(item, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
-                    //        if (@in)
-                    //            contains = contains.Or(eq);
-                    //        else
-                    //            contains = contains.And(eq);
-                    //    }
-
-                    //}else if (arrayObject is IEnumerable enumerableObj)
-                    //{
-                    //    foreach (var item in enumerableObj)
-                    //    {
-                    //        var eq = _keyToTailWithFilter((TKey)item, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
-                    //        if (@in)
-                    //            contains = contains.Or(eq);
-                    //        else
-                    //            contains = contains.And(eq);
-                    //    }
-                    //}
-
-                    if (arrayObject is IEnumerable enumerableObj)
+                    else if (methodCallExpression.Arguments[0] is NewArrayExpression member3Expression)
                     {
-                        foreach (var item in enumerableObj)
+                        arrayObject = Expression.Lambda(member3Expression).Compile().DynamicInvoke();
+                    }
+
+                    if (arrayObject != null)
+                    {
+                        Expression<Func<string, bool>> contains = x => false;
+                        if (!@in)
+                            contains = x => true;
+                        //if (arrayObject is IEnumerable<TKey> enumerableKey)
+                        //{
+                        //    foreach (var item in enumerableKey)
+                        //    {
+                        //        var eq = _keyToTailWithFilter(item, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
+                        //        if (@in)
+                        //            contains = contains.Or(eq);
+                        //        else
+                        //            contains = contains.And(eq);
+                        //    }
+
+                        //}else if (arrayObject is IEnumerable enumerableObj)
+                        //{
+                        //    foreach (var item in enumerableObj)
+                        //    {
+                        //        var eq = _keyToTailWithFilter((TKey)item, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
+                        //        if (@in)
+                        //            contains = contains.Or(eq);
+                        //        else
+                        //            contains = contains.And(eq);
+                        //    }
+                        //}
+
+                        if (arrayObject is IEnumerable enumerableObj)
                         {
-                            if (item is TKey shardingValue)
+                            foreach (var shardingValue in enumerableObj)
                             {
-                                var eq = _keyToTailWithFilter(shardingValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual);
+                                var eq = _keyToTailWithFilter(shardingValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual, shardingPredicateResult.ShardingPropertyName);
                                 if (@in)
                                     contains = contains.Or(eq);
                                 else
                                     contains = contains.And(eq);
                             }
                         }
+                        return contains;
                     }
-                    return contains;
                 }
             }
 
             if (methodCallExpression.IsNamedEquals())
             {
                 //"".equals(o.id)
-                if (IsMethodWrapShardingKey(methodCallExpression))
+                var shardingPredicateResult = IsMethodWrapShardingKey(methodCallExpression);
+                if (shardingPredicateResult.IsShardingKey)
                 {
                     if (methodCallExpression.Object is ConstantExpression constantExpression)
                     {
-                        if (constantExpression.Value is TKey shardingValue)
-                        {
-                            return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal);
-                        }
+                        var shardingValue = constantExpression.Value;
+                        return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
                     }
                 }
-                //o.id.equals("")
-                else if (IsShardingWrapConstant(methodCallExpression))
+                else
                 {
-                    TKey shardingValue = default;
-                    if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
+                    //o.id.equals("")
+                    shardingPredicateResult = IsShardingWrapConstant(methodCallExpression);
+                    if (shardingPredicateResult.IsShardingKey)
                     {
-                        shardingValue = GetShardingKeyValue(member2Expression);
-                    }
-                    else if (methodCallExpression.Arguments[0] is ConstantExpression constantExpression)
-                    {
-                        shardingValue = GetShardingKeyValue(constantExpression);
-                    }
+                        object shardingValue = default;
+                        if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
+                        {
+                            shardingValue = GetShardingKeyValue(member2Expression);
+                        }
+                        else if (methodCallExpression.Arguments[0] is ConstantExpression constantExpression)
+                        {
+                            shardingValue = GetShardingKeyValue(constantExpression);
+                        }
 
-                    if (!EqualityComparer<TKey>.Default.Equals(shardingValue, default))
-                    {
-                        return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal);
+                        if (shardingValue != default)
+                        {
+                            return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                        }
                     }
                 }
             }
@@ -326,18 +349,32 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 //条件在右边
                 bool conditionOnRight = false;
-                TKey value = default;
+                string shardingPropertyName = null;
+                object value = default;
 
-                if (IsShardingKey(binaryExpression.Left) && IsConstantOrMember(binaryExpression.Right))
+                if (IsConstantOrMember(binaryExpression.Right))
                 {
-                    conditionOnRight = true;
-
-                    value = GetShardingKeyValue(binaryExpression.Right);
+                    var shardingPredicateResult = IsShardingKey(binaryExpression.Left);
+                    if (shardingPredicateResult.IsShardingKey)
+                    {
+                        conditionOnRight = true;
+                        shardingPropertyName = shardingPredicateResult.ShardingPropertyName;
+                        value = GetShardingKeyValue(binaryExpression.Right);
+                    }
+                    else
+                        return x => true;
                 }
-                else if (IsConstantOrMember(binaryExpression.Left) && IsShardingKey(binaryExpression.Right))
+                else if (IsConstantOrMember(binaryExpression.Left))
                 {
-                    conditionOnRight = false;
-                    value = GetShardingKeyValue(binaryExpression.Left);
+                    var shardingPredicateResult = IsShardingKey(binaryExpression.Right);
+                    if (shardingPredicateResult.IsShardingKey)
+                    {
+                        conditionOnRight = false;
+                        shardingPropertyName = shardingPredicateResult.ShardingPropertyName;
+                        value = GetShardingKeyValue(binaryExpression.Left);
+                    }
+                    else
+                        return x => true;
                 }
                 else
                     return x => true;
@@ -353,12 +390,31 @@ namespace ShardingCore.Core.Internal.Visitors
                     _ => ShardingOperatorEnum.UnKnown
                 };
 
-                if (EqualityComparer<TKey>.Default.Equals(value, default))
+                if (shardingPropertyName == null || value == default)
                     return x => true;
 
 
-                return _keyToTailWithFilter(value, op);
+                return _keyToTailWithFilter(value, op, shardingPropertyName);
             }
         }
+    }
+    /// <summary>
+    /// 分片条件结果
+    /// </summary>
+    internal class ShardingPredicateResult
+    {
+        public ShardingPredicateResult(bool isShardingKey, string shardingPropertyName)
+        {
+            IsShardingKey = isShardingKey;
+            ShardingPropertyName = shardingPropertyName;
+        }
+        /// <summary>
+        /// 是否是分片字段
+        /// </summary>
+        public bool IsShardingKey { get; }
+        /// <summary>
+        /// 分片字段名称
+        /// </summary>
+        public string ShardingPropertyName { get; }
     }
 }

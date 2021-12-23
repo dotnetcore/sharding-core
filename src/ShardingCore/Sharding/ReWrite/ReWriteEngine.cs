@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;

@@ -21,7 +21,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         protected override List<IPhysicTable> DoRouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable)
         {
             //获取路由后缀表达式
-            var routeParseExpression = ShardingUtil.GetRouteParseExpression<TKey>(queryable, EntityMetadata, GetRouteToFilter,true);
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteToFilter,true);
             //表达式缓存编译
             var filter =CachingCompile(routeParseExpression);
             //通过编译结果进行过滤
@@ -35,8 +35,29 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// </summary>
         /// <param name="shardingKey">分表的值</param>
         /// <param name="shardingOperator">操作</param>
+        /// <param name="shardingPropertyName">分表字段</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        public abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey, ShardingOperatorEnum shardingOperator);
+        public  Expression<Func<string, bool>> GetRouteToFilter(object shardingKey,
+            ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        {
+            if (EntityMetadata.IsMainShardingTableKey(shardingPropertyName))
+            {
+                return GetMainRouteFilter((TKey)shardingKey, shardingOperator);
+            }
+            else
+            {
+                return GetExtraRouteFilter(shardingKey, shardingOperator, shardingPropertyName);
+            }
+        }
+
+        public abstract Expression<Func<string, bool>> GetMainRouteFilter(TKey shardingKey,
+            ShardingOperatorEnum shardingOperator);
+
+        public virtual Expression<Func<string, bool>> GetExtraRouteFilter(object shardingKey,
+            ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        {
+            throw new NotImplementedException(shardingPropertyName);
+        }
 
         public override IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey)
         {

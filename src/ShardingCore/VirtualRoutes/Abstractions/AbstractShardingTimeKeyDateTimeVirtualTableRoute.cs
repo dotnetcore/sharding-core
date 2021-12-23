@@ -1,4 +1,5 @@
 using System;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.VirtualRoutes.Abstractions
 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using ShardingCore.Exceptions;
@@ -18,6 +19,8 @@ namespace ShardingCore.Core.EntityMetadatas
             ShardingDbContextType = shardingDbContextType;
             PrimaryKeyProperties = primaryKeyProperties;
             IsSingleKey= PrimaryKeyProperties.Count == 1;
+            ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
+            ShardingTableProperties = new Dictionary<string, PropertyInfo>();
         }
         /// <summary>
         /// 分表类型 sharding entity type
@@ -52,6 +55,10 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分库字段
         /// </summary>
         public PropertyInfo ShardingDataSourceProperty { get; private set; }
+        /// <summary>
+        /// 分库所有字段包括 ShardingDataSourceProperty
+        /// </summary>
+        public IDictionary<string, PropertyInfo> ShardingDataSourceProperties { get; }
 
         /// <summary>
         /// 启动时是否建表 auto create data source when start app
@@ -62,6 +69,10 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表字段 sharding table property
         /// </summary>
         public PropertyInfo ShardingTableProperty { get; private set; }
+        /// <summary>
+        /// 分表所有字段包括 ShardingTableProperty
+        /// </summary>
+        public IDictionary<string, PropertyInfo> ShardingTableProperties { get;}
 
 
         /// <summary>
@@ -80,8 +91,21 @@ namespace ShardingCore.Core.EntityMetadatas
         public void SetShardingDataSourceProperty(PropertyInfo propertyInfo)
         {
             Check.NotNull(propertyInfo, nameof(propertyInfo));
-            Check.ShouldNull(ShardingDataSourceProperty, nameof(ShardingDataSourceProperty));
+            if (ShardingDataSourceProperties.ContainsKey(propertyInfo.Name))
+                throw new ShardingCoreConfigException($"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
             ShardingDataSourceProperty = propertyInfo;
+            ShardingDataSourceProperties.Add(propertyInfo.Name, propertyInfo);
+        }
+        /// <summary>
+        /// 添加额外分表字段
+        /// </summary>
+        /// <param name="propertyInfo"></param>
+        /// <exception cref="ShardingCoreConfigException"></exception>
+        public void AddExtraSharingDataSourceProperty(PropertyInfo propertyInfo)
+        {
+            if (ShardingDataSourceProperties.ContainsKey(propertyInfo.Name))
+                throw new ShardingCoreConfigException($"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
+            ShardingDataSourceProperties.Add(propertyInfo.Name, propertyInfo);
         }
         /// <summary>
         /// 设置分表字段
@@ -90,7 +114,21 @@ namespace ShardingCore.Core.EntityMetadatas
         public void SetShardingTableProperty(PropertyInfo propertyInfo)
         {
             Check.NotNull(propertyInfo, nameof(propertyInfo));
+            if (ShardingTableProperties.ContainsKey(propertyInfo.Name))
+                throw new ShardingCoreConfigException($"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
             ShardingTableProperty = propertyInfo;
+            ShardingTableProperties.Add(propertyInfo.Name, propertyInfo);
+        }
+        /// <summary>
+        /// 添加额外分表字段
+        /// </summary>
+        /// <param name="propertyInfo"></param>
+        /// <exception cref="ShardingCoreConfigException"></exception>
+        public void AddExtraSharingTableProperty(PropertyInfo propertyInfo)
+        {
+            if (ShardingTableProperties.ContainsKey(propertyInfo.Name))
+                throw new ShardingCoreConfigException($"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
+            ShardingTableProperties.Add(propertyInfo.Name, propertyInfo);
         }
 
         /// <summary>
