@@ -250,7 +250,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return !_shardingConfigOption.AutoTrackEntity || IsCrossTable || IsUseReadWriteSeparation();
+            return !_shardingConfigOption.AutoTrackEntity || MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.IsParallelQuery();
         }
 
         /// <summary>

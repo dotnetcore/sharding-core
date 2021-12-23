@@ -101,7 +101,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                if (!IsMergeQuery())
+                hasQueryCompilerExecutor = !IsMergeQuery();
+                if (hasQueryCompilerExecutor.Value)
                 {
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
                     var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults.First()));

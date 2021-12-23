@@ -78,7 +78,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                if (_queryEntities.All(o => !_entityMetadataManager.IsSharding(o)))
+                hasQueryCompilerExecutor = _queryEntities.All(o => !_entityMetadataManager.IsSharding(o));
+                if (hasQueryCompilerExecutor.Value)
                 {
                     var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
                         typeof(IVirtualDataSource<>).GetGenericType0(_shardingDbContextType));
