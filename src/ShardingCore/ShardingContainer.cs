@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace ShardingCore
 {
@@ -51,6 +50,71 @@ namespace ShardingCore
         {
             return ServiceProvider.GetService(serviceType);
         }
+        /// <summary>
+        /// 创建一个没有依赖注入的对象,但是对象的构造函数参数是已经可以通过依赖注入获取的
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static object CreateInstance(Type serviceType)
+        {
+            var constructors
+                = serviceType.GetTypeInfo().DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .ToArray();
 
+            if (constructors.Length != 1)
+            {
+                throw new ArgumentException(
+                    $"type :[{serviceType}] found more than one  declared constructor ");
+            }
+            var @params = constructors[0].GetParameters().Select(x => ServiceProvider.GetService(x.ParameterType))
+                .ToArray();
+            return Activator.CreateInstance(serviceType, @params);
+        }
+        /// <summary>
+        /// 创建一个没有依赖注入的对象,但是对象的构造函数参数是已经可以通过依赖注入获取并且也存在自行传入的参数,优先判断自行传入的参数
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static object CreateInstanceWithInputParams(Type serviceType,params object[] args)
+        {
+            var constructors
+                = serviceType.GetTypeInfo().DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .ToArray();
+
+            if (constructors.Length != 1)
+            {
+                throw new ArgumentException(
+                    $"type :[{serviceType}] found more than one  declared constructor ");
+            }
+
+            var argIsNotEmpty = args.IsNotEmpty();
+            var @params = constructors[0].GetParameters().Select(x =>
+                {
+                    if (argIsNotEmpty)
+                    {
+                        var arg = args.FirstOrDefault(o => o.GetType() == x.ParameterType);
+                        if (arg != null)
+                            return arg;
+                    }
+                    return ServiceProvider.GetService(x.ParameterType);
+                })
+                .ToArray();
+            return Activator.CreateInstance(serviceType, @params);
+        }
+
+        public static IShardingConfigOption<TShardingDbContext> GetRequiredShardingConfigOption<TShardingDbContext>()
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return (IShardingConfigOption<TShardingDbContext>)GetRequiredShardingConfigOption(typeof(TShardingDbContext));
+        }
+        public static IShardingConfigOption GetRequiredShardingConfigOption(Type shardingDbContextType)
+        {
+            return (IShardingConfigOption)ServiceProvider.GetService(typeof(IShardingConfigOption<>).GetGenericType0(shardingDbContextType));
+        }
     }
 }

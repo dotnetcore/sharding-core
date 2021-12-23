@@ -18,7 +18,6 @@ namespace ShardingCore
     */
     public interface IShardingConfigOption
     {
-        Type ShardingDbContextType { get;}
         bool UseReadWrite { get; }
 
         bool HasVirtualTableRoute(Type entityType);

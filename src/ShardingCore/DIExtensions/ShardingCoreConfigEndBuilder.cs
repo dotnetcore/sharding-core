@@ -59,7 +59,8 @@ namespace ShardingCore.DIExtensions
         public IServiceCollection End()
         {
             var services = _shardingCoreConfigBuilder.Services;
-            services.AddSingleton<IShardingConfigOption, ShardingConfigOption<TShardingDbContext>>(sp =>
+            services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
+            services.AddSingleton<IShardingConfigOption<TShardingDbContext>, ShardingConfigOption<TShardingDbContext>>(sp =>
                 _shardingCoreConfigBuilder.ShardingConfigOption);
 
 

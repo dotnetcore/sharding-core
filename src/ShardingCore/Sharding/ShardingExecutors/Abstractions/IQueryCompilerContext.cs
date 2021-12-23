@@ -20,6 +20,10 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         Type GetShardingDbContextType();
         QueryCompilerExecutor GetQueryCompilerExecutor();
         bool IsEnumerableQuery();
-        bool IsParallelQuery();
+        /// <summary>
+        /// 当前是否读写分离走读库(包括是否启用读写分离和是否当前的dbcontext启用了读库查询)
+        /// </summary>
+        /// <returns></returns>
+        bool CurrentQueryReadConnection();
     }
 }

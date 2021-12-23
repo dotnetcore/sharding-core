@@ -35,16 +35,15 @@ namespace ShardingCore.DynamicDataSources
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger;
-        private readonly IShardingConfigOption _shardingConfigOption;
-        public DataSourceInitializer(IEnumerable<IShardingConfigOption> shardingConfigOptions,
+        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
+        public DataSourceInitializer(IShardingConfigOption<TShardingDbContext> shardingConfigOption,
             IRouteTailFactory routeTailFactory, IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             IShardingTableCreator<TShardingDbContext> shardingTableCreator,
             IVirtualDataSource<TShardingDbContext> virtualDataSource,
             ILogger<DataSourceInitializer<TShardingDbContext>> logger)
         {
-            _shardingConfigOption =
-                shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext)) ?? throw new ArgumentNullException($"{nameof(IShardingConfigOption)} cant been registered {typeof(TShardingDbContext)}");
+            _shardingConfigOption = shardingConfigOption;
             _routeTailFactory = routeTailFactory;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;

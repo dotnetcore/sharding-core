@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
@@ -83,21 +84,27 @@ namespace ShardingCore.Extensions
         {
             if (shardingDbContext is ISupportShardingReadWrite shardingReadWrite)
             {
-                var shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
-                var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(shardingDbContext.GetType());
-                if (shardingReadWriteContext != null)
+                var shardingDbContextType = shardingDbContext.GetType();
+                var shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(shardingDbContextType);
+                var useReadWrite=shardingConfigOption?.UseReadWrite ?? false;
+                if (useReadWrite)
                 {
-                    if (shardingReadWriteContext.DefaultPriority > shardingReadWrite.ReadWriteSeparationPriority)
+                    var shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
+                    var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(shardingDbContextType);
+                    if (shardingReadWriteContext != null)
                     {
-                        return shardingReadWriteContext.DefaultReadEnable;
+                        if (shardingReadWriteContext.DefaultPriority > shardingReadWrite.ReadWriteSeparationPriority)
+                        {
+                            return shardingReadWriteContext.DefaultReadEnable;
+                        }
+                        else
+                        {
+                            return shardingReadWrite.ReadWriteSeparation;
+                        }
                     }
-                    else
-                    {
-                        return shardingReadWrite.ReadWriteSeparation;
-                    }
-                }
 
-                return shardingReadWrite.ReadWriteSeparation;
+                    return shardingReadWrite.ReadWriteSeparation;
+                }
             }
 
             return false;

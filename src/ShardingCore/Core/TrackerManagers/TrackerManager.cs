@@ -16,12 +16,12 @@ namespace ShardingCore.Core.TrackerManagers
     */
     public class TrackerManager<TShardingDbContext>: ITrackerManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
         private readonly ISet<Type> _dbContextModels = new HashSet<Type>();
 
-        public TrackerManager(IEnumerable<IShardingConfigOption> shardingConfigOptions)
+        public TrackerManager(IShardingConfigOption<TShardingDbContext> shardingConfigOption)
         {
-            _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o=>o.ShardingDbContextType==typeof(TShardingDbContext));
+            _shardingConfigOption = shardingConfigOption;
         }
         public bool AddDbContextModel(Type entityType)
         {

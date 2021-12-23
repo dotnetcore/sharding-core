@@ -8,7 +8,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ParallelTables
 {
-    internal interface IParallelTableManager<TShardingDbContext> : IParallelTableManager
+    public interface IParallelTableManager<TShardingDbContext> : IParallelTableManager
         where TShardingDbContext : DbContext, IShardingDbContext
     {
 

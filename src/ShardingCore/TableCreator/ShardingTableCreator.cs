@@ -28,15 +28,14 @@ namespace ShardingCore.TableCreator
     {
         private readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger,  IServiceProvider serviceProvider, IEnumerable<IShardingConfigOption> shardingConfigOptions, IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger,  IServiceProvider serviceProvider, IShardingConfigOption<TShardingDbContext> shardingConfigOption, IRouteTailFactory routeTailFactory)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o => o.ShardingDbContextType == typeof(TShardingDbContext))
-                                     ?? throw new ArgumentNullException(typeof(TShardingDbContext).FullName);
+            _shardingConfigOption = shardingConfigOption;
             _routeTailFactory = routeTailFactory;
         }
 

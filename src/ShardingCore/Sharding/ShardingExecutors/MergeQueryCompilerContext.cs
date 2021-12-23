@@ -92,9 +92,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _queryCompilerContext.GetShardingDbContextType();
         }
-        public bool IsParallelQuery()
+        public bool CurrentQueryReadConnection()
         {
-            return _queryCompilerContext.IsParallelQuery();
+            return _queryCompilerContext.CurrentQueryReadConnection();
         }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
@@ -105,7 +105,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 if (hasQueryCompilerExecutor.Value)
                 {
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults.First()));
+                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                 }
             }

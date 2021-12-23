@@ -9,7 +9,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ParallelTables
 {
-    internal sealed class ParallelTableManager<TShardingDbContext> : IParallelTableManager<TShardingDbContext>
+    public sealed class ParallelTableManager<TShardingDbContext> : IParallelTableManager<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly ISet<ParallelTableGroupNode> _parallelTableConfigs = new HashSet<ParallelTableGroupNode>();

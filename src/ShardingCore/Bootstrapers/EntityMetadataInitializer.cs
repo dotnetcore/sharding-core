@@ -37,7 +37,7 @@ namespace ShardingCore.Bootstrapers
     {
         private readonly IEntityType _entityType;
         private readonly string _virtualTableName;
-        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
         private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
@@ -45,7 +45,7 @@ namespace ShardingCore.Bootstrapers
         private readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger;
 
         public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams
-            , IEnumerable<IShardingConfigOption> shardingConfigOptions,
+            , IShardingConfigOption<TShardingDbContext> shardingConfigOption,
             ITrackerManager<TShardingDbContext> trackerManager,IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
@@ -53,7 +53,7 @@ namespace ShardingCore.Bootstrapers
         {
             _entityType = entityMetadataEnsureParams.EntityType;
             _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
-            _shardingConfigOption = shardingConfigOptions.FirstOrDefault(o=>o.ShardingDbContextType==typeof(TShardingDbContext));
+            _shardingConfigOption = shardingConfigOption;
             _trackerManager = trackerManager;
             _virtualDataSource = virtualDataSource;
             _virtualTableManager = virtualTableManager;

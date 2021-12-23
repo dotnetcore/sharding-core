@@ -54,27 +54,25 @@ namespace ShardingCore.Bootstrapers
     /// </summary>
     public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IShardingConfigOption _shardingConfigOption;
-        private readonly IRouteTailFactory _routeTailFactory;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
+        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
         private readonly IDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
-        private readonly ILogger<ShardingDbContextBootstrapper<TShardingDbContext>> _logger;
+        private readonly Type _shardingDbContextType;
 
-        public ShardingDbContextBootstrapper(IShardingConfigOption shardingConfigOption)
+        public ShardingDbContextBootstrapper(IShardingConfigOption<TShardingDbContext> shardingConfigOption, 
+            IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
+            IVirtualDataSource<TShardingDbContext> virtualDataSource,
+            IParallelTableManager<TShardingDbContext> parallelTableManager,
+            IDataSourceInitializer<TShardingDbContext> dataSourceInitializer)
         {
             _shardingConfigOption = shardingConfigOption;
-            _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
-            _tableCreator = ShardingContainer.GetService<IShardingTableCreator<TShardingDbContext>>();
-            _virtualDataSource= ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
-            _parallelTableManager = ShardingContainer.GetService<IParallelTableManager<TShardingDbContext>>();
-            _dataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
-            _logger = ShardingContainer.GetService<ILogger<ShardingDbContextBootstrapper<TShardingDbContext>>>();
+            _shardingDbContextType = typeof(TShardingDbContext);
+            _entityMetadataManager = entityMetadataManager;
+            _virtualDataSource= virtualDataSource;
+            _parallelTableManager = parallelTableManager;
+            _dataSourceInitializer = dataSourceInitializer;
         }
         /// <summary>
         /// 初始化
@@ -94,7 +92,7 @@ namespace ShardingCore.Bootstrapers
             {
                 //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
                 using var context =
-                    (DbContext)serviceScope.ServiceProvider.GetService(_shardingConfigOption.ShardingDbContextType);
+                    (DbContext)serviceScope.ServiceProvider.GetService(_shardingDbContextType);
              
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
@@ -103,21 +101,9 @@ namespace ShardingCore.Bootstrapers
                     if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
                     _shardingConfigOption.HasVirtualTableRoute(entityType))
                     {
-                            var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(typeof(TShardingDbContext), entityType);
-                            var constructors
-                                = entityMetadataInitializerType.GetTypeInfo().DeclaredConstructors
-                                    .Where(c => !c.IsStatic && c.IsPublic)
-                                    .ToArray();
-                            var @params = constructors[0].GetParameters().Select((o, i) =>
-                            {
-                                if (i == 0)
-                                {
-                                    return new EntityMetadataEnsureParams( entity);
-                                }
-
-                                return ShardingContainer.GetService(o.ParameterType);
-                            }).ToArray();
-                            var entityMetadataInitializer = (IEntityMetadataInitializer)Activator.CreateInstance(entityMetadataInitializerType, @params);
+                            var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
+                            
+                            var entityMetadataInitializer = (IEntityMetadataInitializer)ShardingContainer.CreateInstanceWithInputParams(entityMetadataInitializerType, new EntityMetadataEnsureParams(entity));
                             entityMetadataInitializer.Initialize();
                     }
                 }

@@ -31,13 +31,16 @@ namespace ShardingCore.Sharding
         {
             _virtualDataSource=ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _connectionStringManager = ShardingContainer.GetService<IConnectionStringManager<TShardingDbContext>>();
-            _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
             _shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
             _useReadWriteSeparation = _connectionStringManager is ReadWriteConnectionStringManager<TShardingDbContext>;
-            if (_readWriteOptions != null)
+            if (_useReadWriteSeparation)
             {
-                ReadWriteSeparationPriority = _readWriteOptions.ReadWritePriority;
-                ReadWriteSeparation = _readWriteOptions.ReadWriteSupport;
+                _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
+                if (_readWriteOptions != null)
+                {
+                    ReadWriteSeparationPriority = _readWriteOptions.ReadWritePriority;
+                    ReadWriteSeparation = _readWriteOptions.ReadWriteSupport;
+                }
             }
 
         }

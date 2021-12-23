@@ -100,26 +100,9 @@ namespace ShardingCore.Sharding
                     typeof(ITrackerManager<>).GetGenericType0(mergeQueryCompilerContext.GetShardingDbContextType()));
             _shardingComparer = (IShardingComparer)ShardingContainer.GetService(typeof(IShardingComparer<>).GetGenericType0(_shardingDbContext.GetType()));
 
-            _shardingConfigOption = ShardingContainer.GetServices<IShardingConfigOption>()
-                .FirstOrDefault(o => o.ShardingDbContextType == mergeQueryCompilerContext.GetShardingDbContextType());
+            _shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
-            //RouteResults = _tableTableRouteRuleEngineFactory.Route(_shardingDbContext.ShardingDbContextType, _source);
         }
-        //public StreamMergeContext(IQueryable<T> source,IEnumerable<TableRouteResult> routeResults,
-        //    IShardingParallelDbContextFactory shardingParallelDbContextFactory,IShardingScopeFactory shardingScopeFactory)
-        //{
-        //    _shardingParallelDbContextFactory = shardingParallelDbContextFactory;
-        //    _shardingScopeFactory = shardingScopeFactory;
-        //    _source = source;
-        //    RouteResults = routeResults;
-        //    var reWriteResult = new ReWriteEngine<T>(source).ReWrite();
-        //    Skip = reWriteResult.Skip;
-        //    Take = reWriteResult.Take;
-        //    Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
-        //    SelectContext = reWriteResult.SelectContext;
-        //    GroupByContext = reWriteResult.GroupByContext;
-        //    _reWriteSource = reWriteResult.ReWriteQueryable;
-        //}
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
         {
             Orders = orders;
@@ -250,7 +233,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return !_shardingConfigOption.AutoTrackEntity || MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.IsParallelQuery();
+            return !_shardingConfigOption.AutoTrackEntity || MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.CurrentQueryReadConnection();
         }
 
         /// <summary>

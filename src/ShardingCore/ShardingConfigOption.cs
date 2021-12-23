@@ -107,9 +107,6 @@ namespace ShardingCore
             ReadConnStringGetStrategy = readConnStringGetStrategy;
         }
 
-
-        public Type ShardingDbContextType => typeof(TShardingDbContext);
-
         /// <summary>
         /// 添加分表路由
         /// </summary>

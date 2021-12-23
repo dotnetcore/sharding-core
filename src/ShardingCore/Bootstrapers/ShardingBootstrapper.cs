@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
@@ -16,13 +17,13 @@ namespace ShardingCore.Bootstrapers
     */
     public class ShardingBootstrapper : IShardingBootstrapper
     {
-        private readonly IEnumerable<IShardingConfigOption> _shardingConfigOptions;
+        private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider)
+        public ShardingBootstrapper(IServiceProvider serviceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
         {
+            _dbContextTypeCollectors = dbContextTypeCollectors;
             ShardingContainer.SetServices(serviceProvider);
-            _shardingConfigOptions = ShardingContainer.GetServices<IShardingConfigOption>();
         }
         /// <summary>
         /// Æô¶¯
@@ -31,9 +32,9 @@ namespace ShardingCore.Bootstrapers
         {
             if (!_doOnlyOnce.IsUnDo())
                 return;
-            foreach (var shardingConfigOption in _shardingConfigOptions)
+            foreach (var dbContextTypeCollector in _dbContextTypeCollectors)
             {
-                var instance = (IShardingDbContextBootstrapper)Activator.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(shardingConfigOption.ShardingDbContextType), shardingConfigOption);
+                var instance = (IShardingDbContextBootstrapper)ShardingContainer.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(dbContextTypeCollector.ShardingDbContextType));
                 instance.Init();
             }
 
