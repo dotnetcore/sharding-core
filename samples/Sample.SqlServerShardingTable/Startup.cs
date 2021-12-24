@@ -43,7 +43,7 @@ namespace Sample.SqlServerShardingTable
                     //如果您使用code-first建议修改为fsle
                     op.EnsureCreatedWithOutShardingTable = true;
                     //当无法获取路由时会返回默认值而不是报错
-                    op.ThrowIfQueryRouteNotMatch = false;
+                    op.ThrowIfQueryRouteNotMatch = true;
                 }).AddShardingTransaction((connection, builder) =>
                 {
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
