@@ -34,6 +34,21 @@ namespace Sample.SqlServerShardingTable.Controllers
                 sysUsers
             });
         }
+        public async Task<IActionResult> Query2()
+        {
+            var multiOrder =await _myDbContext.Set<MultiShardingOrder>().Where(o=>o.Id== 232398109278351360).FirstOrDefaultAsync();
+            var longs = new []{ 232398109278351360 , 255197859283087360 };
+            var multiOrders = await _myDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToListAsync();
+            var dateTime = new DateTime(2021, 11, 1);
+            var multiOrder404 = await _myDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 250345338962063360&&o.CreateTime< dateTime).FirstOrDefaultAsync();
+            return Ok(new
+            {
+                multiOrder,
+                multiOrders,
+                multiOrder404
+            });
+
+        }
         public async Task<IActionResult> QueryJoin1()
         {
            var sql= from user in _myDbContext.Set<SysUser>().Where(o => o.Id == "1" || o.Id == "6")

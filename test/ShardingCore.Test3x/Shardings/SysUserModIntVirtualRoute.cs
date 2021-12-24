@@ -13,7 +13,7 @@ namespace ShardingCore.Test3x.Shardings
     {
         protected override bool EnableHintRoute => true;
 
-        public override bool EnableRouteParseCompileCache => true;
+        public override bool? EnableRouteParseCompileCache => true;
         public SysUserModIntVirtualRoute() : base(2, 3)
         {
         }

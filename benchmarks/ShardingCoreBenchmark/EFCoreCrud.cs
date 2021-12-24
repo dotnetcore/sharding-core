@@ -58,7 +58,6 @@ namespace ShardingCore6x
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.AutoTrackEntity = false;
                 }).AddShardingTransaction((connection, builder) => builder
                     //.UseMySql(connection, new MySqlServerVersion(new Version()))
                     .UseSqlServer(connection)

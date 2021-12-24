@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.TrackerEnumerators;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 
 /*
@@ -29,6 +30,9 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
+            if (emptyQueryEnumerator != null)
+                return emptyQueryEnumerator;
             var asyncEnumerator = EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine()
                 .GetAsyncEnumerator(cancellationToken);
 
@@ -44,6 +48,9 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 #if EFCORE2
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
+            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
+            if (emptyQueryEnumerator != null)
+                return emptyQueryEnumerator;
             var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine())
                 .GetEnumerator();
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
@@ -57,6 +64,9 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         public IEnumerator<T> GetEnumerator()
         {
+            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
+            if (emptyQueryEnumerator != null)
+                return emptyQueryEnumerator;
             var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine())
                 .GetEnumerator();
 

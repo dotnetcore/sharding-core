@@ -32,7 +32,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <summary>
         /// 是否启用路由解析编译缓存
         /// </summary>
-        public virtual bool EnableRouteParseCompileCache => false;
+        public virtual bool? EnableRouteParseCompileCache => null;
+        public virtual bool EnableCompileCache()
+        {
+            if (EnableRouteParseCompileCache.HasValue)
+                return EnableRouteParseCompileCache.Value;
+            return ShardingConfigOption.EnableTableRouteCompileCache.GetValueOrDefault();
+        }
         /// <summary>
         /// 对表达式进行缓存编译默认永久缓存单个参数表达式，且不包含orElse只包含单个AndAlso或者没有AndAlso的,
         /// 比如:<![CDATA[o.id==x]]>或者<![CDATA[o.id>x]]>,不会缓存<![CDATA[o=>id>x && o.id<y ]]>等一共大于、等于、小于、大于等于、小于等于(不等于编译成<![CDATA[t=>true]]>)缓存会存在的数量个数上限为
@@ -42,7 +48,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <returns></returns>
         public virtual Func<string, bool> CachingCompile(Expression<Func<string, bool>> parseWhere)
         {
-            if (EnableRouteParseCompileCache)
+            if (EnableCompileCache())
             {
                 var doCachingCompile = DoCachingCompile(parseWhere);
                 if (doCachingCompile != null)

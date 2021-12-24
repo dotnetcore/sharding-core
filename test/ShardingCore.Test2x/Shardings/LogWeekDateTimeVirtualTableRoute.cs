@@ -8,7 +8,7 @@ namespace ShardingCore.Test2x.Shardings
     public class LogWeekDateTimeVirtualTableRoute:AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<LogWeekDateTime>
     {
         protected override bool EnableHintRoute => true;
-        public override bool EnableRouteParseCompileCache => true;
+        public override bool? EnableRouteParseCompileCache => true;
 
         public override bool AutoCreateTableByTime()
         {

@@ -48,7 +48,7 @@ namespace ShardingCore.VirtualRoutes.Mods
             return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }
 
-        public override Expression<Func<string, bool>> GetMainRouteFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
         {
            
             var t = ShardingKeyToTail(shardingKey);

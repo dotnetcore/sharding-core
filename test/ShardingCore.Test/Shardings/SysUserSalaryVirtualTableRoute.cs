@@ -16,7 +16,7 @@ namespace ShardingCore.Test.Shardings
 */
     public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int>
     {
-        public override bool EnableRouteParseCompileCache => true;
+        public override bool? EnableRouteParseCompileCache => true;
 
         public override string ShardingKeyToTail(object shardingKey)
         {
@@ -46,7 +46,7 @@ namespace ShardingCore.Test.Shardings
             return $"{dateOfMonth:yyyyMM}";
         }
 
-        public override Expression<Func<string, bool>> GetMainRouteFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

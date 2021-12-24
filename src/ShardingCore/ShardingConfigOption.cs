@@ -232,15 +232,21 @@ namespace ShardingCore
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; } = true;
-        /// <summary>
-        /// 自动追踪实体
-        /// </summary>
-        public bool AutoTrackEntity { get; set; }
+        ///// <summary>
+        ///// 自动追踪实体
+        ///// </summary>
+        //public bool AutoTrackEntity { get; set; }
 
         public string DefaultDataSourceName { get; set; }
         public string DefaultConnectionString { get; set; }
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
         public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
+        /// <summary>
+        /// 当查询遇到没有路由被命中时是否抛出错误
+        /// </summary>
+        public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
+        public bool? EnableTableRouteCompileCache { get; set; }
+        public bool? EnableDataSourceRouteCompileCache { get; set; }
 
 
         public bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode)

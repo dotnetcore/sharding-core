@@ -16,13 +16,8 @@ namespace ShardingCore.Core.TrackerManagers
     */
     public class TrackerManager<TShardingDbContext>: ITrackerManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
         private readonly ISet<Type> _dbContextModels = new HashSet<Type>();
 
-        public TrackerManager(IShardingConfigOption<TShardingDbContext> shardingConfigOption)
-        {
-            _shardingConfigOption = shardingConfigOption;
-        }
         public bool AddDbContextModel(Type entityType)
         {
             return _dbContextModels.Add(entityType);
@@ -30,8 +25,6 @@ namespace ShardingCore.Core.TrackerManagers
 
         public bool EntityUseTrack(Type entityType)
         {
-            if (!_shardingConfigOption.AutoTrackEntity)
-                return false;
             return _dbContextModels.Contains(entityType);
         }
 

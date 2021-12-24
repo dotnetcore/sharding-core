@@ -18,7 +18,6 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     public abstract class AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute<TEntity, TKey> : AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
         private static readonly ConcurrentDictionary<Expression<Func<string, bool>>, Func<string, bool>> _routeCompileCaches = new(new ExtensionExpressionComparer.RouteParseExpressionEqualityComparer());
-
         static AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute()
         {
             Expression<Func<string, bool>> defaultWhere1 = x => true;
@@ -30,7 +29,14 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// <summary>
         /// 是否启用路由解析编译缓存
         /// </summary>
-        public virtual bool EnableRouteParseCompileCache => false;
+        public virtual bool? EnableRouteParseCompileCache => null;
+
+        public virtual bool EnableCompileCache()
+        {
+            if (EnableRouteParseCompileCache.HasValue)
+                return EnableRouteParseCompileCache.Value;
+            return ShardingConfigOption.EnableDataSourceRouteCompileCache.GetValueOrDefault();
+        }
 
         /// <summary>
         /// 对表达式进行缓存编译默认永久缓存单个参数表达式，且不包含orElse只包含单个AndAlso或者没有AndAlso的,
@@ -41,7 +47,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// <returns></returns>
         public virtual Func<string, bool> CachingCompile(Expression<Func<string, bool>> parseWhere)
         {
-            if (EnableRouteParseCompileCache)
+            if (EnableCompileCache())
             {
                 var doCachingCompile = DoCachingCompile(parseWhere);
                 if (doCachingCompile != null)

@@ -40,6 +40,13 @@ namespace Sample.SqlServerShardingTable
                 entity.Property(o=>o.Name).IsRequired().IsUnicode(false).HasMaxLength(50);
                 entity.ToTable(nameof(Setting));
             });
+            modelBuilder.Entity<MultiShardingOrder>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Id).ValueGeneratedNever();
+                entity.Property(o=>o.Name).IsRequired().IsUnicode(false).HasMaxLength(50);
+                entity.ToTable(nameof(MultiShardingOrder));
+            });
         }
         /// <summary>
         /// empty impl

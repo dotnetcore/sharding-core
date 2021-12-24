@@ -40,7 +40,7 @@ namespace ShardingCore.Test2x
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.AutoTrackEntity = true;
+                    o.ThrowIfQueryRouteNotMatch = false;
                 })
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
@@ -70,6 +70,7 @@ namespace ShardingCore.Test2x
                     op.AddShardingTableRoute<LogYearLongVirtualRoute>();
                     op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
                     op.AddShardingTableRoute<LogDayLongVirtualRoute>();
+                    op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
                 }).AddReadWriteSeparation(sp =>
                 {
                     return new Dictionary<string, IEnumerable<string>>()
@@ -267,6 +268,82 @@ namespace ShardingCore.Test2x
                         });
                         begin6 = begin6.AddDays(1);
                     }
+                    var multiShardingOrders = new List<MultiShardingOrder>(9);
+                    #region 添加多字段分表
+
+                    {
+                        var now = new DateTime(2021, 10, 1, 13, 13, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 231765457240207360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 10, 2, 11, 3, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 232095129534607360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 10, 3, 7, 7, 7);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 232398109278351360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 11, 6, 13, 13, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 244811420401807360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 11, 21, 19, 43, 0);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 250345338962063360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 12, 5, 5, 5, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 255197859283087360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 12, 9, 19, 13, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 256860816933007360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    {
+                        var now = new DateTime(2021, 12, 19, 13, 13, 11);
+                        multiShardingOrders.Add(new MultiShardingOrder()
+                        {
+                            Id = 260394098622607360,
+                            Name = $"{now:yyyy/MM/dd HH:mm:ss}",
+                            CreateTime = now
+                        });
+                    }
+                    #endregion
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);
@@ -280,6 +357,7 @@ namespace ShardingCore.Test2x
                         await virtualDbContext.AddRangeAsync(logYears);
                         await virtualDbContext.AddRangeAsync(logMonthLongs);
                         await virtualDbContext.AddRangeAsync(logYearkLongs);
+                        await virtualDbContext.AddRangeAsync(multiShardingOrders);
 
                         await virtualDbContext.SaveChangesAsync();
                         tran.Commit();

@@ -38,6 +38,18 @@ namespace ShardingCore.Core.EntityMetadatas
             _entityMetadata.SetShardingTableProperty(propertyInfo);
             return this;
         }
+        public EntityMetadataTableBuilder<TEntity> ShardingExtraProperty<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression)
+        {
+            var propertyAccess = propertyExpression.GetPropertyAccess();
+            _entityMetadata.AddExtraSharingTableProperty(propertyAccess);
+            return this;
+        }
+        public EntityMetadataTableBuilder<TEntity> ShardingExtraProperty(string propertyName)
+        {
+            var propertyInfo = typeof(TEntity).GetProperty(propertyName);
+            _entityMetadata.AddExtraSharingTableProperty(propertyInfo);
+            return this;
+        }
         /// <summary>
         /// 分表表和后缀连接器
         /// </summary>

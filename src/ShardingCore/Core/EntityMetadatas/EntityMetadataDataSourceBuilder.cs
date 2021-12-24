@@ -41,6 +41,18 @@ namespace ShardingCore.Core.EntityMetadatas
             _entityMetadata.SetShardingDataSourceProperty(propertyInfo);
             return this;
         }
+        public EntityMetadataDataSourceBuilder<TEntity> ShardingExtraProperty<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression)
+        {
+            var propertyAccess = propertyExpression.GetPropertyAccess();
+            _entityMetadata.AddExtraSharingDataSourceProperty(propertyAccess);
+            return this;
+        }
+        public EntityMetadataDataSourceBuilder<TEntity> ShardingExtraProperty(string propertyName)
+        {
+            var propertyInfo = typeof(TEntity).GetProperty(propertyName);
+            _entityMetadata.AddExtraSharingDataSourceProperty(propertyInfo);
+            return this;
+        }
         /// <summary>
         /// 是否启动建表
         /// </summary>

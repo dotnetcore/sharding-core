@@ -52,16 +52,17 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
         {
-            if (_queryCompilerContext.GetQueryEntities().Count > 1)
+            var routeResults = tableRouteResults as TableRouteResult[] ?? tableRouteResults.ToArray();
+            if (_queryCompilerContext.GetQueryEntities().Count > 1&& routeResults.Length>0)
             {
                 var entityMetadataManager = _queryCompilerContext.GetEntityMetadataManager();
                 var queryShardingTables = _queryCompilerContext.GetQueryEntities().Where(o => entityMetadataManager.IsShardingTable(o)).ToArray();
                 if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
                 {
-                    return tableRouteResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
+                    return routeResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
                 }
             }
-            return tableRouteResults;
+            return routeResults;
         }
 
         public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult,IEnumerable<TableRouteResult> tableRouteResults)
@@ -101,12 +102,19 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                hasQueryCompilerExecutor = !IsMergeQuery();
-                if (hasQueryCompilerExecutor.Value)
+                if (_dataSourceRouteResult.IntersectDataSources.IsEmpty() || _tableRouteResults.IsEmpty())
                 {
-                    var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
-                    _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
+                    hasQueryCompilerExecutor = false;
+                }
+                else
+                {
+                    hasQueryCompilerExecutor = !IsMergeQuery();
+                    if (hasQueryCompilerExecutor.Value)
+                    {
+                        var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
+                        _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
+                    }
                 }
             }
 

@@ -39,7 +39,6 @@ namespace ShardingCoreBenchmark5x
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.AutoTrackEntity = false;
                 }).AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
                 .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
                 .AddShardingTableRoute(op =>

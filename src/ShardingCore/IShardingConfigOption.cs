@@ -58,10 +58,10 @@ namespace ShardingCore
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; }
 
-        /// <summary>
-        /// 自动追踪实体
-        /// </summary>
-        public bool AutoTrackEntity { get; set; }
+        ///// <summary>
+        ///// 自动追踪实体
+        ///// </summary>
+        //public bool AutoTrackEntity { get; set; }
         /// <summary>
         /// 默认数据源名称
         /// </summary>
@@ -78,18 +78,22 @@ namespace ShardingCore
         /// 连接数限制
         /// </summary>
         public ConnectionModeEnum ConnectionMode { get; set; }
+        /// <summary>
+        /// 当查询遇到没有路由被命中时是否抛出错误
+        /// </summary>
+        public bool ThrowIfQueryRouteNotMatch { get; set; }
 
         public bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode);
 
         public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes();
-        ///// <summary>
-        ///// 是否启用表路由编译缓存
-        ///// </summary>
-        //public bool? EnableTableRouteCompileCache { get; set; }
-        ///// <summary>
-        ///// 是否启用分库路由编译缓存
-        ///// </summary>
-        //public bool? EnableDataSourceRouteCompileCache { get; set; }
+        /// <summary>
+        /// 是否启用表路由编译缓存
+        /// </summary>
+        public bool? EnableTableRouteCompileCache { get; set; }
+        /// <summary>
+        /// 是否启用分库路由编译缓存
+        /// </summary>
+        public bool? EnableDataSourceRouteCompileCache { get; set; }
     }
 
     public interface IShardingConfigOption<TShardingDbContext>: IShardingConfigOption where TShardingDbContext : DbContext, IShardingDbContext

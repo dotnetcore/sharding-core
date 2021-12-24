@@ -38,11 +38,12 @@ namespace Sample.SqlServerShardingTable
                     builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
                 }).Begin(op =>
                 {
-                    op.AutoTrackEntity = true;
                     //如果您使用code-first建议选择false
                     op.CreateShardingTableOnStart = true;
                     //如果您使用code-first建议修改为fsle
                     op.EnsureCreatedWithOutShardingTable = true;
+                    //当无法获取路由时会返回默认值而不是报错
+                    op.ThrowIfQueryRouteNotMatch = false;
                 }).AddShardingTransaction((connection, builder) =>
                 {
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
@@ -52,6 +53,7 @@ namespace Sample.SqlServerShardingTable
                 {
                     op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
+                    op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
                 }).End();
         }
 

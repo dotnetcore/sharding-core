@@ -12,7 +12,7 @@ namespace ShardingCore.Test3x.Shardings
     public class OrderAreaShardingVirtualDataSourceRoute:AbstractShardingOperatorVirtualDataSourceRoute<Order,string>
     {
         protected override bool EnableHintRoute =>true;
-        public override bool EnableRouteParseCompileCache => true;
+        public override bool? EnableRouteParseCompileCache => true;
 
         private readonly List<string> _dataSources = new List<string>()
         {

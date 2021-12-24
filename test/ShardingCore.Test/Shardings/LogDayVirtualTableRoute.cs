@@ -10,7 +10,7 @@ namespace ShardingCore.Test.Shardings
 {
     public class LogDayVirtualTableRoute:AbstractSimpleShardingDayKeyDateTimeVirtualTableRoute<LogDay>
     {
-        public override bool EnableRouteParseCompileCache => true;
+        public override bool? EnableRouteParseCompileCache => true;
         protected override bool EnableHintRoute => true;
 
         public override DateTime GetBeginTime()

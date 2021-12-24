@@ -26,7 +26,6 @@ namespace Sample.Migrations
                 {
                     o.CreateShardingTableOnStart = false;
                     o.EnsureCreatedWithOutShardingTable = false;
-                    o.AutoTrackEntity = true;
                 })
                 .AddShardingTransaction((connection, builder) =>
                     builder.UseSqlServer(connection))

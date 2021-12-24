@@ -19,7 +19,6 @@ builder.Services.AddControllers();
 builder.Services.AddShardingDbContext<DefaultDbContext>((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
     .Begin(o =>
     {
-        o.AutoTrackEntity = true;
         o.CreateShardingTableOnStart = true;
         o.EnsureCreatedWithOutShardingTable = true;
     })

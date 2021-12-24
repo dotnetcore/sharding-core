@@ -53,7 +53,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// </summary>
         /// <returns></returns>
         public abstract string[] GetCronExpressions();
-        public Task ExecuteAsync()
+        public virtual Task ExecuteAsync()
         {
             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var virtualTable = virtualTableManager.GetVirtualTable(typeof(TEntity));

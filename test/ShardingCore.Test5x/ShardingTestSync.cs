@@ -66,29 +66,29 @@ namespace ShardingCore.Test5x
 
             var queryable1 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202102);
             var routeParseExpression1 = ShardingUtil.GetRouteParseExpression(queryable1, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable2 = _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= 202102);
             var routeParseExpression2 = ShardingUtil.GetRouteParseExpression(queryable2, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var xxxx1 = 202102;
             var queryable3 = _virtualDbContext.Set<SysUserSalary>().Where(ox => ox.DateOfMonth >= xxxx1);
             var routeParseExpression3 = ShardingUtil.GetRouteParseExpression(queryable3, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable4 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth >= 202101);
             var routeParseExpression4 = ShardingUtil.GetRouteParseExpression(queryable4, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable5 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth > 202101);
             var routeParseExpression5 = ShardingUtil.GetRouteParseExpression(queryable5, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable6 = _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth == 202101);
             var routeParseExpression6 = ShardingUtil.GetRouteParseExpression(queryable6, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable7 = _virtualDbContext.Set<SysUserSalary>().Where(o => 202101 <= o.DateOfMonth);
             var routeParseExpression7 = ShardingUtil.GetRouteParseExpression(queryable7, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             var queryable8 = _virtualDbContext.Set<SysUserSalary>().Where(o => 202101 == o.DateOfMonth);
             var routeParseExpression8 = ShardingUtil.GetRouteParseExpression(queryable8, virtualTableRoute.EntityMetadata,
-                (i, op,propertyName) => virtualTableRoute.GetRouteToFilter(i, op,propertyName), true);
+                (i, op,propertyName) => virtualTableRoute.GetRouteFilter(i, op,propertyName), true);
             Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression2));
             Assert.Equal(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression3));
             Assert.NotEqual(expressionEqualityComparer.GetHashCode(routeParseExpression1), expressionEqualityComparer.GetHashCode(routeParseExpression4));
@@ -189,6 +189,19 @@ namespace ShardingCore.Test5x
         {
             public string Id { get; set; }
             public string T { get; set; }
+        }
+        [Fact]
+        public void TestMultiShardingProperty()
+        {
+
+            var multiOrder = _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 232398109278351360).FirstOrDefault();
+            Assert.NotNull(multiOrder);
+            var longs = new[] { 232398109278351360, 255197859283087360 };
+            var multiOrders = _virtualDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToList();
+            Assert.Equal(2, multiOrders.Count);
+            var dateTime = new DateTime(2021, 11, 1);
+            var multiOrder404 = _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 250345338962063360 && o.CreateTime < dateTime).FirstOrDefault();
+            Assert.Null(multiOrder404);
         }
         [Fact]
         public void TestEntityMetadataManager()

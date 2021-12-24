@@ -17,6 +17,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore.Exceptions;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 
 namespace ShardingCore.Sharding
@@ -233,7 +235,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return !_shardingConfigOption.AutoTrackEntity || MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.CurrentQueryReadConnection();
+            return  MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.CurrentQueryReadConnection();
         }
 
         /// <summary>
@@ -265,6 +267,49 @@ namespace ShardingCore.Sharding
         public IShardingComparer GetShardingComparer()
         {
             return _shardingComparer;
+        }
+
+        public TResult PreperExecute<TResult>(Func<TResult> emptyFunc)
+        {
+
+            if (IsRouteNotMatch())
+            {
+                if (ThrowIfQueryRouteNotMatch())
+                {
+                    if (IsDataSourceRouteNotMatch())
+                    {
+                        throw new ShardingCoreDataSourceQueryRouteNotMatchException(MergeQueryCompilerContext.GetQueryExpression().ShardingPrint());
+                    }
+                    else
+                    {
+                        throw new ShardingCoreTableQueryRouteNotMatchException(MergeQueryCompilerContext.GetQueryExpression().ShardingPrint());
+                    }
+                }
+                else
+                {
+                    return emptyFunc();
+                }
+            }
+
+            return default;
+        }
+        /// <summary>
+        /// 无路由匹配
+        /// </summary>
+        /// <returns></returns>
+        private bool IsRouteNotMatch()
+        {
+            return DataSourceRouteResult.IntersectDataSources.IsEmpty() || TableRouteResults.IsEmpty();
+        }
+
+        private bool IsDataSourceRouteNotMatch()
+        {
+            return DataSourceRouteResult.IntersectDataSources.IsEmpty();
+        }
+
+        private bool ThrowIfQueryRouteNotMatch()
+        {
+            return _shardingConfigOption.ThrowIfQueryRouteNotMatch;
         }
         public void Dispose()
         {

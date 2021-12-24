@@ -22,11 +22,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     {
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+        public IShardingConfigOption ShardingConfigOption { get; private set; }
         public virtual void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
+            ShardingConfigOption =
+                ShardingContainer.GetRequiredShardingConfigOption(entityMetadata.ShardingDbContextType);
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {

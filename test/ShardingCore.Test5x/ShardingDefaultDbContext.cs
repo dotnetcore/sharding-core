@@ -34,6 +34,7 @@ namespace ShardingCore.Test5x
             modelBuilder.ApplyConfiguration(new LogYearLongMap());
             modelBuilder.ApplyConfiguration(new SysUserModIntMap());
             modelBuilder.ApplyConfiguration(new LogDayLongMap());
+            modelBuilder.ApplyConfiguration(new MultiShardingOrderMap());
         }
 
         public IRouteTail RouteTail { get; set; }

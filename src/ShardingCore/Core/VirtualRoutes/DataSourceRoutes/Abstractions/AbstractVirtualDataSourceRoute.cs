@@ -19,6 +19,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     {
         public EntityMetadata EntityMetadata { get; private set; }
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+        public IShardingConfigOption ShardingConfigOption { get; private set; }
 
 
         public void Initialize(EntityMetadata entityMetadata)
@@ -33,6 +34,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                 var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
                 paginationConfiguration.Configure(paginationBuilder);
             }
+
+            ShardingConfigOption =
+                ShardingContainer.GetRequiredShardingConfigOption(entityMetadata.ShardingDbContextType);
 
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()

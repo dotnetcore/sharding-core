@@ -36,7 +36,6 @@ namespace Sample.SqlServer
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.AutoTrackEntity = true;
                     o.MaxQueryConnectionsLimit = Environment.ProcessorCount;
                     o.ConnectionMode = ConnectionModeEnum.SYSTEM_AUTO;
                     //if SysTest entity not exists in db and db is exists

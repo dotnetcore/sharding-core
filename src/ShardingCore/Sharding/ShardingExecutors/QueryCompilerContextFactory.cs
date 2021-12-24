@@ -45,8 +45,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             var queryCombineResult = queryableCombine.Combine(queryCompilerContext);
             var dataSourceRouteResult = dataSourceRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable());
             var tableRouteResults = tableRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable());
+            var routeResults = tableRouteResults as TableRouteResult[] ?? tableRouteResults.ToArray();
             var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, dataSourceRouteResult,
-                tableRouteResults);
+                routeResults);
             return mergeCombineCompilerContext;
         }
 
