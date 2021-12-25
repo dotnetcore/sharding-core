@@ -37,7 +37,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="shardingOperator">操作</param>
         /// <param name="shardingPropertyName">分表字段</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        public  Expression<Func<string, bool>> GetRouteFilter(object shardingKey,
+        public virtual Expression<Func<string, bool>> GetRouteFilter(object shardingKey,
             ShardingOperatorEnum shardingOperator, string shardingPropertyName)
         {
             if (EntityMetadata.IsMainShardingTableKey(shardingPropertyName))

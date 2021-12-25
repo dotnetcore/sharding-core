@@ -38,6 +38,12 @@ namespace ShardingCore.Helpers
                         builder.TableSeparator(shardingKey.TableSeparator);
                         shardingTableCount++;
                     }
+
+                    if (attributes.FirstOrDefault(x => x.GetType() == typeof(ShardingExtraTableKeyAttribute)) is
+                        ShardingExtraTableKeyAttribute shardingExtraKey)
+                    {
+                        builder.ShardingExtraProperty(shardingProperty.Name);
+                    }
                 }
             }
         }
@@ -68,6 +74,11 @@ namespace ShardingCore.Helpers
 
                         builder.AutoCreateDataSource(autoCreateDataSource);
                         shardingDataSourceCount++;
+                    }
+                    if (attributes.FirstOrDefault(x => x.GetType() == typeof(ShardingExtraDataSourceKeyAttribute)) is
+                        ShardingExtraDataSourceKeyAttribute shardingExtraKey)
+                    {
+                        builder.ShardingExtraProperty(shardingProperty.Name);
                     }
 
                 }

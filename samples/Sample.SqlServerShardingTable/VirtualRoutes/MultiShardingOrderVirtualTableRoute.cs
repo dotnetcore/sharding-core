@@ -29,7 +29,7 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
         private Expression<Func<string, bool>> GetIdRouteFilter(object shardingKey,
             ShardingOperatorEnum shardingOperator)
         {
-            //解析雪花id 需要考虑异常情况,传入的可能不是雪花id那么可以随机查询一张表
+            //解析雪花id 需要考虑异常情况,传入的可能不是雪花id那么可以直接返回false因为是and链接所以直接就没有结果了//return tail => false;
             var analyzeIdToDateTime = SnowflakeId.AnalyzeIdToDateTime(Convert.ToInt64(shardingKey));
             //当前时间的tail
             var t = TimeFormatToTail(analyzeIdToDateTime);
