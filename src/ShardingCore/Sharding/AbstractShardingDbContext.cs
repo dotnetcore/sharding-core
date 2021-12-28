@@ -47,6 +47,7 @@ namespace ShardingCore.Sharding
         private DbContextOptions<T> _dbContextOptions;
 
         private readonly object CREATELOCK = new object();
+        private string connectionString;
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
@@ -97,7 +98,11 @@ namespace ShardingCore.Sharding
         }
         public string GetConnectionString()
         {
-            return Database.GetDbConnection().ConnectionString;
+            if (null == connectionString)
+            {
+                connectionString = Database.GetDbConnection().ConnectionString;
+            }
+            return connectionString;
         }
 
 
