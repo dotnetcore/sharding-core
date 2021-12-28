@@ -2,8 +2,10 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 
 namespace ShardingCore.Sharding.Abstractions
 {
@@ -71,6 +73,8 @@ namespace ShardingCore.Sharding.Abstractions
         /// commit
         /// </summary>
         void Commit();
+
+        IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts();
 #if !EFCORE2
         /// <summary>
         /// rollback async

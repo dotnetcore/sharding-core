@@ -180,6 +180,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
+        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
+        {
+            return _dbContextCaches;
+        }
+
         #endregion
 
 

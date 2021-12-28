@@ -45,7 +45,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             }
 
             if (take.HasValue)
-                reWriteQueryable = reWriteQueryable.Take(take.Value + skip.GetValueOrDefault());
+                reWriteQueryable = reWriteQueryable.Skip(0).Take(take.Value + skip.GetValueOrDefault());
             //包含group by
             if (extraEntry.GroupByContext.GroupExpression != null)
             {

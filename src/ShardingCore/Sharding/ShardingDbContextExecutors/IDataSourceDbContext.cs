@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,CancellationToken cancellationToken = new CancellationToken());
 
-
+        IDictionary<string, DbContext> GetCurrentContexts();
 
         void Rollback();
         void Commit(int dataSourceCount);

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Sample.SqlServerShardingTable.Entities;
 using Sample.SqlServerShardingTable.VirtualRoutes;
 using ShardingCore;
 

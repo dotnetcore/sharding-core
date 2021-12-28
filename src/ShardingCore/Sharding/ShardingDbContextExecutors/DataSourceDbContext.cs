@@ -270,6 +270,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return i;
         }
 
+        public IDictionary<string, DbContext> GetCurrentContexts()
+        {
+            return _dataSourceDbContexts;
+        }
+
         public void Rollback()
         {
             if (IsDefault)

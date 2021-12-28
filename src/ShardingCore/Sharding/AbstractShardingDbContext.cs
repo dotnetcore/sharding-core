@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding
     /// </summary>
     public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
     {
-        private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
+        protected IShardingDbContextExecutor ShardingDbContextExecutor { get; }
 
 
         public AbstractShardingDbContext(DbContextOptions options) : base(options)
@@ -36,7 +36,7 @@ namespace ShardingCore.Sharding
             var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
             if (wrapOptionsExtension != null)
             {
-                _shardingDbContextExecutor =
+                ShardingDbContextExecutor =
                     (IShardingDbContextExecutor)Activator.CreateInstance(
                         typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()),this);
             }
@@ -48,16 +48,16 @@ namespace ShardingCore.Sharding
         /// </summary>
         public int ReadWriteSeparationPriority
         {
-            get => _shardingDbContextExecutor.ReadWriteSeparationPriority;
-            set => _shardingDbContextExecutor.ReadWriteSeparationPriority = value;
+            get => ShardingDbContextExecutor.ReadWriteSeparationPriority;
+            set => ShardingDbContextExecutor.ReadWriteSeparationPriority = value;
         }
         /// <summary>
         /// 是否使用读写分离
         /// </summary>
         public bool ReadWriteSeparation
         {
-            get => _shardingDbContextExecutor.ReadWriteSeparation;
-            set => _shardingDbContextExecutor.ReadWriteSeparation = value;
+            get => ShardingDbContextExecutor.ReadWriteSeparation;
+            set => ShardingDbContextExecutor.ReadWriteSeparation = value;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace ShardingCore.Sharding
 
         public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
         {
-            return _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
+            return ShardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
-            return _shardingDbContextExecutor.CreateGenericDbContext(entity);
+            return ShardingDbContextExecutor.CreateGenericDbContext(entity);
         }
 
 
@@ -392,17 +392,17 @@ namespace ShardingCore.Sharding
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction==null&&_shardingDbContextExecutor.IsMultiDbContext)
+            if (Database.CurrentTransaction==null&&ShardingDbContextExecutor.IsMultiDbContext)
             {
                 using (var tran = Database.BeginTransaction())
                 {
-                    i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
+                    i = ShardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
                     tran.Commit();
                 }
             }
             else
             {
-                i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
+                i = ShardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
             }
 
             return i;
@@ -423,11 +423,11 @@ namespace ShardingCore.Sharding
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction==null && _shardingDbContextExecutor.IsMultiDbContext)
+            if (Database.CurrentTransaction==null && ShardingDbContextExecutor.IsMultiDbContext)
             {
                 using (var tran = await Database.BeginTransactionAsync(cancellationToken))
                 {
-                    i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                    i = await ShardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #if EFCORE2
                      tran.Commit();
 #endif
@@ -438,7 +438,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                i = await ShardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             }
 
 
@@ -454,7 +454,7 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                _shardingDbContextExecutor.Dispose();
+                ShardingDbContextExecutor.Dispose();
                 base.Dispose();
             }
         }
@@ -468,35 +468,35 @@ namespace ShardingCore.Sharding
             }
             else
             {
-                await _shardingDbContextExecutor.DisposeAsync();
+                await ShardingDbContextExecutor.DisposeAsync();
 
                 await base.DisposeAsync();
             }
         }
         public Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return _shardingDbContextExecutor.RollbackAsync(cancellationToken);
+            return ShardingDbContextExecutor.RollbackAsync(cancellationToken);
         }
 
         public Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            return _shardingDbContextExecutor.CommitAsync(cancellationToken);
+            return ShardingDbContextExecutor.CommitAsync(cancellationToken);
         }
 #endif
 
         public void NotifyShardingTransaction()
         {
-            _shardingDbContextExecutor.NotifyShardingTransaction();
+            ShardingDbContextExecutor.NotifyShardingTransaction();
         }
 
         public void Rollback()
         {
-            _shardingDbContextExecutor.Rollback();
+            ShardingDbContextExecutor.Rollback();
         }
 
         public void Commit()
         {
-            _shardingDbContextExecutor.Commit();
+            ShardingDbContextExecutor.Commit();
         }
 
     }
