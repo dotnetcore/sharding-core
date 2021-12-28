@@ -84,7 +84,7 @@ namespace ShardingCore.Test
                             }
                         }
                     };
-                },ReadStrategyEnum.Loop,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime)
+                },ReadStrategyEnum.Loop,defaultEnable: false, readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime)
                 .AddTableEnsureManager(sp=>new SqlServerTableEnsureManager<ShardingDefaultDbContext>())
                 .End();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))

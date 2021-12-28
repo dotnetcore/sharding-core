@@ -7,5 +7,6 @@ namespace Sample.SqlServerShardingTable.Entities
         public long Id { get; set; }
         public string Name { get; set; }
         public DateTime CreateTime { get; set; }
+        public bool IsDelete { get; set; }
     }
 }
