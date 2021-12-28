@@ -45,7 +45,16 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             }
 
             if (take.HasValue)
-                reWriteQueryable = reWriteQueryable.Skip(0).Take(take.Value + skip.GetValueOrDefault());
+            {
+                if (skip.HasValue)
+                {
+                    reWriteQueryable = reWriteQueryable.Skip(0).Take(take.Value + skip.GetValueOrDefault());
+                }
+                else
+                {
+                    reWriteQueryable = reWriteQueryable.Take(take.Value + skip.GetValueOrDefault());
+                }
+            }
             //包含group by
             if (extraEntry.GroupByContext.GroupExpression != null)
             {
