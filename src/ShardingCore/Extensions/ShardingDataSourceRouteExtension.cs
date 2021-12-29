@@ -53,6 +53,18 @@ namespace ShardingCore.Extensions
 
             return dataSources.Select(o => mustDataSources.Add(o)).All(o => o);
         }
+        public static bool TryCreateOrAddAllMustDataSource(this ShardingRouteContext shardingRouteContext, params string[] dataSources)
+        {
+            if (shardingRouteContext == null)
+            {
+                return false;
+            }
+
+            if (dataSources.IsEmpty())
+                return false;
+
+            return dataSources.Select(o => shardingRouteContext.MustAllDataSource.Add(o)).All(o => o);
+        }
         /// <summary>
         /// 创建或者添加提示路由
         /// </summary>
@@ -88,6 +100,17 @@ namespace ShardingCore.Extensions
 
             return dataSources.Select(o => hintDataSources.Add(o)).All(o => o);
         }
+        public static bool TryCreateOrAddAllHintDataSource(this ShardingRouteContext shardingRouteContext,params string[] dataSources)
+        {
+            if (shardingRouteContext == null)
+            {
+                return false;
+            }
+
+            if (dataSources.IsEmpty())
+                return false;
+            return dataSources.Select(o => shardingRouteContext.HintAllDataSource.Add(o)).All(o => o);
+        }
         /// <summary>
         /// 创建或者添加断言
         /// </summary>
@@ -116,6 +139,22 @@ namespace ShardingCore.Extensions
             foreach (var routeAssert in asserts)
             {
                 routeAsserts.AddLast(routeAssert);
+            }
+
+            return true;
+        }
+        public static bool TryCreateOrAddAssertAllDataSource(this ShardingRouteContext shardingRouteContext,params IDataSourceRouteAssert[] asserts)
+        {
+            if (shardingRouteContext == null)
+            {
+                return false;
+            }
+
+            if (asserts.IsEmpty())
+                return false;
+            foreach (var routeAssert in asserts)
+            {
+                shardingRouteContext.AssertAllDataSource.AddLast(routeAssert);
             }
 
             return true;

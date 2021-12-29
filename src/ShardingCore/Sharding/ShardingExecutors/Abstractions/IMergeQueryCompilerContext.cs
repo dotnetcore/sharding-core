@@ -16,8 +16,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         IEnumerable<TableRouteResult> GetTableRouteResults();
         DataSourceRouteResult GetDataSourceRouteResult();
 
-        bool IsMergeQuery();
-
         bool IsCrossTable();
         bool IsCrossDataSource();
         bool IsEnumerableQuery();

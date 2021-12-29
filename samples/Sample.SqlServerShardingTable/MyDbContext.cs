@@ -46,6 +46,7 @@ namespace Sample.SqlServerShardingTable
                 entity.Property(o => o.Id).ValueGeneratedNever();
                 entity.Property(o=>o.Name).IsRequired().IsUnicode(false).HasMaxLength(50);
                 entity.HasQueryFilter(o => o.IsDelete == false);
+                entity.HasQueryFilter(o => o.Name == "123");
                 entity.ToTable(nameof(MultiShardingOrder));
             });
         }

@@ -53,7 +53,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
                 }
                 else
                 {
-                    return (T)attachedEntity;
+                   return (T)attachedEntity;
                 }
             }
             return current;

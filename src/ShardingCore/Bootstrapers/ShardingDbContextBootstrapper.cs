@@ -97,7 +97,7 @@ namespace ShardingCore.Bootstrapers
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;
-
+                    //entity.GetAnnotation("")
                     if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
                     _shardingConfigOption.HasVirtualTableRoute(entityType))
                     {

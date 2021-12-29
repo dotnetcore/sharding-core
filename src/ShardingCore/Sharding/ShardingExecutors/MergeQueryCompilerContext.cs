@@ -136,10 +136,13 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _dataSourceRouteResult;
         }
-
-        public bool IsMergeQuery()
+        /// <summary>
+        /// 既不可以跨库也不可以跨表还必须是平行表才可以
+        /// </summary>
+        /// <returns></returns>
+        private bool IsMergeQuery()
         {
-            return _isCrossDataSource || _isCrossTable;
+            return _isCrossDataSource || _isCrossTable || !_parallelTableManager.IsParallelTableQuery(GetQueryEntities());
         }
 
         public bool IsCrossTable()

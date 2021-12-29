@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -12,12 +13,13 @@ namespace ShardingCore.Core.EntityMetadatas
     /// </summary>
     public class EntityMetadata
     {
-        public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties)
+        public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties,LambdaExpression queryFilterExpression)
         {
             EntityType = entityType;
             VirtualTableName = virtualTableName;
             ShardingDbContextType = shardingDbContextType;
             PrimaryKeyProperties = primaryKeyProperties;
+            QueryFilterExpression = queryFilterExpression;
             IsSingleKey= PrimaryKeyProperties.Count == 1;
             ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
             ShardingTableProperties = new Dictionary<string, PropertyInfo>();
@@ -37,6 +39,11 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 主键
         /// </summary>
         public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; }
+        /**
+         * efcore query filter
+         */
+        public LambdaExpression QueryFilterExpression { get; }
+
         /// <summary>
         /// 是否单主键
         /// </summary>

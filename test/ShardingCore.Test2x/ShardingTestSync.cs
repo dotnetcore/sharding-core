@@ -103,8 +103,8 @@ namespace ShardingCore.Test2x
             var a = new DefaultPhysicDataSource("aaa", "aaa", true);
             var b = new DefaultPhysicDataSource("aaa", "aaa1", false);
             Assert.Equal(a, b);
-            var x = new EntityMetadata(typeof(LogDay), "aa", typeof(ShardingDefaultDbContext), new List<PropertyInfo>());
-            var y = new EntityMetadata(typeof(LogDay), "aa1", typeof(ShardingDefaultDbContext), new List<PropertyInfo>());
+            var x = new EntityMetadata(typeof(LogDay), "aa", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null);
+            var y = new EntityMetadata(typeof(LogDay), "aa1", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null);
             Assert.Equal(x, y);
             var dateTime = new DateTime(2021, 1, 1);
             var logDays = Enumerable.Range(0, 100).Select(o => new LogDay() { Id = Guid.NewGuid(), LogLevel = "info", LogBody = o.ToString(), LogTime = dateTime.AddDays(o) }).ToList();
@@ -838,8 +838,8 @@ namespace ShardingCore.Test2x
                 }
                 catch (Exception e)
                 {
-                    Assert.Equal(typeof(InvalidOperationException),e.GetType());
-                    Assert.True(e.Message.Contains("contains"));
+                    Assert.True(typeof(InvalidOperationException) == e.GetType() || typeof(TargetInvocationException) == e.GetType());
+                    Assert.True(e.Message.Contains("contains") || e.InnerException.Message.Contains("contains"));
                 }
             }
         }
@@ -889,8 +889,8 @@ namespace ShardingCore.Test2x
                 }
                 catch (Exception e)
                 {
-                    Assert.Equal(typeof(InvalidOperationException), e.GetType());
-                    Assert.True(e.Message.Contains("contains"));
+                    Assert.True(typeof(InvalidOperationException) == e.GetType() || typeof(TargetInvocationException) == e.GetType());
+                    Assert.True(e.Message.Contains("contains") || e.InnerException.Message.Contains("contains"));
                 }
             }
         }
