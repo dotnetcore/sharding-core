@@ -19,12 +19,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             ShardingDbContextType = shardingDbContextType;
             ReplaceTables = replaceTables.ToHashSet();
-            NoDifferentTail = ReplaceTables.IsEmpty() || ReplaceTables.GroupBy(o => o.Tail).Count() == 1;
+            HasDifferentTail = ReplaceTables.IsNotEmpty() && ReplaceTables.GroupBy(o => o.Tail).Count() != 1;
         }
         
         public ISet<IPhysicTable> ReplaceTables { get; }
 
-        public bool NoDifferentTail { get; }
+        public bool HasDifferentTail { get; }
 
         public Type ShardingDbContextType { get; }
         protected bool Equals(TableRouteResult other)

@@ -24,7 +24,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly IQueryCompilerContext _queryCompilerContext;
         private readonly QueryCombineResult _queryCombineResult;
         private readonly DataSourceRouteResult _dataSourceRouteResult;
-        private readonly IEnumerable<TableRouteResult> _tableRouteResults;
+        private readonly TableRouteResult[] _tableRouteResults;
 
         /// <summary>
         /// 本次查询跨库
@@ -35,6 +35,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// 本次查询跨表
         /// </summary>
         private readonly bool _isCrossTable;
+        /// <summary>
+        /// 存在一次查询跨多个tail
+        /// </summary>
+        private readonly bool _existCrossTableTails;
 
 
         private QueryCompilerExecutor _queryCompilerExecutor;
@@ -45,9 +49,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _queryCombineResult = queryCombineResult;
             _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             _dataSourceRouteResult = dataSourceRouteResult;
-            _tableRouteResults = GetTableRouteResults(tableRouteResults);
+            _tableRouteResults = GetTableRouteResults(tableRouteResults).ToArray();
             _isCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            _isCrossTable = _tableRouteResults.Count() > 1|| _tableRouteResults.IsNotEmpty()&& !_tableRouteResults.First().NoDifferentTail;
+            _isCrossTable = _tableRouteResults.Count() > 1;
+            _existCrossTableTails = _tableRouteResults.Any(o => o.HasDifferentTail);
         }
 
         private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
@@ -113,11 +118,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 }
                 else
                 {
-                    hasQueryCompilerExecutor = IsSingleDbContextNativeQuery();
-                    if (hasQueryCompilerExecutor.Value)
+                    hasQueryCompilerExecutor = IsSingleQuery();
+                    if (hasQueryCompilerExecutor.Value&&(!IsQueryTrack()||!_existCrossTableTails))
                     {
+                        //要么本次查询不追踪如果需要追踪不可以存在跨tails
                         var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), !IsQueryTrack() || CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
+                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults[0]));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }
                 }
@@ -132,7 +138,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCombineResult;
         }
 
-        public IEnumerable<TableRouteResult> GetTableRouteResults()
+        public TableRouteResult[] GetTableRouteResults()
         {
             return _tableRouteResults;
         }
@@ -145,20 +151,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// 既不可以跨库也不可以跨表,所有的分表都必须是相同后缀才可以
         /// </summary>
         /// <returns></returns>
-        private bool IsSingleDbContextNativeQuery()
+        private bool IsSingleQuery()
         {
-            return !_isCrossDataSource&&!_isCrossTable && (!IsQueryTrack()|| OnlyShardingDataSourceOrNoDifferentTail());
-        }
-        /// <summary>
-        /// 不存在分表或者分了但是都是一样的tail并且没有不分表的对象
-        /// </summary>
-        /// <returns></returns>
-        private bool OnlyShardingDataSourceOrNoDifferentTail()
-        {
-            if (GetQueryEntities().All(o => GetEntityMetadataManager().IsOnlyShardingDataSource(o)))
-                return true;
-            var firstTableRouteResult = _tableRouteResults.First();
-            return (firstTableRouteResult.NoDifferentTail&&GetQueryEntities().All(o=>GetEntityMetadataManager().IsShardingTable(o)));
+            return !_isCrossDataSource&&!_isCrossTable;
         }
 
         public bool IsCrossTable()
@@ -174,6 +169,14 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool IsEnumerableQuery()
         {
             return _queryCompilerContext.IsEnumerableQuery();
+        }
+        /// <summary>
+        /// 如果需要聚合并且存在跨tail的查询或者本次是读链接
+        /// </summary>
+        /// <returns></returns>
+        public bool IsParallelQuery()
+        {
+            return _isCrossTable || _existCrossTableTails|| CurrentQueryReadConnection();
         }
     }
 }

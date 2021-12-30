@@ -13,11 +13,12 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
     public interface IMergeQueryCompilerContext : IQueryCompilerContext
     {
         QueryCombineResult GetQueryCombineResult();
-        IEnumerable<TableRouteResult> GetTableRouteResults();
+        TableRouteResult[] GetTableRouteResults();
         DataSourceRouteResult GetDataSourceRouteResult();
 
         bool IsCrossTable();
         bool IsCrossDataSource();
         bool IsEnumerableQuery();
+        bool IsParallelQuery();
     }
 }

@@ -28,6 +28,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
         private bool? _isNoTracking;
+        private readonly bool _currentQueryReadConnection;
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
         {
@@ -39,6 +40,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
 
             _shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(_shardingDbContextType);
+            _currentQueryReadConnection =
+                _shardingConfigOption.UseReadWrite && _shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
         public static QueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
@@ -73,7 +76,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public bool CurrentQueryReadConnection()
         {
-            return _shardingConfigOption.UseReadWrite&&_shardingDbContext.CurrentIsReadWriteSeparation();
+            return _currentQueryReadConnection;
         }
 
         public bool IsQueryTrack()

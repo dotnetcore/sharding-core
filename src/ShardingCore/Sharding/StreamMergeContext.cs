@@ -228,12 +228,12 @@ namespace ShardingCore.Sharding
         }
 
         /// <summary>
-        /// 是否使用并行查询
+        /// 是否使用并行查询仅分库无所谓可以将分库的当前DbContext进行储存起来但是分表就不行因为一个DbContext最多一对一表
         /// </summary>
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return  MergeQueryCompilerContext.IsCrossTable() || MergeQueryCompilerContext.CurrentQueryReadConnection();
+            return  MergeQueryCompilerContext.IsParallelQuery();
         }
 
         /// <summary>
@@ -243,6 +243,8 @@ namespace ShardingCore.Sharding
         public bool IsUseShardingTrack(Type entityType)
         {
             if (!IsParallelQuery())
+                return false;
+            if (MergeQueryCompilerContext.CurrentQueryReadConnection())
                 return false;
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
         }
