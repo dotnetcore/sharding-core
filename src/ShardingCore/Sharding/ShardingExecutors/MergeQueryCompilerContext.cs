@@ -47,7 +47,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _dataSourceRouteResult = dataSourceRouteResult;
             _tableRouteResults = GetTableRouteResults(tableRouteResults);
             _isCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            _isCrossTable = _tableRouteResults.Count() > 1;
+            _isCrossTable = _tableRouteResults.Count() > 1|| _tableRouteResults.IsNotEmpty()&& !_tableRouteResults.First().NoDifferentTail;
         }
 
         private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)

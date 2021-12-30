@@ -67,8 +67,8 @@ namespace Sample.SqlServerShardingTable.Controllers
         public async Task<IActionResult> QueryJoin2()
         {
            var begin = new DateTime(2021, 3, 2);
-           var end = new DateTime(2021, 4, 3);
-           var sql1 = from user in _myDbContext.Set<SysUser>().Where(o => o.Id == "1" || o.Id == "6")
+           var end = new DateTime(2021, 3, 28);
+           var sql1 = from user in _myDbContext.Set<SysUser>().Where(o => o.Id == "1")
                join order in _myDbContext.Set<Order>().Where(o=>o.CreationTime>=begin&&o.CreationTime<=end)
                    on user.Id equals order.Payer
                select new
