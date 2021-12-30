@@ -97,20 +97,52 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.CurrentQueryReadConnection();
         }
 
+        public bool IsQueryTrack()
+        {
+            return _queryCompilerContext.IsQueryTrack();
+        }
+
+
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                hasQueryCompilerExecutor = !IsMergeQuery();
-                if (hasQueryCompilerExecutor.Value)
+                if (_dataSourceRouteResult.IntersectDataSources.IsEmpty() || _tableRouteResults.IsEmpty())
                 {
-                    var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
-                    _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
+                    hasQueryCompilerExecutor = false;
+                }
+                else
+                {
+                    hasQueryCompilerExecutor = IsSingleDbContextNativeQuery();
+                    if (hasQueryCompilerExecutor.Value)
+                    {
+                        var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), !IsQueryTrack() || CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
+                        _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
+                    }
                 }
             }
 
             return _queryCompilerExecutor;
+        }
+        /// <summary>
+        /// 既不可以跨库也不可以跨表,所有的分表都必须是相同后缀才可以
+        /// </summary>
+        /// <returns></returns>
+        private bool IsSingleDbContextNativeQuery()
+        {
+            return !_isCrossDataSource && !_isCrossTable && (!IsQueryTrack() || OnlyShardingDataSourceOrNoDifferentTail());
+        }
+        /// <summary>
+        /// 不存在分表或者分了但是都是一样的tail并且没有不分表的对象
+        /// </summary>
+        /// <returns></returns>
+        private bool OnlyShardingDataSourceOrNoDifferentTail()
+        {
+            if (GetQueryEntities().All(o => GetEntityMetadataManager().IsOnlyShardingDataSource(o)))
+                return true;
+            var firstTableRouteResult = _tableRouteResults.First();
+            return (firstTableRouteResult.NoDifferentTail && GetQueryEntities().All(o => GetEntityMetadataManager().IsShardingTable(o)));
         }
 
 

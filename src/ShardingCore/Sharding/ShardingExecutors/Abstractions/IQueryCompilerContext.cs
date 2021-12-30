@@ -25,5 +25,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         /// </summary>
         /// <returns></returns>
         bool CurrentQueryReadConnection();
+
+        bool IsQueryTrack();
     }
 }

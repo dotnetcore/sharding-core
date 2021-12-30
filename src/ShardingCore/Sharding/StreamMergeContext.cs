@@ -55,10 +55,6 @@ namespace ShardingCore.Sharding
         /// </summary>
         public ISet<Type> QueryEntities { get; }
         /// <summary>
-        /// 本次查询是否包含notracking
-        /// </summary>
-        public bool? IsNoTracking { get; }
-        /// <summary>
         /// 本次查询跨库
         /// </summary>
         public bool IsCrossDataSource { get; }
@@ -91,7 +87,6 @@ namespace ShardingCore.Sharding
             Skip = reWriteResult.Skip;
             Take = reWriteResult.Take;
             Orders = reWriteResult.Orders ?? Enumerable.Empty<PropertyOrder>();
-            IsNoTracking = _source.GetIsNoTracking();
             SelectContext = reWriteResult.SelectContext;
             GroupByContext = reWriteResult.GroupByContext;
             _reWriteSource = reWriteResult.ReWriteQueryable;
@@ -248,18 +243,7 @@ namespace ShardingCore.Sharding
         }
         private bool QueryTrack()
         {
-            var shardingDbContext = (DbContext)_shardingDbContext;
-            if (!shardingDbContext.ChangeTracker.AutoDetectChangesEnabled)
-                return false;
-            if (IsNoTracking.HasValue)
-            {
-                return !IsNoTracking.Value;
-            }
-            else
-            {
-                return shardingDbContext.ChangeTracker.QueryTrackingBehavior ==
-                       QueryTrackingBehavior.TrackAll;
-            }
+            return MergeQueryCompilerContext.IsQueryTrack();
         }
 
         public IShardingComparer GetShardingComparer()
