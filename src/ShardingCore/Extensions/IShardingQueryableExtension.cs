@@ -70,10 +70,14 @@ namespace ShardingCore.Extensions
             return (IQueryable<T>) source.Provider.CreateQuery(expression);
         }
 
-        internal static bool? GetIsNoTracking<T>(this IQueryable<T> source)
+        internal static bool? GetIsNoTracking(this IQueryable source)
+        {
+            return GetIsNoTracking(source.Expression);
+        }
+        internal static bool? GetIsNoTracking(this Expression expression)
         {
             var queryableTrackingDiscoverVisitor = new QueryableTrackingDiscoverVisitor();
-            queryableTrackingDiscoverVisitor.Visit(source.Expression);
+            queryableTrackingDiscoverVisitor.Visit(expression);
             return queryableTrackingDiscoverVisitor.IsNoTracking;
         }
 

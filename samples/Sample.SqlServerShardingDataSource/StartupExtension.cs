@@ -19,6 +19,7 @@ namespace Sample.SqlServerShardingDataSource
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
                 var myDbContext = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
+                var any = myDbContext.Set<SysUser>().Where(o => o.Area == "A").Any();
                 if (!myDbContext.Set<SysUser>().Any())
                 {
                     string[] areas = new string[] {"A","B","C" };

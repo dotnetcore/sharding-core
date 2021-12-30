@@ -30,6 +30,12 @@ namespace ShardingCore.Core.EntityMetadatas
                 return false;
             return entityMetadata.IsMultiTableMapping;
         }
+
+        public bool IsOnlyShardingTable(Type entityType)
+        {
+            return  IsShardingTable(entityType) && !IsShardingDataSource(entityType);
+        }
+
         /// <summary>
         /// 对象是否是分库对象
         /// </summary>
@@ -41,6 +47,12 @@ namespace ShardingCore.Core.EntityMetadatas
                 return false;
             return entityMetadata.IsMultiDataSourceMapping;
         }
+
+        public bool IsOnlyShardingDataSource(Type entityType)
+        {
+            return IsShardingDataSource(entityType) && !IsShardingTable(entityType);
+        }
+
         /// <summary>
         /// 对象获取没有返回null
         /// </summary>

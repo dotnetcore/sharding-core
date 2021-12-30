@@ -52,13 +52,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         public IEnumeratorStreamMergeEngine<TEntity> GetMergeEngine()
         {
-            if (_streamMergeContext.DataSourceRouteResult.IntersectDataSources.IsEmpty() ||
-                _streamMergeContext.TableRouteResults.IsEmpty())
+            if (_streamMergeContext.IsRouteNotMatch())
             {
                 return new EmptyQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
             }
             //本次查询没有跨库没有跨表就可以直接执行
-            if (!_streamMergeContext.IsCrossDataSource&&!_streamMergeContext.IsCrossTable)
+            if (!_streamMergeContext.IsMergeQuery())
             {
                 return new SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
             }

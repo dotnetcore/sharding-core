@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingTable.Entities;
 using Sample.SqlServerShardingTable.VirtualRoutes;
 using ShardingCore;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace Sample.SqlServerShardingTable
 {
@@ -55,7 +57,18 @@ namespace Sample.SqlServerShardingTable
                     op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-                }).End();
+                }).AddReadWriteSeparation(sp =>
+                {
+                    return new Dictionary<string, IEnumerable<string>>()
+                    {
+                        {
+                            "ds0", new List<string>()
+                            {
+                                "Data Source=localhost;Initial Catalog=EFCoreShardingTableDBxxxxxxxx;Integrated Security=True;"
+                            }
+                        }
+                    };
+                },ReadStrategyEnum.Loop,defaultEnable:true,readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime).End();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

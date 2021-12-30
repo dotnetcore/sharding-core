@@ -20,7 +20,7 @@ namespace Sample.SqlServerShardingTable
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
                 var myDbContext = serviceScope.ServiceProvider.GetRequiredService<MyDbContext>();
-                if (!myDbContext.Set<Setting>().Any())
+                    if (!myDbContext.Set<Setting>().Any())
                 {
                     List<Setting> settings = new List<Setting>(3);
                     settings.Add(new Setting()

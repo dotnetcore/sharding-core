@@ -35,7 +35,8 @@ namespace ShardingCore
         /// <param name="services"></param>
         public static void SetServices(IServiceProvider services)
         {
-            serviceProvider = services;
+            if (serviceProvider == null)
+                serviceProvider = services;
         }
 
         public static T GetService<T>()
@@ -79,7 +80,7 @@ namespace ShardingCore
         /// <param name="args"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static object CreateInstanceWithInputParams(Type serviceType,params object[] args)
+        public static object CreateInstanceWithInputParams(Type serviceType, params object[] args)
         {
             var constructors
                 = serviceType.GetTypeInfo().DeclaredConstructors

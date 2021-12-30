@@ -27,11 +27,13 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly IShardingConfigOption _shardingConfigOption;
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
+        private bool? _isNoTracking;
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
         {
             _shardingDbContextType = shardingDbContext.GetType();
             _queryEntities = ShardingUtil.GetQueryEntitiesByExpression(queryExpression, _shardingDbContextType);
+            _isNoTracking = queryExpression.GetIsNoTracking();
             _shardingDbContext = shardingDbContext;
             _queryExpression = queryExpression;
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
@@ -73,6 +75,23 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _shardingConfigOption.UseReadWrite&&_shardingDbContext.CurrentIsReadWriteSeparation();
         }
+
+        public bool IsQueryTrack()
+        {
+            var shardingDbContext = (DbContext)_shardingDbContext;
+            if (!shardingDbContext.ChangeTracker.AutoDetectChangesEnabled)
+                return false;
+            if (_isNoTracking.HasValue)
+            {
+                return !_isNoTracking.Value;
+            }
+            else
+            {
+                return shardingDbContext.ChangeTracker.QueryTrackingBehavior ==
+                       QueryTrackingBehavior.TrackAll;
+            }
+        }
+
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)

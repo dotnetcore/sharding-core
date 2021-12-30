@@ -98,6 +98,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.CurrentQueryReadConnection();
         }
 
+        public bool IsQueryTrack()
+        {
+            return _queryCompilerContext.IsQueryTrack();
+        }
+
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)
@@ -108,7 +113,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 }
                 else
                 {
-                    hasQueryCompilerExecutor = !IsMergeQuery();
+                    hasQueryCompilerExecutor = IsSingleDbContextNativeQuery();
                     if (hasQueryCompilerExecutor.Value)
                     {
                         var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
@@ -137,12 +142,23 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _dataSourceRouteResult;
         }
         /// <summary>
-        /// 既不可以跨库也不可以跨表还必须是平行表才可以
+        /// 既不可以跨库也不可以跨表,所有的分表都必须是相同后缀才可以
         /// </summary>
         /// <returns></returns>
-        private bool IsMergeQuery()
+        private bool IsSingleDbContextNativeQuery()
         {
-            return _isCrossDataSource || _isCrossTable || !_parallelTableManager.IsParallelTableQuery(GetQueryEntities());
+            return !_isCrossDataSource&&!_isCrossTable && (!IsQueryTrack()|| OnlyShardingDataSourceOrNoDifferentTail());
+        }
+        /// <summary>
+        /// 不存在分表或者分了但是都是一样的tail并且没有不分表的对象
+        /// </summary>
+        /// <returns></returns>
+        private bool OnlyShardingDataSourceOrNoDifferentTail()
+        {
+            if (GetQueryEntities().All(o => GetEntityMetadataManager().IsOnlyShardingDataSource(o)))
+                return true;
+            var firstTableRouteResult = _tableRouteResults.First();
+            return (firstTableRouteResult.NoDifferentTail&&GetQueryEntities().All(o=>GetEntityMetadataManager().IsShardingTable(o)));
         }
 
         public bool IsCrossTable()

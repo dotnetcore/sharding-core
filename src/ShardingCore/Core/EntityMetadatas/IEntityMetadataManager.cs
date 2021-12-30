@@ -21,12 +21,14 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <param name="entityType"></param>
         /// <returns></returns>
         bool IsShardingTable(Type entityType);
+        bool IsOnlyShardingTable(Type entityType);
         /// <summary>
         /// 是否分库
         /// </summary>
         /// <param name="entityType"></param>
         /// <returns></returns>
         bool IsShardingDataSource(Type entityType);
+        bool IsOnlyShardingDataSource(Type entityType);
         /// <summary>
         /// 尝试获取
         /// </summary>
