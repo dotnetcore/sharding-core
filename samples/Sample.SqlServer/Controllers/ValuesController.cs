@@ -11,6 +11,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -35,6 +38,14 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2x()
         {
+            //var queryable = _defaultTableDbContext.Set<SysUserMod>().Where(o=>true);
+
+            //var tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
+            //var tableRouteResults = tableRouteRuleEngineFactory.Route(queryable);
+            var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
+            var virtualTable = virtualTableManager.GetVirtualTable<SysUserMod>();
+            var virtualTableRoute = virtualTable.GetVirtualRoute();
+            var allTails = virtualTableRoute.GetAllTails();
             Console.WriteLine("------------------Get2x------------------------");
             using (var dbContext =
                    DbContextHelper.CreateDbContextByString(

@@ -36,8 +36,24 @@ namespace ShardingCore.Test.Shardings
             return true;
         }
     }
+   //public class HistoryMinCompare : IComparer<string>
+   //{
+   //    private const string History = "History";
 
-   public class OrderCreateTimePaginationConfiguration : IPaginationConfiguration<Order>
+   //    public int Compare(string? x, string? y)
+   //    {
+   //        if (!Object.Equals(x, y))
+   //        {
+   //            if (History.Equals(x))
+   //                return -1;
+   //            if (History.Equals(y))
+   //                return 1;
+   //        }
+   //        return Comparer<string>.Default.Compare(x, y);
+   //    }
+   //}
+
+    public class OrderCreateTimePaginationConfiguration : IPaginationConfiguration<Order>
    {
        public void Configure(PaginationBuilder<Order> builder)
        {

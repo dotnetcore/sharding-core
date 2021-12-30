@@ -117,7 +117,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     if (hasQueryCompilerExecutor.Value)
                     {
                         var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
+                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), !IsQueryTrack() || CurrentQueryReadConnection(), routeTailFactory.Create(_tableRouteResults.First()));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }
                 }
