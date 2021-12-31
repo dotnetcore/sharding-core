@@ -32,7 +32,7 @@ namespace Sample.NoShardingMultiLevel.Controllers
             if (boss!=null)
             {
                 var companyId = boss.Company.Id;
-                boss.Company.Name = "new company";
+                boss.Company.Name = "new company"+DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
                 boss.Company.Departments = new List<Department>()
                 {
                     new Department() { Id = Guid.NewGuid().ToString("n"), Name = "department", CompanyId = companyId }
