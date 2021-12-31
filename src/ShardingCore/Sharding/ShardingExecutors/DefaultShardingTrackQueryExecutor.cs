@@ -17,40 +17,42 @@ namespace ShardingCore.Sharding.ShardingExecutors
 {
     public class DefaultShardingTrackQueryExecutor: IShardingTrackQueryExecutor
     {
-        private static readonly MethodInfo NativeSingleTrackQueryExecutorTrack
-            = typeof(NativeSingleTrackQueryExecutor)
+        //对象查询追踪方法
+        private static readonly MethodInfo Track
+            = typeof(NativeTrackQueryExecutor)
                 .GetMethod(
-                    nameof(NativeSingleTrackQueryExecutor.Track),
+                    nameof(NativeTrackQueryExecutor.Track),
                     BindingFlags.Instance | BindingFlags.Public
                 );
-        private static readonly MethodInfo NativeSingleTrackQueryExecutorTrackAsync
-            = typeof(NativeSingleTrackQueryExecutor)
+        //对象查询追踪方法
+        private static readonly MethodInfo TrackAsync
+            = typeof(NativeTrackQueryExecutor)
                 .GetMethod(
-                    nameof(NativeSingleTrackQueryExecutor.TrackAsync),
+                    nameof(NativeTrackQueryExecutor.TrackAsync),
                     BindingFlags.Instance | BindingFlags.Public
                 );
-        private static readonly MethodInfo NativeEnumeratorTrackQueryExecutorTrack
-            = typeof(NativeEnumeratorTrackQueryExecutor)
+        //列表查询追踪方法
+        private static readonly MethodInfo TrackEnumerable
+            = typeof(NativeTrackQueryExecutor)
                 .GetMethod(
-                    nameof(NativeEnumeratorTrackQueryExecutor.Track),
+                    nameof(NativeTrackQueryExecutor.TrackEnumerable),
                     BindingFlags.Instance | BindingFlags.Public
                 );
-        private static readonly MethodInfo NativeEnumeratorTrackQueryExecutorTrackAsync
-            = typeof(NativeEnumeratorTrackQueryExecutor)
+        //列表查询追踪方法
+        private static readonly MethodInfo TrackAsyncEnumerable
+            = typeof(NativeTrackQueryExecutor)
                 .GetMethod(
-                    nameof(NativeEnumeratorTrackQueryExecutor.TrackAsync),
+                    nameof(NativeTrackQueryExecutor.TrackAsyncEnumerable),
                     BindingFlags.Instance | BindingFlags.Public
                 );
 
         private readonly IShardingQueryExecutor _shardingQueryExecutor;
-        private readonly INativeEnumeratorTrackQueryExecutor _nativeEnumeratorTrackQueryExecutor;
-        private readonly INativeSingleTrackQueryExecutor _nativeSingleTrackQueryExecutor;
+        private readonly INativeTrackQueryExecutor _nativeTrackQueryExecutor;
 
-        public DefaultShardingTrackQueryExecutor(IShardingQueryExecutor shardingQueryExecutor, INativeEnumeratorTrackQueryExecutor nativeEnumeratorTrackQueryExecutor,INativeSingleTrackQueryExecutor nativeSingleTrackQueryExecutor)
+        public DefaultShardingTrackQueryExecutor(IShardingQueryExecutor shardingQueryExecutor, INativeTrackQueryExecutor nativeTrackQueryExecutor)
         {
             _shardingQueryExecutor = shardingQueryExecutor;
-            _nativeEnumeratorTrackQueryExecutor = nativeEnumeratorTrackQueryExecutor;
-            _nativeSingleTrackQueryExecutor = nativeSingleTrackQueryExecutor;
+            _nativeTrackQueryExecutor = nativeTrackQueryExecutor;
         }
         public TResult Execute<TResult>(IQueryCompilerContext queryCompilerContext)
         {
@@ -64,7 +66,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
 
+            //native query
             var result = queryCompilerExecutor.GetQueryCompiler().Execute<TResult>(queryCompilerExecutor.GetReplaceQueryExpression());
+            //native query track
+            return ResultTrackExecute(result, queryCompilerContext, TrackEnumerable, Track);
+
+        }
+
+        private TResult ResultTrackExecute<TResult>(TResult result, IQueryCompilerContext queryCompilerContext,
+            MethodInfo enumerableMethod, MethodInfo entityMethod)
+        {
             //native query
             if (queryCompilerContext.IsParallelQuery() && queryCompilerContext.IsQueryTrack())
             {
@@ -77,28 +88,27 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 {
                     if (queryCompilerContext.IsEnumerableQuery())
                     {
-                        return NativeExecute(_nativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutorTrack,
+                        return DoResultTrackExecute(enumerableMethod,
                             queryCompilerContext, queryEntityType, result);
                     }
                     else if (queryCompilerContext.IsEntityQuery())
                     {
-                        return NativeExecute(_nativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutorTrack,
+                        return DoResultTrackExecute(entityMethod,
                             queryCompilerContext, queryEntityType, result);
                     }
                 }
                 return result;
             }
             return result;
-
         }
 
 
-        private TResult NativeExecute<TResult>(object executor, MethodInfo executorMethod,
+        private TResult DoResultTrackExecute<TResult>(MethodInfo executorMethod,
             IQueryCompilerContext queryCompilerContext,Type queryEntityType, TResult result)
         {
             return (TResult)executorMethod
                 .MakeGenericMethod(queryEntityType)
-                .Invoke(executor, new object[] { queryCompilerContext, result });
+                .Invoke(_nativeTrackQueryExecutor, new object[] { queryCompilerContext, result });
         }
 
 #if !EFCORE2
@@ -113,34 +123,14 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     return _shardingQueryExecutor.ExecuteAsync<TResult>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
-
             }
 
 
-            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
             //native query
-            if (queryCompilerContext.IsParallelQuery()&&queryCompilerContext.IsQueryTrack())
-            {
-                var queryEntityType = queryCompilerContext.GetQueryableEntityType();
-                var trackerManager =
-                    (ITrackerManager)ShardingContainer.GetService(
-                        typeof(ITrackerManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-                if (trackerManager.EntityUseTrack(queryEntityType))
-                {
-                    if (queryCompilerContext.IsEnumerableQuery())
-                    {
-                        return NativeExecute(_nativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutorTrackAsync,
-                            queryCompilerContext,queryEntityType, result);
-                    }
-                    else if (queryCompilerContext.IsEntityQuery())
-                    {
-                        return NativeExecute(_nativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutorTrackAsync,
-                            queryCompilerContext, queryEntityType, result);
-                    }
-                }
-                return result;
-            }
-            return result;
+            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
+
+            //native query track
+            return ResultTrackExecute(result, queryCompilerContext, TrackAsyncEnumerable, TrackAsync);
         }
 #endif
 #if EFCORE2
@@ -156,31 +146,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
-
-            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression());
             //native query
-            if (queryCompilerContext.IsParallelQuery()&&queryCompilerContext.IsQueryTrack())
-            {
-                var queryEntityType = queryCompilerContext.GetQueryableEntityType();
-                var trackerManager =
-                    (ITrackerManager)ShardingContainer.GetService(
-                        typeof(ITrackerManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-                if (trackerManager.EntityUseTrack(queryEntityType))
-                {
-                    if (queryCompilerContext.IsEnumerableQuery())
-                    {
-                        return NativeExecute(_nativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutorTrack,
-                            queryCompilerContext, queryEntityType, result);
-                    }
-                    else if (queryCompilerContext.IsEntityQuery())
-                    {
-                        return NativeExecute(_nativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutorTrack,
-                            queryCompilerContext, queryEntityType, result);
-                    }
-                }
-                return result;
-            }
-            return result;
+            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression());
+
+            //native query track
+            return ResultTrackExecute(result, queryCompilerContext, TrackAsyncEnumerable, Track);
         }
 
         public Task<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext, CancellationToken cancellationToken)
@@ -194,31 +164,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
-
-            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
             //native query
-            if (queryCompilerContext.IsParallelQuery()&&queryCompilerContext.IsQueryTrack())
-            {
-                var queryEntityType = queryCompilerContext.GetQueryableEntityType();
-                var trackerManager =
-                    (ITrackerManager)ShardingContainer.GetService(
-                        typeof(ITrackerManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-                if (trackerManager.EntityUseTrack(queryEntityType))
-                {
-                    if (queryCompilerContext.IsEnumerableQuery())
-                    {
-                        return NativeExecute(_nativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutorTrack,
-                            queryCompilerContext, queryEntityType, result);
-                    }
-                    else if (queryCompilerContext.IsEntityQuery())
-                    {
-                        return NativeExecute(_nativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutorTrack,
-                            queryCompilerContext, queryEntityType, result);
-                    }
-                }
-                return result;
-            }
-            return result;
+            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
+       
+            //native query track
+            return ResultTrackExecute(result, queryCompilerContext, TrackEnumerable, TrackAsync);
         }
 #endif
     }

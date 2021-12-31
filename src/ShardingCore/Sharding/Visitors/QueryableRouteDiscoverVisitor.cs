@@ -34,6 +34,7 @@ namespace ShardingCore.Core.Internal.Visitors
         /// </summary>
         private readonly bool _shardingTableRoute;
         private Expression<Func<string, bool>> _where = x => true;
+        private bool useQueryFilterOnFirstWhere = false;
 
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
 
@@ -46,6 +47,15 @@ namespace ShardingCore.Core.Internal.Visitors
 
         public Expression<Func<string, bool>> GetRouteParseExpression()
         {
+            if (!useQueryFilterOnFirstWhere)
+            {
+                useQueryFilterOnFirstWhere = true;
+                if (_entityMetadata.QueryFilterExpression != null)
+                {
+                    var newWhere= Resolve(_entityMetadata.QueryFilterExpression);
+                    _where = _where.And(newWhere);
+                }
+            }
             return _where;
         }
 
@@ -59,13 +69,13 @@ namespace ShardingCore.Core.Internal.Visitors
                     var isShardingKey = false;
                     if (_shardingTableRoute)
                     {
-                         isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(member.Member.Name);
+                        isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(member.Member.Name);
                     }
                     else
                     {
                         isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(member.Member.Name);
                     }
-                    return new ShardingPredicateResult(isShardingKey, isShardingKey?member.Member.Name:null);
+                    return new ShardingPredicateResult(isShardingKey, isShardingKey ? member.Member.Name : null);
                 }
             }
 
@@ -168,13 +178,29 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     if (unaryExpression.Operand is LambdaExpression lambdaExpression)
                     {
-                        var newWhere = Resolve(lambdaExpression);
+                        var newWhere = DoResolve(lambdaExpression);
                         _where = _where.And(newWhere);
                     }
                 }
             }
 
             return base.VisitMethodCall(node);
+        }
+
+        private Expression<Func<string, bool>> DoResolve(LambdaExpression lambdaExpression)
+        {
+
+            if (!useQueryFilterOnFirstWhere)
+            {
+                useQueryFilterOnFirstWhere = true;
+                if (_entityMetadata.QueryFilterExpression != null)
+                {
+                    var body = Expression.AndAlso(lambdaExpression.Body, _entityMetadata.QueryFilterExpression.Body);
+                    var lambda = Expression.Lambda(body, lambdaExpression.Parameters[0]);
+                    return Resolve(lambda);
+                }
+            }
+            return Resolve(lambdaExpression);
         }
 
 

@@ -17,5 +17,17 @@ namespace Sample.NoShardingMultiLevel
             modelBuilder.ApplyConfiguration(new CompanyMap());
             modelBuilder.ApplyConfiguration(new DepartmentMap());
         }
+
+        public override void Dispose()
+        {
+            Console.WriteLine("DefaultDbContext dispose");
+            base.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            Console.WriteLine("DefaultDbContext disposeasync");
+            return base.DisposeAsync();
+        }
     }
 }

@@ -399,6 +399,11 @@ namespace ShardingCore.Test3x
             var list3 = await queryable1.ToListAsync();
             Assert.Equal(1, list3.Count());
             Assert.Contains(list3, o => o.Name == "name_300");
+            var firstOrDefaultAsync = await queryable1.OrderBy(o => o.DateOfMonth).FirstOrDefaultAsync();
+            Assert.NotNull(firstOrDefaultAsync);
+            var firstOrDefault = queryable1.OrderBy(o => o.DateOfMonth).FirstOrDefault();
+            Assert.NotNull(firstOrDefault);
+            Assert.Equal(firstOrDefaultAsync, firstOrDefault);
         }
 
         [Fact]

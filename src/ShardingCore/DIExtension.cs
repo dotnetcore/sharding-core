@@ -131,8 +131,7 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             services.TryAddSingleton<IQueryTracker, QueryTracker>();
             services.TryAddSingleton<IShardingTrackQueryExecutor, DefaultShardingTrackQueryExecutor>();
-            services.TryAddSingleton<INativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutor>();
-            services.TryAddSingleton<INativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutor>();
+            services.TryAddSingleton<INativeTrackQueryExecutor, NativeTrackQueryExecutor>();
 
             services.TryAddShardingJob();
             return services;

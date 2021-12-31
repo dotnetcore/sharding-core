@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Enumerators.TrackerEnumerables;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries
 {
-    public class NativeSingleTrackQueryExecutor: INativeSingleTrackQueryExecutor
+    public class NativeTrackQueryExecutor : INativeTrackQueryExecutor
     {
         private readonly IQueryTracker _queryTracker;
-        public NativeSingleTrackQueryExecutor(IQueryTracker queryTracker)
+        public NativeTrackQueryExecutor(IQueryTracker queryTracker)
         {
             _queryTracker = queryTracker;
         }
@@ -40,6 +41,16 @@ namespace ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries
         {
             var result = await resultTask;
             return Track(queryCompilerContext, result);
+        }
+        public IEnumerable<TResult> TrackEnumerable<TResult>(IQueryCompilerContext queryCompilerContext, IEnumerable<TResult> enumerable)
+        {
+            return new TrackEnumerable<TResult>(queryCompilerContext.GetShardingDbContext(), enumerable);
+        }
+
+        public IAsyncEnumerable<TResult> TrackAsyncEnumerable<TResult>(IQueryCompilerContext queryCompilerContext, IAsyncEnumerable<TResult> asyncEnumerable)
+        {
+
+            return new AsyncTrackerEnumerable<TResult>(queryCompilerContext.GetShardingDbContext(), asyncEnumerable);
         }
 
     }
