@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
-                return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
+                return new AsyncTrackerEnumerator<T>(_mergeContext.GetShardingDbContext(), asyncEnumerator);
             }
 
             return asyncEnumerator;
@@ -55,7 +55,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 .GetEnumerator();
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
-                return new AsyncTrackerEnumerator<T>(_mergeContext, asyncEnumerator);
+                return new AsyncTrackerEnumerator<T>(_mergeContext.GetShardingDbContext(), asyncEnumerator);
             }
             return asyncEnumerator;
         }
@@ -72,7 +72,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
-                return new TrackerEnumerator<T>(_mergeContext, enumerator);
+                return new TrackerEnumerator<T>(_mergeContext.GetShardingDbContext(), enumerator);
             }
             return enumerator;
         }

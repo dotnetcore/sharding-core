@@ -18,7 +18,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
 
         bool IsCrossTable();
         bool IsCrossDataSource();
-        bool IsEnumerableQuery();
-        bool IsParallelQuery();
+        //bool IsEnumerableQuery();
     }
 }

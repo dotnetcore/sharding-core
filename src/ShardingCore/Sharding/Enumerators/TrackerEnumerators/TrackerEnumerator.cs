@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 {
@@ -13,13 +15,15 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
     */
     internal class TrackerEnumerator<T>: IEnumerator<T>
     {
-        private readonly StreamMergeContext<T> _streamMergeContext;
+        private readonly IShardingDbContext _shardingDbContext;
         private readonly IEnumerator<T> _enumerator;
+        private readonly IQueryTracker _queryTrack;
 
-        public TrackerEnumerator(StreamMergeContext<T> streamMergeContext,IEnumerator<T> enumerator)
+        public TrackerEnumerator(IShardingDbContext shardingDbContext,IEnumerator<T> enumerator)
         {
-            _streamMergeContext = streamMergeContext;
+            _shardingDbContext = shardingDbContext;
             _enumerator = enumerator;
+            _queryTrack = ShardingContainer.GetService<IQueryTracker>();
         }
         public bool MoveNext()
         {
@@ -44,16 +48,10 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
             var current = _enumerator.Current;
             if (current != null)
             {
-                var c = (object)current;
-                var genericDbContext = _streamMergeContext.GetShardingDbContext().CreateGenericDbContext(c);
-                var attachedEntity = genericDbContext.GetAttachedEntity(c);
-                if (attachedEntity == null)
+                var attachedEntity = _queryTrack.Track(current, _shardingDbContext);
+                if (attachedEntity != null)
                 {
-                    genericDbContext.Attach(current);
-                }
-                else
-                {
-                   return (T)attachedEntity;
+                    return (T)attachedEntity;
                 }
             }
             return current;

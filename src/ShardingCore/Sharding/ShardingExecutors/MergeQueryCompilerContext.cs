@@ -98,10 +98,6 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _queryCompilerContext.GetShardingDbContextType();
         }
-        public bool CurrentQueryReadConnection()
-        {
-            return _queryCompilerContext.CurrentQueryReadConnection();
-        }
 
         public bool IsQueryTrack()
         {
@@ -119,7 +115,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 else
                 {
                     hasQueryCompilerExecutor = IsSingleQuery();
-                    if (hasQueryCompilerExecutor.Value&&(!IsQueryTrack()||!_existCrossTableTails))
+                    if (hasQueryCompilerExecutor.Value)
                     {
                         //要么本次查询不追踪如果需要追踪不可以存在跨tails
                         var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
@@ -176,7 +172,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return _isCrossTable || _existCrossTableTails|| CurrentQueryReadConnection();
+            return _isCrossTable || _existCrossTableTails|| _queryCompilerContext.IsParallelQuery();
         }
     }
 }

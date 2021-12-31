@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sample.NoShardingMultiLevel;
 using ShardingCore;
 using ShardingCore.Bootstrapers;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
 
 ILoggerFactory efLogger = LoggerFactory.Create(builder =>
@@ -28,6 +29,18 @@ builder.Services.AddShardingDbContext<DefaultDbContext>((conStr, builder) => bui
     })
     .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;")
     .AddTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>())
+    .AddReadWriteSeparation(sp =>
+    {
+        return new Dictionary<string, IEnumerable<string>>()
+        {
+            {
+                "ds0", new List<string>()
+                {
+                    "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;"
+                }
+            }
+        };
+    }, ReadStrategyEnum.Loop, defaultEnable: true)
     .End();
 
 var app = builder.Build();

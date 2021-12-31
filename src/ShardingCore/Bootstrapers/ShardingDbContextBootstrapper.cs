@@ -59,13 +59,15 @@ namespace ShardingCore.Bootstrapers
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
         private readonly IDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
+        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         private readonly Type _shardingDbContextType;
 
         public ShardingDbContextBootstrapper(IShardingConfigOption<TShardingDbContext> shardingConfigOption, 
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             IVirtualDataSource<TShardingDbContext> virtualDataSource,
             IParallelTableManager<TShardingDbContext> parallelTableManager,
-            IDataSourceInitializer<TShardingDbContext> dataSourceInitializer)
+            IDataSourceInitializer<TShardingDbContext> dataSourceInitializer,
+            ITrackerManager<TShardingDbContext> trackerManager)
         {
             _shardingConfigOption = shardingConfigOption;
             _shardingDbContextType = typeof(TShardingDbContext);
@@ -73,6 +75,7 @@ namespace ShardingCore.Bootstrapers
             _virtualDataSource= virtualDataSource;
             _parallelTableManager = parallelTableManager;
             _dataSourceInitializer = dataSourceInitializer;
+            _trackerManager = trackerManager;
         }
         /// <summary>
         /// 初始化
@@ -97,6 +100,7 @@ namespace ShardingCore.Bootstrapers
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;
+                    _trackerManager.AddDbContextModel(entityType);
                     //entity.GetAnnotation("")
                     if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
                     _shardingConfigOption.HasVirtualTableRoute(entityType))

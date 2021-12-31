@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 {
@@ -16,13 +18,15 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
     internal class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
     {
-        private readonly StreamMergeContext<T> _streamMergeContext;
+        private readonly IShardingDbContext _shardingDbContext;
         private readonly IAsyncEnumerator<T> _asyncEnumerator;
+        private readonly IQueryTracker _queryTrack;
 
-        public AsyncTrackerEnumerator(StreamMergeContext<T> streamMergeContext, IAsyncEnumerator<T> asyncEnumerator)
+        public AsyncTrackerEnumerator(IShardingDbContext shardingDbContext, IAsyncEnumerator<T> asyncEnumerator)
         {
-            _streamMergeContext = streamMergeContext;
+            _shardingDbContext = shardingDbContext;
             _asyncEnumerator = asyncEnumerator;
+            _queryTrack = ShardingContainer.GetService<IQueryTracker>();
         }
         public ValueTask DisposeAsync()
         {
@@ -40,12 +44,8 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
             var current = _asyncEnumerator.Current;
             if (current != null)
             {
-                var c = (object)current;
-                var genericDbContext = _streamMergeContext.GetShardingDbContext().CreateGenericDbContext(c);
-                var attachedEntity = genericDbContext.GetAttachedEntity(c);
-                if (attachedEntity==null)
-                    genericDbContext.Attach(current);
-                else
+                var attachedEntity = _queryTrack.Track(current, _shardingDbContext);
+                if (attachedEntity!=null)
                 {
                     return (T)attachedEntity;
                 }
@@ -60,13 +60,15 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
     public class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
     {
-        private readonly StreamMergeContext<T> _streamMergeContext;
+        private readonly IShardingDbContext _shardingDbContext;
         private readonly IAsyncEnumerator<T> _asyncEnumerator;
+        private readonly IQueryTracker _queryTrack;
 
-        public AsyncTrackerEnumerator(StreamMergeContext<T> streamMergeContext, IAsyncEnumerator<T> asyncEnumerator)
+        public AsyncTrackerEnumerator(IShardingDbContext shardingDbContext, IAsyncEnumerator<T> asyncEnumerator)
         {
-            _streamMergeContext = streamMergeContext;
+            _shardingDbContext = shardingDbContext;
             _asyncEnumerator = asyncEnumerator;
+            _queryTrack = ShardingContainer.GetService<IQueryTracker>();
         }
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
@@ -80,12 +82,8 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
             var current = _asyncEnumerator.Current;
             if (current != null)
             {
-                var c = (object)current;
-                var genericDbContext = _streamMergeContext.GetShardingDbContext().CreateGenericDbContext(c);
-                var attachedEntity = genericDbContext.GetAttachedEntity(c);
-                if (attachedEntity==null)
-                    genericDbContext.Attach(current);
-                else
+                var attachedEntity = _queryTrack.Track(current, _shardingDbContext);
+                if (attachedEntity != null)
                 {
                     return (T)attachedEntity;
                 }

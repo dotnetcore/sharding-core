@@ -42,7 +42,6 @@ namespace ShardingCore.Bootstrapers
         private readonly string _virtualTableName;
         private readonly Expression<Func<TEntity,bool>> _queryFilterExpression;
         private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
-        private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
@@ -50,7 +49,7 @@ namespace ShardingCore.Bootstrapers
 
         public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams
             , IShardingConfigOption<TShardingDbContext> shardingConfigOption,
-            ITrackerManager<TShardingDbContext> trackerManager,IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
+            IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
             )
@@ -59,7 +58,6 @@ namespace ShardingCore.Bootstrapers
             _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
             _queryFilterExpression = entityMetadataEnsureParams.EntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as Expression<Func<TEntity, bool>>;
             _shardingConfigOption = shardingConfigOption;
-            _trackerManager = trackerManager;
             _virtualDataSource = virtualDataSource;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
@@ -75,7 +73,6 @@ namespace ShardingCore.Bootstrapers
         public void Initialize()
         {
             var shardingEntityType = _entityType.ClrType;
-            _trackerManager.AddDbContextModel(shardingEntityType);
             var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList(),_queryFilterExpression);
             if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
                 throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");

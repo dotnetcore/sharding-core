@@ -350,6 +350,19 @@ namespace ShardingCore.Test3x
             var list1 =  queryable.ToList();
             Assert.Equal(24, list1.Count());
             Assert.DoesNotContain(list1, o => o.Name != "name_300");
+
+            var queryable1 = (from u in _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "300")
+                join salary in _virtualDbContext.Set<SysUserSalary>().Where(o => o.DateOfMonth == 202005)
+                    on u.Id equals salary.UserId
+                select new
+                {
+                    Salary = salary.Salary,
+                    DateOfMonth = salary.DateOfMonth,
+                    Name = u.Name
+                });
+            var list3 = queryable1.ToList();
+            Assert.Equal(1, list3.Count());
+            Assert.Contains(list3, o => o.Name == "name_300");
         }
 
         [Fact]

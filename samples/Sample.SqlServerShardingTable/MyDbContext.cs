@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingTable.Entities;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
@@ -54,5 +56,17 @@ namespace Sample.SqlServerShardingTable
         /// empty impl
         /// </summary>
         public IRouteTail RouteTail { get; set; }
+
+        public override void Dispose()
+        {
+            Console.WriteLine("MyDbContext disposed");
+            base.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            Console.WriteLine("MyDbContext disposed async");
+            return base.DisposeAsync();
+        }
     }
 }

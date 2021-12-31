@@ -29,11 +29,13 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.Core.QueryTrackers;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
+using ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries;
 using ShardingCore.TableExists;
 
 namespace ShardingCore
@@ -127,6 +129,10 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+            services.TryAddSingleton<IQueryTracker, QueryTracker>();
+            services.TryAddSingleton<IShardingTrackQueryExecutor, DefaultShardingTrackQueryExecutor>();
+            services.TryAddSingleton<INativeEnumeratorTrackQueryExecutor, NativeEnumeratorTrackQueryExecutor>();
+            services.TryAddSingleton<INativeSingleTrackQueryExecutor, NativeSingleTrackQueryExecutor>();
 
             services.TryAddShardingJob();
             return services;

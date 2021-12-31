@@ -64,7 +64,6 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             {
                 switch (methodCallExpression.Method.Name)
                 {
-
                     case nameof(Enumerable.First):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(FirstAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.FirstOrDefault):

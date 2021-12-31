@@ -26,8 +26,9 @@ namespace Sample.NoShardingMultiLevel.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            //var dbContext = _defaultDbContext.GetDbContext("ds0",false,new SingleQueryRouteTail(string.Empty));
+            //var dbContext = _defaultDbContext.GetDbContext("ds0",false,new SingleQueryRouteTail(string.Empty));.Select(o=>new {o.Id,o.Name,o.Company})
             var boss =await _defaultDbContext.Set<Boss>().Include(o=>o.Company).FirstOrDefaultAsync();
+            //_defaultDbContext.Attach(boss);
             if (boss!=null)
             {
                 var companyId = boss.Company.Id;

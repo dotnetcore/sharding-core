@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
         private bool? _isNoTracking;
-        private readonly bool _currentQueryReadConnection;
+        private readonly bool _isParallelQuery;
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
         {
@@ -40,7 +40,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
 
             _shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(_shardingDbContextType);
-            _currentQueryReadConnection =
+            //原生对象的原生查询如果是读写分离就需要启用并行查询
+            _isParallelQuery =
                 _shardingConfigOption.UseReadWrite && _shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
@@ -74,9 +75,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _shardingDbContextType;
         }
 
-        public bool CurrentQueryReadConnection()
+        public bool IsParallelQuery()
         {
-            return _currentQueryReadConnection;
+            return _isParallelQuery;
         }
 
         public bool IsQueryTrack()
@@ -105,7 +106,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
                         typeof(IVirtualDataSource<>).GetGenericType0(_shardingDbContextType));
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, CurrentQueryReadConnection(), routeTailFactory.Create(string.Empty));
+                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, IsParallelQuery(), routeTailFactory.Create(string.Empty));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, _queryExpression);
                 }
             }

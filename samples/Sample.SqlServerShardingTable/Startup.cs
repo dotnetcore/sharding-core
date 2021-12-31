@@ -57,7 +57,18 @@ namespace Sample.SqlServerShardingTable
                     op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-                }).End();
+                }).AddReadWriteSeparation(sp =>
+                {
+                    return new Dictionary<string, IEnumerable<string>>()
+                    {
+                        {
+                            "ds0", new List<string>()
+                            {
+                                "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
+                            }
+                        }
+                    };
+                },ReadStrategyEnum.Loop,defaultEnable:true).End();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -244,8 +244,6 @@ namespace ShardingCore.Sharding
         {
             if (!IsParallelQuery())
                 return false;
-            if (MergeQueryCompilerContext.CurrentQueryReadConnection())
-                return false;
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
         }
         private bool QueryTrack()
