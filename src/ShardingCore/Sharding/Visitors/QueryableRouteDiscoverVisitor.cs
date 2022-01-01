@@ -34,8 +34,7 @@ namespace ShardingCore.Core.Internal.Visitors
         /// </summary>
         private readonly bool _shardingTableRoute;
         private Expression<Func<string, bool>> _where = x => true;
-        private bool useQueryFilterOnFirstWhere = false;
-
+        private LambdaExpression _entityLambdaExpression;
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
 
         public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
@@ -47,14 +46,24 @@ namespace ShardingCore.Core.Internal.Visitors
 
         public Expression<Func<string, bool>> GetRouteParseExpression()
         {
-            if (!useQueryFilterOnFirstWhere)
+
+            if (_entityMetadata.QueryFilterExpression != null)
             {
-                useQueryFilterOnFirstWhere = true;
-                if (_entityMetadata.QueryFilterExpression != null)
+                if (_entityLambdaExpression == null)
                 {
-                    var newWhere= Resolve(_entityMetadata.QueryFilterExpression);
-                    _where = _where.And(newWhere);
+                    _entityLambdaExpression = _entityMetadata.QueryFilterExpression;
                 }
+                else
+                {
+                    var body = Expression.AndAlso(_entityLambdaExpression.Body, _entityMetadata.QueryFilterExpression.Body);
+                    _entityLambdaExpression = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
+                }
+            }
+
+            if (_entityLambdaExpression != null)
+            {
+                var newWhere = Resolve(_entityLambdaExpression);
+                _where = _where.And(newWhere);
             }
             return _where;
         }
@@ -178,8 +187,21 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     if (unaryExpression.Operand is LambdaExpression lambdaExpression)
                     {
-                        var newWhere = DoResolve(lambdaExpression);
-                        _where = _where.And(newWhere);
+                        if (lambdaExpression.Parameters[0].Type == _entityMetadata.EntityType)
+                        {
+                            if (_entityLambdaExpression == null)
+                            {
+                                _entityLambdaExpression = lambdaExpression;
+                            }
+                            else
+                            {
+                                var body = Expression.AndAlso(_entityLambdaExpression.Body, lambdaExpression.Body);
+                                var lambda = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
+                                _entityLambdaExpression = lambda;
+                            }
+                        }
+                        //var newWhere = DoResolve(lambdaExpression);
+                        //_where = _where.And(newWhere);
                     }
                 }
             }
@@ -187,21 +209,21 @@ namespace ShardingCore.Core.Internal.Visitors
             return base.VisitMethodCall(node);
         }
 
-        private Expression<Func<string, bool>> DoResolve(LambdaExpression lambdaExpression)
-        {
+        //private Expression<Func<string, bool>> DoResolve(LambdaExpression lambdaExpression)
+        //{
 
-            if (!useQueryFilterOnFirstWhere)
-            {
-                useQueryFilterOnFirstWhere = true;
-                if (_entityMetadata.QueryFilterExpression != null)
-                {
-                    var body = Expression.AndAlso(lambdaExpression.Body, _entityMetadata.QueryFilterExpression.Body);
-                    var lambda = Expression.Lambda(body, lambdaExpression.Parameters[0]);
-                    return Resolve(lambda);
-                }
-            }
-            return Resolve(lambdaExpression);
-        }
+        //    if (!useQueryFilterOnFirstWhere)
+        //    {
+        //        useQueryFilterOnFirstWhere = true;
+        //        if (_entityMetadata.QueryFilterExpression != null)
+        //        {
+        //            var body = Expression.AndAlso(lambdaExpression.Body, _entityMetadata.QueryFilterExpression.Body);
+        //            var lambda = Expression.Lambda(body, lambdaExpression.Parameters[0]);
+        //            return Resolve(lambda);
+        //        }
+        //    }
+        //    return Resolve(lambdaExpression);
+        //}
 
 
         private Expression<Func<string, bool>> Resolve(Expression expression)
