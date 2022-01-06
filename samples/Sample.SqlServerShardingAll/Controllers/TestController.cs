@@ -23,7 +23,8 @@ namespace Sample.SqlServerShardingAll.Controllers
         public async Task<IActionResult> Query()
         {
             #region 动态数据源
-            var virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<MyDbContext>>();
+
+            var virtualDataSource = ShardingContainer.GetRequiredVirtualDataSource<MyDbContext>();
 
             var virtualDataSourceRoute1 = virtualDataSource.GetRoute(typeof(Order));
             virtualDataSourceRoute1.AddDataSourceName("D");

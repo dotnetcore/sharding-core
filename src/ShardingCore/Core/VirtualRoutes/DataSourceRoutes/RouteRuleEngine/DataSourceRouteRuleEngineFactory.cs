@@ -33,20 +33,22 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
+        /// <param name="shardingDbContext"></param>
         /// <returns></returns>
-        public DataSourceRouteRuleContext CreateContext(IQueryable queryable)
+        public DataSourceRouteRuleContext CreateContext(IQueryable queryable,IShardingDbContext shardingDbContext)
         {
-            return new DataSourceRouteRuleContext(queryable,typeof(TShardingDbContext));
+            return new DataSourceRouteRuleContext(queryable, shardingDbContext);
         }
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
+        /// <param name="shardingDbContext"></param>
         /// <returns></returns>
-        public DataSourceRouteResult Route(IQueryable queryable)
+        public DataSourceRouteResult Route(IQueryable queryable, IShardingDbContext shardingDbContext)
         {
-            var ruleContext = CreateContext(queryable);
+            var ruleContext = CreateContext(queryable, shardingDbContext);
             return _dataSourceRouteRuleEngine.Route(ruleContext);
         }
         /// <summary>

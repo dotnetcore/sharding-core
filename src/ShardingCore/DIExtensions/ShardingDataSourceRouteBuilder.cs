@@ -39,7 +39,7 @@ namespace ShardingCore.DIExtensions
 
             return new ShardingTableBuilder<TShardingDbContext>(_shardingCoreConfigBuilder);
         }
-        public ShardingDataSourceRouteBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        public ShardingDataSourceRouteBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
             return this;

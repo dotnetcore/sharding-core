@@ -30,5 +30,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             return _physicDataSources.Keys.ToList();
         }
+
+        public IDictionary<string, string> GetDataSources()
+        {
+            return _physicDataSources.ToDictionary(k => k.Key, k => k.Value.ConnectionString);
+        }
     }
 }

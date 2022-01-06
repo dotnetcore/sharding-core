@@ -8,6 +8,7 @@ using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
@@ -20,17 +21,17 @@ namespace Sample.SqlServer.Controllers
     public class CreateTableController : ControllerBase
     {
         private readonly IShardingTableCreator<DefaultShardingDbContext> _tableCreator;
-        private readonly IVirtualDataSource<DefaultShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSourceManager<DefaultShardingDbContext> _virtualDataSourceManager;
         private readonly IVirtualTableManager<DefaultShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<DefaultShardingDbContext> _entityMetadataManager;
 
         public CreateTableController(IShardingTableCreator<DefaultShardingDbContext> tableCreator,
-            IVirtualDataSource<DefaultShardingDbContext> virtualDataSource,
+            IVirtualDataSourceManager<DefaultShardingDbContext> virtualDataSourceManager,
             IVirtualTableManager<DefaultShardingDbContext> virtualTableManager,
             IEntityMetadataManager<DefaultShardingDbContext> entityMetadataManager)
         {
             _tableCreator = tableCreator;
-            _virtualDataSource = virtualDataSource;
+            _virtualDataSourceManager = virtualDataSourceManager;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
         }
@@ -41,7 +42,7 @@ namespace Sample.SqlServer.Controllers
             if (isShardingTable)
             {
                 #region 完全可以用脚本实现这段代码
-                var defaultDataSourceName = _virtualDataSource.DefaultDataSourceName;
+                var defaultDataSourceName = _virtualDataSourceManager.GetVirtualDataSource().DefaultDataSourceName;
                 try
                 {
                     _tableCreator.CreateTable<SysUserMod>(defaultDataSourceName, "09");

@@ -4,6 +4,9 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
+using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingConfigurations.ConfigBuilders;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
@@ -24,17 +27,19 @@ namespace ShardingCore.DIExtensions
 
 
         public ShardingConfigOption<TShardingDbContext> ShardingConfigOption { get; }
+        public List<ShardingGlobalConfigOptions> ShardingGlobalConfigOptions { get; }
+        public ShardingEntityConfigOptions<TShardingDbContext> ShardingEntityConfigOptions { get; }
 
 
-
-        public ShardingCoreConfigBuilder(IServiceCollection services,Action<string,DbContextOptionsBuilder> queryConfigure)
+        public ShardingCoreConfigBuilder(IServiceCollection services)
         {
             Services = services;
             ShardingConfigOption = new ShardingConfigOption<TShardingDbContext>();
-            ShardingConfigOption.UseShardingQuery(queryConfigure);
+            ShardingGlobalConfigOptions = new List<ShardingGlobalConfigOptions>();
+            ShardingEntityConfigOptions = new ShardingEntityConfigOptions<TShardingDbContext>();
         }
 
-
+        [Obsolete("plz use AddEntityConfig")]
         public ShardingTransactionBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
         {
             var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
@@ -64,6 +69,12 @@ namespace ShardingCore.DIExtensions
             return new ShardingTransactionBuilder<TShardingDbContext>(this);
             //return new ShardingQueryBuilder<TShardingDbContext>(this);
         }
+
+        public ShardingEntityConfigBuilder<TShardingDbContext> AddEntityConfig(Action<ShardingEntityConfigOptions<TShardingDbContext>> entityConfigure)
+        {
+            entityConfigure?.Invoke(ShardingEntityConfigOptions);
+            return new ShardingEntityConfigBuilder<TShardingDbContext>(this);
+        }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{
         //    if (!string.IsNullOrWhiteSpace(defaultDataSourceName) || !string.IsNullOrWhiteSpace(defaultConnectionString))
@@ -84,6 +95,14 @@ namespace ShardingCore.DIExtensions
 
     public class ShardingCoreBeginOptions
     {
+        /// <summary>
+        /// 配置id
+        /// </summary>
+        public string ConfigId { get; set; }
+        /// <summary>
+        /// 优先级
+        /// </summary>
+        public int Priority { get; set; }
         /// <summary>
         /// 如果数据库不存在就创建并且创建表除了分表的
         /// </summary>
@@ -114,7 +133,7 @@ namespace ShardingCore.DIExtensions
         public bool? EnableTableRouteCompileCache { get; set; }
         public bool? EnableDataSourceRouteCompileCache { get; set; }
 
-        private readonly  ISet<Type> _createTableEntities = new HashSet<Type>();
+        private readonly ISet<Type> _createTableEntities = new HashSet<Type>();
 
         public void AddEntitiesTryCreateTable(params Type[] entityTypes)
         {

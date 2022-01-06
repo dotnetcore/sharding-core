@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
@@ -28,14 +29,14 @@ namespace ShardingCore.TableCreator
     {
         private readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
+        private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger,  IServiceProvider serviceProvider, IShardingConfigOption<TShardingDbContext> shardingConfigOption, IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger,  IServiceProvider serviceProvider, IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions, IRouteTailFactory routeTailFactory)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _shardingConfigOption = shardingConfigOption;
+            _entityConfigOptions = entityConfigOptions;
             _routeTailFactory = routeTailFactory;
         }
 
@@ -77,7 +78,7 @@ namespace ShardingCore.TableCreator
                     }
                     catch (Exception ex)
                     {
-                        if (!_shardingConfigOption.IgnoreCreateTableError.GetValueOrDefault())
+                        if (!_entityConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                         {
                             _logger.LogWarning(ex,
                                 $"create table error entity name:[{shardingEntityType.Name}].");

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
@@ -64,38 +65,42 @@ namespace ShardingCore.VirtualRoutes.Abstractions
                 return Task.CompletedTask;
             }
             var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(typeof(IVirtualDataSource<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var virtualDataSourceManager = (IVirtualDataSourceManager)ShardingContainer.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+            var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
             var now = DateTime.Now.AddMinutes(IncrementMinutes);
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
-            ISet<string> dataSources = new HashSet<string>();
-            if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
+            foreach (var virtualDataSource in allVirtualDataSources)
             {
-                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(TEntity));
-                foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
+                ISet<string> dataSources = new HashSet<string>();
+                if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
                 {
-                    dataSources.Add(dataSourceName);
+                    var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(TEntity));
+                    foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
+                    {
+                        dataSources.Add(dataSourceName);
+                    }
                 }
-            }
-            else
-            {
-                dataSources.Add(virtualDataSource.DefaultDataSourceName);
-            }
-            _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
-            foreach (var dataSource in dataSources)
-            {
-                try
+                else
                 {
-                    _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
-                    _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    dataSources.Add(virtualDataSource.DefaultDataSourceName);
                 }
-                catch (Exception e)
+                _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
+                foreach (var dataSource in dataSources)
                 {
-                    //ignore
-                    _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    if (DoLogError)
-                        _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                    try
+                    {
+                        _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                        tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
+                        _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    }
+                    catch (Exception e)
+                    {
+                        //ignore
+                        _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                        if (DoLogError)
+                            _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                    }
                 }
             }
             virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));

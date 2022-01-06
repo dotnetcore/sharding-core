@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions;
@@ -24,7 +25,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly Expression _queryExpression;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly Type _shardingDbContextType;
-        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly IShardingEntityConfigOptions _entityConfigOptions;
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
         private bool? _isNoTracking;
@@ -39,10 +40,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _queryExpression = queryExpression;
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
 
-            _shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(_shardingDbContextType);
+            _entityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(_shardingDbContextType);
             //原生对象的原生查询如果是读写分离就需要启用并行查询
-            _isParallelQuery =
-                _shardingConfigOption.UseReadWrite && _shardingDbContext.CurrentIsReadWriteSeparation();
+            _isParallelQuery = shardingDbContext.IsUseReadWriteSeparation() && _shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
         public static QueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
@@ -103,8 +103,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 hasQueryCompilerExecutor = _queryEntities.All(o => !_entityMetadataManager.IsSharding(o));
                 if (hasQueryCompilerExecutor.Value)
                 {
-                    var virtualDataSource = (IVirtualDataSource)ShardingContainer.GetService(
-                        typeof(IVirtualDataSource<>).GetGenericType0(_shardingDbContextType));
+                    var virtualDataSource = _shardingDbContext.GetVirtualDataSource();
                     var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
                     var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, IsParallelQuery(), routeTailFactory.Create(string.Empty));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, _queryExpression);

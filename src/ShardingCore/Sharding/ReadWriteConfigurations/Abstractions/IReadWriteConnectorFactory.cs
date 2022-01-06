@@ -10,6 +10,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
 {
     public interface IReadWriteConnectorFactory
     {
-        IReadWriteConnector CreateConnector<TShardingDbContext>(ReadStrategyEnum strategy, string dataSourceName, IEnumerable<string> connectionStrings) where TShardingDbContext:DbContext,IShardingDbContext;
+        IReadWriteConnector CreateConnector(ReadStrategyEnum strategy, string dataSourceName,
+            IEnumerable<string> connectionStrings);
     }
 }

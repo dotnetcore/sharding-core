@@ -10,9 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -54,25 +57,26 @@ namespace ShardingCore.Bootstrapers
     /// </summary>
     public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
+        private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
         private readonly IDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
         private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         private readonly Type _shardingDbContextType;
 
-        public ShardingDbContextBootstrapper(IShardingConfigOption<TShardingDbContext> shardingConfigOption, 
+        public ShardingDbContextBootstrapper(
+            IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
+            IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
-            IVirtualDataSource<TShardingDbContext> virtualDataSource,
             IParallelTableManager<TShardingDbContext> parallelTableManager,
             IDataSourceInitializer<TShardingDbContext> dataSourceInitializer,
             ITrackerManager<TShardingDbContext> trackerManager)
         {
-            _shardingConfigOption = shardingConfigOption;
             _shardingDbContextType = typeof(TShardingDbContext);
+            _virtualDataSourceManager = virtualDataSourceManager;
+            _entityConfigOptions = entityConfigOptions;
             _entityMetadataManager = entityMetadataManager;
-            _virtualDataSource= virtualDataSource;
             _parallelTableManager = parallelTableManager;
             _dataSourceInitializer = dataSourceInitializer;
             _trackerManager = trackerManager;
@@ -82,11 +86,9 @@ namespace ShardingCore.Bootstrapers
         /// </summary>
         public void Init()
         {
-            _virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(_shardingConfigOption.DefaultDataSourceName, _shardingConfigOption.DefaultConnectionString, true));
             InitializeEntityMetadata();
             InitializeParallelTables();
             InitializeConfigure();
-            _virtualDataSource.CheckVirtualDataSource();
         }
 
         private void InitializeEntityMetadata()
@@ -102,8 +104,8 @@ namespace ShardingCore.Bootstrapers
                     var entityType = entity.ClrType;
                     _trackerManager.AddDbContextModel(entityType);
                     //entity.GetAnnotation("")
-                    if (_shardingConfigOption.HasVirtualDataSourceRoute(entityType) ||
-                    _shardingConfigOption.HasVirtualTableRoute(entityType))
+                    if (_entityConfigOptions.HasVirtualDataSourceRoute(entityType) ||
+                        _entityConfigOptions.HasVirtualTableRoute(entityType))
                     {
                             var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
                             
@@ -119,7 +121,7 @@ namespace ShardingCore.Bootstrapers
 
         private void InitializeParallelTables()
         {
-            foreach (var parallelTableGroupNode in _shardingConfigOption.GetParallelTableGroupNodes())
+            foreach (var parallelTableGroupNode in _entityConfigOptions.GetParallelTableGroupNodes())
             {
                 var parallelTableComparerType = parallelTableGroupNode.GetEntities().FirstOrDefault(o => !_entityMetadataManager.IsShardingTable(o.Type));
                 if (parallelTableComparerType != null)
@@ -133,12 +135,16 @@ namespace ShardingCore.Bootstrapers
 
         private void InitializeConfigure()
         {
-            var dataSources = _shardingConfigOption.GetDataSources();
-            foreach (var dataSourceKv in dataSources)
+            var allVirtualDataSources = _virtualDataSourceManager.GetAllVirtualDataSources();
+            foreach (var virtualDataSource in allVirtualDataSources)
             {
-                var dataSourceName = dataSourceKv.Key;
-                var connectionString = dataSourceKv.Value;
-                _dataSourceInitializer.InitConfigure(dataSourceName, connectionString, true);
+                var dataSources = virtualDataSource.GetDataSources();
+                foreach (var dataSourceKv in dataSources)
+                {
+                    var dataSourceName = dataSourceKv.Key;
+                    var connectionString = dataSourceKv.Value;
+                    _dataSourceInitializer.InitConfigure(virtualDataSource,dataSourceName, connectionString, true);
+                }
             }
         }
     }

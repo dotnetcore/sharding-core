@@ -15,9 +15,9 @@ namespace ShardingCore.Sharding.ShardingComparision
     * @Date: Sunday, 31 October 2021 15:39:46
     * @Email: 326308290@qq.com
     */
-    public class CSharpLanguageShardingComparer<TShardingDbContext> : IShardingComparer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class CSharpLanguageShardingComparer : IShardingComparer
     {
-        private readonly ConcurrentDictionary<Type, object> _comparers = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _comparers = new ();
         public virtual int Compare(IComparable x, IComparable y, bool asc)
         {
             if (x is Guid xg && y is Guid yg)

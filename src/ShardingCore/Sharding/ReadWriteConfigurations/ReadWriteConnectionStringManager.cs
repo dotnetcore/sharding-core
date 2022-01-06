@@ -16,16 +16,18 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ReadWriteConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext>, IReadWriteAppendConnectionString where TShardingDbContext : DbContext, IShardingDbContext
+    public class ReadWriteConnectionStringManager: IConnectionStringManager, IReadWriteAppendConnectionString
     {
-        private IShardingConnectionStringResolver<TShardingDbContext> _shardingConnectionStringResolver;
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private IShardingConnectionStringResolver _shardingConnectionStringResolver;
+        private readonly IVirtualDataSource _virtualDataSource;
 
 
-        public ReadWriteConnectionStringManager(IShardingConnectionStringResolver<TShardingDbContext> shardingConnectionStringResolver,IVirtualDataSource<TShardingDbContext> virtualDataSource)
+        public ReadWriteConnectionStringManager(IVirtualDataSource virtualDataSource)
         {
-            _shardingConnectionStringResolver = shardingConnectionStringResolver;
             _virtualDataSource = virtualDataSource;
+            var readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
+            var readWriteConnectors = virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o=> readWriteConnectorFactory.CreateConnector(virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key,o.Value));
+            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
         public string GetConnectionString(string dataSourceName)
         {

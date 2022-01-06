@@ -53,9 +53,7 @@ namespace ShardingCore.EFCores
             {
                 if (null == _virtualDataSource)
                 {
-                    _virtualDataSource =
-                        (IVirtualDataSource) ShardingContainer.GetService(
-                            typeof(IVirtualDataSource<>).GetGenericType0(_context.GetType()));
+                    _virtualDataSource = _context.GetVirtualDataSource();
                 }
 
                 return _virtualDataSource;

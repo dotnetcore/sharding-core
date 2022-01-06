@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 
 namespace ShardingCore.Sharding.Abstractions
@@ -51,6 +52,8 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="entity"></param>
         /// <returns></returns>
         DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class;
+
+        IVirtualDataSource GetVirtualDataSource();
 
 
 

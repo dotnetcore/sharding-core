@@ -22,7 +22,7 @@ namespace Sample.SqlServerShardingDataSource
         public static void CreateSubDb(string dataSourceName, string connectionString)
         {
             var _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<MyDbContext>>();
-            var _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<MyDbContext>>();
+            var _virtualDataSource = ShardingContainer.GetRequiredVirtualDataSource<MyDbContext>();
             var _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<MyDbContext>>();
             var _tableCreator = ShardingContainer.GetService<IShardingTableCreator<MyDbContext>>();
 

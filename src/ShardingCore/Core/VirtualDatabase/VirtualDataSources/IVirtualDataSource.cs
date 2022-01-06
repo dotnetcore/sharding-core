@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
@@ -19,10 +22,18 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
     public interface IVirtualDataSource
     {
+
+        string ConfigId { get; }
+        int Priority { get; }
+        IVirtualDataSourceConfigurationParams ConfigurationParams { get; }
+        IConnectionStringManager ConnectionStringManager { get; }
+        bool UseReadWriteSeparation { get; }
         /// <summary>
         /// 默认的数据源名称
         /// </summary>
         string DefaultDataSourceName { get; }
+        string DefaultConnectionString { get;}
+        IVirtualDataSourceRoute GetRoute(Type entityType);
         /// <summary>
         /// 路由到具体的物理数据源
         /// </summary>
@@ -30,12 +41,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// <param name="routeRouteConfig"></param>
         /// <returns>data source names</returns>
         List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig);
-
-        /// <summary>
-        /// 获取当前数据源的路由
-        /// </summary>
-        /// <returns></returns>
-        IVirtualDataSourceRoute GetRoute(Type entityType);
 
         /// <summary>
         /// 获取默认的数据源信息
@@ -75,13 +80,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         bool AddPhysicDataSource(IPhysicDataSource physicDataSource);
 
         /// <summary>
-        /// 添加分库路由
-        /// </summary>
-        /// <param name="virtualDataSourceRoute"></param>
-        /// <returns></returns>
-        /// <exception cref="ShardingCoreInvalidOperationException">对象未配置分库</exception>
-        bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
-        /// <summary>
         /// 是否默认数据源
         /// </summary>
         /// <param name="dataSourceName"></param>
@@ -92,6 +90,22 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// </summary>
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         void CheckVirtualDataSource();
+        /// <summary>
+        /// 如何根据connectionString 配置 DbContextOptionsBuilder
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="dbContextOptionsBuilder"></param>
+        /// <returns></returns>
+        DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder);
+        /// <summary>
+        /// 如何根据dbConnection 配置DbContextOptionsBuilder
+        /// </summary>
+        /// <param name="dbConnection"></param>
+        /// <param name="dbContextOptionsBuilder"></param>
+        /// <returns></returns>
+        DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
+
+        IDictionary<string, string> GetDataSources();
     }
     /// <summary>
     /// 虚拟数据源 连接所有的实际数据源
@@ -99,5 +113,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     public interface IVirtualDataSource<TShardingDbContext> : IVirtualDataSource
         where TShardingDbContext : DbContext, IShardingDbContext
     {
+        IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity:class;
     }
 }

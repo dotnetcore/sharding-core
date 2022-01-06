@@ -16,9 +16,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     /// <summary>
     /// 读写分离链接字符串解析
     /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
-    public interface IShardingConnectionStringResolver<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public interface IShardingConnectionStringResolver
     {
         bool ContainsReadWriteDataSourceName(string dataSourceName);
         string GetConnectionString(string dataSourceName);

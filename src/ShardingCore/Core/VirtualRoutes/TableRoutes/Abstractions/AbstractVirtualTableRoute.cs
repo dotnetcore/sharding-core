@@ -5,6 +5,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
@@ -22,14 +23,15 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     {
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
-        public IShardingConfigOption ShardingConfigOption { get; private set; }
+        public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
         public virtual void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
-            ShardingConfigOption =
-                ShardingContainer.GetRequiredShardingConfigOption(entityMetadata.ShardingDbContextType);
+
+            EntityConfigOptions =
+                ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {

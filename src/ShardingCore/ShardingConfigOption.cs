@@ -35,14 +35,8 @@ namespace ShardingCore
         public readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
 
         public Action<DbConnection, DbContextOptionsBuilder> SameConnectionConfigure { get; private set; }
-        public Action<string, DbContextOptionsBuilder> DefaultQueryConfigure { get; private set; }
 
         public Func<IServiceProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
-
-        public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
-        {
-            DefaultQueryConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
-        }
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             SameConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
@@ -53,13 +47,13 @@ namespace ShardingCore
             DataSourcesConfigure = dataSourcesConfigure ?? throw new ArgumentNullException(nameof(dataSourcesConfigure));
         }
 
-        public Func<IServiceProvider, IShardingComparer<TShardingDbContext>> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer<TShardingDbContext>();
+        public Func<IServiceProvider, IShardingComparer> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer();
         /// <summary>
         /// 替换默认的比较器
         /// </summary>
         /// <param name="newShardingComparerFactory"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
         {
             ReplaceShardingComparerFactory=newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
         }
@@ -79,8 +73,8 @@ namespace ShardingCore
 
         //public void UseShardingOptionsBuilder(Action<DbConnection, DbContextOptionsBuilder> sameConnectionConfigure, Action<string,DbContextOptionsBuilder> defaultQueryConfigure = null)
         //{
-        //    SameConnectionConfigure = sameConnectionConfigure ?? throw new ArgumentNullException(nameof(sameConnectionConfigure));
-        //    DefaultQueryConfigure = defaultQueryConfigure ?? throw new ArgumentNullException(nameof(defaultQueryConfigure));
+        //    ConnectionConfigure = sameConnectionConfigure ?? throw new ArgumentNullException(nameof(sameConnectionConfigure));
+        //    ConnectionStringConfigure = defaultQueryConfigure ?? throw new ArgumentNullException(nameof(defaultQueryConfigure));
         //}
 
         public bool UseReadWrite => ReadConnStringConfigure != null;

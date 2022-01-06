@@ -11,15 +11,17 @@ using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace ShardingCore.Sharding.ReadWriteConfigurations
 {
-    public class ReadWriteShardingConnectionStringResolver<TShardingDbContext> : IShardingConnectionStringResolver<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ReadWriteShardingConnectionStringResolver : IShardingConnectionStringResolver
     {
+        private readonly ReadStrategyEnum _readStrategy;
+
         private readonly ConcurrentDictionary<string, IReadWriteConnector> _connectors =
             new ConcurrentDictionary<string, IReadWriteConnector>();
 
-        private readonly IReadWriteOptions<TShardingDbContext> _readWriteOptions;
         private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
-        public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors)
+        public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors, ReadStrategyEnum readStrategy)
         {
+            _readStrategy = readStrategy;
             var enumerator = connectors.GetEnumerator();
             while (enumerator.MoveNext())
             {
@@ -28,7 +30,6 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                     _connectors.TryAdd(currentConnector.DataSourceName, currentConnector);
             }
 
-            _readWriteOptions = ShardingContainer.GetService<IReadWriteOptions<TShardingDbContext>>();
             _readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
         }
 
@@ -48,7 +49,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
             {
-                connector = _readWriteConnectorFactory.CreateConnector<TShardingDbContext>(_readWriteOptions.ReadStrategy,
+                connector = _readWriteConnectorFactory.CreateConnector(_readStrategy,
                     dataSourceName, new List<string>()
                     {
                         connectionString

@@ -25,7 +25,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues {
         }
 
         public T Top() {
-            if (heapLength == 0) throw new OverflowException("queu is empty no element can return");
+            if (heapLength == 0) throw new OverflowException("queue is empty no element can return");
             return buffer[0];
         }
 
@@ -38,7 +38,7 @@ namespace ShardingCore.Core.Internal.PriorityQueues {
         }
 
         public void Pop() {
-            if (heapLength == 0) throw new OverflowException("优先队列为空时无法执行出队操作");
+            if (heapLength == 0) throw new OverflowException("queue is empty no element can return");
             --heapLength;
             swap(0, heapLength);
             Heap<T>.heapAdjustFromTop(buffer, 0, heapLength, descending,this.comparer);

@@ -11,17 +11,19 @@ namespace ShardingCore.Sharding
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DefaultConnectionStringManager<TShardingDbContext> : IConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DefaultConnectionStringManager : IConnectionStringManager
     {
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSource _virtualDataSource;
 
-        public DefaultConnectionStringManager(IVirtualDataSource<TShardingDbContext> virtualDataSource)
+        public DefaultConnectionStringManager(IVirtualDataSource virtualDataSource)
         {
             _virtualDataSource = virtualDataSource;
         }
         public string GetConnectionString(string dataSourceName)
         {
-            return _virtualDataSource.GetConnectionString(dataSourceName);
+            if (_virtualDataSource.IsDefault(dataSourceName))
+                return _virtualDataSource.DefaultConnectionString;
+            return _virtualDataSource.GetPhysicDataSource(dataSourceName).ConnectionString;
         }
     }
 }

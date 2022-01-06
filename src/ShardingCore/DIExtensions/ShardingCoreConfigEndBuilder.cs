@@ -42,7 +42,7 @@ namespace ShardingCore.DIExtensions
         /// </summary>
         /// <param name="newShardingComparerFactory"></param>
         /// <returns></returns>
-        public ShardingCoreConfigEndBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer<TShardingDbContext>> newShardingComparerFactory)
+        public ShardingCoreConfigEndBuilder<TShardingDbContext>  ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
         {
             _shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparer(newShardingComparerFactory);
             return this;
@@ -64,19 +64,19 @@ namespace ShardingCore.DIExtensions
                 _shardingCoreConfigBuilder.ShardingConfigOption);
 
 
-            //添加创建TActualDbContext 的DbContextOptionsBuilder创建者
-            var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(
-                _shardingCoreConfigBuilder.ShardingConfigOption.SameConnectionConfigure,
-                _shardingCoreConfigBuilder.ShardingConfigOption.DefaultQueryConfigure);
-            services
-                .AddSingleton<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>,
-                    ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp => config);
+            ////添加创建TActualDbContext 的DbContextOptionsBuilder创建者
+            //var config = new ShardingDbContextOptionsBuilderConfig<TShardingDbContext>(
+            //    _shardingCoreConfigBuilder.ShardingConfigOption.SameConnectionConfigure,
+            //    _shardingCoreConfigBuilder.ShardingConfigOption.DefaultQueryConfigure);
+            //services
+            //    .AddSingleton<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>,
+            //        ShardingDbContextOptionsBuilderConfig<TShardingDbContext>>(sp => config);
 
             if (_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory == null)
             {
                 throw new ShardingCoreConfigException($"{nameof(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory)}  is null");
             }
-            services.AddSingleton<IShardingComparer<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
+            //services.AddSingleton<IShardingComparer>(_shardingCoreConfigBuilder.ShardingConfigOption.ReplaceShardingComparerFactory);
             if (_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory == null)
             {
                 throw new ShardingCoreConfigException($"{nameof(_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory)}  is null");
@@ -84,15 +84,15 @@ namespace ShardingCore.DIExtensions
             services.AddSingleton<ITableEnsureManager<TShardingDbContext>>(_shardingCoreConfigBuilder.ShardingConfigOption.TableEnsureManagerFactory);
 
 
-            if (!UseReadWrite)
-            {
-                services.AddTransient<IConnectionStringManager<TShardingDbContext>, DefaultConnectionStringManager<TShardingDbContext>>();
-            }
-            else
-            {
-                services.AddTransient<IConnectionStringManager<TShardingDbContext>, ReadWriteConnectionStringManager<TShardingDbContext>>();
-                RegisterReadWriteConfigure(services);
-            }
+            //if (!UseReadWrite)
+            //{
+            //    services.AddTransient<IConnectionStringManager<TShardingDbContext>, DefaultConnectionStringManager<TShardingDbContext>>();
+            //}
+            //else
+            //{
+            //    services.AddTransient<IConnectionStringManager<TShardingDbContext>, ReadWriteConnectionStringManager<TShardingDbContext>>();
+            //    RegisterReadWriteConfigure(services);
+            //}
             services.AddInternalShardingCore();
 
             return services;
@@ -105,27 +105,27 @@ namespace ShardingCore.DIExtensions
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         private void RegisterReadWriteConfigure(IServiceCollection services)
         {
-                services.AddSingleton<IReadWriteOptions<TShardingDbContext>, ReadWriteOptions<TShardingDbContext>>(sp =>
-                    new ReadWriteOptions<TShardingDbContext>(
-                        _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
-                        _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
-                        _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,
-                        _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
+                //services.AddSingleton<IReadWriteOptions<TShardingDbContext>, ReadWriteOptions<TShardingDbContext>>(sp =>
+                //    new ReadWriteOptions<TShardingDbContext>(
+                //        _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultPriority,
+                //        _shardingCoreConfigBuilder.ShardingConfigOption.ReadWriteDefaultEnable,
+                //        _shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,
+                //        _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringGetStrategy));
 
-                services
-                    .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
-                        ReadWriteShardingConnectionStringResolver<TShardingDbContext>>(sp =>
-                    {
-                        var readWriteConnectorFactory = sp.GetRequiredService<IReadWriteConnectorFactory>();
-                        var readConnStrings = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
-                        var readWriteLoopConnectors = readConnStrings.Select(o => readWriteConnectorFactory.CreateConnector<TShardingDbContext>(_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,o.Key,o.Value));
+                //services
+                //    .AddSingleton<IShardingConnectionStringResolver<TShardingDbContext>,
+                //        ReadWriteShardingConnectionStringResolver<TShardingDbContext>>(sp =>
+                //    {
+                //        var readWriteConnectorFactory = sp.GetRequiredService<IReadWriteConnectorFactory>();
+                //        var readConnStrings = _shardingCoreConfigBuilder.ShardingConfigOption.ReadConnStringConfigure(sp);
+                //        var readWriteLoopConnectors = readConnStrings.Select(o => readWriteConnectorFactory.CreateConnector<TShardingDbContext>(_shardingCoreConfigBuilder.ShardingConfigOption.ReadStrategyEnum,o.Key,o.Value));
 
-                        return new ReadWriteShardingConnectionStringResolver<TShardingDbContext>(
-                            readWriteLoopConnectors);
-                    });
+                //        return new ReadWriteShardingConnectionStringResolver<TShardingDbContext>(
+                //            readWriteLoopConnectors);
+                //    });
 
                 services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
-                services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
+                services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
 
         }
     }

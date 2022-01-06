@@ -29,5 +29,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// </summary>
         /// <returns></returns>
         List<string> GetAllDataSourceNames();
+
+        IDictionary<string, string> GetDataSources();
     }
 }

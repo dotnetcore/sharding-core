@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Sharding.Abstractions;
 
 /*
 * @Author: xjm
@@ -30,13 +27,5 @@ namespace ShardingCore.Sharding.ShardingComparision.Abstractions
         /// <param name="comparerType"></param>
         /// <returns></returns>
         object CreateComparer(Type comparerType);
-    }
-    /// <summary>
-    /// 泛型比较器用于依赖注入
-    /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
-    public interface IShardingComparer<TShardingDbContext> : IShardingComparer where TShardingDbContext:DbContext,IShardingDbContext
-    {
-        
     }
 }

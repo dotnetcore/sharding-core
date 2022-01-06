@@ -129,7 +129,7 @@ namespace ShardingCore6x
             _streamMergeContextFactory =
                 ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
             _actualConnectionStringManager = new ActualConnectionStringManager<DefaultShardingDbContext>();
-            _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<DefaultShardingDbContext>>();
+            _virtualDataSource = ShardingContainer.GetRequiredVirtualDataSourceManager<DefaultShardingDbContext>().GetVirtualDataSource();
              _dataSourceRouteRuleEngineFactory = ShardingContainer.GetService<IDataSourceRouteRuleEngineFactory<DefaultShardingDbContext>>();
              _tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
 

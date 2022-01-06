@@ -17,6 +17,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Exceptions;
 
 
@@ -65,11 +66,10 @@ namespace ShardingCore.Sharding
         public bool IsCrossTable { get; }
 
         private readonly ITrackerManager _trackerManager;
-        private readonly IShardingConfigOption _shardingConfigOption;
+        private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
 
-        private readonly IShardingComparer _shardingComparer;
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,
             IRouteTailFactory routeTailFactory)
@@ -94,9 +94,8 @@ namespace ShardingCore.Sharding
             _trackerManager =
                 (ITrackerManager)ShardingContainer.GetService(
                     typeof(ITrackerManager<>).GetGenericType0(mergeQueryCompilerContext.GetShardingDbContextType()));
-            _shardingComparer = (IShardingComparer)ShardingContainer.GetService(typeof(IShardingComparer<>).GetGenericType0(_shardingDbContext.GetType()));
 
-            _shardingConfigOption = ShardingContainer.GetRequiredShardingConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
+            _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
         }
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
@@ -197,7 +196,7 @@ namespace ShardingCore.Sharding
 
         public int GetMaxQueryConnectionsLimit()
         {
-            return _shardingConfigOption.MaxQueryConnectionsLimit;
+            return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
         }
         public ConnectionModeEnum GetConnectionMode(int sqlCount)
         {
@@ -206,13 +205,13 @@ namespace ShardingCore.Sharding
 
         private ConnectionModeEnum CalcConnectionMode(int sqlCount)
         {
-            switch (_shardingConfigOption.ConnectionMode)
+            switch (_shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode)
             {
                 case ConnectionModeEnum.MEMORY_STRICTLY:
-                case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingConfigOption.ConnectionMode;
+                case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
                 default:
                     {
-                        return _shardingConfigOption.MaxQueryConnectionsLimit < sqlCount
+                        return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit < sqlCount
                             ? ConnectionModeEnum.CONNECTION_STRICTLY
                             : ConnectionModeEnum.MEMORY_STRICTLY; ;
                     }
@@ -224,7 +223,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool IsUseReadWriteSeparation()
         {
-            return _shardingConfigOption.UseReadWrite&&_shardingDbContext.CurrentIsReadWriteSeparation();
+            return _shardingDbContext.IsUseReadWriteSeparation()&&_shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
         /// <summary>
@@ -253,7 +252,7 @@ namespace ShardingCore.Sharding
 
         public IShardingComparer GetShardingComparer()
         {
-            return _shardingComparer;
+            return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.ShardingComparer;
         }
 
         public TResult PreperExecute<TResult>(Func<TResult> emptyFunc)
@@ -296,7 +295,7 @@ namespace ShardingCore.Sharding
 
         private bool ThrowIfQueryRouteNotMatch()
         {
-            return _shardingConfigOption.ThrowIfQueryRouteNotMatch;
+            return _shardingEntityConfigOptions.ThrowIfQueryRouteNotMatch;
         }
         public void Dispose()
         {

@@ -61,13 +61,13 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public ShardingDbContextExecutor(DbContext shardingDbContext)
         {
             _shardingDbContext = shardingDbContext;
-            _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
+            _virtualDataSource = ShardingContainer.GetRequiredVirtualDataSource<TShardingDbContext>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
             _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory<TShardingDbContext>>();
             _shardingDbContextOptionsBuilderConfig = ShardingContainer.GetService<IShardingDbContextOptionsBuilderConfig<TShardingDbContext>>();
             _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            _actualConnectionStringManager = new ActualConnectionStringManager<TShardingDbContext>();
+            _actualConnectionStringManager = new ActualConnectionStringManager<TShardingDbContext>(_virtualDataSource);
         }
 
         #region create db context
@@ -114,6 +114,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var tail = GetTableTail(entity);
 
             return CreateDbContext(false, dataSourceName, _routeTailFactory.Create(tail));
+        }
+
+        public IVirtualDataSource GetVirtualDataSource()
+        {
+            return _virtualDataSource;
         }
 
         private string GetDataSourceName<TEntity>(TEntity entity) where TEntity : class

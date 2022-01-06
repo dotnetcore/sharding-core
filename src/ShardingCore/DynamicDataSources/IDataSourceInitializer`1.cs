@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.DynamicDataSources
@@ -13,9 +14,10 @@ namespace ShardingCore.DynamicDataSources
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="virtualDataSource"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
         /// <param name="isOnStart">当前是否是启动时被调用</param>
-        void InitConfigure(string dataSourceName, string connectionString,bool isOnStart);
+        void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource,string dataSourceName, string connectionString,bool isOnStart);
     }
 }

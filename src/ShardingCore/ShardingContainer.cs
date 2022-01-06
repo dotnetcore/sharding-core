@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 
 namespace ShardingCore
 {
@@ -108,14 +111,42 @@ namespace ShardingCore
             return Activator.CreateInstance(serviceType, @params);
         }
 
-        public static IShardingConfigOption<TShardingDbContext> GetRequiredShardingConfigOption<TShardingDbContext>()
+        //public static IShardingConfigOption<TShardingDbContext> GetRequiredShardingConfigOption<TShardingDbContext>()
+        //    where TShardingDbContext : DbContext, IShardingDbContext
+        //{
+        //    return (IShardingConfigOption<TShardingDbContext>)GetRequiredShardingConfigOption(typeof(TShardingDbContext));
+        //}
+        //public static IShardingConfigOption GetRequiredShardingConfigOption(Type shardingDbContextType)
+        //{
+        //    return (IShardingConfigOption)ServiceProvider.GetService(typeof(IShardingConfigOption<>).GetGenericType0(shardingDbContextType));
+        //}
+        public static IShardingEntityConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return (IShardingConfigOption<TShardingDbContext>)GetRequiredShardingConfigOption(typeof(TShardingDbContext));
+            return (IShardingEntityConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
         }
-        public static IShardingConfigOption GetRequiredShardingConfigOption(Type shardingDbContextType)
+        public static IShardingEntityConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
         {
-            return (IShardingConfigOption)ServiceProvider.GetService(typeof(IShardingConfigOption<>).GetGenericType0(shardingDbContextType));
+            return (IShardingEntityConfigOptions)ServiceProvider.GetService(typeof(IShardingEntityConfigOptions<>).GetGenericType0(shardingDbContextType));
+        }
+
+        public static IVirtualDataSourceManager<TShardingDbContext> GetRequiredVirtualDataSourceManager<TShardingDbContext>()
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return (IVirtualDataSourceManager<TShardingDbContext>)GetRequiredVirtualDataSourceManager(typeof(TShardingDbContext));
+        }
+        public static IVirtualDataSourceManager GetRequiredVirtualDataSourceManager(Type shardingDbContextType)
+        {
+            return (IVirtualDataSourceManager)ServiceProvider.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(shardingDbContextType));
+        }
+        public static IVirtualDataSource<TShardingDbContext> GetRequiredVirtualDataSource<TShardingDbContext>()
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return GetRequiredVirtualDataSourceManager<TShardingDbContext>().GetVirtualDataSource();
+        }
+        public static IVirtualDataSource GetRequiredVirtualDataSource(Type shardingDbContextType)
+        {
+            return GetRequiredVirtualDataSourceManager(shardingDbContextType).GetVirtualDataSource();
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
 namespace ShardingCore.Sharding
 {
@@ -81,6 +82,11 @@ namespace ShardingCore.Sharding
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
             return ShardingDbContextExecutor.CreateGenericDbContext(entity);
+        }
+
+        public IVirtualDataSource GetVirtualDataSource()
+        {
+            return ShardingDbContextExecutor.GetVirtualDataSource();
         }
 
 

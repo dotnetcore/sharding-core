@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 
 /*
 * @Author: xjm
@@ -42,14 +43,17 @@ namespace ShardingCore.Bootstrapers
         private readonly string _virtualTableName;
         private readonly Expression<Func<TEntity,bool>> _queryFilterExpression;
         private readonly IShardingConfigOption<TShardingDbContext> _shardingConfigOption;
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
+        private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _virtualDataSourceRouteManager;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger;
 
         public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams
             , IShardingConfigOption<TShardingDbContext> shardingConfigOption,
-            IVirtualDataSource<TShardingDbContext> virtualDataSource,IVirtualTableManager<TShardingDbContext> virtualTableManager,
+            IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
+            IVirtualDataSourceRouteManager<TShardingDbContext> virtualDataSourceRouteManager,
+            IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
             ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
             )
@@ -58,7 +62,8 @@ namespace ShardingCore.Bootstrapers
             _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
             _queryFilterExpression = entityMetadataEnsureParams.EntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as Expression<Func<TEntity, bool>>;
             _shardingConfigOption = shardingConfigOption;
-            _virtualDataSource = virtualDataSource;
+            _virtualDataSourceManager = virtualDataSourceManager;
+            _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
             _logger = logger;
@@ -92,8 +97,7 @@ namespace ShardingCore.Bootstrapers
                 {
                     entityMetadataDataSourceConfiguration.Configure(creatEntityMetadataDataSourceBuilder);
                 }
-
-                _virtualDataSource.AddVirtualDataSourceRoute(dataSourceRoute);
+                _virtualDataSourceRouteManager.AddVirtualDataSourceRoute(dataSourceRoute);
                 entityMetadata.CheckShardingDataSourceMetadata();
 
             }

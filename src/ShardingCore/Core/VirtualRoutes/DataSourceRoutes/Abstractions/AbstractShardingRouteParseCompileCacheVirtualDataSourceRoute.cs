@@ -35,7 +35,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         {
             if (EnableRouteParseCompileCache.HasValue)
                 return EnableRouteParseCompileCache.Value;
-            return ShardingConfigOption.EnableDataSourceRouteCompileCache.GetValueOrDefault();
+            return EntityConfigOptions.EnableDataSourceRouteCompileCache.GetValueOrDefault();
         }
 
         /// <summary>

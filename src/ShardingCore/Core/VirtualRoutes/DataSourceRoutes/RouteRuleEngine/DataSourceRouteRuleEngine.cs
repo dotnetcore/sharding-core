@@ -21,21 +21,20 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     */
     public class DataSourceRouteRuleEngine<TShardingDbContext> : IDataSourceRouteRuleEngine<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
 
-        public DataSourceRouteRuleEngine(IVirtualDataSource<TShardingDbContext> virtualDataSource,IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public DataSourceRouteRuleEngine(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
-            _virtualDataSource = virtualDataSource;
             _entityMetadataManager = entityMetadataManager;
         }
         public DataSourceRouteResult Route(DataSourceRouteRuleContext routeRuleContext)
         {
+            var virtualDataSource = routeRuleContext.VirtualDataSource;
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
             var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !_entityMetadataManager.IsShardingDataSource(o));
             //存在不分库的
             if (notShardingDataSourceEntityType != null)
-                dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { _virtualDataSource.DefaultDataSourceName });
+                dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { virtualDataSource.DefaultDataSourceName });
 
 
             //if (queryEntities.Count > 1)
@@ -46,7 +45,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
                 {
                     continue;
                 }
-                var dataSourceConfigs = _virtualDataSource.RouteTo(queryEntity,new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
+                var dataSourceConfigs = virtualDataSource.RouteTo(queryEntity,new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
                 if (!dataSourceMaps.ContainsKey(queryEntity))
                 {
                     dataSourceMaps.Add(queryEntity, dataSourceConfigs.ToHashSet());

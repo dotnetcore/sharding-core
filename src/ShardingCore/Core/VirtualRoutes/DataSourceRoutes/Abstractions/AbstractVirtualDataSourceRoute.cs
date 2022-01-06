@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
@@ -19,7 +20,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     {
         public EntityMetadata EntityMetadata { get; private set; }
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
-        public IShardingConfigOption ShardingConfigOption { get; private set; }
+        public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
 
 
         public void Initialize(EntityMetadata entityMetadata)
@@ -35,8 +36,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                 paginationConfiguration.Configure(paginationBuilder);
             }
 
-            ShardingConfigOption =
-                ShardingContainer.GetRequiredShardingConfigOption(entityMetadata.ShardingDbContextType);
+            EntityConfigOptions =
+                ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
 
         }
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()

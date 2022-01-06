@@ -34,14 +34,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         private readonly StreamMergeContext<TEntity> _streamMergeContext;
         private readonly IShardingPageManager _shardingPageManager;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private EnumeratorStreamMergeEngineFactory(StreamMergeContext<TEntity> streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            _virtualDataSource = ShardingContainer.GetService<IVirtualDataSource<TShardingDbContext>>();
             _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
         }
 
@@ -50,6 +48,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             return new EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>(streamMergeContext);
         }
 
+        public IVirtualDataSourceRoute GetRoute(Type entityType)
+        {
+            return _streamMergeContext.GetShardingDbContext().GetVirtualDataSource().GetRoute(entityType);
+        }
         public IEnumeratorStreamMergeEngine<TEntity> GetMergeEngine()
         {
             if (_streamMergeContext.IsRouteNotMatch())
@@ -63,7 +65,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
             //未开启系统分表或者本次查询涉及多张分表
-            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSupportPaginationQuery<TShardingDbContext,TEntity>() && _shardingPageManager.Current != null)
+            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSupportPaginationQuery<TShardingDbContext, TEntity>() && _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
                 var shardingEntityType = _streamMergeContext.QueryEntities.FirstOrDefault(o => _entityMetadataManager.IsShardingDataSource(o) || _entityMetadataManager.IsShardingTable(o));
@@ -100,7 +102,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             PaginationSequenceConfig tableSequenceOrderConfig = null;
             if (isShardingDataSource)
             {
-                var virtualDataSourceRoute = _virtualDataSource.GetRoute(shardingEntityType);
+                var virtualDataSourceRoute = GetRoute(shardingEntityType);
                 if (virtualDataSourceRoute.EnablePagination)
                 {
                     dataSourceSequenceOrderConfig = virtualDataSourceRoute.PaginationMetadata.PaginationConfigs.OrderByDescending(o => o.AppendOrder)
@@ -146,7 +148,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             bool tableUseReverse = true;
             if (isShardingDataSource)
             {
-                virtualDataSourceRoute = _virtualDataSource.GetRoute(shardingEntityType);
+                virtualDataSourceRoute = GetRoute(shardingEntityType);
                 if (virtualDataSourceRoute.EnablePagination)
                 {
                     dataSourceSequenceOrderConfig = orderCount == 1 ? GetPaginationFullMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs, primaryOrder) : GetPaginationPrimaryMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs, primaryOrder);
@@ -164,14 +166,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             var useSequenceEnumeratorMergeEngine = isShardingDataSource && (dataSourceSequenceOrderConfig != null ||
                                                                             (isShardingTable &&
-                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource&&isShardingTable && tableSequenceOrderConfig != null);
+                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
             if (useSequenceEnumeratorMergeEngine)
             {
                 return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
-            if (isShardingDataSource&& virtualDataSourceRoute.EnablePagination)
+            if (isShardingDataSource && virtualDataSourceRoute.EnablePagination)
             {
                 dataSourceUseReverse =
                     EntityDataSourceUseReverseShardingPage(virtualDataSourceRoute, total);
@@ -181,7 +183,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 tableUseReverse =
                     EntityTableReverseShardingPage(virtualTable, total);
             }
-            
+
 
             //skip过大reserve skip
             if (dataSourceUseReverse && tableUseReverse)
@@ -196,7 +198,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             return null;
         }
 
-        private bool EntityDataSourceUseReverseShardingPage( IVirtualDataSourceRoute virtualDataSourceRoute,long total)
+        private bool EntityDataSourceUseReverseShardingPage(IVirtualDataSourceRoute virtualDataSourceRoute, long total)
         {
             if (virtualDataSourceRoute.PaginationMetadata.EnableReverseShardingPage && _streamMergeContext.Take.GetValueOrDefault() > 0)
             {
@@ -207,7 +209,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
             return false;
         }
-        private bool EntityTableReverseShardingPage( IVirtualTable virtualTable, long total)
+        private bool EntityTableReverseShardingPage(IVirtualTable virtualTable, long total)
         {
             if (virtualTable.PaginationMetadata.EnableReverseShardingPage && _streamMergeContext.Take.GetValueOrDefault() > 0)
             {

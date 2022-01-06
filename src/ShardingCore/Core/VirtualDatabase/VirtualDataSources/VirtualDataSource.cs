@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
@@ -13,7 +15,9 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
@@ -26,26 +30,80 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     */
     public class VirtualDataSource<TShardingDbContext> : IVirtualDataSource<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
+        public IVirtualDataSourceConfigurationParams ConfigurationParams { get; }
+        public IConnectionStringManager ConnectionStringManager { get; }
+
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
+        private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _dataSourceRouteManager;
 
         private readonly IPhysicDataSourcePool _physicDataSourcePool;
 
+        public string ConfigId => ConfigurationParams.ConfigId;
+        public int Priority => ConfigurationParams.Priority;
         public string DefaultDataSourceName { get; private set; }
         public string DefaultConnectionString { get; private set; }
+        public bool UseReadWriteSeparation { get; }
 
-        public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IVirtualDataSourceRouteManager<TShardingDbContext> dataSourceRouteManager, IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams)
         {
-            _entityMetadataManager = entityMetadataManager;
+            ConfigurationParams = configurationParams;
             _physicDataSourcePool = new PhysicDataSourcePool();
+            //添加数据源
+            AddPhysicDataSource(new DefaultPhysicDataSource(ConfigurationParams.DefaultDataSourceName, ConfigurationParams.DefaultConnectionString, true));
+            foreach (var extraDataSource in ConfigurationParams.ExtraDataSources)
+            {
+                AddPhysicDataSource(new DefaultPhysicDataSource(extraDataSource.Key, extraDataSource.Value, false));
+            }
+            _entityMetadataManager = entityMetadataManager;
+            _dataSourceRouteManager = dataSourceRouteManager;
+            UseReadWriteSeparation = ConfigurationParams.UseReadWriteSeparation();
+            if (UseReadWriteSeparation)
+            {
+                CheckReadWriteSeparation();
+                ConnectionStringManager = new ReadWriteConnectionStringManager(this);
+            }
+            else
+            {
+                ConnectionStringManager = new DefaultConnectionStringManager(this);
+
+            }
         }
 
+        private void CheckReadWriteSeparation()
+        {
+            if (!ConfigurationParams.ReadStrategy.HasValue)
+            {
+                throw new ArgumentException(nameof(ConfigurationParams.ReadStrategy));
+            }
+            if (!ConfigurationParams.ReadConnStringGetStrategy.HasValue)
+            {
+                throw new ArgumentException(nameof(ConfigurationParams.ReadConnStringGetStrategy));
+            }
+            if (!ConfigurationParams.ReadWriteDefaultEnable.HasValue)
+            {
+                throw new ArgumentException(nameof(ConfigurationParams.ReadWriteDefaultEnable));
+            }
+            if (!ConfigurationParams.ReadWriteDefaultPriority.HasValue)
+            {
+                throw new ArgumentException(nameof(ConfigurationParams.ReadWriteDefaultPriority));
+            }
+        }
 
-        public List<string> RouteTo(Type entityType,ShardingDataSourceRouteConfig routeRouteConfig)
+        public IVirtualDataSourceRoute GetRoute(Type entityType)
+        {
+            return _dataSourceRouteManager.GetRoute(entityType);
+        }
+
+        public IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity : class
+        {
+            return _dataSourceRouteManager.GetRoute<TEntity>();
+        }
+
+        public List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig)
         {
             if (!_entityMetadataManager.IsShardingDataSource(entityType))
                 return new List<string>(1) { DefaultDataSourceName };
-            var virtualDataSourceRoute = GetRoute( entityType);
+            var virtualDataSourceRoute = _dataSourceRouteManager.GetRoute(entityType);
 
             if (routeRouteConfig.UseQueryable())
                 return virtualDataSourceRoute.RouteWithPredicate(routeRouteConfig.GetQueryable(), true);
@@ -72,17 +130,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             throw new NotImplementedException(nameof(ShardingDataSourceRouteConfig));
         }
 
-        public IVirtualDataSourceRoute GetRoute(Type entityType)
-        {
-            if(!_entityMetadataManager.IsShardingDataSource(entityType))
-                throw new ShardingCoreInvalidOperationException(
-                    $"entity type :[{entityType.FullName}] not configure sharding data source");
-
-            if (!_dataSourceVirtualRoutes.TryGetValue(entityType, out var dataSourceVirtualRoute))
-                throw new ShardingCoreInvalidOperationException(
-                    $"entity type :[{entityType.FullName}] not found virtual data source route");
-            return dataSourceVirtualRoute;
-        }
         /// <summary>
         /// 获取默认的数据源信息
         /// </summary>
@@ -101,7 +148,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             Check.NotNull(dataSourceName, "data source name is null,plz confirm IShardingBootstrapper.Star()");
             var dataSource = _physicDataSourcePool.TryGet(dataSourceName);
-            if (null== dataSource)
+            if (null == dataSource)
                 throw new ShardingCoreNotFoundException($"data source:[{dataSourceName}]");
 
             return dataSource;
@@ -127,6 +174,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 return DefaultConnectionString;
             return GetPhysicDataSource(dataSourceName).ConnectionString;
         }
+
         /// <summary>
         /// 添加数据源
         /// </summary>
@@ -146,19 +194,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             }
 
             return _physicDataSourcePool.TryAdd(physicDataSource);
-        }
-        /// <summary>
-        /// 添加分库路由
-        /// </summary>
-        /// <param name="virtualDataSourceRoute"></param>
-        /// <returns></returns>
-        /// <exception cref="ShardingCoreInvalidOperationException">对象未配置分库</exception>
-        public bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute)
-        {
-            if (!virtualDataSourceRoute.EntityMetadata.IsShardingDataSource())
-                throw new ShardingCoreInvalidOperationException($"{virtualDataSourceRoute.EntityMetadata.EntityType.FullName} should configure sharding data source");
-
-            return _dataSourceVirtualRoutes.TryAdd(virtualDataSourceRoute.EntityMetadata.EntityType, virtualDataSourceRoute);
         }
         /// <summary>
         /// 是否是默认数据源
@@ -181,6 +216,27 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (string.IsNullOrWhiteSpace(DefaultConnectionString))
                 throw new ShardingCoreInvalidOperationException(
                     $"virtual data source not inited {nameof(DefaultConnectionString)} in IShardingDbContext null");
+        }
+
+        public DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
+            DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
+            doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            return doUseDbContextOptionsBuilder;
+        }
+
+        public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection,
+            DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
+            doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            return doUseDbContextOptionsBuilder;
+        }
+
+        public IDictionary<string, string> GetDataSources()
+        {
+            return _physicDataSourcePool.GetDataSources();
         }
     }
 }
