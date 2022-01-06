@@ -50,10 +50,9 @@ namespace ShardingCore.DynamicDataSources
                 using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                 if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
                     EnsureCreated(virtualDataSource, context, dataSourceName);
-                //var tableEnsureManager = ShardingContainer.GetService<ITableEnsureManager<TShardingDbContext>>();
+                var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
                 ////获取数据库存在的所有的表
-                //var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ?? new HashSet<string>();
-                var existTables = new HashSet<string>();
+                var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ?? new HashSet<string>();
                 foreach (var entity in context.Model.GetEntityTypes())
                 {
                     var entityType = entity.ClrType;

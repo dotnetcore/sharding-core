@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using ShardingCore.Bootstrapers;
 using ShardingCore.Extensions.ShardingPageExtensions;
+using ShardingCore.TableExists;
 
 namespace Sample.BulkConsole
 {
@@ -25,19 +26,29 @@ namespace Sample.BulkConsole
         {
             var services = new ServiceCollection();
             services.AddLogging();
-            services.AddShardingDbContext<MyShardingDbContext>(
-                    (conn, o) => o.UseSqlServer(conn).UseLoggerFactory(efLogger))
-                .Begin(o =>
+
+            services.AddShardingDbContext<MyShardingDbContext>()
+                .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
+                    o.AddShardingTableRoute<OrderVirtualRoute>();
                 })
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;")
-                .AddShardingTableRoute(op=> {
-                    op.AddShardingTableRoute<OrderVirtualRoute>();
-                }).End();
+                .AddConfig(op =>
+                {
+                    op.ConfigId = "c1";
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                    });
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyShardingDbContext>());
+                    op.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;");
+
+                }).EnsureConfig();
             var serviceProvider = services.BuildServiceProvider();
             serviceProvider.GetService<IShardingBootstrapper>().Start();
             using (var serviceScope = serviceProvider.CreateScope())

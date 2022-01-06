@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Common;
 using ShardingCore.DIExtensions;
@@ -12,33 +13,35 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
 {
-    public class ShardingEntityConfigBuilder<TShardingDbContext>
+    public class ShardingConfigBuilder<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ShardingCoreConfigBuilder<TShardingDbContext> _shardingCoreConfigBuilder;
+        public ShardingCoreConfigBuilder<TShardingDbContext> ShardingCoreConfigBuilder { get; }
 
-        public ShardingEntityConfigBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
+        public ShardingConfigBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
         {
-            _shardingCoreConfigBuilder = shardingCoreConfigBuilder;
+            ShardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
 
-        public ShardingEntityConfigBuilder<TShardingDbContext> AddConfig(Action<ShardingGlobalConfigOptions> shardingGlobalConfigOptionsConfigure)
+        public ShardingConfigBuilder<TShardingDbContext> AddConfig(Action<ShardingConfigOptions<TShardingDbContext>> shardingGlobalConfigOptionsConfigure)
         {
-            var shardingGlobalConfigOptions = new ShardingGlobalConfigOptions();
+            var shardingGlobalConfigOptions = new ShardingConfigOptions<TShardingDbContext>();
             shardingGlobalConfigOptionsConfigure?.Invoke(shardingGlobalConfigOptions);
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.ConfigId))
                 throw new ArgumentNullException(nameof(shardingGlobalConfigOptions.ConfigId));
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.DefaultDataSourceName))
                 throw new ArgumentNullException(
-                    $"{nameof(shardingGlobalConfigOptions.DefaultDataSourceName)} plz call {nameof(ShardingGlobalConfigOptions.AddDefaultDataSource)}");
+                    $"{nameof(shardingGlobalConfigOptions.DefaultDataSourceName)} plz call {nameof(ShardingConfigOptions<TShardingDbContext>.AddDefaultDataSource)}");
             
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.DefaultConnectionString))
                 throw new ArgumentNullException(
-                    $"{nameof(shardingGlobalConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingGlobalConfigOptions.AddDefaultDataSource)}");
+                    $"{nameof(shardingGlobalConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingConfigOptions<TShardingDbContext>.AddDefaultDataSource)}");
 
             if (shardingGlobalConfigOptions.ConnectionStringConfigure is null)
                 throw new ArgumentNullException($"plz call {nameof(shardingGlobalConfigOptions.UseShardingQuery)}");
@@ -53,15 +56,23 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             if (shardingGlobalConfigOptions.MaxQueryConnectionsLimit <= 0)
                 throw new ArgumentException(
                     $"{nameof(shardingGlobalConfigOptions.MaxQueryConnectionsLimit)} should greater than and equal 1");
-            _shardingCoreConfigBuilder.ShardingGlobalConfigOptions.Add(shardingGlobalConfigOptions);
+            ShardingCoreConfigBuilder.ShardingConfigOptions.Add(shardingGlobalConfigOptions);
             return this;
         }
-
-        public IServiceCollection EnsureConfig()
+        /// <summary>
+        /// 单配置确认
+        /// </summary>
+        /// <param name="configurationStrategy"></param>
+        /// <returns></returns>
+        public IServiceCollection EnsureConfig(ShardingConfigurationStrategyEnum configurationStrategy = ShardingConfigurationStrategyEnum.ThrowIfNull)
         {
-            return DoEnsureConfig(false, ShardingConfigurationStrategyEnum.ThrowIfNull);
+            return DoEnsureConfig(false, configurationStrategy);
         }
-
+        /// <summary>
+        /// 多配置确认
+        /// </summary>
+        /// <param name="configurationStrategy"></param>
+        /// <returns></returns>
         public IServiceCollection EnsureMultiConfig(ShardingConfigurationStrategyEnum configurationStrategy= ShardingConfigurationStrategyEnum.ThrowIfNull)
         {
             return DoEnsureConfig(true, configurationStrategy);
@@ -70,28 +81,28 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         private IServiceCollection DoEnsureConfig(bool isMultiConfig,
             ShardingConfigurationStrategyEnum configurationStrategy)
         {
-            if (_shardingCoreConfigBuilder.ShardingGlobalConfigOptions.IsEmpty())
+            if (ShardingCoreConfigBuilder.ShardingConfigOptions.IsEmpty())
                 throw new ArgumentException($"plz call {nameof(AddConfig)} at least once ");
             if (!isMultiConfig)
             {
-                if (_shardingCoreConfigBuilder.ShardingGlobalConfigOptions.Count > 1)
+                if (ShardingCoreConfigBuilder.ShardingConfigOptions.Count > 1)
                 {
                     throw new ArgumentException($"call {nameof(AddConfig)}  at most once ");
                 }
             }
 
-            var services = _shardingCoreConfigBuilder.Services;
+            var services = ShardingCoreConfigBuilder.Services;
             services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
-            services.AddSingleton<IShardingEntityConfigOptions<TShardingDbContext>>(sp => _shardingCoreConfigBuilder.ShardingEntityConfigOptions);
-            services.AddSingleton(sp => _shardingCoreConfigBuilder.ShardingEntityConfigOptions);
+            services.AddSingleton<IShardingEntityConfigOptions<TShardingDbContext>>(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
+            services.AddSingleton(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
             if (!isMultiConfig)
             {
                 services.AddSingleton<IShardingConfigurationOptions<TShardingDbContext>>(sp =>
                 {
                     var shardingSingleConfigurationOptions = new ShardingSingleConfigurationOptions<TShardingDbContext>();
                     shardingSingleConfigurationOptions.ShardingConfigurationStrategy = configurationStrategy;
-                    shardingSingleConfigurationOptions.AddShardingGlobalConfigOptions(_shardingCoreConfigBuilder
-                        .ShardingGlobalConfigOptions.First());
+                    shardingSingleConfigurationOptions.AddShardingGlobalConfigOptions(ShardingCoreConfigBuilder
+                        .ShardingConfigOptions.First());
                     return shardingSingleConfigurationOptions;
                 });
             }
@@ -101,8 +112,8 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
                 {
                     var shardingMultiConfigurationOptions = new ShardingMultiConfigurationOptions<TShardingDbContext>();
                     shardingMultiConfigurationOptions.ShardingConfigurationStrategy = configurationStrategy;
-                    foreach (var shardingGlobalConfigOptions in _shardingCoreConfigBuilder
-                                 .ShardingGlobalConfigOptions)
+                    foreach (var shardingGlobalConfigOptions in ShardingCoreConfigBuilder
+                                 .ShardingConfigOptions)
                     {
                         shardingMultiConfigurationOptions.AddShardingGlobalConfigOptions(shardingGlobalConfigOptions);
                     }
@@ -110,6 +121,7 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
                     return shardingMultiConfigurationOptions;
                 });
             }
+            services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
 
             services.AddInternalShardingCore();
             return services;

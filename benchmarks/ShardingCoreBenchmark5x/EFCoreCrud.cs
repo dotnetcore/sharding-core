@@ -15,6 +15,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.TableExists;
 using ShardingCoreBenchmark5x.NoShardingDbContexts;
 using ShardingCoreBenchmark5x.ShardingDbContexts;
 
@@ -34,17 +35,29 @@ namespace ShardingCoreBenchmark5x
 
             services.AddDbContext<DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;"), ServiceLifetime.Transient, ServiceLifetime.Transient);
             services.AddLogging();
-            services.AddShardingDbContext<DefaultShardingDbContext>((conStr, builder) => builder.UseSqlServer(conStr), ServiceLifetime.Transient, ServiceLifetime.Transient)
-                .Begin(o =>
+            services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
+                .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                }).AddShardingTransaction((connection, builder) => builder.UseSqlServer(connection))
-                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
-                .AddShardingTableRoute(op =>
+                    o.AddShardingTableRoute<OrderVirtualTableRoute>();
+                })
+                .AddConfig(op =>
                 {
-                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
-                }).End();
+                    op.ConfigId = "c1";
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr);
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection);
+                    });
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
+                    op.AddDefaultDataSource("ds0",
+                        "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;");
+
+                }).EnsureConfig();
 
             var buildServiceProvider = services.BuildServiceProvider();
             buildServiceProvider.GetRequiredService<IShardingBootstrapper>().Start();

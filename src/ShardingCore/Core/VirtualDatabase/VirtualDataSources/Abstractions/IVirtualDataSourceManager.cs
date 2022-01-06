@@ -14,8 +14,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
     {
         bool IsMultiShardingConfiguration { get; }
         ShardingConfigurationStrategyEnum ShardingConfigurationStrategy { get; }
-        IVirtualDataSource GetVirtualDataSource();
+        IVirtualDataSource GetCurrentVirtualDataSource();
+        IVirtualDataSource GetVirtualDataSource(string  configId);
         List<IVirtualDataSource> GetAllVirtualDataSources();
+        bool ContansConfigId(string configId);
 
         /// <summary>
         /// 创建分片配置scope
@@ -29,8 +31,10 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
     public interface IVirtualDataSourceManager<TShardingDbContext> : IVirtualDataSourceManager
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        IVirtualDataSource<TShardingDbContext> GetVirtualDataSource();
+        IVirtualDataSource<TShardingDbContext> GetCurrentVirtualDataSource();
+        IVirtualDataSource<TShardingDbContext> GetVirtualDataSource(string configId);
         List<IVirtualDataSource<TShardingDbContext>> GetAllVirtualDataSources();
-        void AddVirtualDataSource(IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams);
+        bool AddVirtualDataSource(IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams);
+        void SetDefaultIfMultiConfiguration();
     }
 }

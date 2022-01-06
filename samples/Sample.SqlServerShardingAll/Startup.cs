@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingAll.VirtualDataSourceRoutes;
 using Sample.SqlServerShardingAll.VirtualTableRoutes;
 using ShardingCore;
+using ShardingCore.TableExists;
 
 namespace Sample.SqlServerShardingAll
 {
@@ -35,23 +36,33 @@ namespace Sample.SqlServerShardingAll
 
             services.AddControllers();
 
-            services.AddShardingDbContext<MyDbContext>((conStr, builder) =>
+            services.AddShardingDbContext<MyDbContext>()
+                .AddEntityConfig(o =>
                 {
-                    builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
-                }).Begin(op =>
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();
+                    o.AddShardingDataSourceRoute<SysUserVirtualDataSourceRoute>();
+                    o.AddShardingTableRoute<SysUserVirtualTableRoute>();
+                    o.AddShardingTableRoute<OrderVirtualTableRoute>();
+                })
+                .AddConfig(op =>
                 {
-                    //如果您使用code-first建议选择false
-                    op.CreateShardingTableOnStart = true;
-                    //如果您使用code-first建议修改为fsle
-                    op.EnsureCreatedWithOutShardingTable = true;
-                }).AddShardingTransaction((connection, builder) =>
-                {
-                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
-                }).AddDefaultDataSource("A",
-                    "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceTableDBA;Integrated Security=True;")
-                .AddShardingDataSource(sp =>
-                {
-                    return new Dictionary<string, string>()
+                    op.ConfigId = "c1";
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                    });
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyDbContext>());
+                    op.AddDefaultDataSource("A",
+                     "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceTableDBA;Integrated Security=True;");
+                    op.AddExtraDataSource(sp =>
+                    {
+                        return new Dictionary<string, string>()
                     {
                         {
                             "B","Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceTableDBB;Integrated Security=True;"
@@ -60,16 +71,8 @@ namespace Sample.SqlServerShardingAll
                             "C","Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceTableDBC;Integrated Security=True;"
                         },
                     };
-                })
-                .AddShardingDataSourceRoute(op =>
-                {
-                    op.AddShardingDatabaseRoute<SysUserVirtualDataSourceRoute>();
-                    op.AddShardingDatabaseRoute<OrderVirtualDataSourceRoute>();
-                }).AddShardingTableRoute(op =>
-                {
-                    op.AddShardingTableRoute<SysUserVirtualTableRoute>();
-                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
-                }).End();
+                    });
+                }).EnsureConfig();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

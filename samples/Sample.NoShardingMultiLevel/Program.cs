@@ -17,32 +17,39 @@ builder.Services.AddControllers();
 //builder.Services.AddDbContext<DefaultDbContext>(builder1 =>
 //    builder1.UseSqlServer("Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;")
 //        .UseLoggerFactory(efLogger));
-builder.Services.AddShardingDbContext<DefaultDbContext>((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))
-    .Begin(o =>
+
+builder.Services.AddShardingDbContext<DefaultDbContext>()
+    .AddEntityConfig(o =>
     {
         o.CreateShardingTableOnStart = true;
         o.EnsureCreatedWithOutShardingTable = true;
     })
-    .AddShardingTransaction((connection, builder) =>
+    .AddConfig(op =>
     {
-        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
-    })
-    .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;")
-    .AddTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>())
-    .AddReadWriteSeparation(sp =>
-    {
-        return new Dictionary<string, IEnumerable<string>>()
+        op.ConfigId = "c1";
+        op.UseShardingQuery((conStr, builder) =>
         {
+            builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+        });
+        op.UseShardingTransaction((connection, builder) =>
+        {
+            builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+        });
+        op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>());
+        op.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;");
+        op.AddReadWriteSeparation(sp =>
+        {
+            return new Dictionary<string, IEnumerable<string>>()
             {
-                "ds0", new List<string>()
                 {
-                    "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;"
+                    "ds0", new List<string>()
+                    {
+                        "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;"
+                    }
                 }
-            }
-        };
-    }, ReadStrategyEnum.Loop, defaultEnable: true)
-    .End();
-
+            };
+        }, ReadStrategyEnum.Loop, defaultEnable: true);
+    }).EnsureConfig();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

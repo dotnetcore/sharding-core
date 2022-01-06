@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingGlobalConfigOptions
+    public class ShardingConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         /// <summary>
         /// 配置id
@@ -104,6 +104,16 @@ namespace ShardingCore.Core.ShardingConfigurations
         public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
         {
             ReplaceShardingComparerFactory = newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
+        }
+
+        public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =
+            sp => new EmptyTableEnsureManager<TShardingDbContext>();
+
+        public void ReplaceTableEnsureManager(
+            Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> tableEnsureManagerConfigure)
+        {
+            TableEnsureManagerFactory = tableEnsureManagerConfigure ??
+                                        throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
         }
 
 

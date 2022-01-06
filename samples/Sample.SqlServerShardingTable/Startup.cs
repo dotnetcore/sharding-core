@@ -15,6 +15,7 @@ using Sample.SqlServerShardingTable.Entities;
 using Sample.SqlServerShardingTable.VirtualRoutes;
 using ShardingCore;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.TableExists;
 
 namespace Sample.SqlServerShardingTable
 {
@@ -76,7 +77,7 @@ namespace Sample.SqlServerShardingTable
                 //如果您使用code-first建议修改为fsle
                 op.EnsureCreatedWithOutShardingTable = true;
                 //当无法获取路由时会返回默认值而不是报错
-                op.ThrowIfQueryRouteNotMatch = true;
+                op.ThrowIfQueryRouteNotMatch = false;
                 op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                 op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
@@ -105,6 +106,7 @@ namespace Sample.SqlServerShardingTable
                         }
                     };
                 }, ReadStrategyEnum.Loop, defaultEnable: true);
+                op.ReplaceTableEnsureManager(sp=>new SqlServerTableEnsureManager<MyDbContext>());
             }).EnsureConfig();
         }
 

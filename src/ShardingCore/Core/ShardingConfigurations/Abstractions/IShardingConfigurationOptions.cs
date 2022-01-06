@@ -9,15 +9,10 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations.Abstractions
 {
-    public interface IShardingConfigurationOptions
+    public interface IShardingConfigurationOptions<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
-         public void AddShardingGlobalConfigOptions(ShardingGlobalConfigOptions shardingGlobalConfigOptions);
+        public void AddShardingGlobalConfigOptions(ShardingConfigOptions<TShardingDbContext> shardingConfigOptions);
 
-         public ShardingGlobalConfigOptions[] GetAllShardingGlobalConfigOptions();
-    }
-
-    public interface IShardingConfigurationOptions<TShardingDbContext> : IShardingConfigurationOptions where TShardingDbContext:DbContext,IShardingDbContext
-    {
-
+        public ShardingConfigOptions<TShardingDbContext>[] GetAllShardingGlobalConfigOptions();
     }
 }

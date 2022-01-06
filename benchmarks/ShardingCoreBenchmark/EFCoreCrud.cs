@@ -34,13 +34,6 @@ namespace ShardingCore6x
         private readonly DefaultDbContext _defaultDbContext;
         private readonly DefaultShardingDbContext _defaultShardingDbContext;
         private readonly IVirtualTableManager<DefaultShardingDbContext> _virtualTableManager;
-        private readonly IVirtualTable<Order> _virtualTable;
-        private readonly IRouteTailFactory _routeTailFactory;
-        private readonly IStreamMergeContextFactory<DefaultShardingDbContext> _streamMergeContextFactory;
-        private readonly ActualConnectionStringManager<DefaultShardingDbContext> _actualConnectionStringManager;
-        private readonly IVirtualDataSource<DefaultShardingDbContext> _virtualDataSource;
-        private readonly IDataSourceRouteRuleEngineFactory<DefaultShardingDbContext> _dataSourceRouteRuleEngineFactory;
-        private readonly ITableRouteRuleEngineFactory<DefaultShardingDbContext> _tableRouteRuleEngineFactory;
         public EFCoreCrud()
         {
             var services = new ServiceCollection();
@@ -50,24 +43,33 @@ namespace ShardingCore6x
                 .UseSqlServer("Data Source=localhost;Initial Catalog=db1;Integrated Security=True;")
                 , ServiceLifetime.Transient, ServiceLifetime.Transient);
             services.AddLogging();
-            services.AddShardingDbContext<DefaultShardingDbContext>((conStr, builder) => builder
-                    //.UseMySql(conStr, new MySqlServerVersion(new Version()))
-                    .UseSqlServer(conStr)
-                    , ServiceLifetime.Transient, ServiceLifetime.Transient)
-                .Begin(o =>
+
+            services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
+                .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                }).AddShardingTransaction((connection, builder) => builder
-                    //.UseMySql(connection, new MySqlServerVersion(new Version()))
-                    .UseSqlServer(connection)
-                )
-                //.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
-                .AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;")
-                .AddShardingTableRoute(op =>
+                    o.AddShardingTableRoute<OrderVirtualTableRoute>();
+                })
+                .AddConfig(op =>
                 {
-                    op.AddShardingTableRoute<OrderVirtualTableRoute>();
-                }).End();
+                    op.ConfigId = "c1";
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr);
+                        //builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection);
+                        //builder.UseMySql(connection, new MySqlServerVersion(new Version()));
+                    });
+                    op.AddDefaultDataSource("ds0",
+                        "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;");
+
+                    //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
+
+                }).EnsureConfig();
 
             var buildServiceProvider = services.BuildServiceProvider();
             buildServiceProvider.GetRequiredService<IShardingBootstrapper>().Start();
@@ -124,14 +126,6 @@ namespace ShardingCore6x
             _defaultDbContext = ShardingContainer.GetService<DefaultDbContext>();
             _defaultShardingDbContext = ShardingContainer.GetService<DefaultShardingDbContext>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
-            _virtualTable = _virtualTableManager.GetVirtualTable<Order>();
-            _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-            _streamMergeContextFactory =
-                ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
-            _actualConnectionStringManager = new ActualConnectionStringManager<DefaultShardingDbContext>();
-            _virtualDataSource = ShardingContainer.GetRequiredVirtualDataSourceManager<DefaultShardingDbContext>().GetVirtualDataSource();
-             _dataSourceRouteRuleEngineFactory = ShardingContainer.GetService<IDataSourceRouteRuleEngineFactory<DefaultShardingDbContext>>();
-             _tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
 
         }
 

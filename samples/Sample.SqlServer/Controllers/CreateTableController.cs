@@ -42,7 +42,7 @@ namespace Sample.SqlServer.Controllers
             if (isShardingTable)
             {
                 #region 完全可以用脚本实现这段代码
-                var defaultDataSourceName = _virtualDataSourceManager.GetVirtualDataSource().DefaultDataSourceName;
+                var defaultDataSourceName = _virtualDataSourceManager.GetCurrentVirtualDataSource().DefaultDataSourceName;
                 try
                 {
                     _tableCreator.CreateTable<SysUserMod>(defaultDataSourceName, "09");

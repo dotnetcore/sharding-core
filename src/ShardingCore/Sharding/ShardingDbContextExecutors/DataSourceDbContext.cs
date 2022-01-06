@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DbContexts;
 using ShardingCore.DbContexts.ShardingDbContexts;
@@ -33,9 +34,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
         public bool IsDefault { get; }
         public int DbContextCount => _dataSourceDbContexts.Count;
-        private readonly IShardingDbContextOptionsBuilderConfig<TShardingDbContext> _shardingDbContextOptionsBuilderConfig;
         private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
+        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
 
         /// <summary>
         /// 数据源名称
@@ -67,20 +68,18 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <param name="dataSourceName"></param>
         /// <param name="isDefault"></param>
         /// <param name="shardingDbContext"></param>
-        /// <param name="shardingDbContextOptionsBuilderConfig"></param>
         /// <param name="shardingDbContextFactory"></param>
         /// <param name="actualConnectionStringManager"></param>
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
             DbContext shardingDbContext,
-            IShardingDbContextOptionsBuilderConfig<TShardingDbContext> shardingDbContextOptionsBuilderConfig,
             IShardingDbContextFactory<TShardingDbContext> shardingDbContextFactory,
             ActualConnectionStringManager<TShardingDbContext> actualConnectionStringManager)
         {
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingDbContext = shardingDbContext;
-            _shardingDbContextOptionsBuilderConfig = shardingDbContextOptionsBuilderConfig;
+            _virtualDataSource = (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingDbContext).GetVirtualDataSource();
             _shardingDbContextFactory = shardingDbContextFactory;
             _actualConnectionStringManager = actualConnectionStringManager;
             _logger = ShardingContainer.GetService<ILogger<DataSourceDbContext<TShardingDbContext>>>();
@@ -115,7 +114,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 if (IsDefault)
                 {
                     var dbConnection = _shardingDbContext.Database.GetDbConnection();
-                    _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection,
+                    _virtualDataSource.UseDbContextOptionsBuilder(dbConnection,
                         dbContextOptionsBuilder);
                 }
                 else
@@ -124,14 +123,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                     {
                         var connectionString =
                             _actualConnectionStringManager.GetConnectionString(DataSourceName, true);
-                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(connectionString,
+                        _virtualDataSource.UseDbContextOptionsBuilder(connectionString,
                             dbContextOptionsBuilder);
                         return dbContextOptionsBuilder.Options;
                     }
                     else
                     {
                         var dbConnection = _dataSourceDbContexts.First().Value.Database.GetDbConnection();
-                        _shardingDbContextOptionsBuilderConfig.UseDbContextOptionsBuilder(dbConnection,
+                        _virtualDataSource.UseDbContextOptionsBuilder(dbConnection,
                             dbContextOptionsBuilder);
                     }
                 }

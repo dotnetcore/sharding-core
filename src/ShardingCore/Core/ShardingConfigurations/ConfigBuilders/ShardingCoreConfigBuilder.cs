@@ -26,54 +26,21 @@ namespace ShardingCore.DIExtensions
         public IServiceCollection Services { get; }
 
 
-        public ShardingConfigOption<TShardingDbContext> ShardingConfigOption { get; }
-        public List<ShardingGlobalConfigOptions> ShardingGlobalConfigOptions { get; }
+        public List<ShardingConfigOptions<TShardingDbContext>> ShardingConfigOptions { get; }
         public ShardingEntityConfigOptions<TShardingDbContext> ShardingEntityConfigOptions { get; }
 
 
         public ShardingCoreConfigBuilder(IServiceCollection services)
         {
             Services = services;
-            ShardingConfigOption = new ShardingConfigOption<TShardingDbContext>();
-            ShardingGlobalConfigOptions = new List<ShardingGlobalConfigOptions>();
+            ShardingConfigOptions = new List<ShardingConfigOptions<TShardingDbContext>>();
             ShardingEntityConfigOptions = new ShardingEntityConfigOptions<TShardingDbContext>();
         }
 
-        [Obsolete("plz use AddEntityConfig")]
-        public ShardingTransactionBuilder<TShardingDbContext> Begin(Action<ShardingCoreBeginOptions> shardingCoreBeginOptionsConfigure)
-        {
-            var shardingCoreBeginOptions = new ShardingCoreBeginOptions();
-            shardingCoreBeginOptionsConfigure?.Invoke(shardingCoreBeginOptions);
-            if (shardingCoreBeginOptions.MaxQueryConnectionsLimit <= 0)
-                throw new ArgumentException(
-                    $"{nameof(shardingCoreBeginOptions.MaxQueryConnectionsLimit)} should greater than and equal 1");
-            ShardingConfigOption.EnsureCreatedWithOutShardingTable = shardingCoreBeginOptions.EnsureCreatedWithOutShardingTable;
-            //ShardingConfigOption.AutoTrackEntity = shardingCoreBeginOptions.AutoTrackEntity;
-            ShardingConfigOption.CreateShardingTableOnStart = shardingCoreBeginOptions.CreateShardingTableOnStart;
-            ShardingConfigOption.IgnoreCreateTableError = shardingCoreBeginOptions.IgnoreCreateTableError;
-            ShardingConfigOption.MaxQueryConnectionsLimit = shardingCoreBeginOptions.MaxQueryConnectionsLimit;
-            ShardingConfigOption.ConnectionMode = shardingCoreBeginOptions.ConnectionMode;
-            ShardingConfigOption.ThrowIfQueryRouteNotMatch = shardingCoreBeginOptions.ThrowIfQueryRouteNotMatch;
-            ShardingConfigOption.EnableTableRouteCompileCache = shardingCoreBeginOptions.EnableTableRouteCompileCache;
-            ShardingConfigOption.EnableDataSourceRouteCompileCache = shardingCoreBeginOptions.EnableDataSourceRouteCompileCache;
-
-            foreach (var entityType in shardingCoreBeginOptions.GetCreateTableEntities())
-            {
-                ShardingConfigOption.AddEntityTryCreateTable(entityType);
-            }
-            foreach (var parallelTableGroupNode in shardingCoreBeginOptions.GetParallelTableGroupNodes())
-            {
-                ShardingConfigOption.AddParallelTableGroupNode(parallelTableGroupNode);
-            }
-
-            return new ShardingTransactionBuilder<TShardingDbContext>(this);
-            //return new ShardingQueryBuilder<TShardingDbContext>(this);
-        }
-
-        public ShardingEntityConfigBuilder<TShardingDbContext> AddEntityConfig(Action<ShardingEntityConfigOptions<TShardingDbContext>> entityConfigure)
+        public ShardingConfigBuilder<TShardingDbContext> AddEntityConfig(Action<ShardingEntityConfigOptions<TShardingDbContext>> entityConfigure)
         {
             entityConfigure?.Invoke(ShardingEntityConfigOptions);
-            return new ShardingEntityConfigBuilder<TShardingDbContext>(this);
+            return new ShardingConfigBuilder<TShardingDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{

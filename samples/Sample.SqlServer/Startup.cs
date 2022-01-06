@@ -29,31 +29,30 @@ namespace Sample.SqlServer
             services.AddControllers();
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
 
-            services.AddShardingDbContext<DefaultShardingDbContext>(
-                    (conn, o) =>
-                        o.UseSqlServer(conn).UseLoggerFactory(efLogger)
-                ).Begin(o =>
+            services.AddShardingDbContext<DefaultShardingDbContext>()
+                .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.MaxQueryConnectionsLimit = Environment.ProcessorCount;
-                    o.ConnectionMode = ConnectionModeEnum.SYSTEM_AUTO;
-                    //if SysTest entity not exists in db and db is exists
-                    //o.AddEntityTryCreateTable<SysTest>(); // or `o.AddEntitiesTryCreateTable(typeof(SysTest));`
-                })
-                //.AddShardingQuery((conStr, builder) => builder.UseSqlServer(conStr).UseLoggerFactory(efLogger))//无需添加.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 并发查询系统会自动添加NoTracking
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("A",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;")
-                .AddShardingTableRoute(o =>
-                {
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
                 })
-                .AddTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>())
-                .End();
+                .AddConfig(op =>
+                {
+                    op.ConfigId = "c1";
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                    });
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
+                    op.AddDefaultDataSource("A",
+                     "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;");
+                }).EnsureConfig();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
             //            o.UseSqlServer(conn).UseLoggerFactory(efLogger)
@@ -111,7 +110,7 @@ namespace Sample.SqlServer
             startNew.Start();
             app.UseShardingCore();
             startNew.Stop();
-            Console.WriteLine($"UseShardingCore:"+startNew.ElapsedMilliseconds+"ms");
+            Console.WriteLine($"UseShardingCore:" + startNew.ElapsedMilliseconds + "ms");
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

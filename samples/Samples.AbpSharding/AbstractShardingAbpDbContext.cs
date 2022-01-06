@@ -16,6 +16,7 @@ using ShardingCore.Utils;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Reflection;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
 namespace Samples.AbpSharding
 {
@@ -563,6 +564,11 @@ namespace Samples.AbpSharding
         public void Commit()
         {
             _shardingDbContextExecutor.Commit();
+        }
+
+        public IVirtualDataSource GetVirtualDataSource()
+        {
+            return _shardingDbContextExecutor.GetVirtualDataSource();
         }
     }
 }

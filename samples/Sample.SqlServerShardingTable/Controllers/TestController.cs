@@ -86,7 +86,7 @@ namespace Sample.SqlServerShardingTable.Controllers
         public async Task<IActionResult> Update()
         {
             var sysUser = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1").FirstOrDefaultAsync();
-            sysUser.Name = "new name";
+            sysUser.Name = "new name"+new Random().Next(1,1000);
             var i=await _myDbContext.SaveChangesAsync();
             return Ok(i);
         }

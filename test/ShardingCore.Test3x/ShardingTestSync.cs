@@ -9,14 +9,18 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ExtensionExpressionComparer;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Helpers;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.ParallelTables;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableCreator;
@@ -32,29 +36,38 @@ namespace ShardingCore.Test3x
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
+        private readonly ActualConnectionStringManager<ShardingDefaultDbContext> _connectionStringManager;
         private readonly IConfiguration _configuration;
         private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
-        private readonly IShardingComparer<ShardingDefaultDbContext> _shardingComparer;
         private readonly IVirtualDataSource<ShardingDefaultDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<ShardingDefaultDbContext> _virtualTableManager;
         private readonly IShardingTableCreator<ShardingDefaultDbContext> _shardingTableCreator;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
+        private readonly IRouteTailFactory _routeTailFactory;
+        private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
+        private readonly IShardingConnectionStringResolver _shardingConnectionStringResolver;
 
-        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager,  IConfiguration configuration,
+        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConfiguration configuration,
             IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
-            IShardingComparer<ShardingDefaultDbContext> shardingComparer, IVirtualDataSource<ShardingDefaultDbContext> virtualDataSource,
+            IVirtualDataSourceManager<ShardingDefaultDbContext> virtualDataSourceManager,
             IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
-            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator, IShardingReadWriteManager shardingReadWriteManager)
+            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator,
+            IShardingReadWriteManager shardingReadWriteManager, IRouteTailFactory routeTailFactory,
+            IReadWriteConnectorFactory readWriteConnectorFactory)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
+            _virtualDataSource = virtualDataSourceManager.GetCurrentVirtualDataSource();
+            _connectionStringManager = new ActualConnectionStringManager<ShardingDefaultDbContext>(_virtualDataSource);
             _configuration = configuration;
             this._entityMetadataManager = entityMetadataManager;
-            _shardingComparer = shardingComparer;
-            _virtualDataSource = virtualDataSource;
             _virtualTableManager = virtualTableManager;
             _shardingTableCreator = shardingTableCreator;
             _shardingReadWriteManager = shardingReadWriteManager;
+            _routeTailFactory = routeTailFactory;
+            _readWriteConnectorFactory = readWriteConnectorFactory;
+            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
+            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
         [Fact]
         public void RouteParseCompileCacheTest()
@@ -233,7 +246,7 @@ namespace ShardingCore.Test3x
             var compare0 = x.CompareTo(y);
             Assert.True(compare0 > 0);
             //asc x<y db compare  uniqueidentifier
-            var compare1 = _shardingComparer.Compare(x, y, true);
+            var compare1 = _virtualDataSource.ConfigurationParams.ShardingComparer.Compare(x, y, true);
             Assert.True(compare1 < 0);
         }
         //[Fact]

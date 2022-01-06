@@ -11,6 +11,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
@@ -30,6 +31,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public abstract int? ReadWriteDefaultPriority { get; }
         public abstract ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         public abstract IShardingComparer ShardingComparer { get; }
+        public abstract ITableEnsureManager TableEnsureManager { get; }
 
 
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,

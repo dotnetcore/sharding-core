@@ -34,33 +34,16 @@ namespace ShardingCore.Test
         // ConfigureServices(HostBuilderContext hostBuilderContext, IServiceCollection services)
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
-            services.AddShardingDbContext<ShardingDefaultDbContext>((conn, o) =>
-                    o.UseSqlServer(conn).UseLoggerFactory(efLogger))
-                .Begin(o =>
+            services.AddShardingDbContext<ShardingDefaultDbContext>()
+                .AddEntityConfig(op =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
-
-                    o.ThrowIfQueryRouteNotMatch = false;
-                    //o.AddParallelTables(typeof(SysUserMod), typeof(SysUserSalary));
-                })
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection).UseLoggerFactory(efLogger))
-                .AddDefaultDataSource("A", "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;")
-                .AddShardingDataSource(sp =>
-                {
-                    return new Dictionary<string, string>()
-                    {
-                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" },
-                        { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
-                    };
-                })
-                .AddShardingDataSourceRoute(o =>
-                {
-                    o.AddShardingDatabaseRoute<OrderAreaShardingVirtualDataSourceRoute>();
-                })
-                .AddShardingTableRoute(op =>
-                {
+                    //如果您使用code-first建议选择false
+                    op.CreateShardingTableOnStart = true;
+                    //如果您使用code-first建议修改为fsle
+                    op.EnsureCreatedWithOutShardingTable = true;
+                    //当无法获取路由时会返回默认值而不是报错
+                    op.ThrowIfQueryRouteNotMatch = false;
+                    op.AddShardingDataSourceRoute<OrderAreaShardingVirtualDataSourceRoute>();
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     op.AddShardingTableRoute<OrderCreateTimeVirtualTableRoute>();
@@ -73,9 +56,34 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
                     op.AddShardingTableRoute<LogDayLongVirtualRoute>();
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-                }).AddReadWriteSeparation(sp =>
+
+                })
+                .AddConfig(op =>
                 {
-                    return new Dictionary<string, IEnumerable<string>>()
+                    op.ConfigId="c1";
+
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                    });
+                    op.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                    });
+
+                    op.AddDefaultDataSource("A",
+                        "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
+                    op.AddExtraDataSource(sp =>
+                    {
+                        return new Dictionary<string, string>()
+                    {
+                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" },
+                        { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
+                    };
+                    });
+                    op.AddReadWriteSeparation(sp =>
+                    {
+                        return new Dictionary<string, IEnumerable<string>>()
                     {
                         {
                             "A", new HashSet<string>()
@@ -84,19 +92,9 @@ namespace ShardingCore.Test
                             }
                         }
                     };
-                },ReadStrategyEnum.Loop,defaultEnable: false, readConnStringGetStrategy:ReadConnStringGetStrategyEnum.LatestEveryTime)
-                .AddTableEnsureManager(sp=>new SqlServerTableEnsureManager<ShardingDefaultDbContext>())
-                .End();
-            // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
-            //     ,op =>
-            //     {
-            //         op.EnsureCreatedWithOutShardingTable = true;
-            //         op.CreateShardingTableOnStart = true;
-            //         op.UseShardingOptionsBuilder((connection, builder) => builder.UseMySql(connection,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger),
-            //             (conStr,builder)=> builder.UseMySql(conStr,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger));
-            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-            //     });
+                    }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<ShardingDefaultDbContext>());
+                }).EnsureConfig();
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法

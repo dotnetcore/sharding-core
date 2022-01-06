@@ -31,23 +31,27 @@ namespace Samples.AutoByDate.SqlServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            
-            services.AddShardingDbContext<DefaultShardingDbContext>(
-                    (conn, o) => o.UseSqlServer(conn)
-                ).Begin(o =>
+            services.AddShardingDbContext<DefaultShardingDbContext>()
+                .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                })
-                .AddShardingTransaction((connection, builder) =>
-                    builder.UseSqlServer(connection))
-                .AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
-                .AddShardingTableRoute(o =>
-                {
                     o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<TestLogWeekVirtualRoute>();
-                }).End();
+                })
+                .AddConfig(sp =>
+                {
+                    sp.ConfigId = "c1";
+                    sp.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr);
+                    });
+                    sp.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseSqlServer(connection);
+                    });
+                    sp.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;");
+                }).EnsureConfig();
             services.AddChronusJob();
         }
 

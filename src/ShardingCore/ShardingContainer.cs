@@ -139,14 +139,14 @@ namespace ShardingCore
         {
             return (IVirtualDataSourceManager)ServiceProvider.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(shardingDbContextType));
         }
-        public static IVirtualDataSource<TShardingDbContext> GetRequiredVirtualDataSource<TShardingDbContext>()
+        public static IVirtualDataSource<TShardingDbContext> GetRequiredCurrentVirtualDataSource<TShardingDbContext>()
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return GetRequiredVirtualDataSourceManager<TShardingDbContext>().GetVirtualDataSource();
+            return GetRequiredVirtualDataSourceManager<TShardingDbContext>().GetCurrentVirtualDataSource() ?? throw new InvalidOperationException("cant resolve CurrentVirtualDataSource");
         }
-        public static IVirtualDataSource GetRequiredVirtualDataSource(Type shardingDbContextType)
+        public static IVirtualDataSource GetRequiredCurrentVirtualDataSource(Type shardingDbContextType)
         {
-            return GetRequiredVirtualDataSourceManager(shardingDbContextType).GetVirtualDataSource();
+            return GetRequiredVirtualDataSourceManager(shardingDbContextType).GetCurrentVirtualDataSource()??throw new InvalidOperationException("cant resolve CurrentVirtualDataSource");
         }
     }
 }

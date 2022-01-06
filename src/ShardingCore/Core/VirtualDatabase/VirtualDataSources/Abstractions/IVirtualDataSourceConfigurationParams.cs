@@ -4,6 +4,7 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using System.Collections.Generic;
 using System.Data.Common;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
@@ -39,6 +40,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// </summary>
         ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         IShardingComparer ShardingComparer { get; }
+        ITableEnsureManager TableEnsureManager { get; }
         /// <summary>
         /// 如何根据connectionString 配置 DbContextOptionsBuilder
         /// </summary>
