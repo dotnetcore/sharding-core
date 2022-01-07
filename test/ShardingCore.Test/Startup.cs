@@ -43,6 +43,7 @@ namespace ShardingCore.Test
                     op.EnsureCreatedWithOutShardingTable = true;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;
+
                     op.AddShardingDataSourceRoute<OrderAreaShardingVirtualDataSourceRoute>();
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -61,7 +62,7 @@ namespace ShardingCore.Test
                 .AddConfig(op =>
                 {
                     op.ConfigId="c1";
-
+                    op.Priority = 1;
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);

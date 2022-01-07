@@ -156,27 +156,27 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddShardingDbContext<MyDbContext>((conStr, builder) =>
+            //额外添加分片配置
+            services.AddShardingConfigure<MyDbContext>()
+                .AddEntityConfig(op =>
                 {
-                    //don't modify conStr, params should use delegate input params
-                    builder.UseSqlServer(conStr);
-                }).Begin(op =>
-                {
-                    op.AutoTrackEntity = true;
-                    //if use code-first should false
                     op.CreateShardingTableOnStart = true;
-                    //if use code-first should false
                     op.EnsureCreatedWithOutShardingTable = true;
-                }).AddShardingTransaction((connection, builder) =>
-                {
-                    //don't modify connection, params should use delegate input params
-                    builder.UseSqlServer(connection);
-                }).AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;")
-                .AddShardingTableRoute(op =>
-                {
+                    op.UseShardingQuery((conn, builder) =>
+                    {
+                        builder.UseSqlServer(conn);
+                    });
+                    op.UseShardingTransaction((conn, builder) =>
+                    {
+                        builder.UseSqlServer(conn);
+                    });
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
-                }).End();
+                }).AddConfig(op =>
+                {
+                    op.ConfigId = "c1";
+                    op.AddDefaultDataSource(Guid.NewGuid().ToString("n"),
+                        "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;");
+                }).EnsureConfig();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
