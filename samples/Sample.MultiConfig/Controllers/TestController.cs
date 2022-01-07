@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.MultiConfig.Domain.Entities;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 
 namespace Sample.MultiConfig.Controllers
 {
@@ -9,10 +10,12 @@ namespace Sample.MultiConfig.Controllers
     public class TestController:ControllerBase
     {
         private readonly MultiConfigDbContext _multiConfigDbContext;
+        private readonly IVirtualTableManager<MultiConfigDbContext> _virtualTableManager;
 
-        public TestController(MultiConfigDbContext multiConfigDbContext)
+        public TestController(MultiConfigDbContext multiConfigDbContext,IVirtualTableManager<MultiConfigDbContext> virtualTableManager)
         {
             _multiConfigDbContext = multiConfigDbContext;
+            _virtualTableManager = virtualTableManager;
         }
         public async Task<IActionResult> Add()
         {

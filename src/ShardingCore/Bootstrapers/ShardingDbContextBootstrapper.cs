@@ -99,9 +99,9 @@ namespace ShardingCore.Bootstrapers
                 using (_virtualDataSourceManager.CreateScope(configId))
                 {
                     //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
+
                     using var context =
                         (DbContext)serviceScope.ServiceProvider.GetService(_shardingDbContextType);
-
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;

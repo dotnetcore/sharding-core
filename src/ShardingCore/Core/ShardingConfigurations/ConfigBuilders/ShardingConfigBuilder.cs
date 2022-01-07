@@ -43,9 +43,9 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
                 throw new ArgumentNullException(
                     $"{nameof(shardingGlobalConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingConfigOptions<TShardingDbContext>.AddDefaultDataSource)}");
 
-            if (shardingGlobalConfigOptions.ConnectionStringConfigure is null)
+            if (shardingGlobalConfigOptions.ConnectionStringConfigure is null&& ShardingCoreConfigBuilder.ShardingEntityConfigOptions.ConnectionStringConfigure is null)
                 throw new ArgumentNullException($"plz call {nameof(shardingGlobalConfigOptions.UseShardingQuery)}");
-            if (shardingGlobalConfigOptions.ConnectionConfigure is null)
+            if (shardingGlobalConfigOptions.ConnectionConfigure is null && ShardingCoreConfigBuilder.ShardingEntityConfigOptions.ConnectionConfigure is null)
                 throw new ArgumentNullException(
                     $"plz call {nameof(shardingGlobalConfigOptions.UseShardingTransaction)}");
 

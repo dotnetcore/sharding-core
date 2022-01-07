@@ -140,8 +140,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (IsMultiShardingConfiguration && ShardingConfigurationStrategy == ShardingConfigurationStrategyEnum.ReturnHighPriority)
             {
                 var maxShardingConfiguration = _virtualDataSources.Values.OrderByDescending(o => o.Priority).FirstOrDefault();
-                _defaultVirtualDataSource = maxShardingConfiguration;
-                _defaultConfigId = maxShardingConfiguration.ConfigId;
+                if (maxShardingConfiguration.ConfigId != _defaultConfigId)
+                {
+                    _defaultConfigId = maxShardingConfiguration.ConfigId;
+                    _defaultVirtualDataSource = maxShardingConfiguration;
+                }
             }
         }
 
