@@ -95,22 +95,26 @@ namespace ShardingCore.Bootstrapers
         {
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
-                //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
-                using var context =
-                    (DbContext)serviceScope.ServiceProvider.GetService(_shardingDbContextType);
-             
-                foreach (var entity in context.Model.GetEntityTypes())
+                var configId = _virtualDataSourceManager.GetAllVirtualDataSources().First().ConfigId;
+                using (_virtualDataSourceManager.CreateScope(configId))
                 {
-                    var entityType = entity.ClrType;
-                    _trackerManager.AddDbContextModel(entityType);
-                    //entity.GetAnnotation("")
-                    if (_entityConfigOptions.HasVirtualDataSourceRoute(entityType) ||
-                        _entityConfigOptions.HasVirtualTableRoute(entityType))
+                    //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
+                    using var context =
+                        (DbContext)serviceScope.ServiceProvider.GetService(_shardingDbContextType);
+
+                    foreach (var entity in context.Model.GetEntityTypes())
                     {
+                        var entityType = entity.ClrType;
+                        _trackerManager.AddDbContextModel(entityType);
+                        //entity.GetAnnotation("")
+                        if (_entityConfigOptions.HasVirtualDataSourceRoute(entityType) ||
+                            _entityConfigOptions.HasVirtualTableRoute(entityType))
+                        {
                             var entityMetadataInitializerType = typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
-                            
+
                             var entityMetadataInitializer = (IEntityMetadataInitializer)ShardingContainer.CreateInstanceWithInputParams(entityMetadataInitializerType, new EntityMetadataEnsureParams(entity));
                             entityMetadataInitializer.Initialize();
+                        }
                     }
                 }
                 //if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)

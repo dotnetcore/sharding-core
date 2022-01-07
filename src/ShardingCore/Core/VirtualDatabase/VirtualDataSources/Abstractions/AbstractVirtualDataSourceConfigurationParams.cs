@@ -42,7 +42,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 
         public virtual bool UseReadWriteSeparation()
         {
-            return ReadWriteSeparationConfigs.IsNotEmpty();
+            return ReadWriteSeparationConfigs!=null;
         }
         
     }

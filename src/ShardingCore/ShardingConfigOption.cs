@@ -254,5 +254,6 @@ namespace ShardingCore
         }
         //public bool? EnableTableRouteCompileCache { get; set; }
         //public bool? EnableDataSourceRouteCompileCache { get; set; }
+
     }
 }

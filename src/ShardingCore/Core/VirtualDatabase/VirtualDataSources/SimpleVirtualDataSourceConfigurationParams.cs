@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data.Common;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
@@ -22,6 +19,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly ShardingConfigOptions<TShardingDbContext> _options;
+        private readonly IShardingEntityConfigOptions<TShardingDbContext> _shardingEntityConfigOptions;
         public override string ConfigId { get; }
         public override int Priority { get; }
         public override int MaxQueryConnectionsLimit { get; }
@@ -39,6 +37,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public SimpleVirtualDataSourceConfigurationParams(IServiceProvider serviceProvider,ShardingConfigOptions<TShardingDbContext> options)
         {
+            _shardingEntityConfigOptions = serviceProvider.GetService<IShardingEntityConfigOptions<TShardingDbContext>>();
             _options = options;
             ConfigId = options.ConfigId;
             Priority = options.Priority;
@@ -64,14 +63,36 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            _options.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
+            if(_options.ConnectionStringConfigure==null&&_shardingEntityConfigOptions.ConnectionStringConfigure==null)
+            {
+                throw new InvalidOperationException($"unknown {nameof(UseDbContextOptionsBuilder)} by connection string");
+            }
+            if (_options.ConnectionStringConfigure != null)
+            {
+                _options.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
+            }
+            else
+            {
+                _shardingEntityConfigOptions.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
+            }
             return dbContextOptionsBuilder;
         }
 
         public override DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection,
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            _options.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
+            if (_options.ConnectionConfigure == null && _shardingEntityConfigOptions.ConnectionConfigure == null)
+            {
+                throw new InvalidOperationException($"unknown {nameof(UseDbContextOptionsBuilder)} by connection");
+            }
+            if (_options.ConnectionConfigure != null)
+            {
+                _options.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
+            }
+            else
+            {
+                _shardingEntityConfigOptions.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
+            }
             return dbContextOptionsBuilder;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,6 +65,13 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// </summary>
         bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode);
         ISet<ParallelTableGroupNode> GetParallelTableGroupNodes();
+         Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; }
+         Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get;}
+
+
+        public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure);
+
+        public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure);
     }
     public interface IShardingEntityConfigOptions<TShardingDbContext>: IShardingEntityConfigOptions where TShardingDbContext : DbContext, IShardingDbContext
     {
@@ -189,6 +197,18 @@ namespace ShardingCore.Core.ShardingConfigurations
         public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes()
         {
             return _parallelTables;
+        }
+        public Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; private set; }
+        public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
+
+
+        public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
+        {
+            ConnectionStringConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
+        }
+        public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
+        {
+            ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
     }
 }
