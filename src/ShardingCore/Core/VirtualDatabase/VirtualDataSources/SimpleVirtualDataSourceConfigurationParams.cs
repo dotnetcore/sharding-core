@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {

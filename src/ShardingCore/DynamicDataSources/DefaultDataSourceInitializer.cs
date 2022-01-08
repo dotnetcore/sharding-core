@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;

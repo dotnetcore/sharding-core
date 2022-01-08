@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
+﻿using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using System;
 
 namespace ShardingCore.Extensions
 {

@@ -68,14 +68,7 @@ namespace ShardingCore
                 throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
             if (optionsLifetime == ServiceLifetime.Singleton)
                 throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
-            Action<IServiceProvider, DbContextOptionsBuilder> shardingOptionAction = (sp, option) =>
-            {
-                var virtualDataSource = sp.GetRequiredService<IVirtualDataSourceManager<TShardingDbContext>>().GetCurrentVirtualDataSource();
-                var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
-                virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, option);
-                option.UseSharding<TShardingDbContext>();
-            };
-            services.AddDbContext<TShardingDbContext>(shardingOptionAction, contextLifetime, optionsLifetime);
+            services.AddDbContext<TShardingDbContext>(UseDefaultSharding<TShardingDbContext>, contextLifetime, optionsLifetime);
             return services.AddShardingConfigure<TShardingDbContext>();
         }
 
@@ -86,6 +79,12 @@ namespace ShardingCore
             return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
 
+        public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager<TShardingDbContext>>().GetCurrentVirtualDataSource();
+            var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
+             virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+        }
         internal static IServiceCollection AddInternalShardingCore(this IServiceCollection services)
         {
             //虚拟数据源管理者

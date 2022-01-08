@@ -52,12 +52,12 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
 
     }
     
-    public interface IVirtualDataSourceRoute<T> : IVirtualDataSourceRoute, IEntityMetadataDataSourceConfiguration<T> where T : class
+    public interface IVirtualDataSourceRoute<TEntity> : IVirtualDataSourceRoute, IEntityMetadataDataSourceConfiguration<TEntity> where TEntity : class
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置
         /// </summary>
         /// <returns></returns>
-        IPaginationConfiguration<T> CreatePaginationConfiguration();
+        IPaginationConfiguration<TEntity> CreatePaginationConfiguration();
     }
 }

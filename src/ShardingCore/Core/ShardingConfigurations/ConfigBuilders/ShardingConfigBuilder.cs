@@ -87,7 +87,7 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             {
                 if (ShardingCoreConfigBuilder.ShardingConfigOptions.Count > 1)
                 {
-                    throw new ArgumentException($"call {nameof(AddConfig)}  at most once ");
+                    throw new ArgumentException($"plz call {nameof(AddConfig)}  at most once ");
                 }
             }
 
@@ -95,36 +95,40 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
             services.AddSingleton<IShardingEntityConfigOptions<TShardingDbContext>>(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
             services.AddSingleton(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
-            if (!isMultiConfig)
-            {
-                services.AddSingleton<IShardingConfigurationOptions<TShardingDbContext>>(sp =>
-                {
-                    var shardingSingleConfigurationOptions = new ShardingSingleConfigurationOptions<TShardingDbContext>();
-                    shardingSingleConfigurationOptions.ShardingConfigurationStrategy = configurationStrategy;
-                    shardingSingleConfigurationOptions.AddShardingGlobalConfigOptions(ShardingCoreConfigBuilder
-                        .ShardingConfigOptions.First());
-                    return shardingSingleConfigurationOptions;
-                });
-            }
-            else
-            {
-                services.AddSingleton<IShardingConfigurationOptions<TShardingDbContext>>(sp =>
-                {
-                    var shardingMultiConfigurationOptions = new ShardingMultiConfigurationOptions<TShardingDbContext>();
-                    shardingMultiConfigurationOptions.ShardingConfigurationStrategy = configurationStrategy;
-                    foreach (var shardingGlobalConfigOptions in ShardingCoreConfigBuilder
-                                 .ShardingConfigOptions)
-                    {
-                        shardingMultiConfigurationOptions.AddShardingGlobalConfigOptions(shardingGlobalConfigOptions);
-                    }
 
-                    return shardingMultiConfigurationOptions;
-                });
-            }
+            services.AddSingleton(sp => CreateShardingConfigurationOptions(isMultiConfig, configurationStrategy));
             services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
 
             services.AddInternalShardingCore();
             return services;
+        }
+
+        private IShardingConfigurationOptions<TShardingDbContext> CreateShardingConfigurationOptions(bool isMultiConfig,
+                ShardingConfigurationStrategyEnum configurationStrategy)
+        {
+            IShardingConfigurationOptions<TShardingDbContext> shardingConfigurationOptions;
+            if (!isMultiConfig)
+            {
+                shardingConfigurationOptions = new ShardingSingleConfigurationOptions<TShardingDbContext>
+                {
+                    ShardingConfigurationStrategy = configurationStrategy
+                };
+            }
+            else
+            {
+                shardingConfigurationOptions = new ShardingMultiConfigurationOptions<TShardingDbContext>
+                {
+                    ShardingConfigurationStrategy = configurationStrategy
+                };
+            }
+
+            foreach (var configOptions in ShardingCoreConfigBuilder
+                         .ShardingConfigOptions)
+            {
+                shardingConfigurationOptions.AddShardingGlobalConfigOptions(configOptions);
+            }
+
+            return shardingConfigurationOptions;
         }
     }
 }

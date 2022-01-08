@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
-using ShardingCore.Core.TrackerManagers;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
@@ -16,13 +16,9 @@ using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 
 /*
 * @Author: xjm

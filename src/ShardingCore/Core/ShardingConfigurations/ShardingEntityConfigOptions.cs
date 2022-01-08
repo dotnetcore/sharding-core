@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
@@ -14,72 +15,10 @@ using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public interface IShardingEntityConfigOptions
-    {
-        /// <summary>
-        /// 如果数据库不存在就创建并且创建表除了分表的
-        /// </summary>
-        bool EnsureCreatedWithOutShardingTable { get; set; }
-
-        /// <summary>
-        /// 是否需要在启动时创建分表
-        /// </summary>
-        bool? CreateShardingTableOnStart { get; set; }
-        /// <summary>
-        /// 当查询遇到没有路由被命中时是否抛出错误
-        /// </summary>
-        bool ThrowIfQueryRouteNotMatch { get; set; }
-        /// <summary>
-        /// 忽略建表时的错误
-        /// </summary>
-        bool? IgnoreCreateTableError { get; set; }
-        bool? EnableTableRouteCompileCache { get; set; }
-        bool? EnableDataSourceRouteCompileCache { get; set; }
-        /// <summary>
-        /// 添加分表路由
-        /// </summary>
-        /// <typeparam name="TRoute"></typeparam>
-        void AddShardingDataSourceRoute<TRoute>() where TRoute : IVirtualDataSourceRoute;
-        void AddShardingDataSourceRoute(Type routeType);
-        /// <summary>
-        /// 添加分表路由
-        /// </summary>
-        /// <typeparam name="TRoute"></typeparam>
-        void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute;
-        void AddShardingTableRoute(Type routeType);
-
-        bool HasVirtualTableRoute(Type entityType);
-
-        Type GetVirtualTableRouteType(Type entityType);
-
-        bool HasVirtualDataSourceRoute(Type entityType);
-
-        Type GetVirtualDataSourceRouteType(Type entityType);
-
-        ISet<Type> GetShardingTableRouteTypes();
-
-        ISet<Type> GetShardingDataSourceRouteTypes();
-
-        /// <summary>
-        /// 平行表
-        /// </summary>
-        bool AddParallelTableGroupNode(ParallelTableGroupNode parallelTableGroupNode);
-        ISet<ParallelTableGroupNode> GetParallelTableGroupNodes();
-         Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; }
-         Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get;}
-
-
-        public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure);
-
-        public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure);
-    }
-    public interface IShardingEntityConfigOptions<TShardingDbContext>: IShardingEntityConfigOptions where TShardingDbContext : DbContext, IShardingDbContext
-    {
-    }
     public class ShardingEntityConfigOptions<TShardingDbContext> : IShardingEntityConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly Dictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
-        private readonly Dictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
+        private readonly IDictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
+        private readonly IDictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
         public readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
 
         /// <summary>
@@ -118,11 +57,11 @@ namespace ShardingCore.Core.ShardingConfigurations
             var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualDataSourceRoute<>)
                                                                                      && it.GetGenericArguments().Any());
             if (genericVirtualRoute == null)
-                throw new ArgumentException("add sharding route type error not assignable from IVirtualDataSourceRoute<>.");
+                throw new ArgumentException($"add sharding route type error not assignable from {nameof(IVirtualDataSourceRoute<object>)}.");
 
             var shardingEntityType = genericVirtualRoute.GetGenericArguments()[0];
             if (shardingEntityType == null)
-                throw new ArgumentException("add sharding table route type error not assignable from IVirtualDataSourceRoute<>");
+                throw new ArgumentException($"add sharding table route type error not assignable from {nameof(IVirtualDataSourceRoute<object>)}.");
             if (!_virtualDataSourceRoutes.ContainsKey(shardingEntityType))
             {
                 _virtualDataSourceRoutes.Add(shardingEntityType, routeType);
@@ -145,11 +84,11 @@ namespace ShardingCore.Core.ShardingConfigurations
             var genericVirtualRoute = routeType.GetInterfaces().FirstOrDefault(it => it.IsInterface && it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IVirtualTableRoute<>)
                                                                                      && it.GetGenericArguments().Any());
             if (genericVirtualRoute == null)
-                throw new ArgumentException("add sharding route type error not assignable from IVirtualTableRoute<>.");
+                throw new ArgumentException($"add sharding route type error not assignable from {nameof(IVirtualTableRoute<object>)}.");
 
             var shardingEntityType = genericVirtualRoute.GetGenericArguments()[0];
             if (shardingEntityType == null)
-                throw new ArgumentException("add sharding table route type error not assignable from IVirtualTableRoute<>");
+                throw new ArgumentException($"add sharding table route type error not assignable from {nameof(IVirtualTableRoute<object>)}.");
             if (!_virtualTableRoutes.ContainsKey(shardingEntityType))
             {
                 _virtualTableRoutes.Add(shardingEntityType, routeType);
@@ -164,7 +103,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         public Type GetVirtualTableRouteType(Type entityType)
         {
             if (!_virtualTableRoutes.ContainsKey(entityType))
-                throw new ArgumentException($"{entityType} not found IVirtualTableRoute");
+                throw new ArgumentException($"{entityType} not found {nameof(IVirtualTableRoute)}");
             return _virtualTableRoutes[entityType];
         }
 
@@ -176,7 +115,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         public Type GetVirtualDataSourceRouteType(Type entityType)
         {
             if (!_virtualDataSourceRoutes.ContainsKey(entityType))
-                throw new ArgumentException($"{entityType} not found IVirtualDataSourceRoute");
+                throw new ArgumentException($"{entityType} not found {nameof(IVirtualDataSourceRoute)}");
             return _virtualDataSourceRoutes[entityType];
         }
 
@@ -194,18 +133,34 @@ namespace ShardingCore.Core.ShardingConfigurations
             Check.NotNull(parallelTableGroupNode, $"{nameof(parallelTableGroupNode)}");
             return _parallelTables.Add(parallelTableGroupNode);
         }
+        /// <summary>
+        /// 获取平行表
+        /// </summary>
+        /// <returns></returns>
         public ISet<ParallelTableGroupNode> GetParallelTableGroupNodes()
         {
             return _parallelTables;
         }
+        /// <summary>
+        /// DbContext如何通过现有connection创建
+        /// </summary>
         public Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; private set; }
+        /// <summary>
+        /// DbContext如何通过连接字符串创建
+        /// </summary>
         public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
 
 
+        /// <summary>
+        /// DbContext如何通过连接字符串创建
+        /// </summary>
         public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
         {
             ConnectionStringConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
         }
+        /// <summary>
+        /// DbContext如何通过现有connection创建
+        /// </summary>
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
