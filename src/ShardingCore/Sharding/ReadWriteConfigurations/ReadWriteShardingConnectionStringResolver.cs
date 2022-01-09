@@ -1,13 +1,9 @@
-﻿using System;
+﻿using ShardingCore.Exceptions;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Exceptions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using System.Threading;
 
 namespace ShardingCore.Sharding.ReadWriteConfigurations
 {
@@ -19,6 +15,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             new ConcurrentDictionary<string, IReadWriteConnector>();
 
         private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
+        private readonly ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
         public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors, ReadStrategyEnum readStrategy)
         {
             _readStrategy = readStrategy;
@@ -53,9 +50,8 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                     dataSourceName, new List<string>()
                     {
                         connectionString
-                    }); 
-                _connectors.TryAdd(dataSourceName, connector);
-                return true;
+                    });
+                return _connectors.TryAdd(dataSourceName, connector);
             }
             else
             {

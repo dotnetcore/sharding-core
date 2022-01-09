@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
@@ -10,7 +11,9 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
@@ -20,18 +23,21 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
     {
         public abstract string ConfigId { get; }
         public abstract int Priority { get; }
-        public abstract int MaxQueryConnectionsLimit { get; }
-        public abstract ConnectionModeEnum ConnectionMode { get; }
+        public virtual int MaxQueryConnectionsLimit { get; } = Environment.ProcessorCount;
+        public virtual ConnectionModeEnum ConnectionMode { get; } = ConnectionModeEnum.SYSTEM_AUTO;
         public abstract string DefaultDataSourceName { get; }
         public abstract string DefaultConnectionString { get; }
-        public abstract IDictionary<string, string> ExtraDataSources { get; }
+        public virtual IDictionary<string, string> ExtraDataSources { get; }=new ConcurrentDictionary<string, string>();
         public abstract IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
         public abstract ReadStrategyEnum? ReadStrategy { get; }
         public abstract bool? ReadWriteDefaultEnable { get; }
         public abstract int? ReadWriteDefaultPriority { get; }
         public abstract ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
-        public abstract IShardingComparer ShardingComparer { get; }
-        public abstract ITableEnsureManager TableEnsureManager { get; }
+        public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
+
+        public virtual ITableEnsureManager TableEnsureManager { get; } =
+            new EmptyTableEnsureManager<TShardingDbContext>();
+
 
 
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,

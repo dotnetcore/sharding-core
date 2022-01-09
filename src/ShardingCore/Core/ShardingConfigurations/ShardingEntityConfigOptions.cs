@@ -19,7 +19,7 @@ namespace ShardingCore.Core.ShardingConfigurations
     {
         private readonly IDictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly IDictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
-        public readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
+        private readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
 
         /// <summary>
         /// 如果数据库不存在就创建并且创建表除了分表的

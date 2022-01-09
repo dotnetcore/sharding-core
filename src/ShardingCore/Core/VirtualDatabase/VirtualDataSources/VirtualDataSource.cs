@@ -46,6 +46,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IVirtualDataSourceRouteManager<TShardingDbContext> dataSourceRouteManager, IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams)
         {
+            Check.NotNull(configurationParams, nameof(configurationParams));
+            Check.NotNull(configurationParams.ExtraDataSources, nameof(configurationParams.ExtraDataSources));
+            Check.NotNull(configurationParams.ShardingComparer, nameof(configurationParams.ShardingComparer));
+            if(configurationParams.MaxQueryConnectionsLimit<=0)
+                throw new ArgumentOutOfRangeException(nameof(configurationParams.MaxQueryConnectionsLimit));
             ConfigurationParams = configurationParams;
             _physicDataSourcePool = new PhysicDataSourcePool();
             //添加数据源

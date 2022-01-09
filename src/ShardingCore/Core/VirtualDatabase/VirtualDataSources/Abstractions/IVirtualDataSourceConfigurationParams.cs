@@ -18,6 +18,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 优先级
         /// </summary>
         int Priority { get; }
+        /// <summary>
+        /// 不能小于等于0 should greater than or equal  zero
+        /// </summary>
         int MaxQueryConnectionsLimit { get; }
         ConnectionModeEnum ConnectionMode { get; }
 
@@ -29,7 +32,13 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 默认数据源链接字符串
         /// </summary>
         string DefaultConnectionString { get; }
+        /// <summary>
+        /// 不能为空null,should not null
+        /// </summary>
         IDictionary<string,string> ExtraDataSources { get; }
+        /// <summary>
+        /// null表示不启用读写分离,if null mean not enable read write
+        /// </summary>
         IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
 
         ReadStrategyEnum? ReadStrategy { get; }
@@ -39,6 +48,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 读写分离链接字符串获取
         /// </summary>
         ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
+        /// <summary>
+        /// 不能为空 should not null
+        /// </summary>
         IShardingComparer ShardingComparer { get; }
         ITableEnsureManager TableEnsureManager { get; }
         /// <summary>

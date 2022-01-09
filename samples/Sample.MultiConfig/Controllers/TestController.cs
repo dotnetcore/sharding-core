@@ -32,5 +32,6 @@ namespace Sample.MultiConfig.Controllers
             var listAsync = await _multiConfigDbContext.Set<Order>().ToListAsync();
             return Ok(listAsync);
         }
+
     }
 }

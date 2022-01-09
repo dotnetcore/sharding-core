@@ -22,17 +22,39 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
     public interface IVirtualDataSource
     {
-
+        /// <summary>
+        /// 配置id
+        /// </summary>
         string ConfigId { get; }
+        /// <summary>
+        /// 当前配置的优先级
+        /// </summary>
         int Priority { get; }
+        /// <summary>
+        /// 数据源配置
+        /// </summary>
         IVirtualDataSourceConfigurationParams ConfigurationParams { get; }
+        /// <summary>
+        /// 链接字符串管理
+        /// </summary>
         IConnectionStringManager ConnectionStringManager { get; }
+        /// <summary>
+        /// 是否启用了读写分离
+        /// </summary>
         bool UseReadWriteSeparation { get; }
         /// <summary>
         /// 默认的数据源名称
         /// </summary>
         string DefaultDataSourceName { get; }
+        /// <summary>
+        /// 默认连接字符串
+        /// </summary>
         string DefaultConnectionString { get;}
+        /// <summary>
+        /// 获取路由
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
         IVirtualDataSourceRoute GetRoute(Type entityType);
         /// <summary>
         /// 路由到具体的物理数据源

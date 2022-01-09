@@ -98,12 +98,12 @@ namespace Sample.SqlServerShardingTable
                 {
                     return new Dictionary<string, IEnumerable<string>>()
                     {
-                        {
-                            "ds0", new List<string>()
-                            {
-                                "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
-                            }
-                        }
+                        //{
+                        //    "ds0", new List<string>()
+                        //    {
+                        //        "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
+                        //    }
+                        //}
                     };
                 }, ReadStrategyEnum.Loop, defaultEnable: true);
                 op.ReplaceTableEnsureManager(sp=>new SqlServerTableEnsureManager<MyDbContext>());

@@ -1,38 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Sharding.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
-using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
-namespace ShardingCore.DynamicDataSources
+namespace ShardingCore.Helpers
 {
-    [Obsolete("plz use DynamicShardingHelper")]
-    public class DynamicDataSourceHelper
+    public class DynamicShardingHelper
     {
-        private DynamicDataSourceHelper()
+        private DynamicShardingHelper()
         {
-            throw new InvalidOperationException($"{nameof(DynamicDataSourceHelper)} create instance");
+            throw new InvalidOperationException($"{nameof(DynamicShardingHelper)} create instance");
         }
-
-        public static void DynamicAppendDataSource<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource,string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
-            defaultDataSourceInitializer.InitConfigure(virtualDataSource,dataSourceName, connectionString, false);
-        }
-        public static void DynamicAppendDataSource<TShardingDbContext>(string configId,string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
-            var virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>();
-
-            var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource(configId);
-            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
-        }
-
-        public static bool DynamicAppendVirtualDataSource<TShardingDbContext>(
+        /// <summary>
+        /// 动态添加虚拟数据源配置
+        /// </summary>
+        /// <typeparam name="TShardingDbContext"></typeparam>
+        /// <param name="configurationParams"></param>
+        /// <returns></returns>
+        public static bool DynamicAppendVirtualDataSourceConfig<TShardingDbContext>(
             IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams)
             where TShardingDbContext : DbContext, IShardingDbContext
         {
@@ -54,6 +47,34 @@ namespace ShardingCore.DynamicDataSources
 
             return false;
         }
+        /// <summary>
+        /// 动态添加数据源
+        /// </summary>
+        /// <typeparam name="TShardingDbContext"></typeparam>
+        /// <param name="virtualDataSource"></param>
+        /// <param name="dataSourceName"></param>
+        /// <param name="connectionString"></param>
+        public static void DynamicAppendDataSource<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
+            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
+        }
+        /// <summary>
+        /// 动态添加数据源
+        /// </summary>
+        /// <typeparam name="TShardingDbContext"></typeparam>
+        /// <param name="configId"></param>
+        /// <param name="dataSourceName"></param>
+        /// <param name="connectionString"></param>
+        public static void DynamicAppendDataSource<TShardingDbContext>(string configId, string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
+            var virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>();
+
+            var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource(configId);
+            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
+        }
+
         /// <summary>
         /// 动态添加读写分离链接字符串
         /// </summary>

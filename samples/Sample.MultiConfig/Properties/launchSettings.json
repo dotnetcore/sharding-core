@@ -11,13 +11,13 @@
   "profiles": {
     "Sample.MultiConfig": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
-      "applicationUrl": "http://localhost:5138",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "http://localhost:5138",
+      "dotnetRunMessages": true
     }
   }
 }

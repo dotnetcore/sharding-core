@@ -13,9 +13,11 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
@@ -53,6 +55,7 @@ namespace ShardingCore.Test
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
+        private readonly ITableRouteRuleEngineFactory<ShardingDefaultDbContext> _tableRouteRuleEngineFactory;
         private readonly IShardingConnectionStringResolver _shardingConnectionStringResolver;
 
         public ShardingTest(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConfiguration configuration,
@@ -61,7 +64,7 @@ namespace ShardingCore.Test
             IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
             IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator,
             IShardingReadWriteManager shardingReadWriteManager,IRouteTailFactory routeTailFactory,
-            IReadWriteConnectorFactory readWriteConnectorFactory)
+            IReadWriteConnectorFactory readWriteConnectorFactory,ITableRouteRuleEngineFactory<ShardingDefaultDbContext> tableRouteRuleEngineFactory)
         {
             _virtualDbContext = virtualDbContext;
             _shardingRouteManager = shardingRouteManager;
@@ -74,6 +77,7 @@ namespace ShardingCore.Test
             _shardingReadWriteManager = shardingReadWriteManager;
             _routeTailFactory = routeTailFactory;
             _readWriteConnectorFactory = readWriteConnectorFactory;
+            _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
             var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
             _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
@@ -716,6 +720,47 @@ namespace ShardingCore.Test
             Assert.Equal(1120000, group[0].MinSalary);
             Assert.Equal(1140000, group[0].MaxSalary);
         }
+        //[Fact]
+        //public async Task Group_Recently_Test()
+        //{
+        //    //var list =(from us in _virtualDbContext.Set<SysUserSalary>().Where(o => ids.Contains(o.UserId))
+        //    //          group us by new
+        //    //              {
+        //    //                  UserId=us.UserId
+        //    //              }
+        //    //              into g
+        //    //          select new
+        //    //              {
+        //    //                  UserId=g.Key.UserId,
+        //    //              DateOfMonth = g.Max(o=>o.DateOfMonth)
+        //    //              }).ToList();
+        //    //var y = list;
+
+        //    var ids = new List<string>(){ "200", "300" };
+        //    List<SysUserSalary> result = new List<SysUserSalary>(ids.Count);
+        //    var routeFilter = new List<SysUserSalary>().AsQueryable().Where(o => ids.Contains(o.UserId));
+        //    //获取的路由时间倒序
+        //    var tableRouteResults = _tableRouteRuleEngineFactory.Route(routeFilter)
+        //        .Select(o => o.ReplaceTables.First().Tail).OrderByDescending(o => o).ToList();
+        //    foreach (var tableRouteResult in tableRouteResults)
+        //    {
+        //        if(ids.IsEmpty())
+        //            break;
+        //        using (_shardingRouteManager.CreateScope())
+        //        {
+        //            _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserSalary>(tableRouteResult);
+        //            var queryable = _virtualDbContext.Set<SysUserSalary>().Where(o => ids.Contains(o.UserId))
+        //                .GroupBy(o => new { o.UserId }, i => i,
+        //                    (i, u) => new {
+        //                        Data = u.OrderByDescending(o => o.DateOfMonth).FirstOrDefault()
+        //                    });
+        //            var r =await queryable.ToListAsync();
+        //            result.AddRange(r.Select(o=>o.Data));
+        //            var removeUserIds = result.Select(u => u.UserId).ToHashSet();
+        //            ids.RemoveAll(o => removeUserIds.Contains(o));
+        //        }
+        //    }
+        //}
 
         [Fact]
         public async Task OrderCountTest()

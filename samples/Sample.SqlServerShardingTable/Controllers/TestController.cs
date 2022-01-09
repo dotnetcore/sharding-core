@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingTable.Entities;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.Extensions;
+using ShardingCore.Helpers;
 
 namespace Sample.SqlServerShardingTable.Controllers
 {
@@ -12,10 +15,12 @@ namespace Sample.SqlServerShardingTable.Controllers
     public class TestController : ControllerBase
     {
         private readonly MyDbContext _myDbContext;
+        private readonly IVirtualDataSourceManager<MyDbContext> _virtualDataSourceManager;
 
-        public TestController(MyDbContext myDbContext)
+        public TestController(MyDbContext myDbContext,IVirtualDataSourceManager<MyDbContext> virtualDataSourceManager)
         {
             _myDbContext = myDbContext;
+            _virtualDataSourceManager = virtualDataSourceManager;
         }
         public async Task<IActionResult> Query()
         {
@@ -104,6 +109,21 @@ namespace Sample.SqlServerShardingTable.Controllers
             _myDbContext.Remove(sysUser);
             var i = await _myDbContext.SaveChangesAsync();
             return Ok(i);
+        }
+
+        public async Task<IActionResult> DynamicReadWrite()
+        {
+            DynamicShardingHelper.DynamicAppendReadWriteConnectionString<MyDbContext>("a","ds0", "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB1;Integrated Security=True;");
+            var sysUser = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1").FirstOrDefaultAsync();
+
+            return Ok(sysUser);
+        }
+        public async Task<IActionResult> Read()
+        {
+            _myDbContext.ReadWriteSeparationWriteOnly();
+               var sysUser = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1").FirstOrDefaultAsync();
+           
+            return Ok(sysUser);
         }
     }
 }
