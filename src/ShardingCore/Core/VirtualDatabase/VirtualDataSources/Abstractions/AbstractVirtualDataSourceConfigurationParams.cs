@@ -28,11 +28,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public abstract string DefaultDataSourceName { get; }
         public abstract string DefaultConnectionString { get; }
         public virtual IDictionary<string, string> ExtraDataSources { get; }=new ConcurrentDictionary<string, string>();
-        public abstract IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
-        public abstract ReadStrategyEnum? ReadStrategy { get; }
-        public abstract bool? ReadWriteDefaultEnable { get; }
-        public abstract int? ReadWriteDefaultPriority { get; }
-        public abstract ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
+        public virtual IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
+        public virtual ReadStrategyEnum? ReadStrategy { get; }
+        public virtual bool? ReadWriteDefaultEnable { get; }
+        public virtual int? ReadWriteDefaultPriority { get; }
+        public virtual ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
 
         public virtual ITableEnsureManager TableEnsureManager { get; } =
