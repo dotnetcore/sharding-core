@@ -80,6 +80,16 @@ namespace ShardingCore.Extensions
             queryableTrackingDiscoverVisitor.Visit(expression);
             return queryableTrackingDiscoverVisitor.IsNoTracking;
         }
+        internal static bool GetIsUnion(this IQueryable source)
+        {
+            return GetIsUnion(source.Expression);
+        }
+        internal static bool GetIsUnion(this Expression expression)
+        {
+            var queryableUnionDiscoverVisitor = new QueryableUnionDiscoverVisitor();
+            queryableUnionDiscoverVisitor.Visit(expression);
+            return queryableUnionDiscoverVisitor.IsUnion;
+        }
 
         /// <summary>
         /// 切换数据源,保留原始数据源中的Expression

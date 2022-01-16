@@ -59,5 +59,10 @@ namespace Sample.MultiConfig.Controllers
             dbContextOptionsBuilder.UseMySql(dbConnection, new MySqlServerVersion(new Version()));
             return dbContextOptionsBuilder;
         }
+
+        public override void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            
+        }
     }
 }

@@ -18,6 +18,16 @@
       },
       "applicationUrl": "http://localhost:5138",
       "dotnetRunMessages": true
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5138/weatherforecast",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5138"
+      },
+      "distributionName": ""
     }
   }
 }

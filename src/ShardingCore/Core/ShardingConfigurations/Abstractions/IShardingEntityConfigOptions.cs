@@ -99,6 +99,7 @@ namespace ShardingCore.Core.ShardingConfigurations.Abstractions
         /// DbContext如何通过连接字符串创建
         /// </summary>
         Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; }
+        Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; }
 
         /// <summary>
         /// DbContext如何通过连接字符串创建
@@ -108,5 +109,7 @@ namespace ShardingCore.Core.ShardingConfigurations.Abstractions
         /// DbContext如何通过现有connection创建
         /// </summary>
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure);
+
+        void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure);
     }
 }

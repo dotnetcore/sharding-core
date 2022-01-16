@@ -150,6 +150,8 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// </summary>
         public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
 
+        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+
 
         /// <summary>
         /// DbContext如何通过连接字符串创建
@@ -164,6 +166,11 @@ namespace ShardingCore.Core.ShardingConfigurations
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
+        }
+
+        public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
+        {
+            InnerDbContextConfigure = innerDbContextConfigure ?? throw new ArgumentNullException(nameof(innerDbContextConfigure));
         }
     }
 }

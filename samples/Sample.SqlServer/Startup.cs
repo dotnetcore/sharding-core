@@ -11,7 +11,12 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core;
+using ShardingCore.Core.NotSupportShardingProviders;
+using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.TableExists;
 
 namespace Sample.SqlServer
@@ -37,22 +42,30 @@ namespace Sample.SqlServer
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
+                    o.UseInnerDbContextConfigure(builder =>
+                    {
+                        builder
+                            .ReplaceService<IQuerySqlGeneratorFactory,
+                                ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>()
+                            .ReplaceService<IQueryCompiler, NotSupportShardingCompiler>();
+                    });
                 })
                 .AddConfig(op =>
                 {
                     op.ConfigId = "c1";
                     op.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>();
                     });
                     op.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger).ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>();
                     });
                     op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
                     op.AddDefaultDataSource("A",
                      "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;");
                 }).EnsureConfig();
+            services.TryAddSingleton<INotSupportShardingProvider, UnionSupportShardingProvider>();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
             //            o.UseSqlServer(conn).UseLoggerFactory(efLogger)
@@ -115,6 +128,18 @@ namespace Sample.SqlServer
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.DbSeed();
+        }
+    }
+
+    public class UnionSupportShardingProvider : INotSupportShardingProvider
+    {
+        public void CheckNotSupportSharding(IQueryCompilerContext queryCompilerContext)
+        {
+        }
+
+        public bool IsNotSupportSharding(IQueryCompilerContext queryCompilerContext)
+        {
+            return queryCompilerContext.isUnion();
         }
     }
 }

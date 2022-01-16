@@ -18,7 +18,6 @@ namespace ShardingCore.Core.ShardingPage
         private static AsyncLocal<ShardingPageContext> _shardingPageContext = new AsyncLocal<ShardingPageContext>();
 
 
-        /// <inheritdoc />
         public ShardingPageContext ShardingPageContext
         {
             get => _shardingPageContext.Value;

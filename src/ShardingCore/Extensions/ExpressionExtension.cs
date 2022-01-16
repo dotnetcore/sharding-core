@@ -47,29 +47,30 @@ namespace ShardingCore.Extensions
         {
             var entityType = obj.GetType();
             PropertyInfo property;
-            Expression propertyAccess;
-            var parameter = Expression.Parameter(entityType, "o");
+            //Expression propertyAccess;
+            //var parameter = Expression.Parameter(entityType, "o");
 
             if (propertyExpression.Contains("."))
             {
                 String[] childProperties = propertyExpression.Split('.');
                 property = entityType.GetProperty(childProperties[0]);
-                propertyAccess = Expression.MakeMemberAccess(parameter, property);
+                //propertyAccess = Expression.MakeMemberAccess(parameter, property);
                 for (int i = 1; i < childProperties.Length; i++)
                 {
                     property = property.PropertyType.GetProperty(childProperties[i]);
-                    propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
+                    //propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
                 }
             }
             else
             {
                 property = entityType.GetProperty(propertyExpression);
-                propertyAccess = Expression.MakeMemberAccess(parameter, property);
+                //propertyAccess = Expression.MakeMemberAccess(parameter, property);
             }
 
-            var lambda = Expression.Lambda(propertyAccess, parameter);
-            Delegate fn = lambda.Compile();
-            return fn.DynamicInvoke(obj);
+            return property.GetValue(obj);
+            //var lambda = Expression.Lambda(propertyAccess, parameter);
+            //Delegate fn = lambda.Compile();
+            //return fn.DynamicInvoke(obj);
         }
 
         /// <summary>

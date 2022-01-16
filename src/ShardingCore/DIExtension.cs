@@ -29,6 +29,8 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using ShardingCore.Core.CustomerDatabaseSqlSupports;
+using ShardingCore.Core.NotSupportShardingProviders.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
@@ -131,6 +133,8 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+            services.TryAddSingleton<INotSupportManager, NotSupportManager>();
+            services.TryAddSingleton<INotSupportAccessor, NotSupportAccessor>();
             services.TryAddSingleton<IQueryTracker, QueryTracker>();
             services.TryAddSingleton<IShardingTrackQueryExecutor, DefaultShardingTrackQueryExecutor>();
             services.TryAddSingleton<INativeTrackQueryExecutor, NativeTrackQueryExecutor>();

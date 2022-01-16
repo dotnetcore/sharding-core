@@ -104,6 +104,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.IsQueryTrack();
         }
 
+        public bool isUnion()
+        {
+            return _queryCompilerContext.isUnion();
+        }
+
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)

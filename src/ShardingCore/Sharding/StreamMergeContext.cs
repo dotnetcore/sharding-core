@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ShardingCore.Core.NotSupportShardingProviders;
 
 
 namespace ShardingCore.Sharding
@@ -34,6 +35,11 @@ namespace ShardingCore.Sharding
         , IAsyncDisposable
 #endif
     {
+        private readonly INotSupportShardingProvider _notSupportShardingProvider;
+        private static readonly INotSupportShardingProvider _defaultNotSupportShardingProvider =
+            new DefaultNotSupportShardingProvider();
+        
+
         public IMergeQueryCompilerContext MergeQueryCompilerContext { get; }
 
         //private readonly IShardingScopeFactory _shardingScopeFactory;
@@ -96,6 +102,7 @@ namespace ShardingCore.Sharding
                     typeof(ITrackerManager<>).GetGenericType0(mergeQueryCompilerContext.GetShardingDbContextType()));
 
             _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
+            _notSupportShardingProvider = ShardingContainer.GetService<INotSupportShardingProvider>() ?? _defaultNotSupportShardingProvider;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
         }
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
@@ -296,6 +303,20 @@ namespace ShardingCore.Sharding
         private bool ThrowIfQueryRouteNotMatch()
         {
             return _shardingEntityConfigOptions.ThrowIfQueryRouteNotMatch;
+        }
+
+        private bool? _isUnSupport;
+        public bool IsUnSupportSharding()
+        {
+            if (!_isUnSupport.HasValue)
+            {
+                _isUnSupport = _notSupportShardingProvider.IsNotSupportSharding(MergeQueryCompilerContext);
+                if (_isUnSupport.Value)
+                {
+                    _notSupportShardingProvider.CheckNotSupportSharding(MergeQueryCompilerContext);
+                }
+            }
+            return _isUnSupport.Value;
         }
         public void Dispose()
         {

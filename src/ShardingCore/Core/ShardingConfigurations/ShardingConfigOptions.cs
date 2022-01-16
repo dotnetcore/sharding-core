@@ -95,6 +95,11 @@ namespace ShardingCore.Core.ShardingConfigurations
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
 
+        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+        public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
+        {
+            InnerDbContextConfigure= innerDbContextConfigure?? throw new ArgumentNullException(nameof(innerDbContextConfigure));
+        }
         public Func<IServiceProvider, IShardingComparer> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer();
         /// <summary>
         /// 替换默认的比较器

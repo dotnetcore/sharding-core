@@ -96,5 +96,22 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             }
             return dbContextOptionsBuilder;
         }
+
+        public override void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            if (_options.InnerDbContextConfigure == null && _shardingEntityConfigOptions.InnerDbContextConfigure == null)
+            {
+                return;
+            }
+
+            if (_options.InnerDbContextConfigure != null)
+            {
+                _options.InnerDbContextConfigure.Invoke(dbContextOptionsBuilder);
+            }
+            else
+            {
+                _shardingEntityConfigOptions.InnerDbContextConfigure?.Invoke(dbContextOptionsBuilder);
+            }
+        }
     }
 }

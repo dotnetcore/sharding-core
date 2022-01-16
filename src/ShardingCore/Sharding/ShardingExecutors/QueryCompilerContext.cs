@@ -24,6 +24,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
         private bool? _isNoTracking;
+        private bool _isUnion;
         private readonly bool _isParallelQuery;
 
         private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
@@ -31,6 +32,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _shardingDbContextType = shardingDbContext.GetType();
             _queryEntities = ShardingUtil.GetQueryEntitiesByExpression(queryExpression, _shardingDbContextType);
             _isNoTracking = queryExpression.GetIsNoTracking();
+            _isUnion = queryExpression.GetIsUnion();
             _shardingDbContext = shardingDbContext;
             _queryExpression = queryExpression;
             _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
@@ -89,6 +91,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 return shardingDbContext.ChangeTracker.QueryTrackingBehavior ==
                        QueryTrackingBehavior.TrackAll;
             }
+        }
+
+        public bool isUnion()
+        {
+            return _isUnion;
         }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()

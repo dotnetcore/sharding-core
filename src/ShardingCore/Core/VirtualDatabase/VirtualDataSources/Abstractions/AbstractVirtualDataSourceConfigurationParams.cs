@@ -46,6 +46,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection,
             DbContextOptionsBuilder dbContextOptionsBuilder);
 
+        public abstract void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder);
+
         public virtual bool UseReadWriteSeparation()
         {
             return ReadWriteSeparationConfigs!=null;
