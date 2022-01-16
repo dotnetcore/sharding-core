@@ -60,8 +60,15 @@ namespace Sample.SqlServer
                     var sqlGenerationHelper = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
                     var tableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
                     var virtualTable = tableManager.GetVirtualTable(tableExpression.Name);
-
-                   var newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
+                    string newTableName = null;
+                    if (tails.Count == 1)
+                    {
+                        newTableName = sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tails.First()}", tableExpression.Schema);
+                    }
+                    else
+                    {
+                        newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
+                    }
 
                    var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
                    relationalCommandBuilder.Append(newTableName).Append(this.AliasSeparator).Append(sqlGenerationHelper.DelimitIdentifier(tableExpression.Alias));
