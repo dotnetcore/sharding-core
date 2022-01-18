@@ -1,4 +1,8 @@
-<h1 align="center"> ShardingCore </h1>
+<p align="center">
+  <img height="140" src="https://xuejm.gitee.io/sharding-core-doc/logo.svg">
+</p>
+
+# ShardingCore
 
 
 `ShardingCore` 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案，具有零依赖、零学习成本、零业务代码入侵。
