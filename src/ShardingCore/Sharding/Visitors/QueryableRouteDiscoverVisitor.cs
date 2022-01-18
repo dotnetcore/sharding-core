@@ -153,19 +153,31 @@ namespace ShardingCore.Core.Internal.Visitors
                     );
 
                 case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
-                    var collection = e.NewExpression.Constructor.Invoke(new object[0]);
-                    foreach (var i in e.Initializers)
                     {
-                        i.AddMethod.Invoke(
-                            collection,
-                            i.Arguments
-                                .Select(
-                                    a => GetShardingKeyValue(a)
-                                )
-                                .ToArray()
-                        );
+                        var collection = e.NewExpression.Constructor.Invoke(new object[0]);
+                        foreach (var i in e.Initializers)
+                        {
+                            i.AddMethod.Invoke(
+                                collection,
+                                i.Arguments
+                                    .Select(
+                                        a => GetShardingKeyValue(a)
+                                    )
+                                    .ToArray()
+                            );
+                        }
+                        return collection;
                     }
-                    return collection;
+                case NewArrayExpression e when e.NodeType == ExpressionType.NewArrayInit && e.Expressions.Count > 0:
+                    {
+                        var collection = new List<object>(e.Expressions.Count);
+                        foreach (var arrayItemExpression in e.Expressions)
+                        {
+                            collection.Add(GetShardingKeyValue(arrayItemExpression));
+                        }
+                        return collection;
+                    }
+
 
                 case MethodCallExpression e:
                     return e.Method.Invoke(
@@ -317,20 +329,20 @@ namespace ShardingCore.Core.Internal.Visitors
                     {
                         if (methodCallExpression.Object is MemberExpression member1Expression)
                         {
-                            arrayObject = Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+                            arrayObject = GetShardingKeyValue(member1Expression);
                         }
                         else if (methodCallExpression.Object is ListInitExpression member2Expression)
                         {
-                            arrayObject = Expression.Lambda(member2Expression).Compile().DynamicInvoke();
+                            arrayObject = GetShardingKeyValue(member2Expression);
                         }
                     }
                     else if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
                     {
-                        arrayObject = Expression.Lambda(member2Expression).Compile().DynamicInvoke();
+                        arrayObject = GetShardingKeyValue(member2Expression);
                     }
                     else if (methodCallExpression.Arguments[0] is NewArrayExpression member3Expression)
                     {
-                        arrayObject = Expression.Lambda(member3Expression).Compile().DynamicInvoke();
+                        arrayObject = GetShardingKeyValue(member3Expression);
                     }
 
                     if (arrayObject != null)
@@ -413,6 +425,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
             }
 
+            //var shardingKeyValue = GetShardingKeyValue(methodCallExpression);
             return x => true;
         }
 
@@ -429,9 +442,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
             if (binaryExpression.Left is UnaryExpression unaryExpression)
                 left = Resolve(unaryExpression);
-
-            if (binaryExpression.Right is BinaryExpression)
-                right = ParseGetWhere(binaryExpression.Right as BinaryExpression);
+            if (binaryExpression.Right is BinaryExpression binaryExpression2)
+                right = ParseGetWhere(binaryExpression2);
 
             //组合
             if (binaryExpression.NodeType == ExpressionType.AndAlso)

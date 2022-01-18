@@ -488,9 +488,24 @@ namespace ShardingCore.Test
         [Fact]
         public async Task ToList_Id_Not_Eq_Test()
         {
+            var methodValue = new MethodValue(){AA = "7"};
+            var mods123 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id== methodValue.GetAa()).FirstOrDefaultAsync();
+            Assert.NotNull(mods123);
+            Assert.Equal(mods123.Id,"7");
+            var mods12 = await _virtualDbContext.Set<SysUserMod>().Where(o => new List<string>{"3","4"}.Contains(o.Id) ).ToListAsync();
+            Assert.Contains(mods12, o => o.Id == "3"||o.Id=="4");
             var mods = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id != "3").ToListAsync();
             Assert.Equal(999, mods.Count);
             Assert.DoesNotContain(mods, o => o.Id == "3");
+        }
+        public class MethodValue
+        {
+            public string AA { get; set; }
+
+            public string GetAa()
+            {
+                return AA;
+            }
         }
 
         [Fact]
