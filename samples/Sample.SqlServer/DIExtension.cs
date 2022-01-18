@@ -31,7 +31,7 @@ namespace Sample.SqlServer
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var virtualDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-                if (!virtualDbContext.Set<SysUserMod>().Any())
+                if (!virtualDbContext.Set<SysUserMod>().Any(o=>o.Id=="111"))
                 {
                     var ids = Enumerable.Range(1, 1000);
                     var userMods = new List<SysUserMod>();

@@ -1,14 +1,23 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sample.MySql.DbContexts;
+using Sample.MySql.Shardings;
+using ShardingCore;
+using ShardingCore.TableExists;
 
 namespace Sample.MySql
 {
     public class Startup
     {
+        public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
+        {
+            builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
+        });
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -30,6 +39,33 @@ namespace Sample.MySql
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
+
+            services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
+                .AddEntityConfig(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.AddShardingTableRoute<SysUserLogByMonthRoute>();
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    o.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
+                        //builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
+                    });
+                    o.UseShardingTransaction((connection, builder) =>
+                    {
+                        builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
+                    });
+                })
+                .AddConfig(op =>
+                {
+                    op.ConfigId = "c1";
+                    op.AddDefaultDataSource("ds0",
+                        "server=127.0.0.1;port=3306;database=dbxxxx;userid=root;password=L6yBtV6qNENrwBy7;");
+
+                    //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
+                    op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
+                }).EnsureConfig();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

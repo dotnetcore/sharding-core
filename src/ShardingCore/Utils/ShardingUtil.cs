@@ -47,7 +47,6 @@ namespace ShardingCore.Utils
         /// <summary>
         /// 分表路由过滤
         /// </summary>
-        /// <typeparam name="TKey"></typeparam>
         /// <param name="queryable"></param>
         /// <param name="entityMetadata"></param>
         /// <param name="keyToTailExpression"></param>

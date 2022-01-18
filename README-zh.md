@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="140" src="https://xuejm.gitee.io/sharding-core-doc/logo.svg">
+  <img height="340" src="https://xuejm.gitee.io/sharding-core-doc/logo.svg">
 </p>
 
 # ShardingCore

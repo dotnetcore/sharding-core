@@ -11,6 +11,8 @@ namespace Sample.MySql.DbContexts
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
+            //切记不要在构造函数中使用会让模型提前创建的方法
+            //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
