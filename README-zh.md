@@ -161,7 +161,7 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
         {
 
             //额外添加分片配置
-            services.AddShardingConfigure<MyDbContext>()
+            services.AddShardingDbContext<MyDbContext>()
                 .AddEntityConfig(op =>
                 {
                     op.CreateShardingTableOnStart = true;
