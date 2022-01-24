@@ -13,7 +13,12 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
         {
         }
 
-        protected override bool ConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)
+        {
+            return false;
+        }
+
+        protected override bool RandomConditionalTrip<TResult>(IEnumerable<TResult> results)
         {
             return false;
         }

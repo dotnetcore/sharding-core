@@ -126,12 +126,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         private IEnumerable<ISqlRouteUnit> ReOrderTableTails(IEnumerable<ISqlRouteUnit> sqlRouteUnits)
         {
             var streamMergeContext = GetStreamMergeContext();
-            if (streamMergeContext.EntitySeqQueryConfig != null)
+            var equalPropertyOrder = ExecuteOrderEqualPropertyOrder();
+            if (streamMergeContext.IsSeqQuery())
             {
-                var equalPropertyOrder = ExecuteOrderEqualPropertyOrder();
                 return sqlRouteUnits.OrderByAscDescIf(o => o.TableRouteResult.ReplaceTables.First().Tail,
-                    (equalPropertyOrder?streamMergeContext.PrimaryOrderAsc.Value: !streamMergeContext.PrimaryOrderAsc.Value), streamMergeContext.EntitySeqQueryConfig.RouteComparer);
+                    (equalPropertyOrder ? streamMergeContext.PrimaryOrderIsAsc : !streamMergeContext.PrimaryOrderIsAsc), streamMergeContext.ShardingTailComparer);
             }
+
             return sqlRouteUnits;
         }
 
@@ -150,17 +151,19 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             var streamMergeContext = GetStreamMergeContext();
             var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
             var sqlCount = sqlGroups.Count();
-            //根据用户配置单次查询期望并发数
-            int exceptCount =
-                Math.Max(
-                    0 == sqlCount % maxQueryConnectionsLimit
-                        ? sqlCount / maxQueryConnectionsLimit
-                        : sqlCount / maxQueryConnectionsLimit + 1, 1);
+            ////根据用户配置单次查询期望并发数
+            //int exceptCount =
+            //    Math.Max(
+            //        0 == sqlCount % maxQueryConnectionsLimit
+            //            ? sqlCount / maxQueryConnectionsLimit
+            //            : sqlCount / maxQueryConnectionsLimit + 1, 1);
             //计算应该使用那种链接模式
             ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode(sqlCount);
             var sqlExecutorUnitPartitions = sqlGroups
-                .Select((o, i) => new { Obj = o, index = i % exceptCount }).GroupBy(o => o.index)
-                .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode, g.Obj)).ToList()).ToList();
+                .Select((o, i) => new { Obj = o, index = i / maxQueryConnectionsLimit })
+                .GroupBy(o => o.index)
+                .Select(o => o.Select(g => new SqlExecutorUnit(connectionMode, g.Obj)).ToList())
+                .ToList();
             var sqlExecutorGroups = sqlExecutorUnitPartitions.Select(o => new SqlExecutorGroup<SqlExecutorUnit>(connectionMode, o)).ToList();
             return new DataSourceSqlExecutorUnit(connectionMode, sqlExecutorGroups);
         }

@@ -14,7 +14,12 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
         public AnyCircuitBreaker(ISeqQueryProvider seqQueryProvider) : base(seqQueryProvider)
         {
         }
-        protected override bool ConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)
+        {
+            return results.Any(o => o is RouteQueryResult<bool> routeQueryResult && routeQueryResult.QueryResult);
+        }
+
+        protected override bool RandomConditionalTrip<TResult>(IEnumerable<TResult> results)
         {
             return results.Any(o => o is RouteQueryResult<bool> routeQueryResult && routeQueryResult.QueryResult);
         }

@@ -1,37 +1,73 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.EntityQueryConfigurations
 {
     public class EntityQueryMetadata
     {
-        public IDictionary<string, EntitySeqQueryConfig> EntityOrderSeqQueryConfigs { get; }
+        private static readonly IDictionary<QueryableMethodNameEnum, string> MethodNameSupports;
+
+        static EntityQueryMetadata()
+        {
+            MethodNameSupports = new Dictionary<QueryableMethodNameEnum, string>()
+            {
+                { QueryableMethodNameEnum.First, nameof(Queryable.First) },
+                { QueryableMethodNameEnum.FirstOrDefault, nameof(Queryable.FirstOrDefault) },
+                { QueryableMethodNameEnum.Last, nameof(Queryable.Last) },
+                { QueryableMethodNameEnum.LastOrDefault, nameof(Queryable.LastOrDefault) },
+                { QueryableMethodNameEnum.Single, nameof(Queryable.Single) },
+                { QueryableMethodNameEnum.SingleOrDefault, nameof(Queryable.SingleOrDefault) },
+                { QueryableMethodNameEnum.Any, nameof(Queryable.Any) },
+                { QueryableMethodNameEnum.All, nameof(Queryable.All) },
+                { QueryableMethodNameEnum.Contains, nameof(Queryable.Contains) }
+            };
+        }
+        public ISet<string> SeqQueryOrders { get; }
+        public IComparer<string> DefaultTailComparer { get; set; }
+
+        public IDictionary<string,int> SeqConnectionsLimit { get; }
 
         public EntityQueryMetadata()
         {
-            EntityOrderSeqQueryConfigs = new Dictionary<string, EntitySeqQueryConfig>();//倒叙comparer
+            SeqQueryOrders = new HashSet<string>();
+            DefaultTailComparer=Comparer<string>.Default;
+            SeqConnectionsLimit = new Dictionary<string, int>();
         }
 
-        public bool TryGetSeqQueryConfig(string orderPropertyName, out EntitySeqQueryConfig seqQueryConfig)
+        public void AddConnectionsLimit(int limit, QueryableMethodNameEnum methodNameEnum)
         {
-            if (!string.IsNullOrWhiteSpace(orderPropertyName))
+            if (!MethodNameSupports.TryGetValue(methodNameEnum, out var methodName))
             {
-                if (EntityOrderSeqQueryConfigs.TryGetValue(orderPropertyName, out seqQueryConfig))
-                {
-                    return true;
-                }
+                throw new ArgumentException(methodNameEnum.ToString());
             }
 
-            seqQueryConfig = null;
+            if (SeqConnectionsLimit.ContainsKey(methodName))
+            {
+                SeqConnectionsLimit[methodName]= limit;
+            }
+            else
+            {
+                SeqConnectionsLimit.Add(methodName,limit);
+            }
+        }
+
+        public bool TryGetConnectionsLimit(string methodName,out int limit)
+        {
+            if (SeqConnectionsLimit.TryGetValue(methodName, out var l))
+            {
+                limit = l;
+                return true;
+            }
+
+            limit = 0;
             return false;
         }
+
+        public bool ContainsComparerOrder(string propertyName)
+        {
+            return SeqQueryOrders.Contains(propertyName);
+        }
+
     }
 }

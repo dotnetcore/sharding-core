@@ -5,6 +5,7 @@ using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace Sample.SqlServer.Shardings
@@ -79,5 +80,9 @@ namespace Sample.SqlServer.Shardings
             return new SysUserSalaryPaginationConfiguration();
         }
 
+        public override IEntityQueryConfiguration<SysUserSalary> CreateEntityQueryConfiguration()
+        {
+            return new SysUserSalaryEntityQueryConfiguration();
+        }
     }
 }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShardingCore.Core.NotSupportShardingProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
@@ -77,8 +78,14 @@ namespace ShardingCore.Sharding
         private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
-        public EntitySeqQueryConfig EntitySeqQueryConfig { get; }
-        public bool? PrimaryOrderAsc { get; }
+        /// <summary>
+        /// 主要排序是否是顺序
+        /// </summary>
+        public bool PrimaryOrderIsAsc { get; } = true;
+
+        private readonly bool _seqQuery=false;
+
+        public IComparer<string> ShardingTailComparer { get; } = Comparer<string>.Default;
 
         private int _maxParallelExecuteCount;
 
@@ -115,24 +122,35 @@ namespace ShardingCore.Sharding
 
             if (IsSingleShardingEntityQuery() && !Skip.HasValue&&IsCrossTable &&!IsUnSupportSharding())
             {
-                var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
-                if (propertyOrders.IsNotEmpty())
+                var singleShardingEntityType = GetSingleShardingEntityType();
+                var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
+                var virtualTable = virtualTableManager.GetVirtualTable(singleShardingEntityType);
+
+                if (virtualTable.EnableEntityQuery)
                 {
-                    var singleShardingEntityType = GetSingleShardingEntityType();
-                    var primaryOrder = propertyOrders[0];
-                    //不是多级不能是匿名对象
-                    if (primaryOrder.OwnerType == singleShardingEntityType&& !primaryOrder.PropertyExpression.Contains("."))
+                    _seqQuery = true;
+                    ShardingTailComparer =
+                        virtualTable.EntityQueryMetadata.DefaultTailComparer ?? Comparer<string>.Default;
+                    if (!MergeQueryCompilerContext.IsEnumerableQuery())
                     {
-                        var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
-                        var virtualTable = virtualTableManager.GetVirtualTable(singleShardingEntityType);
-                        if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryGetSeqQueryConfig(primaryOrder.PropertyExpression, out var seqQueryConfig))
+                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(
+                                ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name,
+                                out var limit))
                         {
-                            EntitySeqQueryConfig = seqQueryConfig;
-                            PrimaryOrderAsc = primaryOrder.IsAsc;
-                            if (!MergeQueryCompilerContext.IsEnumerableQuery())
+                            _maxParallelExecuteCount = Math.Min(limit,_maxParallelExecuteCount);
+                        }
+                    }
+
+                    var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
+                    if (propertyOrders.IsNotEmpty())
+                    {
+                        var primaryOrder = propertyOrders[0];
+                        //不是多级不能是匿名对象
+                        if (primaryOrder.OwnerType == singleShardingEntityType && !primaryOrder.PropertyExpression.Contains("."))
+                        {
+                            if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.ContainsComparerOrder(primaryOrder.PropertyExpression))
                             {
-                                _maxParallelExecuteCount = Math.Min(seqQueryConfig.ParallelThreadQueryCount,
-                                    _maxParallelExecuteCount);
+                                PrimaryOrderIsAsc = primaryOrder.IsAsc;
                             }
                         }
                     }
@@ -380,7 +398,7 @@ namespace ShardingCore.Sharding
 #endif
         public bool IsSeqQuery()
         {
-            return EntitySeqQueryConfig != null;
+            return _seqQuery;
         }
 
         public bool IsParallelExecute()

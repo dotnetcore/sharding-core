@@ -218,5 +218,12 @@ namespace Sample.SqlServer.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get4()
+        {
+            var xxx = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
+            return Ok(xxx);
+        }
+
     }
 }

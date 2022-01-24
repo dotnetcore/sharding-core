@@ -28,22 +28,34 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
         }
         public bool IsTrip<TResult>(IEnumerable<TResult> results)
         {
-            if (!_seqQueryProvider.IsSeqQuery())
-                return false;
-            if (!_seqQueryProvider.IsParallelExecute())
-                return false;
+
             if (_trip == TRIP)
                 return true;
-            if (ConditionalTrip(results))
+            if (_seqQueryProvider.IsSeqQuery())
             {
-                Trip();
-                return true;
+                if (_seqQueryProvider.IsParallelExecute())
+                {
+                    if (SeqConditionalTrip(results))
+                    {
+                        Trip();
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                if (RandomConditionalTrip(results))
+                {
+                    Trip();
+                    return true;
+                }
             }
 
             return false;
         }
 
-        protected abstract bool ConditionalTrip<TResult>(IEnumerable<TResult> results);
+        protected abstract bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results);
+        protected abstract bool RandomConditionalTrip<TResult>(IEnumerable<TResult> results);
 
         public void Trip()
         {
