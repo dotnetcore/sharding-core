@@ -6,6 +6,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -35,6 +37,16 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).LastOrDefault();
 
             return notNullResult.LastOrDefault();
+        }
+
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        {
+            return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+        }
+
+        protected override bool ExecuteOrderEqualPropertyOrder()
+        {
+            return false;
         }
     }
 }

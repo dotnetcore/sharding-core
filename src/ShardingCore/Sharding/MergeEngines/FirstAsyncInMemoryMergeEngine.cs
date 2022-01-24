@@ -7,6 +7,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Helpers;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -26,7 +30,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
-            var notNullResult=result.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
+            var notNullResult=result.Where(o => o.HasQueryResult()).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
@@ -36,6 +40,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).First();
 
             return notNullResult.First();
+        }
+
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        {
+            return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

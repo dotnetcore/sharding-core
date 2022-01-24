@@ -65,10 +65,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
             //未开启系统分表或者本次查询涉及多张分表
-            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSupportPaginationQuery<TShardingDbContext, TEntity>() && _shardingPageManager.Current != null)
+            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingEntityQuery() && _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
-                var shardingEntityType = _streamMergeContext.QueryEntities.FirstOrDefault(o => _entityMetadataManager.IsShardingDataSource(o) || _entityMetadataManager.IsShardingTable(o));
+                var shardingEntityType = _streamMergeContext.GetSingleShardingEntityType();
                 if (shardingEntityType == null)
                     throw new ShardingCoreException($"query not found sharding data source or sharding table entity");
 
@@ -236,7 +236,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 return false;
 
             if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner))
-                return typeof(TEntity) == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
+                return _streamMergeContext.GetSingleShardingEntityType() == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
             if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
                 return propertyOrder.PropertyExpression == paginationSequenceConfig.PropertyName;
             return false;

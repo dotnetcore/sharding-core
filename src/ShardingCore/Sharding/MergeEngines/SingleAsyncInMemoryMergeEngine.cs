@@ -6,6 +6,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -31,6 +33,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 throw new InvalidOperationException("Sequence contains more than one element.");
 
             return notNullResult.Single();
+        }
+
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        {
+            return SingleOrSingleOrDefaultParallelExecuteControl<TResult>.Create(GetStreamMergeContext(), executor);
         }
     }
 }

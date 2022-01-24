@@ -5,8 +5,13 @@ using ShardingCore.Core;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
+using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
@@ -19,36 +24,33 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     internal class SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public SingleQueryEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public SingleQueryEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext, new SingleStreamMergeCombine<TEntity>())
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async,CancellationToken cancellationToken=new CancellationToken())
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             var dataSourceName = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
-            var routeResult = StreamMergeContext.TableRouteResults.First();
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName,routeResult,ConnectionModeEnum.MEMORY_STRICTLY);
-            var newQueryable = (IQueryable<TEntity>) StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
+            var routeResult = StreamMergeContext.TableRouteResults[0];
+            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName, routeResult, ConnectionModeEnum.MEMORY_STRICTLY);
+            var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
+            var enumeratorParallelExecutor = new SingleQueryEnumeratorParallelExecutor<TEntity>();
             if (async)
             {
-                var asyncEnumerator = GetAsyncEnumerator0(newQueryable).WaitAndUnwrapException();
+                var asyncEnumerator = enumeratorParallelExecutor.GetAsyncEnumerator0(newQueryable).WaitAndUnwrapException();
                 return new[] { new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator) };
             }
             else
             {
-                var enumerator = GetEnumerator0(newQueryable);
+                var enumerator = enumeratorParallelExecutor.GetEnumerator0(newQueryable);
                 return new[] { new StreamMergeAsyncEnumerator<TEntity>(enumerator) };
             }
         }
 
-
-        public override IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
+        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
         {
-            if (streamsAsyncEnumerators.Length != 1)
-                throw new ShardingCoreException($"{nameof(SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity>)} has more {nameof(IStreamMergeAsyncEnumerator<TEntity>)}");
-            return streamsAsyncEnumerators[0];
+            return new SingleQueryEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
         }
-
     }
 }

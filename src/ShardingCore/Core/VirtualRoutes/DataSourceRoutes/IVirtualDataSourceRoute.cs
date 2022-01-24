@@ -4,6 +4,7 @@ using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
@@ -59,5 +60,10 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
         /// </summary>
         /// <returns></returns>
         IPaginationConfiguration<TEntity> CreatePaginationConfiguration();
+        ///// <summary>
+        ///// 配置查询
+        ///// </summary>
+        ///// <returns></returns>
+        //IEntityQueryConfiguration<TEntity> CreateEntityQueryConfiguration();
     }
 }

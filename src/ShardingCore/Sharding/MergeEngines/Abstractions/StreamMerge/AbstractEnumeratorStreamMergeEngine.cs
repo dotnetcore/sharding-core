@@ -1,16 +1,11 @@
-﻿using System;
+﻿using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.Enumerators;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif
@@ -26,6 +21,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     */
     internal abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IEnumeratorStreamMergeEngine<TEntity>
     {
+        private readonly IStreamMergeCombine<TEntity> _streamMergeCombine;
         public StreamMergeContext<TEntity> StreamMergeContext { get; }
 
         protected override StreamMergeContext<TEntity> GetStreamMergeContext()
@@ -33,8 +29,14 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
             return StreamMergeContext;
         }
 
-        public AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
+        protected IStreamMergeCombine<TEntity> GetStreamMergeCombine()
         {
+            return _streamMergeCombine;
+        }
+
+        protected AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext,IStreamMergeCombine<TEntity> streamMergeCombine)
+        {
+            _streamMergeCombine = streamMergeCombine;
             StreamMergeContext = streamMergeContext;
         }
 
@@ -95,114 +97,23 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         public abstract IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken());
 
         /// <summary>
-        /// 合并流式聚合内存最小化
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="previewResults"></param>
-        /// <param name="parallelResults"></param>
-        /// <param name="async"></param>
-        /// <returns></returns>
-        /// <exception cref="ShardingCoreInvalidOperationException"></exception>
-        public override void MergeParallelExecuteResult<TResult>(LinkedList<TResult> previewResults, IEnumerable<TResult> parallelResults,bool async)
-        {
-            var previewResultsCount = previewResults.Count;
-            if (previewResultsCount > 1)
-            {
-                throw new ShardingCoreInvalidOperationException($"{typeof(TResult)} {nameof(previewResults)} has more than one element in container");
-            }
-
-            var parallelCount = parallelResults.Count();
-            if (parallelCount == 0)
-                return;
-            //聚合
-            if (previewResults is LinkedList<IStreamMergeAsyncEnumerator<TEntity>> previewInMemoryStreamEnumeratorResults && parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TEntity>> parallelStreamEnumeratorResults)
-            {
-                var mergeAsyncEnumerators = new LinkedList<IStreamMergeAsyncEnumerator<TEntity>>();
-                if (previewResultsCount == 1)
-                {
-                    mergeAsyncEnumerators.AddLast(previewInMemoryStreamEnumeratorResults.First());
-                }
-                foreach (var parallelStreamEnumeratorResult in parallelStreamEnumeratorResults)
-                {
-                    mergeAsyncEnumerators.AddLast(parallelStreamEnumeratorResult);
-                }
-
-                var combineStreamMergeAsyncEnumerator = CombineInMemoryStreamMergeAsyncEnumerator(mergeAsyncEnumerators.ToArray());
-                var inMemoryStreamMergeAsyncEnumerator = new InMemoryStreamMergeAsyncEnumerator<TEntity>(combineStreamMergeAsyncEnumerator, async);
-                previewInMemoryStreamEnumeratorResults.Clear();
-                previewInMemoryStreamEnumeratorResults.AddLast(inMemoryStreamMergeAsyncEnumerator);
-                //合并
-                return;
-            }
-
-            throw new ShardingCoreInvalidOperationException($"{typeof(TResult)} is not {typeof(IStreamMergeAsyncEnumerator<TEntity>)}");
-        }
-
-        /// <summary>
         /// 合并成一个迭代器
         /// </summary>
         /// <param name="streamsAsyncEnumerators"></param>
         /// <returns></returns>
-        public abstract IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
-
-        public virtual IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
+        private IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
-            return CombineStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
+            return GetStreamMergeCombine().StreamMergeEnumeratorCombine(GetStreamMergeContext(), streamsAsyncEnumerators);
         }
 
-        /// <summary>
-        /// 开启异步线程获取并发迭代器
-        /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="async"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<IStreamMergeAsyncEnumerator<TEntity>> AsyncParallelEnumerator(IQueryable<TEntity> queryable, bool async,
-            CancellationToken cancellationToken = new CancellationToken())
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(
+            IParallelExecutor<TResult> executor)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (async)
-            {
-                var asyncEnumerator = await GetAsyncEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(asyncEnumerator);
-            }
-            else
-            {
-                var enumerator = GetEnumerator0(queryable);
-                return new StreamMergeAsyncEnumerator<TEntity>(enumerator);
-            }
+            return CreateParallelExecuteControl0(executor as IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>>) as IParallelExecuteControl<TResult>;
         }
 
-        /// <summary>
-        /// 获取异步迭代器
-        /// </summary>
-        /// <param name="newQueryable"></param>
-        /// <returns></returns>
-        public async Task<IAsyncEnumerator<TEntity>> GetAsyncEnumerator0(IQueryable<TEntity> newQueryable)
-        {
-#if !EFCORE2
-            var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
-            await enumator.MoveNextAsync();
-            return enumator;
-#endif
-#if EFCORE2
-            var enumator = new EFCore2TryCurrentAsyncEnumerator<TEntity>(newQueryable.AsAsyncEnumerable().GetEnumerator());
-            await enumator.MoveNext();
-            return enumator;
-#endif
-        }
-        /// <summary>
-        /// 获取同步迭代器
-        /// </summary>
-        /// <param name="newQueryable"></param>
-        /// <returns></returns>
-        public IEnumerator<TEntity> GetEnumerator0(IQueryable<TEntity> newQueryable)
-        {
-            var enumator = newQueryable.AsEnumerable().GetEnumerator();
-            enumator.MoveNext();
-            return enumator;
-        }
-
+        protected abstract IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(
+                IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor);
     }
 }

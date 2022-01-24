@@ -9,6 +9,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -19,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MinAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TResult>
+    internal class MinAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TResult>
     {
         public MinAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {

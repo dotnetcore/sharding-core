@@ -13,6 +13,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -32,7 +33,7 @@ namespace ShardingCore.Core.VirtualTables
         private readonly IVirtualTableRoute<T> _virtualTableRoute;
           
         /// <summary>
-        /// 分库配置
+        /// 分页配置
         /// </summary>
         public PaginationMetadata PaginationMetadata { get; }
 
@@ -40,6 +41,14 @@ namespace ShardingCore.Core.VirtualTables
         /// 是否启用智能分页
         /// </summary>
         public bool EnablePagination => PaginationMetadata != null;
+        /// <summary>
+        /// 查询配置
+        /// </summary>
+        public EntityQueryMetadata EntityQueryMetadata { get; }
+        /// <summary>
+        /// 是否启用表达式分片配置
+        /// </summary>
+        public bool EnableEntityQuery => EntityQueryMetadata != null;
 
 
         private readonly ConcurrentDictionary<IPhysicTable, object> _physicTables = new ConcurrentDictionary<IPhysicTable, object>();
@@ -54,6 +63,14 @@ namespace ShardingCore.Core.VirtualTables
                 PaginationMetadata = new PaginationMetadata();
                 var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
                 paginationConfiguration.Configure(paginationBuilder);
+            }
+
+            var entityQueryConfiguration = virtualTableRoute.CreateEntityQueryConfiguration();
+            if (entityQueryConfiguration != null)
+            {
+                EntityQueryMetadata = new EntityQueryMetadata();
+                var entityQueryBuilder = new EntityQueryBuilder<T>(EntityQueryMetadata);
+                entityQueryConfiguration.Configure(entityQueryBuilder);
             }
         }
 

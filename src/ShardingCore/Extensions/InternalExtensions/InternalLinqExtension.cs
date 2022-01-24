@@ -15,6 +15,11 @@ namespace ShardingCore.Extensions.InternalExtensions
     */
     internal static class InternalLinqExtension
     {
+        public static IEnumerable<TSource> OrderByAscDescIf<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector,bool asc,
+            IComparer<TKey>? comparer)
+        {
+            return asc?source.OrderBy(keySelector, comparer): source.OrderByDescending(keySelector, comparer);
+        }
         public static IOrderedEnumerable<TSource> ThenByIf<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, bool condition,
             IComparer<TKey>? comparer)
         {

@@ -6,6 +6,7 @@ using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualTables
@@ -30,6 +31,14 @@ namespace ShardingCore.Core.VirtualTables
         /// 是否启用分页配置
         /// </summary>
         bool EnablePagination { get; }
+        /// <summary>
+        /// 查询配置
+        /// </summary>
+         EntityQueryMetadata EntityQueryMetadata { get; }
+        /// <summary>
+        /// 是否启用表达式分片配置
+        /// </summary>
+         bool EnableEntityQuery { get; }
 
         /// <summary>
         /// 获取所有的物理表

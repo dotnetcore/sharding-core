@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using ShardingCore.Sharding.MergeEngines.AggregateMergeEngines;
@@ -21,7 +20,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class AverageAsyncInMemoryMergeEngine<TEntity, TResult,TSelect> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal class AverageAsyncInMemoryMergeEngine<TEntity, TResult,TSelect> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public AverageAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
@@ -83,5 +82,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
             }
             
         }
+
     }
 }

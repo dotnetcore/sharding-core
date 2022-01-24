@@ -7,11 +7,16 @@ using ShardingCore.Core;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
+using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
@@ -25,7 +30,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     internal class DefaultShardingEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity> :AbstractEnumeratorStreamMergeEngine<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public DefaultShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public DefaultShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext,new DefaultStreamMergeCombine<TEntity>())
         {
         }
 
@@ -33,45 +38,16 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits,
-                async sqlExecutorUnit =>
-                {
-                    var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
-                    var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
-                    var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
-                    var (newQueryable,dbContext) = CreateAsyncExecuteQueryable(dataSourceName, routeResult, connectionMode);
-                    var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, async, cancellationToken);
-                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext, streamMergeAsyncEnumerator);
-                }, cancellationToken);
+            var defaultEnumeratorParallelExecutor = new DefaultEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(),async);
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits, defaultEnumeratorParallelExecutor, cancellationToken);
 
-            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
+            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
             return streamEnumerators;
         }
 
-        private (IQueryable<TEntity>,DbContext) CreateAsyncExecuteQueryable(string dsname,TableRouteResult tableRouteResult,ConnectionModeEnum connectionMode)
+        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetReWriteQueryable()
-                .ReplaceDbContextQueryable(shardingDbContext);
-            return (newQueryable,shardingDbContext);
-        }
-
-
-        public override IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
-        {
-            if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-            if (StreamMergeContext.HasGroupQuery())
-                return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-            return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-        }
-
-        public override IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
-            IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
-        {
-            if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators,0, StreamMergeContext.GetPaginationReWriteTake());//内存聚合分页不可以直接获取skip必须获取skip+take的数目
-            return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
+            return new DefaultEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
         }
     }
 }

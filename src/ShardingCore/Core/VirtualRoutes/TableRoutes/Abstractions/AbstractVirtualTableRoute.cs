@@ -6,6 +6,7 @@ using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
@@ -29,10 +30,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             EntityConfigOptions =
                 ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
         }
-        public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
-        {
-            return null;
-        }
+
 
         public EntityMetadata EntityMetadata { get; private set; }
 
@@ -73,5 +71,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// </summary>
         /// <param name="builder"></param>
         public abstract void Configure(EntityMetadataTableBuilder<T> builder);
+
+        public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
+        {
+            return null;
+        }
+        public virtual IEntityQueryConfiguration<T> CreateEntityQueryConfiguration()
+        {
+            return null;
+        }
     }
 }

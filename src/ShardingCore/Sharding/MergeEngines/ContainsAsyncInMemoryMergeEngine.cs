@@ -5,6 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -35,5 +37,9 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             return result.Any(o => o.QueryResult);
         }
 
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        {
+            return ContainsParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+        }
     }
 }

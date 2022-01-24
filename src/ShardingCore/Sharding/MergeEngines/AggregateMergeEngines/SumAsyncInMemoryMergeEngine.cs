@@ -1,6 +1,5 @@
 ﻿using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
@@ -19,7 +18,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class SumAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal class SumAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public SumAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {

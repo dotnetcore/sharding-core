@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes
@@ -46,13 +47,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 
     }
 
-    public interface IVirtualTableRoute<T> : IVirtualTableRoute, IEntityMetadataTableConfiguration<T> where T : class
+    public interface IVirtualTableRoute<TEntity> : IVirtualTableRoute, IEntityMetadataTableConfiguration<TEntity> where TEntity : class
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置
         /// </summary>
         /// <returns></returns>
-        IPaginationConfiguration<T> CreatePaginationConfiguration();
+        IPaginationConfiguration<TEntity> CreatePaginationConfiguration();
+        /// <summary>
+        /// 配置查询
+        /// </summary>
+        /// <returns></returns>
+        IEntityQueryConfiguration<TEntity> CreateEntityQueryConfiguration();
 
     }
 }

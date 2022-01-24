@@ -69,7 +69,7 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
                         var reWriteOrders = new List<PropertyOrder>(selectProperties.Count());
                         foreach (var orderProperty in selectProperties)
                         {
-                            reWriteOrders.Add(new PropertyOrder(orderProperty.PropertyName,true));
+                            reWriteOrders.Add(new PropertyOrder(orderProperty.PropertyName,true, orderProperty.OwnerType));
                         }
                         orders = reWriteOrders;
                     }

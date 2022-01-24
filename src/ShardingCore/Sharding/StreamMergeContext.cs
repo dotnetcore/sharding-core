@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ShardingCore.Core.NotSupportShardingProviders;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 
 
 namespace ShardingCore.Sharding
@@ -30,7 +32,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : IDisposable
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider,IDisposable
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -56,7 +58,7 @@ namespace ShardingCore.Sharding
 
         public SelectContext SelectContext { get; }
         public GroupByContext GroupByContext { get; }
-        public IEnumerable<TableRouteResult> TableRouteResults { get; }
+        public TableRouteResult[] TableRouteResults { get; }
         public DataSourceRouteResult DataSourceRouteResult { get; }
         /// <summary>
         /// 本次查询涉及的对象
@@ -75,6 +77,10 @@ namespace ShardingCore.Sharding
         private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
+        public EntitySeqQueryConfig EntitySeqQueryConfig { get; }
+        public bool? PrimaryOrderAsc { get; }
+
+        private int _maxParallelExecuteCount;
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,
@@ -104,6 +110,34 @@ namespace ShardingCore.Sharding
             _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
             _notSupportShardingProvider = ShardingContainer.GetService<INotSupportShardingProvider>() ?? _defaultNotSupportShardingProvider;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
+
+            _maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
+
+            if (IsSingleShardingEntityQuery() && !Skip.HasValue&&IsCrossTable &&!IsUnSupportSharding())
+            {
+                var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
+                if (propertyOrders.IsNotEmpty())
+                {
+                    var singleShardingEntityType = GetSingleShardingEntityType();
+                    var primaryOrder = propertyOrders[0];
+                    //不是多级不能是匿名对象
+                    if (primaryOrder.OwnerType == singleShardingEntityType&& !primaryOrder.PropertyExpression.Contains("."))
+                    {
+                        var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
+                        var virtualTable = virtualTableManager.GetVirtualTable(singleShardingEntityType);
+                        if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryGetSeqQueryConfig(primaryOrder.PropertyExpression, out var seqQueryConfig))
+                        {
+                            EntitySeqQueryConfig = seqQueryConfig;
+                            PrimaryOrderAsc = primaryOrder.IsAsc;
+                            if (!MergeQueryCompilerContext.IsEnumerableQuery())
+                            {
+                                _maxParallelExecuteCount = Math.Min(seqQueryConfig.ParallelThreadQueryCount,
+                                    _maxParallelExecuteCount);
+                            }
+                        }
+                    }
+                }
+            }
         }
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
         {
@@ -191,6 +225,15 @@ namespace ShardingCore.Sharding
         {
             return IsCrossDataSource || IsCrossTable;
         }
+
+        public bool IsSingleShardingEntityQuery()
+        {
+            return QueryEntities.Count(o=>MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o)) == 1;
+        }
+        public Type GetSingleShardingEntityType()
+        {
+            return QueryEntities.FirstOrDefault(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o));
+        }
         //public bool HasAggregateQuery()
         //{
         //    return this.SelectContext.HasAverage();
@@ -203,7 +246,7 @@ namespace ShardingCore.Sharding
 
         public int GetMaxQueryConnectionsLimit()
         {
-            return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
+            return _maxParallelExecuteCount;
         }
         public ConnectionModeEnum GetConnectionMode(int sqlCount)
         {
@@ -335,5 +378,14 @@ namespace ShardingCore.Sharding
             }
         }
 #endif
+        public bool IsSeqQuery()
+        {
+            return EntitySeqQueryConfig != null;
+        }
+
+        public bool IsParallelExecute()
+        {
+            return TableRouteResults.Length > GetMaxQueryConnectionsLimit();
+        }
     }
 }

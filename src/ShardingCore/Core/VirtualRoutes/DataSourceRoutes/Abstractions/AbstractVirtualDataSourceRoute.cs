@@ -5,6 +5,7 @@ using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Sharding.EntityQueryConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 {
@@ -14,12 +15,17 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     * @Date: Friday, 18 December 2020 14:33:01
     * @Email: 326308290@qq.com
     */
-    public abstract class AbstractVirtualDataSourceRoute<T, TKey> : IVirtualDataSourceRoute<T>, IEntityMetadataAutoBindInitializer where T : class
+    public abstract class AbstractVirtualDataSourceRoute<TEntity, TKey> : IVirtualDataSourceRoute<TEntity>, IEntityMetadataAutoBindInitializer where TEntity : class
     {
         public EntityMetadata EntityMetadata { get; private set; }
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
         public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
 
+        public new PaginationMetadata PaginationMetadata { get; protected set; }
+        public bool EnablePagination => PaginationMetadata != null;
+
+        //public new EntityQueryMetadata EntityQueryMetadata { get; protected set; }
+        //public bool EnableEntityQuery => EnableEntityQuery != null;
 
         public void Initialize(EntityMetadata entityMetadata)
         {
@@ -30,21 +36,32 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             if (paginationConfiguration != null)
             {
                 PaginationMetadata = new PaginationMetadata();
-                var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
+                var paginationBuilder = new PaginationBuilder<TEntity>(PaginationMetadata);
                 paginationConfiguration.Configure(paginationBuilder);
             }
+            //var entityQueryConfiguration = CreateEntityQueryConfiguration();
+            //if (entityQueryConfiguration != null)
+            //{
+            //    EntityQueryMetadata = new EntityQueryMetadata();
+            //    var entityQueryBuilder= new EntityQueryBuilder<TEntity>(EntityQueryMetadata);
+            //    entityQueryConfiguration.Configure(entityQueryBuilder);
+            //}
+
 
             EntityConfigOptions =
                 ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
 
         }
-        public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
+        public virtual IPaginationConfiguration<TEntity> CreatePaginationConfiguration()
         {
             return null;
         }
 
-        public new PaginationMetadata PaginationMetadata { get; protected set; }
-        public bool EnablePagination => PaginationMetadata != null;
+        //public virtual IEntityQueryConfiguration<TEntity> CreateEntityQueryConfiguration()
+        //{
+        //    return null;
+        //}
+
 
         /// <summary>
         /// 分库字段如何转成对应的数据源名称 how  convert sharding data source key to data source name
@@ -75,6 +92,6 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// 2.AutoCreateDataSource 启动时是否需要创建数据源
         /// </summary>
         /// <param name="builder"></param>
-        public abstract void Configure(EntityMetadataDataSourceBuilder<T> builder);
+        public abstract void Configure(EntityMetadataDataSourceBuilder<TEntity> builder);
     }
 }

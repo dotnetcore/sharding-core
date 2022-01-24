@@ -9,7 +9,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class RouteQueryResult<TResult>
+    public interface IRouteQueryResult
+    {
+        bool HasQueryResult();
+    }
+    public class RouteQueryResult<TResult>: IRouteQueryResult
     {
         public string DataSourceName { get; }
         public TableRouteResult TableRouteResult { get; }
@@ -20,6 +24,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             DataSourceName = dataSourceName;
             TableRouteResult = tableRouteResult;
             QueryResult = queryResult;
+        }
+
+        public bool HasQueryResult()
+        {
+            return QueryResult!= null;
         }
     }
 }

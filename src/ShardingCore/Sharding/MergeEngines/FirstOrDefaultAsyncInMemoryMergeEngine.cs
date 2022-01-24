@@ -3,9 +3,11 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.ParallelControls;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -36,6 +38,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).FirstOrDefault();
 
             return notNullResult.FirstOrDefault();
+        }
+
+        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        {
+            return  AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

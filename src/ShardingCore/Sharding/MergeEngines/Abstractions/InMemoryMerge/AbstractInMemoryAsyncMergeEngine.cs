@@ -1,19 +1,11 @@
-﻿using System;
+﻿using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
+using ShardingCore.Sharding.StreamMergeEngines;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.MergeEngines.Common;
-using ShardingCore.Sharding.StreamMergeEngines;
+using ShardingCore.Helpers;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
@@ -33,58 +25,19 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             _mergeContext = streamMergeContext;
         }
 
-        private (IQueryable queryable, DbContext dbContext) CreateAsyncExecuteQueryable<TResult>(string dsname, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
-        {
-            var shardingDbContext = _mergeContext.CreateDbContext(dsname, tableRouteResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetReWriteQueryable()
-                .ReplaceDbContextQueryable(shardingDbContext);
-            return (newQueryable, shardingDbContext);
-            ;
-        }
-
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
         {
             var routeQueryResults = _mergeContext.PreperExecute(() => new List<RouteQueryResult<TResult>>(0));
             if (routeQueryResults != null)
                 return routeQueryResults;
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true, defaultSqlRouteUnits,
-                   async sqlExecutorUnit =>
-                    {
-                        var connectionMode = _mergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
-                        var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
-                        var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
+            var inMemoryParallelExecutor = new InMemoryParallelExecutor<TEntity,TResult>(_mergeContext,efQuery);
+            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true, defaultSqlRouteUnits, inMemoryParallelExecutor).ToArray();
 
-                        var (asyncExecuteQueryable, dbContext) =
-                            CreateAsyncExecuteQueryable<TResult>(dataSourceName, routeResult, connectionMode);
-
-                        var queryResult = await efQuery(asyncExecuteQueryable);
-                        var routeQueryResult = new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-                        return new ShardingMergeResult<RouteQueryResult<TResult>>(dbContext, routeQueryResult);
-                    }).ToArray();
-
-            return (await Task.WhenAll(waitExecuteQueue)).SelectMany(o => o).ToList();
+            return (await TaskHelper.WhenAllFastFail(waitExecuteQueue)).SelectMany(o => o).ToList();
         }
 
 
-        ///// <summary>
-        ///// 异步并发查询
-        ///// </summary>
-        ///// <typeparam name="TResult"></typeparam>
-        ///// <param name="queryable"></param>
-        ///// <param name="dataSourceName"></param>
-        ///// <param name="routeResult"></param>
-        ///// <param name="efQuery"></param>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //public async Task<RouteQueryResult<TResult>> AsyncParallelResultExecute<TResult>(IQueryable queryable,string dataSourceName,TableRouteResult routeResult, Func<IQueryable, Task<TResult>> efQuery,
-        //    CancellationToken cancellationToken = new CancellationToken())
-        //{
-        //    cancellationToken.ThrowIfCancellationRequested();
-        //    var queryResult = await efQuery(queryable);
-
-        //    return new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-        //}
 
         protected override StreamMergeContext<TEntity> GetStreamMergeContext()
         {

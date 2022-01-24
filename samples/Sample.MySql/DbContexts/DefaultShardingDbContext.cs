@@ -13,6 +13,7 @@ namespace Sample.MySql.DbContexts
         {
             //切记不要在构造函数中使用会让模型提前创建的方法
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //Database.SetCommandTimeout(30000);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

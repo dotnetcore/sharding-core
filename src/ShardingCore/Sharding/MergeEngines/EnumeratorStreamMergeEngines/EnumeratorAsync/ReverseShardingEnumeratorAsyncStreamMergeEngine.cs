@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
+using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
-using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
@@ -28,82 +27,34 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     {
         private readonly long _total;
 
-        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, long total) : base(streamMergeContext)
+        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, long total) : base(streamMergeContext,new ReverseStreamMergeCombine<TEntity>())
         {
             _total = total;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async,CancellationToken cancellationToken=new CancellationToken())
+        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             var noPaginationNoOrderQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy();
             var skip = StreamMergeContext.Skip.GetValueOrDefault();
-            var take = StreamMergeContext.Take.HasValue?StreamMergeContext.Take.Value:(_total-skip);
+            var take = StreamMergeContext.Take.HasValue ? StreamMergeContext.Take.Value : (_total - skip);
             if (take > int.MaxValue)
                 throw new ShardingCoreException($"not support take more than {int.MaxValue}");
-            var realSkip = _total- take- skip;
+            var realSkip = _total - take - skip;
             StreamMergeContext.ReSetSkip((int)realSkip);
-            var propertyOrders = StreamMergeContext.Orders.Select(o=>new PropertyOrder( o.PropertyExpression,!o.IsAsc)).ToArray();
+            var propertyOrders = StreamMergeContext.Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
             StreamMergeContext.ReSetOrders(propertyOrders);
-            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip+(int)take).OrderWithExpression(propertyOrders);
+            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip + (int)take).OrderWithExpression(propertyOrders);
 
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits,
-                async sqlExecutorUnit =>
-                {
-                    var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
-                    var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
-                    var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
-                    var (newQueryable,dbContext) =
-                        CreateAsyncExecuteQueryable(dataSourceName, reverseOrderQueryable, routeResult, connectionMode);
-                    var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, async,cancellationToken);
-                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext,
-                        streamMergeAsyncEnumerator);
-                });
-        
-
-            var streamEnumerators = Task.WhenAll(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
+            var reverseEnumeratorParallelExecutor = new ReverseEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(), reverseOrderQueryable, async);
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async, defaultSqlRouteUnits, reverseEnumeratorParallelExecutor, cancellationToken);
+            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o => o).ToArray();
             return streamEnumerators;
         }
-
-        private (IQueryable<TEntity>,DbContext) CreateAsyncExecuteQueryable(string dsname,IQueryable<TEntity> reverseOrderQueryable, TableRouteResult tableRouteResult,ConnectionModeEnum connectionMode)
+        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
         {
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dsname,tableRouteResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)reverseOrderQueryable
-                .ReplaceDbContextQueryable(shardingDbContext);
-            return (newQueryable,shardingDbContext);
-        }
-
-        public override IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
-        {
-            var doGetStreamMergeAsyncEnumerator = DoGetStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
-            return new InMemoryReverseStreamMergeAsyncEnumerator<TEntity>(doGetStreamMergeAsyncEnumerator);
-        }
-
-        private IStreamMergeAsyncEnumerator<TEntity> DoGetStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
-        {
-            if (StreamMergeContext.IsPaginationQuery() && StreamMergeContext.HasGroupQuery())
-            {
-                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, new[] { multiAggregateOrderStreamMergeAsyncEnumerator });
-            }
-            if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-            if (StreamMergeContext.HasGroupQuery())
-                return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-            return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-        }
-        public override IStreamMergeAsyncEnumerator<TEntity> CombineInMemoryStreamMergeAsyncEnumerator(
-            IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
-        {
-            if (StreamMergeContext.IsPaginationQuery() && StreamMergeContext.HasGroupQuery())
-            {
-                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators);
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, new[] { multiAggregateOrderStreamMergeAsyncEnumerator }, 0, StreamMergeContext.GetPaginationReWriteTake());
-            }
-            if (StreamMergeContext.IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext, streamsAsyncEnumerators, 0, StreamMergeContext.GetPaginationReWriteTake());
-            return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
+            return new ReverseEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
         }
     }
 }

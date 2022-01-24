@@ -4,7 +4,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<DefineConstants>TRACE;DEBUG;EFCORE6Test;</DefineConstants>
 		<AssemblyName>ShardingCore.Test</AssemblyName>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

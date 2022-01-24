@@ -93,7 +93,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         throw new NotSupportedException("sharding order only support property expression");
                     properties.Reverse();
                     var propertyExpression = string.Join(".", properties);
-                    _orders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy)));
+                    _orders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy), expression.Member.DeclaringType));
 
                 }
             }
