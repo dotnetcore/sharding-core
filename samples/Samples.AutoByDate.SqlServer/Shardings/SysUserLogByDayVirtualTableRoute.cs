@@ -28,7 +28,7 @@ namespace Samples.AutoByDate.SqlServer.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserLogByDay> builder)
         {
-            
+            builder.ShardingProperty(o => o.CreateTime);
         }
     }
 }

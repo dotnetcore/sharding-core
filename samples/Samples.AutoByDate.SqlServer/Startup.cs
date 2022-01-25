@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ChronusJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -50,9 +49,8 @@ namespace Samples.AutoByDate.SqlServer
                     {
                         builder.UseSqlServer(connection);
                     });
-                    sp.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;");
+                    sp.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDBz;Integrated Security=True;");
                 }).EnsureConfig();
-            services.AddChronusJob();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

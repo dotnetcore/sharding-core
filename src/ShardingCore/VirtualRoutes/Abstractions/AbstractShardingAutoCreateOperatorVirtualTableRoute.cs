@@ -70,6 +70,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
             var now = DateTime.Now.AddMinutes(IncrementMinutes);
             var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
+            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
             foreach (var virtualDataSource in allVirtualDataSources)
             {
                 ISet<string> dataSources = new HashSet<string>();
@@ -103,7 +104,6 @@ namespace ShardingCore.VirtualRoutes.Abstractions
                     }
                 }
             }
-            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
 
             return Task.CompletedTask;
         }

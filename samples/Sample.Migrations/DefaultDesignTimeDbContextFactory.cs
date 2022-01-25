@@ -21,8 +21,9 @@ namespace Sample.Migrations
             services.AddShardingDbContext<DefaultShardingTableDbContext>()
                 .AddEntityConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.CreateShardingTableOnStart = false;
+                    o.CreateDataBaseOnlyOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = false;
                     o.AddShardingTableRoute<ShardingWithModVirtualTableRoute>();
                     o.AddShardingTableRoute<ShardingWithDateTimeVirtualTableRoute>();
                 })

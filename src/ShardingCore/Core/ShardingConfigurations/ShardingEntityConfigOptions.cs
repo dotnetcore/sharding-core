@@ -31,6 +31,10 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// </summary>
         public bool? CreateShardingTableOnStart { get; set; }
         /// <summary>
+        /// 是否在启动时创建数据库
+        /// </summary>
+        public bool? CreateDataBaseOnlyOnStart { get; set; }
+        /// <summary>
         /// 当查询遇到没有路由被命中时是否抛出错误
         /// </summary>
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;

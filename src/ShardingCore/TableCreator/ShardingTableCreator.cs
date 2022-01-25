@@ -45,7 +45,6 @@ namespace ShardingCore.TableCreator
         /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
-        /// <exception cref="ShardingCreateException"></exception>
         public void CreateTable(string dataSourceName, Type shardingEntityType, string tail)
         {
             using (var serviceScope = _serviceProvider.CreateScope())

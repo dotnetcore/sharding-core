@@ -55,6 +55,10 @@ namespace ShardingCore.DynamicDataSources
                     using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                     if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
                         EnsureCreated(virtualDataSource, context, dataSourceName);
+                    else if(_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
+                    {
+                        EnsureCreateDataBaseOnly(context, dataSourceName);
+                    }
                     var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
                     ////获取数据库存在的所有的表
                     var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ?? new HashSet<string>();
@@ -173,6 +177,33 @@ namespace ShardingCore.DynamicDataSources
                     {
                         dbContext.RemoveDbContextAllRelationModelThatIsNoSharding();
                     }
+                    dbContext.Database.EnsureCreated();
+                    dbContext.RemoveModelCache();
+                }
+                finally
+                {
+                    Monitor.Exit(modelCacheSyncObject);
+                }
+            }
+        }
+        private void EnsureCreateDataBaseOnly( DbContext context, string dataSourceName)
+        {
+            if (context is IShardingDbContext shardingDbContext)
+            {
+                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
+
+
+                var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
+
+                var acquire = Monitor.TryEnter(modelCacheSyncObject, TimeSpan.FromSeconds(3));
+                if (!acquire)
+                {
+                    throw new ShardingCoreException("cant get modelCacheSyncObject lock");
+                }
+
+                try
+                {
+                    dbContext.RemoveDbContextAllRelationModel();
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
                 }
