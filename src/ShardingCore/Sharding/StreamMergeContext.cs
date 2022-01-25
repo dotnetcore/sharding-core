@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShardingCore.Core.NotSupportShardingProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.EntityQueryConfigurations;
 
 
@@ -79,9 +80,9 @@ namespace ShardingCore.Sharding
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
         /// <summary>
-        /// 主要排序是否是顺序
+        /// 分表后缀比较是否重排正序
         /// </summary>
-        public bool PrimaryOrderIsAsc { get; } = true;
+        public bool TailComparerIsAsc { get; } = true;
 
         private readonly bool _seqQuery=false;
 
@@ -128,35 +129,64 @@ namespace ShardingCore.Sharding
 
                 if (virtualTable.EnableEntityQuery)
                 {
-                    _seqQuery = true;
                     ShardingTailComparer =
                         virtualTable.EntityQueryMetadata.DefaultTailComparer ?? Comparer<string>.Default;
+                    string methodName = null;
                     if (!MergeQueryCompilerContext.IsEnumerableQuery())
                     {
-                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(
-                                ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name,
-                                out var limit))
+                        methodName = ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name;
+                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName,out var limit))
                         {
                             _maxParallelExecuteCount = Math.Min(limit,_maxParallelExecuteCount);
                         }
                     }
 
                     var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
-                    if (propertyOrders.IsNotEmpty())
+                    if (TryGetSequenceQuery(propertyOrders, singleShardingEntityType, virtualTable, methodName,
+                            out var tailComparerIsAsc))
                     {
-                        var primaryOrder = propertyOrders[0];
-                        //不是多级不能是匿名对象
-                        if (primaryOrder.OwnerType == singleShardingEntityType && !primaryOrder.PropertyExpression.Contains("."))
-                        {
-                            if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.ContainsComparerOrder(primaryOrder.PropertyExpression))
-                            {
-                                PrimaryOrderIsAsc = primaryOrder.IsAsc;
-                            }
-                        }
+                        _seqQuery = true;
+                        TailComparerIsAsc = tailComparerIsAsc;
                     }
                 }
             }
         }
+        /// <summary>
+        /// 尝试获取当前方法是否采用顺序查询,如果有先判断排序没有的情况下判断默认
+        /// </summary>
+        /// <param name="propertyOrders"></param>
+        /// <param name="singleShardingEntityType"></param>
+        /// <param name="virtualTable"></param>
+        /// <param name="methodName"></param>
+        /// <param name="tailComparerIsAsc"></param>
+        /// <returns></returns>
+        private bool TryGetSequenceQuery(PropertyOrder[] propertyOrders, Type singleShardingEntityType,IVirtualTable virtualTable,string methodName, out bool tailComparerIsAsc)
+        {
+            if (propertyOrders.IsNotEmpty())
+            {
+                var primaryOrder = propertyOrders[0];
+                //不是多级不能是匿名对象
+                if (primaryOrder.OwnerType == singleShardingEntityType && !primaryOrder.PropertyExpression.Contains("."))
+                {
+                    if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(primaryOrder.PropertyExpression, out var asc))
+                    {
+                        tailComparerIsAsc = asc ? primaryOrder.IsAsc : !primaryOrder.IsAsc;
+                        return true;
+                    }
+                }
+            }
+
+            if (virtualTable.EnableEntityQuery && methodName != null &&
+                virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName,out var defaultAsc))
+            {
+                tailComparerIsAsc = defaultAsc;
+                return true;
+            }
+
+            tailComparerIsAsc = true;
+            return false;
+        }
+
         public void ReSetOrders(IEnumerable<PropertyOrder> orders)
         {
             Orders = orders;

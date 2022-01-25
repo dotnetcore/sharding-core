@@ -16,7 +16,6 @@ namespace ShardingCore.Helpers
         public static Task<TResult[]> WhenAllFastFail<TResult>(params Task<TResult>[] tasks)
         {
             if (tasks is null || tasks.Length == 0) return Task.FromResult(Array.Empty<TResult>());
-
             // defensive copy.
             var defensive = tasks.Clone() as Task<TResult>[];
 

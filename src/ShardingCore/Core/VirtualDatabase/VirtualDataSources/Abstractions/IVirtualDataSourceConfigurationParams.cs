@@ -22,6 +22,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 不能小于等于0 should greater than or equal  zero
         /// </summary>
         int MaxQueryConnectionsLimit { get; }
+        /// <summary>
+        /// 连接模式,如果没有什么特殊情况请是用系统自动 默认<code>ConnectionModeEnum.SYSTEM_AUTO</code>
+        /// </summary>
         ConnectionModeEnum ConnectionMode { get; }
 
         /// <summary>
@@ -52,6 +55,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 不能为空 should not null
         /// </summary>
         IShardingComparer ShardingComparer { get; }
+        /// <summary>
+        /// 表确认管理者
+        /// </summary>
         ITableEnsureManager TableEnsureManager { get; }
         /// <summary>
         /// 如何根据connectionString 配置 DbContextOptionsBuilder
@@ -67,9 +73,15 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <param name="dbContextOptionsBuilder"></param>
         /// <returns></returns>
         DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
-
+        /// <summary>
+        /// 真实DbContextOptionBuilder的配置
+        /// </summary>
+        /// <param name="dbContextOptionsBuilder"></param>
         void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder);
-
+        /// <summary>
+        /// 使用读写分离
+        /// </summary>
+        /// <returns></returns>
         bool UseReadWriteSeparation();
     }
 

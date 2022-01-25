@@ -14,15 +14,20 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
         /// <summary>
-        /// 配置id
+        /// 配置id,如果是单配置可以用guid代替,如果是多配置该属性表示每个配置的id
         /// </summary>
         public string ConfigId { get; set; }
         /// <summary>
-        /// 优先级
+        /// 优先级多个配置之间的优先级
         /// </summary>
         public int Priority { get; set; }
-
+        /// <summary>
+        /// 全局配置最大的查询连接数限制,默认系统逻辑处理器<code>Environment.ProcessorCount</code>
+        /// </summary>
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;
+        /// <summary>
+        /// 默认<code>ConnectionModeEnum.SYSTEM_AUTO</code>
+        /// </summary>
         public ConnectionModeEnum ConnectionMode { get; set; } = ConnectionModeEnum.SYSTEM_AUTO;
         /// <summary>
         /// 读写分离配置
@@ -61,10 +66,10 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// 添加读写分离配置
         /// </summary>
         /// <param name="readWriteSeparationConfigure"></param>
-        /// <param name="readStrategyEnum"></param>
-        /// <param name="defaultEnable"></param>
-        /// <param name="defaultPriority"></param>
-        /// <param name="readConnStringGetStrategy"></param>
+        /// <param name="readStrategyEnum">随机或者轮询</param>
+        /// <param name="defaultEnable">false表示哪怕您添加了读写分离也不会进行读写分离查询,只有需要的时候自行开启,true表示默认查询就是走的读写分离</param>
+        /// <param name="defaultPriority">默认优先级建议大于0</param>
+        /// <param name="readConnStringGetStrategy">LatestFirstTime:DbContext缓存,LatestEveryTime:每次都是最新</param>
         /// <exception cref="ArgumentNullException"></exception>
         public void AddReadWriteSeparation(
             Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
@@ -81,21 +86,41 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
 
-
+        /// <summary>
+        /// 多个DbContext事务传播委托
+        /// </summary>
         public Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; private set; }
+        /// <summary>
+        /// 初始DbContext的创建委托
+        /// </summary>
         public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
-
-
+        /// <summary>
+        /// 仅内部DbContext生效的配置委托
+        /// </summary>
+        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+        /// <summary>
+        /// 如何使用字符串创建DbContext
+        /// </summary>
+        /// <param name="queryConfigure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
         {
             ConnectionStringConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
         }
+        /// <summary>
+        /// 如何传递事务到其他DbContext
+        /// </summary>
+        /// <param name="transactionConfigure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
-
-        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+        /// <summary>
+        /// 仅内部DbContext生效,作为最外面的壳DbContext将不会生效
+        /// </summary>
+        /// <param name="innerDbContextConfigure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
         {
             InnerDbContextConfigure= innerDbContextConfigure?? throw new ArgumentNullException(nameof(innerDbContextConfigure));

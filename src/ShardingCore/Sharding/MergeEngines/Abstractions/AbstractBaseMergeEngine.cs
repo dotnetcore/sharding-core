@@ -130,7 +130,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             if (streamMergeContext.IsSeqQuery())
             {
                 return sqlRouteUnits.OrderByAscDescIf(o => o.TableRouteResult.ReplaceTables.First().Tail,
-                    (equalPropertyOrder ? streamMergeContext.PrimaryOrderIsAsc : !streamMergeContext.PrimaryOrderIsAsc), streamMergeContext.ShardingTailComparer);
+                    (equalPropertyOrder ? streamMergeContext.TailComparerIsAsc : !streamMergeContext.TailComparerIsAsc), streamMergeContext.ShardingTailComparer);
             }
 
             return sqlRouteUnits;

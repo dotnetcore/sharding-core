@@ -33,16 +33,24 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
             return this;
         }
         /// <summary>
-        /// 使用当前属性order和comparer一样
+        /// 使用当前属性order和comparer有关联
         /// </summary>
         /// <typeparam name="TProperty"></typeparam>
         /// <param name="primaryOrderPropertyExpression"></param>
+        /// <param name="isAsc">true:当前属性正序和comparer正序一样,false:当前属性倒序和comparer正序一样</param>
         /// <returns></returns>
-        public EntityQueryBuilder<TEntity> AddOrder<TProperty>(Expression<Func<TEntity, TProperty>> primaryOrderPropertyExpression)
+        public EntityQueryBuilder<TEntity> AddOrder<TProperty>(Expression<Func<TEntity, TProperty>> primaryOrderPropertyExpression,bool isAsc=true)
         {
-            _entityQueryMetadata.SeqQueryOrders.Add(primaryOrderPropertyExpression.GetPropertyAccess().Name);
+            _entityQueryMetadata.AddSeqComparerOrder(primaryOrderPropertyExpression.GetPropertyAccess().Name, isAsc);
             return this;
         }
+        /// <summary>
+        /// 添加链接限制,和程序启动配置的MaxQueryConnectionsLimit取最小值,非迭代器有效,说人话就是ToList不生效这个链接数限制
+        /// </summary>
+        /// <param name="connectionsLimit">连接数</param>
+        /// <param name="methodNames">查询方法</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public EntityQueryBuilder<TEntity> AddConnectionsLimit(int connectionsLimit,params QueryableMethodNameEnum[] methodNames)
         {
             if (connectionsLimit < 1)
@@ -50,6 +58,22 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
             foreach (var methodName in methodNames)
             {
                 _entityQueryMetadata.AddConnectionsLimit(connectionsLimit,methodName);
+            }
+            return this;
+        }
+        /// <summary>
+        /// 配置默认方法不带排序的时候采用什么排序来触发熔断
+        /// </summary>
+        /// <param name="asc"></param>
+        /// <param name="methodNames"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public EntityQueryBuilder<TEntity> AddDefaultSequenceQueryTrip(bool asc,params QueryableMethodNameEnum[] methodNames)
+        {
+            
+            foreach (var methodName in methodNames)
+            {
+                _entityQueryMetadata.AddDefaultSequenceQueryTrip(asc,methodName);
             }
             return this;
         }

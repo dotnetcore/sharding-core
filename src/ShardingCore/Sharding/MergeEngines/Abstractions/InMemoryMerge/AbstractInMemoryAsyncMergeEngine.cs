@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     {
         private readonly StreamMergeContext<TEntity> _mergeContext;
 
-        public AbstractInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
+        protected AbstractInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
         {
             _mergeContext = streamMergeContext;
         }

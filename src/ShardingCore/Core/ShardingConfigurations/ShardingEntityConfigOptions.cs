@@ -34,7 +34,13 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// 当查询遇到没有路由被命中时是否抛出错误
         /// </summary>
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
+        /// <summary>
+        /// 全局启用分表路由表达式缓存,仅缓存单个表达式
+        /// </summary>
         public bool? EnableTableRouteCompileCache { get; set; }
+        /// <summary>
+        /// 全局启用分库路由表达式缓存,仅缓存单个表达式
+        /// </summary>
         public bool? EnableDataSourceRouteCompileCache { get; set; }
         /// <summary>
         /// 忽略建表时的错误
@@ -142,32 +148,38 @@ namespace ShardingCore.Core.ShardingConfigurations
             return _parallelTables;
         }
         /// <summary>
-        /// DbContext如何通过现有connection创建
+        /// 多个DbContext事务传播委托
         /// </summary>
         public Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; private set; }
         /// <summary>
-        /// DbContext如何通过连接字符串创建
+        /// 初始DbContext的创建委托
         /// </summary>
         public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
-
+        /// <summary>
+        /// 仅内部DbContext生效的配置委托
+        /// </summary>
         public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
 
 
         /// <summary>
-        /// DbContext如何通过连接字符串创建
+        /// 如何使用字符串创建DbContext
         /// </summary>
         public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
         {
             ConnectionStringConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
         }
         /// <summary>
-        /// DbContext如何通过现有connection创建
+        /// 如何传递事务到其他DbContext
         /// </summary>
         public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
         {
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
-
+        /// <summary>
+        /// 仅内部DbContext配置的方法
+        /// </summary>
+        /// <param name="innerDbContextConfigure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
         {
             InnerDbContextConfigure = innerDbContextConfigure ?? throw new ArgumentNullException(nameof(innerDbContextConfigure));

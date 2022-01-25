@@ -28,7 +28,15 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         {
             ShardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
-
+        /// <summary>
+        /// 添加一个分片配置 必填<code>ConfigId</code>和<code>AddDefaultDataSource(string dataSourceName, string connectionString)</code>
+        /// 如果全局未配置 必须配置<code>UseShardingQuery</code>和<code>UseShardingQuery</code>
+        /// </summary>
+        /// <param name="shardingGlobalConfigOptionsConfigure"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ShardingCoreConfigException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public ShardingConfigBuilder<TShardingDbContext> AddConfig(Action<ShardingConfigOptions<TShardingDbContext>> shardingGlobalConfigOptionsConfigure)
         {
             var shardingGlobalConfigOptions = new ShardingConfigOptions<TShardingDbContext>();

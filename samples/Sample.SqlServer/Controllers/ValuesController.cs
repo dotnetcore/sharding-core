@@ -221,8 +221,17 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get4()
         {
+            var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
+            Console.WriteLine("----0----");
             var xxx = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
-            return Ok(xxx);
+            Console.WriteLine("----1----");
+            var xxx1 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).LastOrDefaultAsync();
+            Console.WriteLine("----2----");
+            var xxx11 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o => o.DateOfMonth).FirstAsync();
+            Console.WriteLine("----3----");
+            var xxx21 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o => o.DateOfMonth).LastAsync();
+            Console.WriteLine("----4----");
+            return Ok(new{ xxx , xxx1});
         }
 
     }
