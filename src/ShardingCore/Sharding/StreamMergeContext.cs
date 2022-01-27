@@ -206,8 +206,13 @@ namespace ShardingCore.Sharding
                     }
                 }
             }
-
-            //Max和Min不受order影响
+            if (virtualTable.EnableEntityQuery && methodName != null &&
+                virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName, out var defaultAsc))
+            {
+                tailComparerIsAsc = defaultAsc;
+                return true;
+            }
+            //Max和Min
             if (nameof(Queryable.Max) == methodName || nameof(Queryable.Min) == methodName)
             {
                 //如果是max或者min
@@ -217,12 +222,7 @@ namespace ShardingCore.Sharding
                     return true;
                 }
             }
-            if (virtualTable.EnableEntityQuery && methodName != null &&
-                virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName, out var defaultAsc))
-            {
-                tailComparerIsAsc = defaultAsc;
-                return true;
-            }
+
             tailComparerIsAsc = true;
             return false;
         }

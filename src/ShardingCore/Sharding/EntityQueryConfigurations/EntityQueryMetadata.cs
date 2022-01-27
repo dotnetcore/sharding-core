@@ -21,9 +21,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
                 { CircuitBreakerMethodNameEnum.SingleOrDefault, nameof(Queryable.SingleOrDefault) },
                 { CircuitBreakerMethodNameEnum.Any, nameof(Queryable.Any) },
                 { CircuitBreakerMethodNameEnum.All, nameof(Queryable.All) },
-                { CircuitBreakerMethodNameEnum.Contains, nameof(Queryable.Contains) },
-                { CircuitBreakerMethodNameEnum.Max, nameof(Queryable.Max) },
-                { CircuitBreakerMethodNameEnum.Min, nameof(Queryable.Min) }
+                { CircuitBreakerMethodNameEnum.Contains, nameof(Queryable.Contains) }
             };
             LimitMethodNameSupports = new Dictionary<LimitMethodNameEnum, string>()
             {

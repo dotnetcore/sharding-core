@@ -16,9 +16,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         SingleOrDefault,
         Any,
         All,
-        Contains,
-        Max,
-        Min
+        Contains
     }
     public enum LimitMethodNameEnum
     {

@@ -36,10 +36,15 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         }
         /// <summary>
         /// 使用当前属性order和comparer有关联
+        /// ShardingTailComparer参数 tailComparer如果是正序,reverse是false那么表示ShardingTailComparer最后采用倒序
+        /// isSameAsShardingTailComparer,true表示当前添加的属性也是采用倒序,false表示当前添加的属性使用正序
+        /// 如果不添加AddOrder方法默认采用ShardingTailComparer在这个例子里就是倒序
         /// </summary>
         /// <typeparam name="TProperty"></typeparam>
         /// <param name="primaryOrderPropertyExpression"></param>
-        /// <param name="isSameAsShardingTailComparer">true:当前属性正序和comparer正序一样,false:当前属性倒序和comparer正序一样</param>
+        /// <param name="isSameAsShardingTailComparer">
+        /// true:当前属性正序和comparer正序一样,false:当前属性倒序和comparer正序一样
+        /// </param>
         /// <returns></returns>
         public EntityQueryBuilder<TEntity> AddOrder<TProperty>(Expression<Func<TEntity, TProperty>> primaryOrderPropertyExpression,bool isSameAsShardingTailComparer = true)
         {
