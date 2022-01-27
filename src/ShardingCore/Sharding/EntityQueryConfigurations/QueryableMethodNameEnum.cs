@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.Sharding.EntityQueryConfigurations
 {
-    public enum QueryableMethodNameEnum
+    public enum CircuitBreakerMethodNameEnum
     {
         First,
         FirstOrDefault,
@@ -16,6 +16,26 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         SingleOrDefault,
         Any,
         All,
-        Contains
+        Contains,
+        Max,
+        Min
+    }
+    public enum LimitMethodNameEnum
+    {
+        First,
+        FirstOrDefault,
+        Last,
+        LastOrDefault,
+        Single,
+        SingleOrDefault,
+        Any,
+        All,
+        Contains,
+        Max,
+        Min,
+        Count,
+        LongCount,
+        Sum,
+        Average
     }
 }

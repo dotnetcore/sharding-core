@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider,IDisposable
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IDisposable
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -42,7 +42,7 @@ namespace ShardingCore.Sharding
         private readonly INotSupportShardingProvider _notSupportShardingProvider;
         private static readonly INotSupportShardingProvider _defaultNotSupportShardingProvider =
             new DefaultNotSupportShardingProvider();
-        
+
 
         public IMergeQueryCompilerContext MergeQueryCompilerContext { get; }
 
@@ -79,14 +79,14 @@ namespace ShardingCore.Sharding
         private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
+
+        private readonly bool _seqQuery = false;
+
+        public IComparer<string> ShardingTailComparer { get; } = Comparer<string>.Default;
         /// <summary>
         /// 分表后缀比较是否重排正序
         /// </summary>
-        public bool TailComparerIsAsc { get; } = true;
-
-        private readonly bool _seqQuery=false;
-
-        public IComparer<string> ShardingTailComparer { get; } = Comparer<string>.Default;
+        public bool TailComparerNeedReverse { get; } = true;
 
         private int _maxParallelExecuteCount;
 
@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding
 
             _maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
 
-            if (IsSingleShardingEntityQuery() && !Skip.HasValue&&IsCrossTable &&!IsUnSupportSharding())
+            if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsUnSupportSharding())
             {
                 var singleShardingEntityType = GetSingleShardingEntityType();
                 var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
@@ -131,13 +131,14 @@ namespace ShardingCore.Sharding
                 {
                     ShardingTailComparer =
                         virtualTable.EntityQueryMetadata.DefaultTailComparer ?? Comparer<string>.Default;
+                    TailComparerNeedReverse = virtualTable.EntityQueryMetadata.DefaultTailComparerNeedReverse;
                     string methodName = null;
                     if (!MergeQueryCompilerContext.IsEnumerableQuery())
                     {
                         methodName = ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name;
-                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName,out var limit))
+                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName, out var limit))
                         {
-                            _maxParallelExecuteCount = Math.Min(limit,_maxParallelExecuteCount);
+                            _maxParallelExecuteCount = Math.Min(limit, _maxParallelExecuteCount);
                         }
                     }
 
@@ -146,10 +147,32 @@ namespace ShardingCore.Sharding
                             out var tailComparerIsAsc))
                     {
                         _seqQuery = true;
-                        TailComparerIsAsc = tailComparerIsAsc;
+                        if (!tailComparerIsAsc)
+                        {
+                            TailComparerNeedReverse = !TailComparerNeedReverse;
+                        }
                     }
                 }
             }
+        }
+        /// <summary>
+        /// 是否需要判断order
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="propertyOrders"></param>
+        /// <returns></returns>
+        private bool EffectOrder(string methodName, PropertyOrder[] propertyOrders)
+        {
+            if ((methodName==null ||
+                 nameof(Queryable.First) == methodName ||
+                nameof(Queryable.FirstOrDefault) == methodName ||
+                nameof(Queryable.Last) == methodName ||
+                nameof(Queryable.LastOrDefault) == methodName ||
+                nameof(Queryable.Single) == methodName ||
+                nameof(Queryable.SingleOrDefault) == methodName) &&
+                propertyOrders.Length > 0)
+                return true;
+            return false;
         }
         /// <summary>
         /// 尝试获取当前方法是否采用顺序查询,如果有先判断排序没有的情况下判断默认
@@ -160,9 +183,11 @@ namespace ShardingCore.Sharding
         /// <param name="methodName"></param>
         /// <param name="tailComparerIsAsc"></param>
         /// <returns></returns>
-        private bool TryGetSequenceQuery(PropertyOrder[] propertyOrders, Type singleShardingEntityType,IVirtualTable virtualTable,string methodName, out bool tailComparerIsAsc)
+        private bool TryGetSequenceQuery(PropertyOrder[] propertyOrders, Type singleShardingEntityType, IVirtualTable virtualTable, string methodName, out bool tailComparerIsAsc)
         {
-            if (propertyOrders.IsNotEmpty())
+            var effectOrder = EffectOrder(methodName,propertyOrders);
+
+            if (effectOrder)
             {
                 var primaryOrder = propertyOrders[0];
                 //不是多级不能是匿名对象
@@ -171,18 +196,33 @@ namespace ShardingCore.Sharding
                     if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(primaryOrder.PropertyExpression, out var asc))
                     {
                         tailComparerIsAsc = asc ? primaryOrder.IsAsc : !primaryOrder.IsAsc;
+                        //如果是获取最后一个还需要再次翻转
+                        if (nameof(Queryable.Last) == methodName || nameof(Queryable.LastOrDefault) == methodName)
+                        {
+                            tailComparerIsAsc = !tailComparerIsAsc;
+                        }
+
                         return true;
                     }
                 }
             }
 
+            //Max和Min不受order影响
+            if (nameof(Queryable.Max) == methodName || nameof(Queryable.Min) == methodName)
+            {
+                //如果是max或者min
+                if (virtualTable.EnableEntityQuery && SelectContext.SelectProperties.Count == 1 && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(SelectContext.SelectProperties[0].PropertyName, out var asc))
+                {
+                    tailComparerIsAsc = asc ? nameof(Queryable.Min) == methodName : nameof(Queryable.Max) == methodName;
+                    return true;
+                }
+            }
             if (virtualTable.EnableEntityQuery && methodName != null &&
-                virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName,out var defaultAsc))
+                virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName, out var defaultAsc))
             {
                 tailComparerIsAsc = defaultAsc;
                 return true;
             }
-
             tailComparerIsAsc = true;
             return false;
         }
@@ -276,7 +316,7 @@ namespace ShardingCore.Sharding
 
         public bool IsSingleShardingEntityQuery()
         {
-            return QueryEntities.Count(o=>MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o)) == 1;
+            return QueryEntities.Count(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o)) == 1;
         }
         public Type GetSingleShardingEntityType()
         {
@@ -321,7 +361,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool IsUseReadWriteSeparation()
         {
-            return _shardingDbContext.IsUseReadWriteSeparation()&&_shardingDbContext.CurrentIsReadWriteSeparation();
+            return _shardingDbContext.IsUseReadWriteSeparation() && _shardingDbContext.CurrentIsReadWriteSeparation();
         }
 
         /// <summary>
@@ -330,7 +370,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return  MergeQueryCompilerContext.IsParallelQuery();
+            return MergeQueryCompilerContext.IsParallelQuery();
         }
 
         /// <summary>
@@ -431,7 +471,7 @@ namespace ShardingCore.Sharding
             return _seqQuery;
         }
 
-        public bool IsParallelExecute()
+        public bool CanTrip()
         {
             return TableRouteResults.Length > GetMaxQueryConnectionsLimit();
         }

@@ -6,6 +6,7 @@ using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
@@ -111,12 +112,25 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 if (_selectContext.SelectProperties.IsEmpty())
                 {
-                    var expression = ((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as NewExpression;
-                    if (expression != null)
+                    var expression = ((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body;
+                    if (expression is NewExpression newExpression)
                     {
                         var aggregateDiscoverVisitor = new QuerySelectDiscoverVisitor(_selectContext);
-                        aggregateDiscoverVisitor.Visit(expression);
+                        aggregateDiscoverVisitor.Visit(newExpression);
+                    } else if (expression is MemberExpression memberExpression)
+                    {
+                        
+                        var declaringType = memberExpression.Member.DeclaringType;
+                        var memberName = memberExpression.Member.Name;
+                        var propertyInfo = declaringType.GetProperty(memberName);
+                        _selectContext.SelectProperties.Add(new SelectProperty(declaringType, propertyInfo));
+                        //memberExpression.Acc
                     }
+                    //if (expression != null)
+                    //{
+                    //    var aggregateDiscoverVisitor = new QuerySelectDiscoverVisitor(_selectContext);
+                    //    aggregateDiscoverVisitor.Visit(expression);
+                    //}
                 }
             }
 

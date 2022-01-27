@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MinAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TResult>
+    internal class MinAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TResult>
     {
         public MinAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
         {
@@ -97,6 +97,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 return default;
             var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
             return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
+        }
+
+        protected override IParallelExecuteControl<TResult1> CreateParallelExecuteControl<TResult1>(IParallelExecutor<TResult1> executor)
+        {
+            return AnyElementParallelExecuteControl<TResult1>.Create(GetStreamMergeContext(), executor);
         }
     }
 }

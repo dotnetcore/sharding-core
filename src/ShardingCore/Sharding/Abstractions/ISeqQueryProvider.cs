@@ -9,6 +9,7 @@ namespace ShardingCore.Sharding.Abstractions
     public interface ISeqQueryProvider
     {
         bool IsSeqQuery();
-        bool IsParallelExecute();
+        
+        bool CanTrip();
     }
 }

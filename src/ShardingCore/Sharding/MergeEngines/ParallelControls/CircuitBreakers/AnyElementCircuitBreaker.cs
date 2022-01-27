@@ -12,6 +12,9 @@ using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 {
+    /// <summary>
+    /// use First、FirstOrDefault、Last、LastOrDefault、Max、Min
+    /// </summary>
     internal class AnyElementCircuitBreaker : AbstractCircuitBreaker
     {
         public AnyElementCircuitBreaker(ISeqQueryProvider seqQueryProvider) : base(seqQueryProvider)

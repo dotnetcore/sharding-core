@@ -126,20 +126,14 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         private IEnumerable<ISqlRouteUnit> ReOrderTableTails(IEnumerable<ISqlRouteUnit> sqlRouteUnits)
         {
             var streamMergeContext = GetStreamMergeContext();
-            var equalPropertyOrder = ExecuteOrderEqualPropertyOrder();
             if (streamMergeContext.IsSeqQuery())
             {
-                return sqlRouteUnits.OrderByAscDescIf(o => o.TableRouteResult.ReplaceTables.First().Tail,
-                    (equalPropertyOrder ? streamMergeContext.TailComparerIsAsc : !streamMergeContext.TailComparerIsAsc), streamMergeContext.ShardingTailComparer);
+                return sqlRouteUnits.OrderByAscDescIf(o => o.TableRouteResult.ReplaceTables.First().Tail, streamMergeContext.TailComparerNeedReverse, streamMergeContext.ShardingTailComparer);
             }
 
             return sqlRouteUnits;
         }
 
-        protected virtual bool ExecuteOrderEqualPropertyOrder()
-        {
-            return true;
-        }
         /// <summary>
         /// 每个数据源下的分表结果按 maxQueryConnectionsLimit 进行组合分组每组大小 maxQueryConnectionsLimit
         /// ConnectionModeEnum为用户配置或者系统自动计算,哪怕是用户指定也是按照maxQueryConnectionsLimit来进行分组。

@@ -222,6 +222,7 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get4()
         {
             var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
+            
             Console.WriteLine("----0----");
             var xxx = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
             Console.WriteLine("----1----");
@@ -231,6 +232,9 @@ namespace Sample.SqlServer.Controllers
             Console.WriteLine("----3----");
             var xxx21 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o => o.DateOfMonth).LastAsync();
             Console.WriteLine("----4----");
+
+            await _defaultTableDbContext.Set<SysUserSalary>().MaxAsync(o => o.DateOfMonth);
+            await _defaultTableDbContext.Set<SysUserSalary>().MinAsync(o => o.DateOfMonth);
             return Ok(new{ xxx , xxx1});
         }
 

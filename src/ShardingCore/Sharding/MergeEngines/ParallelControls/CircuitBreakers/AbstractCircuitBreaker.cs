@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
                 return true;
             if (_seqQueryProvider.IsSeqQuery())
             {
-                if (_seqQueryProvider.IsParallelExecute())
+                if (_seqQueryProvider.CanTrip())
                 {
                     if (SeqConditionalTrip(results))
                     {

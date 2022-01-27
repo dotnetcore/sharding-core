@@ -43,10 +43,5 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
             return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
-
-        protected override bool ExecuteOrderEqualPropertyOrder()
-        {
-            return false;
-        }
     }
 }

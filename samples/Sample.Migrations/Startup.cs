@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Sample.Migrations.EFCores;
 using ShardingCore;
 using ShardingCore.Bootstrapers;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 
 namespace Sample.Migrations
 {
@@ -31,6 +32,19 @@ namespace Sample.Migrations
         {
 
             services.AddControllers();
+
+            //services.AddDbContext<DefaultShardingTableDbContext>((sp, builder) =>
+            //{
+            //    var virtualDataSource =
+            //        sp.GetRequiredService<IVirtualDataSourceManager<DefaultShardingTableDbContext>>()
+            //            .GetCurrentVirtualDataSource();
+            //    var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
+            //    virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, builder)
+            //        .UseSharding<DefaultShardingTableDbContext>();
+            //});
+
+
+            //services.AddShardingConfigure<DefaultShardingTableDbContext>().ShardingEntityConfigOptions...
 
             //services.AddShardingDbContext<DefaultShardingTableDbContext>(
             //        (conn, o) =>
