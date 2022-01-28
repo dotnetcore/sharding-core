@@ -14,6 +14,10 @@
 </div>
 
 ---
+  <a href="https://github.com/dotnetcore" target="_blank"><img src="https://img.shields.io/badge/member%20project%20of-NCC-9e20c9.svg" alt="Member project of .NET Core Community" class="no-zoom"></a>
+  <a href="https://www.nuget.org/packages/ShardingCore" target="_blank"><img src="https://img.shields.io/nuget/v/ShardingCore.svg?style=flat-square" alt="nuget" class="no-zoom"></a>
+  <a href="https://www.nuget.org/stats/packages/ShardingCore?groupby=Version" target="_blank"><img src="https://img.shields.io/nuget/dt/ShardingCore.svg?style=flat-square" alt="downloads" class="no-zoom"></a>
+  <a href="https://github.com/xuejmnet/sharding-core/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/badge/license-Apache 2-blue" alt="license" class="no-zoom"></a>
 
 ## 📚 Documentation
 
