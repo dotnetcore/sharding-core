@@ -224,7 +224,7 @@ namespace Sample.SqlServer.Controllers
             var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
             
             Console.WriteLine("----0----");
-            var xxx = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
+            var xxx = await _defaultTableDbContext.Set<SysUserSalary>().IgnoreQueryFilters().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
             Console.WriteLine("----1----");
             var xxx1 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).LastOrDefaultAsync();
             Console.WriteLine("----2----");

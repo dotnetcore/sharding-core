@@ -20,7 +20,7 @@ namespace ShardingCore.Core.NotSupportShardingProviders
 
         public bool IsNotSupportSharding(IQueryCompilerContext queryCompilerContext)
         {
-            return queryCompilerContext.isUnion();
+            return queryCompilerContext.IsUnion();
         }
     }
 }

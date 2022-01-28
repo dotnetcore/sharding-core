@@ -20,24 +20,23 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly Expression _queryExpression;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly Type _shardingDbContextType;
-        private readonly IShardingEntityConfigOptions _entityConfigOptions;
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
-        private bool? _isNoTracking;
-        private bool _isUnion;
+        private readonly bool? _isNoTracking;
+        private readonly bool _isUnion;
         private readonly bool _isParallelQuery;
 
-        private QueryCompilerContext( IShardingDbContext shardingDbContext, Expression queryExpression)
+        private QueryCompilerContext(IShardingDbContext shardingDbContext, Expression queryExpression)
         {
             _shardingDbContextType = shardingDbContext.GetType();
-            _queryEntities = ShardingUtil.GetQueryEntitiesByExpression(queryExpression, _shardingDbContextType);
-            _isNoTracking = queryExpression.GetIsNoTracking();
-            _isUnion = queryExpression.GetIsUnion();
+            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(queryExpression, _shardingDbContextType);
+            _queryEntities = compileParseResult.QueryEntities;
+            _isNoTracking = compileParseResult.IsNoTracking;
+            _isUnion = compileParseResult.IsUnion;
             _shardingDbContext = shardingDbContext;
             _queryExpression = queryExpression;
-            _entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(_shardingDbContextType));
+            _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);
 
-            _entityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(_shardingDbContextType);
             //原生对象的原生查询如果是读写分离就需要启用并行查询
             _isParallelQuery = shardingDbContext.IsUseReadWriteSeparation() && _shardingDbContext.CurrentIsReadWriteSeparation();
         }
@@ -93,10 +92,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             }
         }
 
-        public bool isUnion()
+        public bool IsUnion()
         {
             return _isUnion;
         }
+
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {

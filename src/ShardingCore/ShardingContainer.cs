@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ShardingCore.Core.EntityMetadatas;
 
 namespace ShardingCore
 {
@@ -147,6 +148,17 @@ namespace ShardingCore
         public static IVirtualDataSource GetRequiredCurrentVirtualDataSource(Type shardingDbContextType)
         {
             return GetRequiredVirtualDataSourceManager(shardingDbContextType).GetCurrentVirtualDataSource()??throw new InvalidOperationException("cant resolve CurrentVirtualDataSource");
+        }
+
+        public static IEntityMetadataManager GetRequiredEntityMetadataManager(Type shardingDbContextType)
+        {
+            return (IEntityMetadataManager)ServiceProvider.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContextType));
+        }
+
+        public static IEntityMetadataManager<TShardingDbContext> GetRequiredEntityMetadataManager<TShardingDbContext>()
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            return (IEntityMetadataManager<TShardingDbContext>)GetRequiredEntityMetadataManager(typeof(TShardingDbContext));
         }
     }
 }

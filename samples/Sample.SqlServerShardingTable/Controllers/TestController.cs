@@ -42,6 +42,7 @@ namespace Sample.SqlServerShardingTable.Controllers
         public async Task<IActionResult> Query2()
         {
             var multiOrder =await _myDbContext.Set<MultiShardingOrder>().Where(o=>o.Id== 232398109278351360).FirstOrDefaultAsync();
+            var multiOrder1 =await _myDbContext.Set<MultiShardingOrder>().IgnoreQueryFilters().Where(o=>o.Id== 232398109278351360).FirstOrDefaultAsync();
             var longs = new []{ 232398109278351360 , 255197859283087360 };
             var multiOrders = await _myDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToListAsync();
             var dateTime = new DateTime(2021, 11, 1);

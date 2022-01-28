@@ -15,6 +15,7 @@ using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Visitors.Querys;
 
 namespace ShardingCore.Utils
 {
@@ -81,6 +82,22 @@ namespace ShardingCore.Utils
             visitor.Visit(expression);
 
             return visitor.GetQueryEntities();
+        }
+        /// <summary>
+        /// 获取次需要编译的表达式解析信息
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="dbContextType"></param>
+        /// <returns></returns>
+        public static CompileParseResult GetQueryCompileParseResultByExpression(Expression expression, Type dbContextType)
+        {
+            var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
+
+            QueryCompileParseVisitors visitor = new QueryCompileParseVisitors(trackerManager);
+
+            visitor.Visit(expression);
+
+            return visitor.GetCompileParseResult();
         }
 
     }

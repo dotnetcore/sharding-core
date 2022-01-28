@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase;
@@ -36,6 +37,7 @@ namespace ShardingCore.Core.Internal.Visitors
         private Expression<Func<string, bool>> _where = x => true;
         private LambdaExpression _entityLambdaExpression;
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
+        private bool isIgnoreQueryFilter;
 
         public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
         {
@@ -47,7 +49,7 @@ namespace ShardingCore.Core.Internal.Visitors
         public Expression<Func<string, bool>> GetRouteParseExpression()
         {
 
-            if (_entityMetadata.QueryFilterExpression != null)
+            if (_entityMetadata.QueryFilterExpression != null&&!isIgnoreQueryFilter)
             {
                 if (_entityLambdaExpression == null)
                 {
@@ -243,32 +245,38 @@ namespace ShardingCore.Core.Internal.Visitors
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Method.Name == nameof(Queryable.Where))
+            switch (node.Method.Name)
             {
-                if (node.Arguments[1] is UnaryExpression unaryExpression)
-                {
-                    if (unaryExpression.Operand is LambdaExpression lambdaExpression)
-                    {
-                        if (lambdaExpression.Parameters[0].Type == _entityMetadata.EntityType)
-                        {
-                            if (_entityLambdaExpression == null)
-                            {
-                                _entityLambdaExpression = lambdaExpression;
-                            }
-                            else
-                            {
-                                var body = Expression.AndAlso(_entityLambdaExpression.Body, lambdaExpression.Body);
-                                var lambda = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
-                                _entityLambdaExpression = lambda;
-                            }
-                        }
-                        //var newWhere = DoResolve(lambdaExpression);
-                        //_where = _where.And(newWhere);
-                    }
-                }
+                case nameof(EntityFrameworkQueryableExtensions.IgnoreQueryFilters): isIgnoreQueryFilter = true;break;
+                case nameof(Queryable.Where): CombineEntityLambdaExpression(node);break;
             }
 
             return base.VisitMethodCall(node);
+        }
+
+        private void CombineEntityLambdaExpression(MethodCallExpression node)
+        {
+            if (node.Arguments[1] is UnaryExpression unaryExpression)
+            {
+                if (unaryExpression.Operand is LambdaExpression lambdaExpression)
+                {
+                    if (lambdaExpression.Parameters[0].Type == _entityMetadata.EntityType)
+                    {
+                        if (_entityLambdaExpression == null)
+                        {
+                            _entityLambdaExpression = lambdaExpression;
+                        }
+                        else
+                        {
+                            var body = Expression.AndAlso(_entityLambdaExpression.Body, lambdaExpression.Body);
+                            var lambda = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
+                            _entityLambdaExpression = lambda;
+                        }
+                    }
+                    //var newWhere = DoResolve(lambdaExpression);
+                    //_where = _where.And(newWhere);
+                }
+            }
         }
 
         //private Expression<Func<string, bool>> DoResolve(LambdaExpression lambdaExpression)
