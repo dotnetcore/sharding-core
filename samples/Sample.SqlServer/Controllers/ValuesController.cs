@@ -148,10 +148,24 @@ namespace Sample.SqlServer.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> Get1([FromQuery] int p, [FromQuery] int s)
+        
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
             var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
+            sp.Stop();
+            return Ok(new
+            {
+                sp.ElapsedMilliseconds,
+                shardingPageResultAsync
+            });
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get1a([FromQuery] int p, [FromQuery] int s)
+        {
+            Stopwatch sp = new Stopwatch();
+            sp.Start();
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().NotSupport().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {

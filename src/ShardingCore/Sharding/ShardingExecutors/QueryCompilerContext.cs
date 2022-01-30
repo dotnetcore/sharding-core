@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Sharding.Visitors;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
@@ -25,16 +26,20 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly bool? _isNoTracking;
         private readonly bool _isUnion;
         private readonly bool _isParallelQuery;
+        private readonly bool _isNotSupport;
 
         private QueryCompilerContext(IShardingDbContext shardingDbContext, Expression queryExpression)
         {
+            var shardingQueryableExtractParameter = new ShardingQueryableExtractParameter();
+            var expression = shardingQueryableExtractParameter.Visit(queryExpression);
             _shardingDbContextType = shardingDbContext.GetType();
-            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(queryExpression, _shardingDbContextType);
+            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(expression, _shardingDbContextType);
             _queryEntities = compileParseResult.QueryEntities;
             _isNoTracking = compileParseResult.IsNoTracking;
             _isUnion = compileParseResult.IsUnion;
             _shardingDbContext = shardingDbContext;
-            _queryExpression = queryExpression;
+            _queryExpression = expression;
+            _isNotSupport = shardingQueryableExtractParameter.IsNotSupportQuery();
             _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);
 
             //原生对象的原生查询如果是读写分离就需要启用并行查询
@@ -95,6 +100,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool IsUnion()
         {
             return _isUnion;
+        }
+
+        public bool IsNotSupport()
+        {
+            return _isNotSupport;
         }
 
 

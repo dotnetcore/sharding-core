@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding
 
             _maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
 
-            if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsUnSupportSharding())
+            if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsNotSupportSharding())
             {
                 var singleShardingEntityType = GetSingleShardingEntityType();
                 var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
@@ -436,18 +436,20 @@ namespace ShardingCore.Sharding
             return _shardingEntityConfigOptions.ThrowIfQueryRouteNotMatch;
         }
 
-        private bool? _isUnSupport;
-        public bool IsUnSupportSharding()
+        private bool? _isNotSupport;
+        public bool IsNotSupportSharding()
         {
-            if (!_isUnSupport.HasValue)
+            if (MergeQueryCompilerContext.IsNotSupport())
+                return true;
+            if (!_isNotSupport.HasValue)
             {
-                _isUnSupport = _notSupportShardingProvider.IsNotSupportSharding(MergeQueryCompilerContext);
-                if (_isUnSupport.Value)
+                _isNotSupport = _notSupportShardingProvider.IsNotSupportSharding(MergeQueryCompilerContext);
+                if (_isNotSupport.Value)
                 {
                     _notSupportShardingProvider.CheckNotSupportSharding(MergeQueryCompilerContext);
                 }
             }
-            return _isUnSupport.Value;
+            return _isNotSupport.Value;
         }
         public void Dispose()
         {

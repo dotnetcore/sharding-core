@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         protected abstract StreamMergeContext<TEntity> GetStreamMergeContext();
         protected bool IsUnSupport()
         {
-            return GetStreamMergeContext().IsUnSupportSharding();
+            return GetStreamMergeContext().IsNotSupportSharding();
         }
         /// <summary>
         /// 将查询分表分库结果按每个数据源进行分组

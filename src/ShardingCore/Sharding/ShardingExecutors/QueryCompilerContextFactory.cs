@@ -12,6 +12,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
+using ShardingCore.Sharding.Visitors;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {

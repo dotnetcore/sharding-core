@@ -33,5 +33,6 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         bool IsQueryTrack();
 
         bool IsUnion();
+        bool IsNotSupport();
     }
 }

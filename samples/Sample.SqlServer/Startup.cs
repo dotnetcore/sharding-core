@@ -63,7 +63,9 @@ namespace Sample.SqlServer
                     });
                     op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
                     op.AddDefaultDataSource("A",
-                     "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;");
+                     // "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"
+                     "Data Source = 101.37.117.55;persist security info=True;Initial Catalog=ShardingCoreDBXA;uid=sa;pwd=xjmumixl7610#;Max Pool Size=100;"
+                     );
                 }).EnsureConfig();
             services.TryAddSingleton<INotSupportShardingProvider, UnionSupportShardingProvider>();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
