@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using ShardingCore.Extensions;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 
 namespace ShardingCore.Sharding.Visitors
 {

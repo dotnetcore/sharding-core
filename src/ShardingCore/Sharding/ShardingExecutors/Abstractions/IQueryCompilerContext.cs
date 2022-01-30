@@ -31,7 +31,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         /// </summary>
         /// <returns></returns>
         bool IsQueryTrack();
-
+        [Obsolete("plz use NotSupport() eg. dbcontext.Set<User>().NotSupport().Where(...).ToList()")]
         bool IsUnion();
         bool IsNotSupport();
     }

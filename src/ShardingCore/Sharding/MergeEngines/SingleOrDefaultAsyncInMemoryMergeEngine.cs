@@ -30,10 +30,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).SingleOrDefaultAsync(cancellationToken), cancellationToken);
             var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
 
-
-            if (notNullResult.IsEmpty())
-                return default;
-
             if (notNullResult.Count > 1)
                 throw new InvalidOperationException("Sequence contains more than one element.");
             return notNullResult.SingleOrDefault();
