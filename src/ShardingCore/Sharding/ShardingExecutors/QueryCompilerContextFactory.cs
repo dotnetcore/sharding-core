@@ -16,13 +16,14 @@ using ShardingCore.Sharding.Visitors;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
-    public class QueryCompilerContextFactory: IQueryCompilerContextFactory
+    public class QueryCompilerContextFactory : IQueryCompilerContextFactory
     {
         private static readonly IQueryableCombine _enumerableQueryableCombine;
         private static readonly IQueryableCombine _allQueryableCombine;
         private static readonly IQueryableCombine _constantQueryableCombine;
         private static readonly IQueryableCombine _selectQueryableCombine;
         private static readonly IQueryableCombine _whereQueryableCombine;
+
         static QueryCompilerContextFactory()
         {
             _enumerableQueryableCombine = new EnumerableQueryableCombine();
@@ -30,21 +31,23 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _constantQueryableCombine = new ConstantQueryableCombine();
             _selectQueryableCombine = new SelectQueryableCombine();
             _whereQueryableCombine = new WhereQueryableCombine();
-    }
-        public IQueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
+        }
+
+        public IQueryCompilerContext Create(ICompileParameter compileParameter)
         {
             var queryCompilerContext =
-                QueryCompilerContext.Create(shardingDbContext, queryExpression);
+                QueryCompilerContext.Create(compileParameter);
             if (queryCompilerContext.GetQueryCompilerExecutor() is not null)
             {
                 return queryCompilerContext;
             }
+
             var queryableCombine = GetQueryableCombine(queryCompilerContext);
 
             var dataSourceRouteRuleEngineFactory = (IDataSourceRouteRuleEngineFactory)ShardingContainer.GetService(typeof(IDataSourceRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             var tableRouteRuleEngineFactory = (ITableRouteRuleEngineFactory)ShardingContainer.GetService(typeof(ITableRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             var queryCombineResult = queryableCombine.Combine(queryCompilerContext);
-            var dataSourceRouteResult = dataSourceRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable(),shardingDbContext);
+            var dataSourceRouteResult = dataSourceRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable(), compileParameter.GetShardingDbContext());
             var tableRouteResults = tableRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable());
             var routeResults = tableRouteResults as TableRouteResult[] ?? tableRouteResults.ToArray();
             var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, dataSourceRouteResult,
@@ -66,7 +69,6 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private IQueryableCombine GetMethodQueryableCombine(IQueryCompilerContext queryCompilerContext)
         {
-
             if (queryCompilerContext.GetQueryExpression() is MethodCallExpression methodCallExpression)
             {
                 switch (methodCallExpression.Method.Name)
@@ -92,6 +94,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                         return _constantQueryableCombine;
                 }
             }
+
             throw new ShardingCoreException($"query expression:[{queryCompilerContext.GetQueryExpression().ShardingPrint()}] is not terminate operate");
         }
     }

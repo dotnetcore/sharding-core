@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Sharding.Abstractions;
 
@@ -34,5 +35,8 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         [Obsolete("plz use NotSupport() eg. dbcontext.Set<User>().NotSupport().Where(...).ToList()")]
         bool IsUnion();
         bool IsNotSupport();
+
+        int? GetMaxQueryConnectionsLimit();
+        ConnectionModeEnum? GetConnectionMode();
     }
 }

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using ShardingCore;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -166,6 +167,19 @@ namespace Sample.SqlServer.Controllers
             Stopwatch sp = new Stopwatch();
             sp.Start();
             var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().NotSupport().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
+            sp.Stop();
+            return Ok(new
+            {
+                sp.ElapsedMilliseconds,
+                shardingPageResultAsync
+            });
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get2a([FromQuery] int p, [FromQuery] int s)
+        {
+            Stopwatch sp = new Stopwatch();
+            sp.Start();
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().UseConnectionMode(1).OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {

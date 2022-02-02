@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
@@ -112,6 +113,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool IsNotSupport()
         {
             return _queryCompilerContext.IsNotSupport();
+        }
+
+        public int? GetMaxQueryConnectionsLimit()
+        {
+            return _queryCompilerContext.GetMaxQueryConnectionsLimit();
+        }
+
+        public ConnectionModeEnum? GetConnectionMode()
+        {
+            return _queryCompilerContext.GetConnectionMode();
         }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()

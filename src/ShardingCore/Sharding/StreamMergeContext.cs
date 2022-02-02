@@ -89,6 +89,7 @@ namespace ShardingCore.Sharding
         public bool TailComparerNeedReverse { get; } = true;
 
         private int _maxParallelExecuteCount;
+        private ConnectionModeEnum _connectionMode;
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,
@@ -119,8 +120,8 @@ namespace ShardingCore.Sharding
             _notSupportShardingProvider = ShardingContainer.GetService<INotSupportShardingProvider>() ?? _defaultNotSupportShardingProvider;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
 
-            _maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
-
+            var maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
+            var connectionMode=_shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
             if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsNotSupportSharding())
             {
                 var singleShardingEntityType = GetSingleShardingEntityType();
@@ -138,7 +139,7 @@ namespace ShardingCore.Sharding
                         methodName = ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name;
                         if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName, out var limit))
                         {
-                            _maxParallelExecuteCount = Math.Min(limit, _maxParallelExecuteCount);
+                            maxParallelExecuteCount = Math.Min(limit, maxParallelExecuteCount);
                         }
                     }
 
@@ -154,6 +155,9 @@ namespace ShardingCore.Sharding
                     }
                 }
             }
+
+            _maxParallelExecuteCount = mergeQueryCompilerContext.GetMaxQueryConnectionsLimit() ?? maxParallelExecuteCount;
+            _connectionMode = mergeQueryCompilerContext.GetConnectionMode() ?? connectionMode;
         }
         /// <summary>
         /// 是否需要判断order
@@ -343,13 +347,13 @@ namespace ShardingCore.Sharding
 
         private ConnectionModeEnum CalcConnectionMode(int sqlCount)
         {
-            switch (_shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode)
+            switch (_connectionMode)
             {
                 case ConnectionModeEnum.MEMORY_STRICTLY:
-                case ConnectionModeEnum.CONNECTION_STRICTLY: return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
+                case ConnectionModeEnum.CONNECTION_STRICTLY: return _connectionMode;
                 default:
                     {
-                        return _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit < sqlCount
+                        return GetMaxQueryConnectionsLimit() < sqlCount
                             ? ConnectionModeEnum.CONNECTION_STRICTLY
                             : ConnectionModeEnum.MEMORY_STRICTLY; ;
                     }

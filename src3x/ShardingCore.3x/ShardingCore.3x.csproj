@@ -28,6 +28,12 @@
         <Compile Include="..\..\src\ShardingCore\**\*.cs" />
         <Compile Remove="..\..\src\ShardingCore\obj\**" />
         <Compile Remove="..\..\src\ShardingCore\bin\**" />
+        <Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\CompileParameter.cs">
+          <Link>Sharding\ShardingExecutors\CompileParameter.cs</Link>
+        </Compile>
+        <Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\CustomerQueryScope.cs">
+          <Link>Sharding\ShardingExecutors\CustomerQueryScope.cs</Link>
+        </Compile>
     </ItemGroup>
 
 

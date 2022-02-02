@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -10,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Sharding.Visitors;
+using ShardingCore.Core;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
@@ -27,28 +26,30 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly bool _isUnion;
         private readonly bool _isParallelQuery;
         private readonly bool _isNotSupport;
+        private readonly int? _maxQueryConnectionsLimit;
+        private readonly ConnectionModeEnum? _connectionMode;
 
-        private QueryCompilerContext(IShardingDbContext shardingDbContext, Expression queryExpression)
+        private QueryCompilerContext(ICompileParameter compileParameter)
         {
-            var shardingQueryableExtractParameter = new ShardingQueryableExtractParameter();
-            var expression = shardingQueryableExtractParameter.Visit(queryExpression);
-            _shardingDbContextType = shardingDbContext.GetType();
-            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(expression, _shardingDbContextType);
+            _shardingDbContext = compileParameter.GetShardingDbContext();
+            _queryExpression = compileParameter.GetNativeQueryExpression();
+            _shardingDbContextType = _shardingDbContext.GetType();
+            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(_queryExpression, _shardingDbContextType);
             _queryEntities = compileParseResult.QueryEntities;
             _isNoTracking = compileParseResult.IsNoTracking;
             _isUnion = compileParseResult.IsUnion;
-            _shardingDbContext = shardingDbContext;
-            _queryExpression = expression;
-            _isNotSupport = shardingQueryableExtractParameter.IsNotSupportQuery();
+            _isNotSupport = compileParameter.IsNotSupport();
+            _maxQueryConnectionsLimit = compileParameter.GetMaxQueryConnectionsLimit();
+            _connectionMode = compileParameter.GetConnectionMode();
             _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);
 
             //原生对象的原生查询如果是读写分离就需要启用并行查询
-            _isParallelQuery = shardingDbContext.IsUseReadWriteSeparation() && _shardingDbContext.CurrentIsReadWriteSeparation();
+            _isParallelQuery = compileParameter.ReadOnly().GetValueOrDefault();
         }
 
-        public static QueryCompilerContext Create(IShardingDbContext shardingDbContext, Expression queryExpression)
+        public static QueryCompilerContext Create(ICompileParameter compileParameter)
         {
-            return new QueryCompilerContext(shardingDbContext, queryExpression);
+            return new QueryCompilerContext(compileParameter);
         }
 
         public ISet<Type> GetQueryEntities()
@@ -105,6 +106,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool IsNotSupport()
         {
             return _isNotSupport;
+        }
+
+        public int? GetMaxQueryConnectionsLimit()
+        {
+            return _maxQueryConnectionsLimit;
+        }
+
+        public ConnectionModeEnum? GetConnectionMode()
+        {
+            return _connectionMode;
         }
 
 

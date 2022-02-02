@@ -28,6 +28,9 @@
 		<Compile Include="..\..\src\ShardingCore\**\*.cs" />
 		<Compile Remove="..\..\src\ShardingCore\obj\**" />
 		<Compile Remove="..\..\src\ShardingCore\bin\**" />
+		<Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\Abstractions\ICompileParameter.cs">
+		  <Link>Sharding\ShardingExecutors\Abstractions\ICompileParameter.cs</Link>
+		</Compile>
 	</ItemGroup>
 
 
