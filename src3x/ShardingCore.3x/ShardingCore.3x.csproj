@@ -41,8 +41,8 @@
       <Compile Remove="..\..\src\ShardingCore\ShardingTableConfig.cs" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.20" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.20" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.1" />
     </ItemGroup>
 
 </Project>
