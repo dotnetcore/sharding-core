@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
-    <PackageReference Include="Namotion.Reflection" Version="2.0.5" />
+    <PackageReference Include="Namotion.Reflection" Version="2.0.10" />
   </ItemGroup>
 
   <ItemGroup>
