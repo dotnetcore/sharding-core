@@ -10,7 +10,7 @@ namespace ShardingCore.Core.NotSupportShardingProviders
     public interface INotSupportShardingProvider
     {
         void CheckNotSupportSharding(IQueryCompilerContext queryCompilerContext);
-        [Obsolete("plz use NotSupport() eg. dbcontext.Set<User>().NotSupport().Where(...).ToList()")]
+        [Obsolete("not implement this method return any value,plz use NotSupport() eg. dbcontext.Set<User>().NotSupport().Where(...).ToList()")]
         bool IsNotSupportSharding(IQueryCompilerContext queryCompilerContext);
     }
 }

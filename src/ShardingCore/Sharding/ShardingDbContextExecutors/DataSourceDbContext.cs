@@ -147,9 +147,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         public static DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
         {
-            Type type = typeof(DbContextOptionsBuilder<>);
-            type = type.MakeGenericType(typeof(TShardingDbContext));
-            return (DbContextOptionsBuilder<TShardingDbContext>)Activator.CreateInstance(type);
+            return new DbContextOptionsBuilder<TShardingDbContext>();
         }
 
         /// <summary>
