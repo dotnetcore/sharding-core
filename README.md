@@ -19,6 +19,13 @@
   <a href="https://www.nuget.org/stats/packages/ShardingCore?groupby=Version" target="_blank"><img src="https://img.shields.io/nuget/dt/ShardingCore.svg?style=flat-square" alt="downloads" class="no-zoom"></a>
   <a href="https://github.com/xuejmnet/sharding-core/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/badge/license-Apache 2-blue" alt="license" class="no-zoom"></a>
 
+
+## 社区合作伙伴和赞助商
+
+<a href="https://www.jetbrains.com/?from=.NETCoreCommunity(NCC)" target="_blank">
+<img src="./imgs/jetbrains.png" title="JetBrains" width=130 />
+</a>
+
 ## 📚 Documentation
 
 [中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
