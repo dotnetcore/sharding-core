@@ -5,16 +5,32 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
+using ShardingCore.Core.VirtualDatabase;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualTables;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Jobs;
+using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
+using ShardingCore.TableCreator;
+using ShardingCore.Utils;
 
 /*
 * @Author: xjm
@@ -77,16 +93,15 @@ namespace ShardingCore.Bootstrapers
 
         private void InitializeEntityMetadata()
         {
-            var allVirtualDataSources = _virtualDataSourceManager.GetAllVirtualDataSources();
-            if (allVirtualDataSources.IsEmpty())
-                throw new ShardingCoreConfigException($"must config one virtual data source,db context type :[{typeof(TShardingDbContext)}]");
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
-                var configId = allVirtualDataSources.First().ConfigId;
+                var configId = _virtualDataSourceManager.GetAllVirtualDataSources().First().ConfigId;
                 using (_virtualDataSourceManager.CreateScope(configId))
                 {
                     //var dataSourceName = _virtualDataSource.DefaultDataSourceName;
-                    using var context =serviceScope.ServiceProvider.GetRequiredService<TShardingDbContext>();
+
+                    using var context =
+                        (DbContext)serviceScope.ServiceProvider.GetService(_shardingDbContextType);
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;
@@ -102,6 +117,8 @@ namespace ShardingCore.Bootstrapers
                         }
                     }
                 }
+                //if (_shardingConfigOption.EnsureCreatedWithOutShardingTable)
+                //    EnsureCreated(context, dataSourceName);
             }
 
         }

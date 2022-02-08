@@ -179,9 +179,7 @@ namespace Sample.SqlServer.Controllers
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
-            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>()
-                .UseConnectionMode(1).OrderBy(o => o.Age)
-                .ToShardingPageAsync(p, s);
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().UseConnectionMode(1).OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {
