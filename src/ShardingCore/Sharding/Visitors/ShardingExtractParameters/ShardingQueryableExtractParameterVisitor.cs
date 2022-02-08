@@ -42,23 +42,24 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
                         .Select(o => (ShardingQueryableUseConnectionModeOptions)o.Value)
                         .Last();
                     return Visit(node.Arguments[0]);
-                }else if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.AsRouteMethodInfo)
-                {
-                    shardingQueryableAsRouteOptions = node.Arguments
-                        .OfType<ConstantExpression>()
-                        .Where(o => o.Value is ShardingQueryableAsRouteOptions)
-                        .Select(o => (ShardingQueryableAsRouteOptions)o.Value)
-                        .Last();
-                    return Visit(node.Arguments[0]);
-                }else if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.ReadWriteSeparationMethodInfo)
-                {
-                    shardingQueryableReadWriteSeparationOptions = node.Arguments
-                        .OfType<ConstantExpression>()
-                        .Where(o => o.Value is ShardingQueryableReadWriteSeparationOptions)
-                        .Select(o => (ShardingQueryableReadWriteSeparationOptions)o.Value)
-                        .Last();
-                    return Visit(node.Arguments[0]);
                 }
+                //else if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.AsRouteMethodInfo)
+                //{
+                //    shardingQueryableAsRouteOptions = node.Arguments
+                //        .OfType<ConstantExpression>()
+                //        .Where(o => o.Value is ShardingQueryableAsRouteOptions)
+                //        .Select(o => (ShardingQueryableAsRouteOptions)o.Value)
+                //        .Last();
+                //    return Visit(node.Arguments[0]);
+                //}else if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.ReadWriteSeparationMethodInfo)
+                //{
+                //    shardingQueryableReadWriteSeparationOptions = node.Arguments
+                //        .OfType<ConstantExpression>()
+                //        .Where(o => o.Value is ShardingQueryableReadWriteSeparationOptions)
+                //        .Select(o => (ShardingQueryableReadWriteSeparationOptions)o.Value)
+                //        .Last();
+                //    return Visit(node.Arguments[0]);
+                //}
             }
             return base.VisitMethodCall(node);
         }

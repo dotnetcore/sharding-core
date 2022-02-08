@@ -65,10 +65,7 @@ namespace ShardingCore.Extensions
                     supportShardingReadWrite.ReadWriteSeparationPriority = shardingReadWriteContext.DefaultPriority + 1;
                 }
             }
-            if (supportShardingReadWrite.ReadWriteSeparation!= readOnly)
-            {
-                supportShardingReadWrite.ReadWriteSeparation = readOnly;
-            }
+            supportShardingReadWrite.ReadWriteSeparation = readOnly;
         }
         public static void SetReadWriteSeparation(this ShardingReadWriteContext shardingReadWriteContext,int priority, bool readOnly)
         {

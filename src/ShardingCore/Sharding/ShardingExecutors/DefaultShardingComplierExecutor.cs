@@ -25,10 +25,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
             var compileParameter = new CompileParameter(shardingDbContext,query);
             var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
             
-            using (new CustomerQueryScope(compileParameter))
-            {
+            //using (new CustomerQueryScope(compileParameter))
+            //{
                 return _shardingTrackQueryExecutor.Execute<TResult>(queryCompilerContext);  
-            }
+            //}
         }
         
 
@@ -40,10 +40,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
             var compileParameter = new CompileParameter(shardingDbContext,query);
             var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
 
-            using (new CustomerQueryScope(compileParameter))
-            {
+            //using (new CustomerQueryScope(compileParameter))
+            //{
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
-            }
+            //}
         }
 #endif
 
@@ -52,10 +52,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
             var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
-            using (new CustomerQueryScope(compileParameter))
-            {
+            //using (new CustomerQueryScope(compileParameter))
+            //{
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
-            }
+            //}
         }
 
         public Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
@@ -63,10 +63,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
             var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
-            using (new CustomerQueryScope(compileParameter))
-            {
+            //using (new CustomerQueryScope(compileParameter))
+            //{
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext, cancellationToken);
-            }
+            //}
         }
 #endif
     }
