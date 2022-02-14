@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 using Xunit;
 
 namespace ShardingCore.Test
@@ -1421,6 +1422,41 @@ namespace ShardingCore.Test
                 .ToShardingPage(2, 10);
             Assert.Equal(10, page1.Data.Count);
             Assert.Equal(300, page1.Total);
+        }
+        [Fact]
+        public void AsRouteTest()
+        {
+            var countAsync3 =  _virtualDbContext.Set<LogMonthLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogMonthLong>("202104");
+            }).Count();
+            Assert.Equal(30, countAsync3);
+            var countAsync2 =  _virtualDbContext.Set<LogYearLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogYearLong>("2021");
+            }).Count();
+            Assert.Equal(300, countAsync2);
+
+            var countAsync4 =  _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogWeekTimeLong>("20210419_25");
+            }).Count();
+            Assert.Equal(7, countAsync4);
+
+            var countAsync5 =  _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddHintTail<LogWeekTimeLong>("20210419_25", "20210426_02");
+            }).Count();
+            Assert.Equal(14, countAsync5);
+
+
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var sum =  _virtualDbContext.Set<Order>().AsRoute(o =>
+                {
+                    o.TryCreateOrAddHintDataSource<Order>("C");
+                })
+                .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).Sum();
+            Assert.Equal(0, sum);
         }
         // [Fact]
         // public void Group_API_Test()

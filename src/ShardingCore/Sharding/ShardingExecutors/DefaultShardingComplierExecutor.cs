@@ -23,12 +23,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
-            
-            //using (new CustomerQueryScope(compileParameter))
-            //{
-                return _shardingTrackQueryExecutor.Execute<TResult>(queryCompilerContext);  
-            //}
+            using (new CustomerQueryScope(compileParameter))
+            {
+                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
+                return _shardingTrackQueryExecutor.Execute<TResult>(queryCompilerContext);
+            }
+
         }
         
 
@@ -38,12 +38,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
             CancellationToken cancellationToken = new CancellationToken())
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
 
-            //using (new CustomerQueryScope(compileParameter))
-            //{
+            using (new CustomerQueryScope(compileParameter))
+            {
+                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
-            //}
+            }
         }
 #endif
 
@@ -51,22 +51,22 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
-            //using (new CustomerQueryScope(compileParameter))
-            //{
+            using (new CustomerQueryScope(compileParameter))
+            {
+                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
-            //}
+            }
         }
 
         public Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
-            //using (new CustomerQueryScope(compileParameter))
-            //{
+            using (new CustomerQueryScope(compileParameter))
+            {
+                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext, cancellationToken);
-            //}
+            }
         }
 #endif
     }

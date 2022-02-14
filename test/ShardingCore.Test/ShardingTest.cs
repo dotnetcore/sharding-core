@@ -21,6 +21,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.ParallelTables;
@@ -1316,6 +1317,7 @@ namespace ShardingCore.Test
                 Assert.Equal(300, countAsync1);
             }
             Assert.Null(_shardingRouteManager.Current);
+
         }
         [Fact]
         public async Task LogYearLongShardingPage()
@@ -1587,6 +1589,42 @@ namespace ShardingCore.Test
                 .ToShardingPageAsync(2, 10);
             Assert.Equal(10, page1.Data.Count);
             Assert.Equal(300, page1.Total);
+        }
+
+        [Fact]
+        public async Task AsRouteTest()
+        {
+            var countAsync3 = await _virtualDbContext.Set<LogMonthLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogMonthLong>("202104");
+            }).CountAsync();
+            Assert.Equal(30, countAsync3);
+            var countAsync2 = await _virtualDbContext.Set<LogYearLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogYearLong>("2021");
+            }).CountAsync();
+            Assert.Equal(300, countAsync2);
+
+            var countAsync4 = await _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddMustTail<LogWeekTimeLong>("20210419_25");
+            }).CountAsync();
+            Assert.Equal(7, countAsync4);
+
+            var countAsync5 = await _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            {
+                o.TryCreateOrAddHintTail<LogWeekTimeLong>("20210419_25", "20210426_02");
+            }).CountAsync();
+            Assert.Equal(14, countAsync5);
+
+
+            var fiveBegin = new DateTime(2021, 5, 1).Date;
+            var sum = await _virtualDbContext.Set<Order>().AsRoute(o =>
+                {
+                    o.TryCreateOrAddHintDataSource<Order>("C");
+                })
+                .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).SumAsync();
+            Assert.Equal(0, sum);
         }
         // [Fact]
         // public async Task Group_API_Test()

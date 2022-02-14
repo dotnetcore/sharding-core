@@ -17,7 +17,6 @@ namespace ShardingCore.ShardingExecutors
     internal class CustomerQueryScope:IDisposable
     {
         private readonly ShardingRouteScope _shardingRouteScope;
-        private readonly CustomerReadWriteScope _customerReadWriteScope;
         private readonly bool _hasCustomerQuery;
         public CustomerQueryScope(ICompileParameter compileParameter)
         {
@@ -32,11 +31,6 @@ namespace ShardingCore.ShardingExecutors
                     asRoute.Invoke(shardingRouteManager.Current);
                 }
 
-                var readOnly = compileParameter.ReadOnly();
-                if (readOnly.HasValue)
-                {
-                    _customerReadWriteScope = new CustomerReadWriteScope(compileParameter.GetShardingDbContext(), readOnly.Value);
-                }
             }
         }
         public void Dispose()
@@ -44,7 +38,6 @@ namespace ShardingCore.ShardingExecutors
             if (_hasCustomerQuery)
             {
                 _shardingRouteScope?.Dispose();
-                _customerReadWriteScope?.Dispose();
             }
         }
     }

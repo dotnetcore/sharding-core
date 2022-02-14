@@ -19,15 +19,15 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
     /// </summary>
     public static class EntityFrameworkShardingQueryableExtension
     {
+
         internal static readonly MethodInfo NotSupportMethodInfo
             = typeof(EntityFrameworkShardingQueryableExtension).GetTypeInfo().GetDeclaredMethods(nameof(NotSupport)).Single();
-
-        //internal static readonly MethodInfo AsRouteMethodInfo
-        //    = typeof(EntityFrameworkShardingQueryableExtension)
-        //        .GetTypeInfo()
-        //        .GetMethods(BindingFlags.Instance | BindingFlags.Static |BindingFlags.NonPublic)
-        //        .Where(m => m.Name == nameof(AsRoute))
-        //        .Single(m => m.GetParameters().Any(p => p.ParameterType == typeof(ShardingQueryableAsRouteOptions)));
+        internal static readonly MethodInfo AsRouteMethodInfo
+            = typeof(EntityFrameworkShardingQueryableExtension)
+                .GetTypeInfo()
+                .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic)
+                .Where(m => m.Name == nameof(AsRoute))
+                .Single(m => m.GetParameters().Any(p => p.ParameterType == typeof(ShardingQueryableAsRouteOptions)));
 
         internal static readonly MethodInfo UseConnectionModeMethodInfo
             = typeof(EntityFrameworkShardingQueryableExtension)
@@ -52,7 +52,6 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
         public static IQueryable<TEntity> NotSupport<TEntity>(this IQueryable<TEntity> source)
         {
             Check.NotNull(source, nameof(source));
-
             return
                 source.Provider is EntityQueryProvider
                     ? source.Provider.CreateQuery<TEntity>(
@@ -63,35 +62,35 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
                     : source;
         }
 
-        ///// <summary>
-        ///// 开启提示路由的前提下手动指定表、手动指定数据源
-        ///// </summary>
-        ///// <param name="source"></param>
-        ///// <param name="routeConfigure"></param>
-        ///// <typeparam name="TEntity"></typeparam>
-        ///// <returns></returns>
-        //public static IQueryable<TEntity> AsRoute<TEntity>(this IQueryable<TEntity> source, Action<ShardingRouteContext> routeConfigure)
-        //{
-        //    Check.NotNull(source, nameof(source));
-        //    Check.NotNull(routeConfigure, nameof(routeConfigure));
-        //    var shardingQueryableAsRouteOptions = new ShardingQueryableAsRouteOptions(routeConfigure);
+        /// <summary>
+        /// 开启提示路由的前提下手动指定表、手动指定数据源
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="routeConfigure"></param>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public static IQueryable<TEntity> AsRoute<TEntity>(this IQueryable<TEntity> source, Action<ShardingRouteContext> routeConfigure)
+        {
+            Check.NotNull(source, nameof(source));
+            Check.NotNull(routeConfigure, nameof(routeConfigure));
+            var shardingQueryableAsRouteOptions = new ShardingQueryableAsRouteOptions(routeConfigure);
 
-        //    return source.AsRoute(shardingQueryableAsRouteOptions);
-        //}
-        //internal static IQueryable<TEntity> AsRoute<TEntity>(this IQueryable<TEntity> source, ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions)
-        //{
-        //    Check.NotNull(source, nameof(source));
+            return source.AsRoute(shardingQueryableAsRouteOptions);
+        }
+        internal static IQueryable<TEntity> AsRoute<TEntity>(this IQueryable<TEntity> source, ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions)
+        {
+            Check.NotNull(source, nameof(source));
 
-        //    return
-        //        source.Provider is EntityQueryProvider
-        //            ? source.Provider.CreateQuery<TEntity>(
-        //                Expression.Call(
-        //                    (Expression)null,
-        //                    AsRouteMethodInfo.MakeGenericMethod(typeof(TEntity)),
-        //                    source.Expression,
-        //                    Expression.Constant(shardingQueryableAsRouteOptions)))
-        //            : source;
-        //}
+            return
+                source.Provider is EntityQueryProvider
+                    ? source.Provider.CreateQuery<TEntity>(
+                        Expression.Call(
+                            (Expression)null,
+                            AsRouteMethodInfo.MakeGenericMethod(typeof(TEntity)),
+                            source.Expression,
+                            Expression.Constant(shardingQueryableAsRouteOptions)))
+                    : source;
+        }
 
         /// <summary>
         /// 设置连接而模式

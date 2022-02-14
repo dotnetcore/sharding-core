@@ -18,7 +18,8 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static bool HasCustomerQuery(this ICompileParameter compileParameter)
         {
-            return compileParameter.ReadOnly().HasValue || compileParameter.GetAsRoute() != null;
+            //compileParameter.ReadOnly().HasValue || compileParameter.GetAsRoute() != null;
+            return compileParameter.GetAsRoute() != null;
         }
     }
 }

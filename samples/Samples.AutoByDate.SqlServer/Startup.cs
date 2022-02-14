@@ -39,7 +39,6 @@ namespace Samples.AutoByDate.SqlServer
                     o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserLog1ByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<TestLogWeekVirtualRoute>();
-                    o.UseInnerDbContextConfigure();
                 })
                 .AddConfig(sp =>
                 {
