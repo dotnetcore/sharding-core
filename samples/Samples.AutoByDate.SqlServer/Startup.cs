@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,7 +37,9 @@ namespace Samples.AutoByDate.SqlServer
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
+                    o.AddShardingTableRoute<SysUserLog1ByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<TestLogWeekVirtualRoute>();
+                    o.UseInnerDbContextConfigure();
                 })
                 .AddConfig(sp =>
                 {
@@ -47,7 +50,7 @@ namespace Samples.AutoByDate.SqlServer
                     });
                     sp.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(connection);
+                        builder.UseSqlServer(connection).ReplaceService<IMigrationsModelDiffer, RemoveForeignKeyMigrationsModelDiffer>();
                     });
                     sp.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDBz;Integrated Security=True;");
                 }).EnsureConfig();

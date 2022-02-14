@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
             {
                 var genericMethodDefinition = node.Method.GetGenericMethodDefinition();
 
-                // find cachable query extention calls
+                // find  notsupport extention calls
                 if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.NotSupportMethodInfo)
                 {
                     isNotSupport = true;

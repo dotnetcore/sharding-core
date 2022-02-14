@@ -49,7 +49,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>
-        public bool? IgnoreCreateTableError { get; set; } = true;
+        public bool? IgnoreCreateTableError { get; set; } = false;
         /// <summary>
         /// 添加分表路由
         /// </summary>
