@@ -208,6 +208,11 @@ namespace ShardingCore.Sharding
 
                         return true;
                     }
+                    else
+                    {
+                        tailComparerIsAsc = true;
+                        return false;
+                    }
                 }
             }
             if (virtualTable.EnableEntityQuery && methodName != null &&

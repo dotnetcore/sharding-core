@@ -71,7 +71,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// <summary>
         /// 配置默认方法不带排序的时候采用什么排序来触发熔断
         /// </summary>
-        /// <param name="isSameAsShardingTailComparer">true表示和默认的ShardingTailComparer排序一致,false表示和磨人的排序相反</param>
+        /// <param name="isSameAsShardingTailComparer">true表示和默认的ShardingTailComparer排序一致,false表示和默认的排序相反</param>
         /// <param name="methodNames"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
