@@ -38,5 +38,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
 
         int? GetMaxQueryConnectionsLimit();
         ConnectionModeEnum? GetConnectionMode();
+        bool? IsSequence();
+        bool? SameWithShardingComparer();
     }
 }

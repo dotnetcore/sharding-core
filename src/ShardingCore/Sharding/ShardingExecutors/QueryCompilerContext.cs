@@ -28,6 +28,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly bool _isNotSupport;
         private readonly int? _maxQueryConnectionsLimit;
         private readonly ConnectionModeEnum? _connectionMode;
+        private readonly bool? _isSequence;
+        private readonly bool? _sameWithShardingComparer;
 
         private QueryCompilerContext(ICompileParameter compileParameter)
         {
@@ -45,6 +47,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
             //原生对象的原生查询如果是读写分离就需要启用并行查询
             _isParallelQuery = compileParameter.ReadOnly().GetValueOrDefault();
+            _isSequence = compileParameter.IsSequence();
+            _sameWithShardingComparer = compileParameter.SameWithShardingComparer();
         }
 
         public static QueryCompilerContext Create(ICompileParameter compileParameter)
@@ -116,6 +120,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public ConnectionModeEnum? GetConnectionMode()
         {
             return _connectionMode;
+        }
+
+        public bool? IsSequence()
+        {
+            return _isSequence;
+        }
+
+        public bool? SameWithShardingComparer()
+        {
+            return _sameWithShardingComparer;
         }
 
 

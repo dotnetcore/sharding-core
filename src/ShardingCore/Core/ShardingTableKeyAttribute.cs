@@ -2,12 +2,12 @@
 
 namespace ShardingCore.Core
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Wednesday, 16 December 2020 11:04:51
-* @Email: 326308290@qq.com
-*/
+    /*
+    * @Author: xjm
+    * @Description:
+    * @Date: Wednesday, 16 December 2020 11:04:51
+    * @Email: 326308290@qq.com
+    */
     /// <summary>
     /// AbstractVirtualTableRoute 最基础分表规则 需要自己解析如何分表
     /// 仅ShardingMode为Custom:以下接口提供自定义分表

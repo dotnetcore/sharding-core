@@ -15,16 +15,19 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
         public ShardingQueryableAsRouteOptions ShardingQueryableAsRouteOptions { get; }
         public ShardingQueryableUseConnectionModeOptions ShardingQueryableUseConnectionModeOptions { get; }
         public ShardingQueryableReadWriteSeparationOptions ShardingQueryableReadWriteSeparationOptions { get; }
+        public ShardingQueryableAsSequenceOptions ShardingQueryableAsSequenceOptions { get; }
 
         public ShardingExtParameter(bool isNotSupport,
             ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions,
             ShardingQueryableUseConnectionModeOptions shardingQueryableUseConnectionModeOptions,
-            ShardingQueryableReadWriteSeparationOptions shardingQueryableReadWriteSeparationOptions)
+            ShardingQueryableReadWriteSeparationOptions shardingQueryableReadWriteSeparationOptions,
+            ShardingQueryableAsSequenceOptions shardingQueryableAsSequenceOptions)
         {
             IsNotSupport = isNotSupport;
             ShardingQueryableAsRouteOptions = shardingQueryableAsRouteOptions;
             ShardingQueryableUseConnectionModeOptions = shardingQueryableUseConnectionModeOptions;
             ShardingQueryableReadWriteSeparationOptions = shardingQueryableReadWriteSeparationOptions;
+            ShardingQueryableAsSequenceOptions = shardingQueryableAsSequenceOptions;
         }
     }
 }

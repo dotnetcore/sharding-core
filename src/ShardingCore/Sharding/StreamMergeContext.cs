@@ -143,16 +143,27 @@ namespace ShardingCore.Sharding
                         }
                     }
 
-                    var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
-                    if (TryGetSequenceQuery(propertyOrders, singleShardingEntityType, virtualTable, methodName,
-                            out var tailComparerIsAsc))
+                    var isSequence = mergeQueryCompilerContext.IsSequence();
+                    var sameWithShardingComparer = mergeQueryCompilerContext.SameWithShardingComparer();
+                    if (isSequence.HasValue && sameWithShardingComparer.HasValue)
                     {
-                        _seqQuery = true;
-                        if (!tailComparerIsAsc)
+                        _seqQuery = isSequence.Value;
+                        TailComparerNeedReverse = sameWithShardingComparer.Value;
+                    }
+                    else
+                    {
+                        var propertyOrders = Orders as PropertyOrder[] ?? Orders.ToArray();
+                        if (TryGetSequenceQuery(propertyOrders, singleShardingEntityType, virtualTable, methodName,
+                                out var tailComparerIsAsc))
                         {
-                            TailComparerNeedReverse = !TailComparerNeedReverse;
+                            _seqQuery = true;
+                            if (!tailComparerIsAsc)
+                            {
+                                TailComparerNeedReverse = !TailComparerNeedReverse;
+                            }
                         }
                     }
+
                 }
             }
 

@@ -51,5 +51,8 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         /// </summary>
         /// <returns></returns>
         Action<ShardingRouteContext> GetAsRoute();
+
+        bool? IsSequence();
+        bool? SameWithShardingComparer();
     }
 }

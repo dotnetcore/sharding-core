@@ -36,6 +36,14 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
                 .Where(m => m.Name == nameof(UseConnectionMode))
                 .Single(m => m.GetParameters().Any(p => p.ParameterType == typeof(ShardingQueryableUseConnectionModeOptions)));
 
+
+        internal static readonly MethodInfo AsSequenceModeMethodInfo
+            = typeof(EntityFrameworkShardingQueryableExtension)
+                .GetTypeInfo()
+                .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic)
+                .Where(m => m.Name == nameof(AsSequence))
+                .Single(m => m.GetParameters().Any(p => p.ParameterType == typeof(ShardingQueryableAsSequenceOptions)));
+
         //internal static readonly MethodInfo ReadWriteSeparationMethodInfo
         //    = typeof(EntityFrameworkShardingQueryableExtension)
         //        .GetTypeInfo()
@@ -123,6 +131,46 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
                             source.Expression,
                             Expression.Constant(shardingQueryableUseConnectionModeOptions)))
                     : source;
+        }
+        /// <summary>
+        /// 不使用顺序查询
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IQueryable<TEntity> AsNoSequence<TEntity>(this IQueryable<TEntity> source)
+        {
+            Check.NotNull(source, nameof(source));
+            return source.AsSequence(new ShardingQueryableAsSequenceOptions(true, false));
+
+        }
+        /// <summary>
+        /// 使用顺序查询
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="comparerWithShardingComparer"></param>
+        /// <returns></returns>
+        public static IQueryable<TEntity> AsSequence<TEntity>(this IQueryable<TEntity> source,
+            bool comparerWithShardingComparer)
+        {
+            Check.NotNull(source, nameof(source));
+            return source.AsSequence(new ShardingQueryableAsSequenceOptions(comparerWithShardingComparer,true));
+
+        }
+        internal static IQueryable<TEntity> AsSequence<TEntity>(this IQueryable<TEntity> source, ShardingQueryableAsSequenceOptions shardingQueryableAsSequenceOptions)
+        {
+            Check.NotNull(source, nameof(source));
+            return
+                source.Provider is EntityQueryProvider
+                    ? source.Provider.CreateQuery<TEntity>(
+                        Expression.Call(
+                            (Expression)null,
+                            AsSequenceModeMethodInfo.MakeGenericMethod(typeof(TEntity)),
+                            source.Expression,
+                            Expression.Constant(shardingQueryableAsSequenceOptions)))
+                    : source;
+
         }
 
         ///// <summary>

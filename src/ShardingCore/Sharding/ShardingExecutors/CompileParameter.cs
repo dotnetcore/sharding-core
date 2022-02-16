@@ -25,6 +25,8 @@ namespace ShardingCore.ShardingExecutors
         private readonly ConnectionModeEnum? _connectionMode;
         private readonly bool? _readOnly;
         private readonly Action<ShardingRouteContext> _shardingRouteConfigure;
+        private readonly bool? _isSequence;
+        private readonly bool? _sameWithShardingComparer;
         public CompileParameter(IShardingDbContext shardingDbContext,Expression shardingQueryExpression)
         {
             _shardingDbContext = shardingDbContext;
@@ -39,6 +41,10 @@ namespace ShardingCore.ShardingExecutors
             {
                 _readOnly = extractShardingParameter?.ShardingQueryableReadWriteSeparationOptions?.RouteReadConnect??shardingDbContext.CurrentIsReadWriteSeparation();
             }
+
+            _isSequence = extractShardingParameter.ShardingQueryableAsSequenceOptions?.AsSequence;
+            _sameWithShardingComparer = extractShardingParameter.ShardingQueryableAsSequenceOptions
+                ?.SameWithShardingComparer;
         }
 
         public IShardingDbContext GetShardingDbContext()
@@ -74,6 +80,16 @@ namespace ShardingCore.ShardingExecutors
         public Action<ShardingRouteContext> GetAsRoute()
         {
             return _shardingRouteConfigure;
+        }
+
+        public bool? IsSequence()
+        {
+            return _isSequence;
+        }
+
+        public bool? SameWithShardingComparer()
+        {
+            return _sameWithShardingComparer;
         }
     }
 }

@@ -125,6 +125,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.GetConnectionMode();
         }
 
+        public bool? IsSequence()
+        {
+            return _queryCompilerContext.IsSequence();
+        }
+
+        public bool? SameWithShardingComparer()
+        {
+            return _queryCompilerContext.SameWithShardingComparer();
+        }
+
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)

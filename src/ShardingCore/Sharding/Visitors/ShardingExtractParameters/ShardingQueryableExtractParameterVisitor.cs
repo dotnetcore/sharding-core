@@ -17,10 +17,11 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
         private ShardingQueryableUseConnectionModeOptions shardingQueryableUseConnectionModeOptions;
         private ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions;
         private ShardingQueryableReadWriteSeparationOptions shardingQueryableReadWriteSeparationOptions;
+        private ShardingQueryableAsSequenceOptions shardingQueryableAsSequenceOptions;
 
         public ShardingExtParameter ExtractShardingParameter()
         {
-            return new ShardingExtParameter(isNotSupport, shardingQueryableAsRouteOptions, shardingQueryableUseConnectionModeOptions, shardingQueryableReadWriteSeparationOptions);
+            return new ShardingExtParameter(isNotSupport, shardingQueryableAsRouteOptions, shardingQueryableUseConnectionModeOptions, shardingQueryableReadWriteSeparationOptions, shardingQueryableAsSequenceOptions);
         }
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
@@ -49,6 +50,15 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
                         .OfType<ConstantExpression>()
                         .Where(o => o.Value is ShardingQueryableAsRouteOptions)
                         .Select(o => (ShardingQueryableAsRouteOptions)o.Value)
+                        .Last();
+                    return Visit(node.Arguments[0]);
+                }
+                else if (genericMethodDefinition == EntityFrameworkShardingQueryableExtension.AsSequenceModeMethodInfo)
+                {
+                    shardingQueryableAsSequenceOptions = node.Arguments
+                        .OfType<ConstantExpression>()
+                        .Where(o => o.Value is ShardingQueryableAsSequenceOptions)
+                        .Select(o => (ShardingQueryableAsSequenceOptions)o.Value)
                         .Last();
                     return Visit(node.Arguments[0]);
                 }
