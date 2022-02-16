@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.VirtualRoutes.Years;

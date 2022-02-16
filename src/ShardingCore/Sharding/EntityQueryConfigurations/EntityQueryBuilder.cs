@@ -45,10 +45,11 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// <param name="whenAscIsSameAsShardingTailComparer">
         /// true:当前属性正序和comparer正序一样,false:当前属性倒序和comparer正序一样
         /// </param>
+        /// <param name="seqOrderMatch"></param>
         /// <returns></returns>
-        public EntityQueryBuilder<TEntity> AddOrder<TProperty>(Expression<Func<TEntity, TProperty>> primaryOrderPropertyExpression,bool whenAscIsSameAsShardingTailComparer = true)
+        public EntityQueryBuilder<TEntity> AddOrder<TProperty>(Expression<Func<TEntity, TProperty>> primaryOrderPropertyExpression,bool whenAscIsSameAsShardingTailComparer = true,SeqOrderMatchEnum seqOrderMatch=SeqOrderMatchEnum.Owner)
         {
-            _entityQueryMetadata.AddSeqComparerOrder(primaryOrderPropertyExpression.GetPropertyAccess().Name, whenAscIsSameAsShardingTailComparer);
+            _entityQueryMetadata.AddSeqComparerOrder(primaryOrderPropertyExpression.GetPropertyAccess().Name, whenAscIsSameAsShardingTailComparer, seqOrderMatch);
             return this;
         }
         /// <summary>

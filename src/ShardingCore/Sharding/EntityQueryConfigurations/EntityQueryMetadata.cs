@@ -43,7 +43,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
             };
         }
 
-        private readonly IDictionary<string,bool> _seqQueryOrders;
+        private readonly IDictionary<string, SeqQueryOrderMatch> _seqQueryOrders;
         public IComparer<string> DefaultTailComparer { get;  set; }
         public bool DefaultTailComparerNeedReverse { get;  set; }
 
@@ -54,7 +54,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// </summary>
         public EntityQueryMetadata()
         {
-            _seqQueryOrders = new Dictionary<string, bool>();
+            _seqQueryOrders = new Dictionary<string, SeqQueryOrderMatch>();
             DefaultTailComparer =Comparer<string>.Default;
             DefaultTailComparerNeedReverse = true;
             _seqConnectionsLimit = new Dictionary<string, int>();
@@ -66,15 +66,16 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// </summary>
         /// <param name="propertyName"></param>
         /// <param name="isSameAsShardingTailComparer"></param>
-        public void AddSeqComparerOrder(string propertyName,bool isSameAsShardingTailComparer)
+        /// <param name="seqOrderMatch"></param>
+        public void AddSeqComparerOrder(string propertyName,bool isSameAsShardingTailComparer,SeqOrderMatchEnum seqOrderMatch)
         {
             if (_seqQueryOrders.ContainsKey(propertyName))
             {
-                _seqQueryOrders[propertyName] = isSameAsShardingTailComparer;
+                _seqQueryOrders[propertyName] = new SeqQueryOrderMatch(isSameAsShardingTailComparer,seqOrderMatch);
             }
             else
             {
-                _seqQueryOrders.Add(propertyName, isSameAsShardingTailComparer);
+                _seqQueryOrders.Add(propertyName, new SeqQueryOrderMatch(isSameAsShardingTailComparer, seqOrderMatch));
             }
         }
         /// <summary>
@@ -120,16 +121,16 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// 是否包含当前排序字段
         /// </summary>
         /// <param name="propertyName"></param>
-        /// <param name="isSameAsShardingTailComparer"></param>
+        /// <param name="seqQueryOrderMatch"></param>
         /// <returns></returns>
-        public bool TryContainsComparerOrder(string propertyName,out bool isSameAsShardingTailComparer)
+        public bool TryContainsComparerOrder(string propertyName,out SeqQueryOrderMatch seqQueryOrderMatch)
         {
             if (_seqQueryOrders.TryGetValue(propertyName, out var v))
             {
-                isSameAsShardingTailComparer = v;
+                seqQueryOrderMatch = v;
                 return true;
             }
-            isSameAsShardingTailComparer = false;
+            seqQueryOrderMatch = null;
             return false;
         }
 

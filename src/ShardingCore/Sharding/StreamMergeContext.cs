@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
 
             var maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
-            var connectionMode=_shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
+            var connectionMode = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
             if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsNotSupportSharding())
             {
                 var singleShardingEntityType = GetSingleShardingEntityType();
@@ -167,7 +167,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool EffectOrder(string methodName, PropertyOrder[] propertyOrders)
         {
-            if ((methodName==null ||
+            if ((methodName == null ||
                  nameof(Queryable.First) == methodName ||
                 nameof(Queryable.FirstOrDefault) == methodName ||
                 nameof(Queryable.Last) == methodName ||
@@ -189,17 +189,19 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         private bool TryGetSequenceQuery(PropertyOrder[] propertyOrders, Type singleShardingEntityType, IVirtualTable virtualTable, string methodName, out bool tailComparerIsAsc)
         {
-            var effectOrder = EffectOrder(methodName,propertyOrders);
+            var effectOrder = EffectOrder(methodName, propertyOrders);
 
             if (effectOrder)
             {
                 var primaryOrder = propertyOrders[0];
-                //不是多级不能是匿名对象
-                if (primaryOrder.OwnerType == singleShardingEntityType && !primaryOrder.PropertyExpression.Contains("."))
+                //不是多级order 
+                var primaryOrderPropertyName = primaryOrder.PropertyExpression;
+                if (!primaryOrderPropertyName.Contains("."))
                 {
-                    if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(primaryOrder.PropertyExpression, out var asc))
+                    if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(primaryOrderPropertyName, out var seqQueryOrderMatch)
+                                                       &&(primaryOrder.OwnerType == singleShardingEntityType|| seqQueryOrderMatch.OrderMatch.HasFlag(SeqOrderMatchEnum.Named)))//要么必须是当前对象查询要么就是名称一样
                     {
-                        tailComparerIsAsc = asc ? primaryOrder.IsAsc : !primaryOrder.IsAsc;
+                        tailComparerIsAsc = seqQueryOrderMatch.IsSameAsShardingTailComparer ? primaryOrder.IsAsc : !primaryOrder.IsAsc;
                         //如果是获取最后一个还需要再次翻转
                         if (nameof(Queryable.Last) == methodName || nameof(Queryable.LastOrDefault) == methodName)
                         {
@@ -208,12 +210,9 @@ namespace ShardingCore.Sharding
 
                         return true;
                     }
-                    else
-                    {
-                        tailComparerIsAsc = true;
-                        return false;
-                    }
                 }
+                tailComparerIsAsc = true;
+                return false;
             }
             if (virtualTable.EnableEntityQuery && methodName != null &&
                 virtualTable.EntityQueryMetadata.TryGetDefaultSequenceQueryTrip(methodName, out var defaultAsc))
@@ -225,9 +224,10 @@ namespace ShardingCore.Sharding
             if (nameof(Queryable.Max) == methodName || nameof(Queryable.Min) == methodName)
             {
                 //如果是max或者min
-                if (virtualTable.EnableEntityQuery && SelectContext.SelectProperties.Count == 1 && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(SelectContext.SelectProperties[0].PropertyName, out var asc))
+                if (virtualTable.EnableEntityQuery && SelectContext.SelectProperties.Count == 1 && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(SelectContext.SelectProperties[0].PropertyName, out var seqQueryOrderMatch)
+                    && (SelectContext.SelectProperties[0].OwnerType == singleShardingEntityType || seqQueryOrderMatch.OrderMatch.HasFlag(SeqOrderMatchEnum.Named)))
                 {
-                    tailComparerIsAsc = asc ? nameof(Queryable.Min) == methodName : nameof(Queryable.Max) == methodName;
+                    tailComparerIsAsc = seqQueryOrderMatch.IsSameAsShardingTailComparer ? nameof(Queryable.Min) == methodName : nameof(Queryable.Max) == methodName;
                     return true;
                 }
             }
