@@ -51,8 +51,7 @@ PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
 ### Step 2: Query entity
-
-查询对象
+Query entity order
 ```csharp
 
     /// <summary>
@@ -115,6 +114,7 @@ sharding table(spilt table eg. order_202101,order_202102,order_202103......),u n
                 entity.Property(o=>o.Payer).IsRequired().IsUnicode(false).HasMaxLength(50);
                 entity.Property(o => o.Area).IsRequired().IsUnicode(false).HasMaxLength(50);
                 entity.Property(o => o.OrderStatus).HasConversion<int>();
+                //really table name is Order_202101,Order_202102,Order_202103.....
                 entity.ToTable(nameof(Order));
             });
         }
@@ -161,7 +161,7 @@ sharding table(spilt table eg. order_202101,order_202102,order_202103......),u n
 ```
 
 ### Step 5: Start up Configure
-无论你是何种数据库只需要修改`AddDefaultDataSource`里面的链接字符串 请不要修改委托内部的UseXXX参数 `conStr` and `connection`
+u need modify `AddDefaultDataSource` method second param(connection string),don't modify `UseShardingQuery`、`UseShardingTransaction` delegate params
 ```csharp
 
         public void ConfigureServices(IServiceCollection services)
@@ -173,13 +173,15 @@ sharding table(spilt table eg. order_202101,order_202102,order_202103......),u n
                 {
                     op.CreateShardingTableOnStart = true;
                     op.EnsureCreatedWithOutShardingTable = true;
-                    op.UseShardingQuery((conn, builder) =>
+                    op.UseShardingQuery((connStr, builder) =>
                     {
-                        builder.UseSqlServer(conn);
+                        //connStr is delegate input param
+                        builder.UseSqlServer(connStr);
                     });
-                    op.UseShardingTransaction((conn, builder) =>
+                    op.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(conn);
+                        //connection is delegate input param
+                        builder.UseSqlServer(connection);
                     });
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 }).AddConfig(op =>
