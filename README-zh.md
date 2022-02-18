@@ -125,7 +125,7 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
 ### 第四步添加分表路由
 
 ```csharp
-
+路由构造函数支持依赖注入,依赖注入的对象生命周期必须是单例
     public class OrderVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
         /// <summary>

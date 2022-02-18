@@ -34,14 +34,13 @@ namespace ShardingCore.Helpers
             return h;
         }
 
-        private static readonly DateTime UtcStartTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static DateTime ConvertLongToDateTime(long timeStamp)
         {
-            return UtcStartTime.AddMilliseconds(timeStamp).AddHours(8);
+            return DateTimeOffset.FromUnixTimeMilliseconds(timeStamp).LocalDateTime; ;
         }
-        public static long ConvertDateTimeToLong(DateTime time)
+        public static long ConvertDateTimeToLong(DateTime localDateTime)
         {
-            return (long)(time.AddHours(-8) - UtcStartTime).TotalMilliseconds;
+            return new DateTimeOffset(localDateTime).ToUnixTimeMilliseconds(); ;
         }
 
         /// <summary>

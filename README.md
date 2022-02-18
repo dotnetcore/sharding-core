@@ -128,9 +128,15 @@ sharding table(spilt table eg. order_202101,order_202102,order_202103......),u n
 ### Step 4:Create route that data(Order) query mapping table name
 
 ```csharp
-
+Route constructor support dependency injection,that's life time scope is `Singleton`
     public class OrderVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
+        //private readonly IServiceProvider _serviceProvider;
+
+        //public OrderVirtualTableRoute(IServiceProvider serviceProvider)
+        //{
+            //_serviceProvider = serviceProvider;
+        //}
         /// <summary>
         /// fixed value don't use DateTime.Now because if  if application restart this value where change
         /// </summary>
@@ -187,6 +193,7 @@ u need modify `AddDefaultDataSource` method second param(connection string),don'
                 }).AddConfig(op =>
                 {
                     op.ConfigId = "c1";
+                    //use your data base connection string
                     op.AddDefaultDataSource(Guid.NewGuid().ToString("n"),
                         "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;");
                 }).EnsureConfig();
@@ -203,7 +210,7 @@ u need modify `AddDefaultDataSource` method second param(connection string),don'
             // other configure....
         }
 ```
-then efcore support sharding，like sharding-jdbc in java,u can happy coding for efcore
+then efcore support sharding table，like sharding-jdbc in java,u can happy coding for efcore
 
 ```csharp
 [Route("api/[controller]")]
@@ -219,6 +226,11 @@ public class ValuesController : Controller
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            
+            //_myDbContext.Add(order);
+            //_myDbContext.Udpate(order);
+            //_myDbContext.Remove(order);
+            //_myDbContext.SaveChanges();
             var order = await _myDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == "2");
             return OK(order)
         }
