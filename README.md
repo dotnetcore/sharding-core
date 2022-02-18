@@ -2,21 +2,19 @@
   <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+# English | [中文](https://github.com/dotnetcore/sharding-core/blob/main/README-zh.md)
+
 # ShardingCore
-
-
-`ShardingCore` 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案，具有零依赖、零学习成本、零业务代码入侵。
-
----
-
-<div align="center">
-<p><a href="https://github.com/xuejmnet/sharding-core">Github Source Code</a>  助力dotnet 生态 <a href="https://gitee.com/dotnetchina/sharding-core">Gitee Source Code</a> </p>
-</div>
+high performance lightweight solution for efcore sharding table and sharding database support read-write-separation.
+- zero dependency
+- zero learning cost
+- zero incursion
 
 ---
+- [Gitee](https://gitee.com/dotnetchina/sharding-core) 国内镜像
 
 
-## 社区合作伙伴和赞助商
+## Community Partners and Sponsors
 
 <a href="https://www.jetbrains.com/?from=.NETCoreCommunity(NCC)" target="_blank">
 <img src="./imgs/jetbrains.png" title="JetBrains" width=130 />
@@ -28,7 +26,7 @@
 
 
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
-## 依赖
+## Dependency
 
 Release  | EF Core | .NET  | .NET (Core) 
 --- | --- | --- | --- 
@@ -38,21 +36,21 @@ Release  | EF Core | .NET  | .NET (Core)
 [2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | Standard 2.0 | 2.0+ 
 
 
-## 快速开始
-5步实现按月分表,且支持自动化建表建库
-### 第一步安装依赖
-`ShardingCore`版本表现形式为a.b.c.d,其中a表示`efcore`的版本号,b表示`ShardingCore`的主版本号,c表示`ShardingCore`次级版本号,d表示`ShardingCore`的修订版本号
+## Quick start
+5 steps implement sharding by month and support auto create table by month
+### Step 1: Install the package
+Choose data base driver for efcore
 ```shell
-# 请对应安装您需要的版本
+# basic package
 PM> Install-Package ShardingCore
-# use sqlserver
+# sqlserver driver
 PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
-#  use mysql
+# mysql driver
 #PM> Install-Package Pomelo.EntityFrameworkCore.MySql
 # use other database driver,if efcore support
 ```
 
-### 第二步创建查询对象
+### Step 2: Query entity
 
 查询对象
 ```csharp
@@ -95,8 +93,10 @@ PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
         PayFail=4
     }
 ```
-### 第三步创建dbcontext
-dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普通的DbContext那么就继承`AbstractShardingDbContext`需要分表就实现`IShardingTableDbContext`,如果只有分库可以不实现`IShardingTableDbContext`接口
+### Step 3: Create DbContext
+Create `MyDbContext` extends `AbstractShardingDbContext`,
+then this dbcontext support sharding database,if u want support 
+sharding table(spilt table eg. order_202101,order_202102,order_202103......),u need implements `IShardingTableDbContext`
 ```csharp
 
     public class MyDbContext:AbstractShardingDbContext,IShardingTableDbContext
@@ -119,13 +119,13 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
             });
         }
         /// <summary>
-        /// empty impl if use sharding table
+        /// empty implment if use sharding table
         /// </summary>
         public IRouteTail RouteTail { get; set; }
     }
 ```
 
-### 第四步添加分表路由
+### Step 4:Create route that data(Order) query mapping table name
 
 ```csharp
 
@@ -160,14 +160,14 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
     }
 ```
 
-### 第五步配置启动项
+### Step 5: Start up Configure
 无论你是何种数据库只需要修改`AddDefaultDataSource`里面的链接字符串 请不要修改委托内部的UseXXX参数 `conStr` and `connection`
 ```csharp
 
         public void ConfigureServices(IServiceCollection services)
         {
 
-            //额外添加分片配置
+            //sharding config
             services.AddShardingDbContext<MyDbContext>()
                 .AddEntityConfig(op =>
                 {
@@ -201,7 +201,7 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
             // other configure....
         }
 ```
-这样所有的配置就完成了你可以愉快地对Order表进行按月分表了
+then efcore support sharding，like sharding-jdbc in java,u can happy coding for efcore
 
 ```csharp
 [Route("api/[controller]")]
@@ -224,16 +224,16 @@ public class ValuesController : Controller
 ```
 
 
-## 性能
+## Performance
 
+Test 
+ - on expression compile cache
+ - ShardingCore x.3.1.63+ version
+ - efcore 6.0 version
+ - order id is string, sharding mod(hashcode%5)
+ - N mean execute count
 
-以下所有数据均在开启了表达式编译缓存的情况下测试，并且电脑处于长时间未关机并且开着很多vs和idea的情况下仅供参考,所有测试都是基于ShardingCore x.3.1.63+ version
-
-以下所有数据均在[源码中有案例](https://github.com/xuejmnet/sharding-core/blob/main/benchmarks/ShardingCoreBenchmark/EFCoreCrud.cs)
-
-efcore版本均为6.0 表结构为string型id的订单取模分成5张表
-
-N代表执行次数
+[Benchmark Demo](https://github.com/xuejmnet/sharding-core/blob/main/benchmarks/ShardingCoreBenchmark/EFCoreCrud.cs)
 
 ### 性能损耗 sql server 2012,data rows 7734363 =773w
 

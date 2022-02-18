@@ -1,19 +1,23 @@
 <p align="center">
-  <img height="340" src="https://xuejm.gitee.io/sharding-core-doc/logo.svg">
+  <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+# [English](https://github.com/dotnetcore/sharding-core/blob/main/README.md) | 中文
 # ShardingCore
-
-
-`ShardingCore` 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案，具有零依赖、零学习成本、零业务代码入侵。
-
----
-
-<div align="center">
-<p><a href="https://github.com/xuejmnet/sharding-core">Github Source Code</a>  助力dotnet 生态 <a href="https://gitee.com/dotnetchina/sharding-core">Gitee Source Code</a> </p>
-</div>
+一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案。
+- 零依赖
+- 零学习成本
+- 零业务代码入侵
 
 ---
+- [Gitee](https://gitee.com/dotnetchina/sharding-core) 国内镜像
+
+
+## 社区合作伙伴和赞助商
+
+<a href="https://www.jetbrains.com/?from=.NETCoreCommunity(NCC)" target="_blank">
+<img src="./imgs/jetbrains.png" title="JetBrains" width=130 />
+</a>
 
 ## 📚 Documentation
 
@@ -34,7 +38,7 @@ Release  | EF Core | .NET  | .NET (Core)
 ## 快速开始
 5步实现按月分表,且支持自动化建表建库
 ### 第一步安装依赖
-`ShardingCore`版本表现形式为a.b.c.d,其中a表示`efcore`的版本号,b表示`ShardingCore`的主版本号,c表示`ShardingCore`次级版本号,d表示`ShardingCore`的修订版本号
+选择您的efcore的数据库驱动版本
 ```shell
 # 请对应安装您需要的版本
 PM> Install-Package ShardingCore

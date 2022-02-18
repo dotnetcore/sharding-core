@@ -71,7 +71,7 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
         }
 
         /// <summary>
-        /// 开启提示路由的前提下手动指定表、手动指定数据源
+        /// 需要Route启用HintRoute:开启提示路由的前提下手动指定表、手动指定数据源
         /// </summary>
         /// <param name="source"></param>
         /// <param name="routeConfigure"></param>
@@ -102,10 +102,12 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
 
         /// <summary>
         /// 设置连接而模式
+        /// connectionMode = ConnectionModeEnum.SYSTEM_AUTO
+        /// maxQueryConnectionsLimit就可以简单理解为同一个数据库的并发数
         /// </summary>
         /// <param name="source"></param>
-        /// <param name="maxQueryConnectionsLimit"></param>
-        /// <param name="connectionMode"></param>
+        /// <param name="maxQueryConnectionsLimit">单次查询最大连接数</param>
+        /// <param name="connectionMode">连接模式</param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
@@ -133,7 +135,7 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
                     : source;
         }
         /// <summary>
-        /// 不使用顺序查询
+        /// 需要Route启用EntityQuery:不使用顺序查询,仅支持单表
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="source"></param>
@@ -145,11 +147,11 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
 
         }
         /// <summary>
-        /// 使用顺序查询
+        /// 需要Route启用EntityQuery:使用顺序查询,仅支持单表
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="source"></param>
-        /// <param name="comparerWithShardingComparer"></param>
+        /// <param name="comparerWithShardingComparer">顺序查询的排序方式是否和表后缀一样</param>
         /// <returns></returns>
         public static IQueryable<TEntity> AsSequence<TEntity>(this IQueryable<TEntity> source,
             bool comparerWithShardingComparer)
