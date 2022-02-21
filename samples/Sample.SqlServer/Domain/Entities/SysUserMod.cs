@@ -12,7 +12,7 @@ namespace Sample.SqlServer.Domain.Entities
     /// <summary>
     /// 用户表
     /// </summary>
-    public class SysUserMod : IShardingTable
+    public class SysUserMod
     {
         /// <summary>
         /// 用户Id用于分表

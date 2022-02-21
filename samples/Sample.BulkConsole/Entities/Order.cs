@@ -10,7 +10,7 @@ namespace Sample.BulkConsole.Entities
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class Order:IShardingTable
+    public class Order
     {
         public string Id { get; set; }
         public string OrderNo { get; set; }

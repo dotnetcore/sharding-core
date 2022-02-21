@@ -13,7 +13,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:18:09
 * @Email: 326308290@qq.com
 */
-    public class TableRouteResult
+    public class TableRouteResult:IPrint
     {
         public TableRouteResult(IEnumerable<IPhysicTable> replaceTables, Type shardingDbContextType)
         {
@@ -39,6 +39,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             if (obj.GetType() != this.GetType()) return false;
             return Equals((TableRouteResult)obj);
         }
+        public string GetPrintInfo()
+        {
+            return $"table route result:has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.FullName))}]";
+        }
 
 #if !EFCORE2
 
@@ -46,6 +50,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             return HashCode.Combine(ReplaceTables, ShardingDbContextType);
         }
+
 #endif
 
 #if EFCORE2

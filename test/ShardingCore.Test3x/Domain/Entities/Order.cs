@@ -3,7 +3,7 @@ using ShardingCore.Core;
 
 namespace ShardingCore.Test3x.Domain.Entities
 {
-    public class Order:IShardingDataSource,IShardingTable
+    public class Order
     {
         public Guid Id { get; set; }
         [ShardingDataSourceKey]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.ShardingExtractParameters;
@@ -12,17 +13,20 @@ namespace ShardingCore.Sharding.ShardingExecutors
 {
     public class DefaultShardingComplierExecutor: IShardingComplierExecutor
     {
+        private readonly ILogger<DefaultShardingComplierExecutor> _logger;
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
 
-        public DefaultShardingComplierExecutor(IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory)
+        public DefaultShardingComplierExecutor(ILogger<DefaultShardingComplierExecutor> logger,IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory)
         {
+            _logger = logger;
             _shardingTrackQueryExecutor = shardingTrackQueryExecutor;
             _queryCompilerContextFactory = queryCompilerContextFactory;
         }
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
+            _logger.LogDebug(compileParameter.GetPrintInfo());
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
@@ -38,6 +42,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             CancellationToken cancellationToken = new CancellationToken())
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
+            _logger.LogDebug(compileParameter.GetPrintInfo());
 
             using (new CustomerQueryScope(compileParameter))
             {
@@ -51,6 +56,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
+            _logger.LogDebug(compileParameter.GetPrintInfo());
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
@@ -62,6 +68,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             CancellationToken cancellationToken)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
+            _logger.LogDebug(compileParameter.GetPrintInfo());
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);

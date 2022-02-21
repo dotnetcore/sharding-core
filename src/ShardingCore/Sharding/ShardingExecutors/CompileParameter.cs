@@ -16,7 +16,7 @@ using ShardingCore.Sharding.Visitors.ShardingExtractParameters;
 */
 namespace ShardingCore.ShardingExecutors
 {
-    public class CompileParameter:ICompileParameter
+    public class CompileParameter:ICompileParameter,IPrint
     {
         private readonly IShardingDbContext _shardingDbContext;
         private readonly Expression _nativeQueryExpression;
@@ -90,6 +90,11 @@ namespace ShardingCore.ShardingExecutors
         public bool? SameWithShardingComparer()
         {
             return _sameWithShardingComparer;
+        }
+
+        public string GetPrintInfo()
+        {
+            return $"is not support :{_isNotSupport},max query connections limit:{_maxQueryConnectionsLimit},connection mode:{_connectionMode},readonly:{_readOnly},as route:{_shardingRouteConfigure!=null},is sequence:{_isSequence},same with sharding comparer:{_sameWithShardingComparer}";
         }
     }
 }

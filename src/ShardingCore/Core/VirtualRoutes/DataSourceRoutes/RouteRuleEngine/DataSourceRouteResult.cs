@@ -12,7 +12,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DataSourceRouteResult
+    public class DataSourceRouteResult:IPrint
     {
         public DataSourceRouteResult(ISet<string> intersectDataSources)
         {
@@ -22,5 +22,10 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         /// 交集
         /// </summary>
         public ISet<string> IntersectDataSources { get; }
+
+        public string GetPrintInfo()
+        {
+            return $"data source route result:{string.Join(",", IntersectDataSources)}";
+        }
     }
 }
