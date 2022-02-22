@@ -26,7 +26,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug(compileParameter.GetPrintInfo());
+            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
@@ -42,7 +42,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             CancellationToken cancellationToken = new CancellationToken())
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug(compileParameter.GetPrintInfo());
+            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
 
             using (new CustomerQueryScope(compileParameter))
             {
@@ -56,7 +56,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug(compileParameter.GetPrintInfo());
+            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
@@ -68,7 +68,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             CancellationToken cancellationToken)
         {
             var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug(compileParameter.GetPrintInfo());
+            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
             using (new CustomerQueryScope(compileParameter))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);

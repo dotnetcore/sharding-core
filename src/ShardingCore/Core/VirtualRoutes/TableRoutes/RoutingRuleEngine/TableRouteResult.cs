@@ -41,7 +41,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         }
         public string GetPrintInfo()
         {
-            return $"table route result:has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.FullName))}]";
+            return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.FullName))}])";
         }
 
 #if !EFCORE2

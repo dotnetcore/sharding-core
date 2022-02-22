@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IDisposable
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IDisposable,IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -496,6 +496,12 @@ namespace ShardingCore.Sharding
         public bool CanTrip()
         {
             return TableRouteResults.Length > GetMaxQueryConnectionsLimit();
+        }
+
+        public string GetPrintInfo()
+        {
+            return
+                $"stream merge context:[max query connections limit:{GetMaxQueryConnectionsLimit()}],[is use read write separation:{IsUseReadWriteSeparation()}],[is parallel query:{IsParallelQuery()}],[is not support sharding:{IsNotSupportSharding()}],[is sequence query:{IsSeqQuery()}],[can trip:{CanTrip()}],[is route not match:{IsRouteNotMatch()}],[throw if query route not match:{ThrowIfQueryRouteNotMatch()}],[is pagination query:{IsPaginationQuery()}],[has group query:{HasGroupQuery()}],[is merge query:{IsMergeQuery()}],[is single sharding entity query:{IsSingleShardingEntityQuery()}]";
         }
     }
 }

@@ -11,6 +11,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using ShardingCore.Core;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
@@ -26,6 +28,12 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
     */
     public class DefaultShardingQueryExecutor : IShardingQueryExecutor
     {
+        private readonly ILogger<DefaultShardingQueryExecutor> _logger;
+
+        public DefaultShardingQueryExecutor(ILogger<DefaultShardingQueryExecutor> logger)
+        {
+            _logger = logger;
+        }
 
         public TResult Execute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
@@ -110,8 +118,18 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
             var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod(nameof(IStreamMergeContextFactory.Create));
             if (streamMergeContextMethod == null)
-                throw new ShardingCoreException($"cant found IStreamMergeContextFactory method [{nameof(IStreamMergeContextFactory.Create)}]");
+                throw new ShardingCoreException($"cant found {nameof(IStreamMergeContextFactory)} method [{nameof(IStreamMergeContextFactory.Create)}]");
+#if DEBUG
+            var streamMergeContext= streamMergeContextMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamMergeContextFactory, new object[] { mergeQueryCompilerContext });
+            if (streamMergeContext is IPrint print)
+            {
+                _logger.LogDebug(print.GetPrintInfo());
+            }
+            return streamMergeContext;
+#endif
+#if !DEBUG
             return streamMergeContextMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamMergeContextFactory, new object[] { mergeQueryCompilerContext });
+#endif
 
         }
         private TResult EnumerableExecute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)
