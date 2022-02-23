@@ -47,7 +47,7 @@ namespace ShardingCore.VirtualRoutes.Years
                     return tail => String.Compare(tail, t, StringComparison.Ordinal) >= 0;
                 case ShardingOperatorEnum.LessThan:
                 {
-                    var currentYear =new DateTime(shardingKey.Year);
+                    var currentYear =new DateTime(shardingKey.Year,1,1);
                     //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
                     if (currentYear == shardingKey)
                         return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
