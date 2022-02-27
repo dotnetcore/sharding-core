@@ -18,13 +18,13 @@ namespace ShardingCore.TableExists
 
         public override ISet<string> DoGetExistTables(DbConnection connection, string dataSourceName)
         {
-            var database = connection.Database.ToLower();
+            var database = connection.Database;
             ISet<string> result = new HashSet<string>();
             using (var dataTable = connection.GetSchema(Tables))
             {
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
-                    if (dataTable.Rows[i][TABLE_SCHEMA].Equals(database))
+                    if (database.Equals(dataTable.Rows[i][TABLE_SCHEMA]?.ToString()??String.Empty,StringComparison.OrdinalIgnoreCase))
                         result.Add(dataTable.Rows[i][TABLE_NAME].ToString());
                 }
             }
