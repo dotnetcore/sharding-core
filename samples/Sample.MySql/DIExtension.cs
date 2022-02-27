@@ -55,8 +55,44 @@ namespace Sample.MySql
                     virtualDbContext.AddRange(userMods);
                     virtualDbContext.AddRange(userModMonths);
                     virtualDbContext.SaveChanges();
+
                 }
             }
+            //using (var scope = app.ApplicationServices.CreateScope())
+            //{
+            //    var dbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //    var queryable = from sum in dbContext.Set<SysUserMod>()
+            //        join st in dbContext.Set<SysTest>().Where(p =>  p.UserId == "admin")
+            //        on sum.Id equals st.Id
+            //        select new
+            //        {
+            //            st.UserId,
+            //            sum.Name
+            //        };
+            //    var result =  queryable.ToList();
+
+            //    Console.WriteLine(result.Count);
+            //}
+
+            //using (var scope = app.ApplicationServices.CreateScope())
+            //{
+            //    var dbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+
+            //    var queryable = from sum in dbContext.Set<SysUserMod>()
+            //        from st in dbContext.Set<SysTest>().Where(p => p.Id == sum.Id && p.UserId == "admin")
+            //        select new
+            //        {
+            //            st.UserId,
+            //            sum.Name
+            //        };
+            //    var result =  queryable.ToList();
+
+            //    Console.WriteLine(result.Count);
+            //}
+
+
+
+
         }
     }
 }

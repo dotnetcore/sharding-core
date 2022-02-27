@@ -40,11 +40,12 @@ namespace Sample.MySql
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
 
-            services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
+            services.AddShardingDbContext<DefaultShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
+                    o.IgnoreCreateTableError = false;
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.UseShardingQuery((conStr, builder) =>
