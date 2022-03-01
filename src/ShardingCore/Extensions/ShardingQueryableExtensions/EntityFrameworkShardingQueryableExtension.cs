@@ -21,7 +21,7 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
     {
 
         internal static readonly MethodInfo NotSupportMethodInfo
-            = typeof(EntityFrameworkShardingQueryableExtension).GetTypeInfo().GetDeclaredMethods(nameof(NotSupport)).Single();
+            = typeof(EntityFrameworkShardingQueryableExtension).GetTypeInfo().GetDeclaredMethods(nameof(UnionMerge)).Single();
         internal static readonly MethodInfo AsRouteMethodInfo
             = typeof(EntityFrameworkShardingQueryableExtension)
                 .GetTypeInfo()
@@ -57,7 +57,44 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
         /// <param name="source"></param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public static IQueryable<TEntity> NotSupport<TEntity>(this IQueryable<TEntity> source)
+        public static IQueryable<TEntity> UnionMerge<TEntity>(this IQueryable<TEntity> source)
+        {
+            Check.NotNull(source, nameof(source));
+            return
+                source.Provider is EntityQueryProvider
+                    ? source.Provider.CreateQuery<TEntity>(
+                        Expression.Call(
+                            (Expression)null,
+                            NotSupportMethodInfo.MakeGenericMethod(typeof(TEntity)),
+                            source.Expression))
+                    : source;
+        }
+        /// <summary>
+        /// 流式聚合
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public static IQueryable<TEntity> StreamMerge<TEntity>(this IQueryable<TEntity> source)
+        {
+            Check.NotNull(source, nameof(source));
+            return
+                source.Provider is EntityQueryProvider
+                    ? source.Provider.CreateQuery<TEntity>(
+                        Expression.Call(
+                            (Expression)null,
+                            NotSupportMethodInfo.MakeGenericMethod(typeof(TEntity)),
+                            source.Expression))
+                    : source;
+        }
+        /// <summary>
+        /// 是否使用流式聚合
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="isStreamMerge"></param>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        internal static IQueryable<TEntity> Merge<TEntity>(this IQueryable<TEntity> source,bool isStreamMerge)
         {
             Check.NotNull(source, nameof(source));
             return

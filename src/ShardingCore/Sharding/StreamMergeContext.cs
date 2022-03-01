@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IParseContext, IDisposable, IPrint
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IMergeParseContext, IDisposable, IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -340,7 +340,7 @@ namespace ShardingCore.Sharding
         }
         public Type GetSingleShardingEntityType()
         {
-            return QueryEntities.FirstOrDefault(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o));
+            return QueryEntities.Single(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o));
         }
         //public bool HasAggregateQuery()
         //{

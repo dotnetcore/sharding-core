@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 
         protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)
         {
-            var parseContext = (IParseContext)GetSeqQueryProvider();
+            var parseContext = (IMergeParseContext)GetSeqQueryProvider();
 
             var take = parseContext.GetTake();
             if (take.HasValue)
