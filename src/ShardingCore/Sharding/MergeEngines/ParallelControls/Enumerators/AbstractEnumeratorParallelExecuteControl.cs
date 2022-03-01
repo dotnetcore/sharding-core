@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators
         }
         public override ICircuitBreaker CreateCircuitBreaker()
         {
-            return new NoTripCircuitBreaker(GetSeqQueryProvider());
+            return new EnumeratorCircuitBreaker(GetSeqQueryProvider());
         }
 
         protected override void MergeParallelExecuteResult(LinkedList<IStreamMergeAsyncEnumerator<TResult>> previewResults, IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelResults, bool async)

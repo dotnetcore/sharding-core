@@ -9,11 +9,12 @@ using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
-    internal class InMemoryStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
+    internal class InMemoryStreamMergeAsyncEnumerator<T> : IInMemoryStreamMergeAsyncEnumerator<T>
     {
         private readonly bool _async;
         private readonly IEnumerator<T> _inMemoryEnumerator;
         private bool skip;
+        private int _inMemoryReallyCount;
 
         public InMemoryStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> asyncSource, bool async)
         {
@@ -40,6 +41,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 #endif
             {
                 linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
+                _inMemoryReallyCount++;
             }
 
             return linkedList.GetEnumerator();
@@ -55,6 +57,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 #endif
             {
                 linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
+                _inMemoryReallyCount++;
             }
 
             return linkedList.GetEnumerator();
@@ -69,7 +72,12 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             }
             return false;
         }
+        public int GetReallyCount()
+        {
+            return _inMemoryReallyCount;
+        }
 #if !EFCORE2
+
         public ValueTask DisposeAsync()
         {
             _inMemoryEnumerator.Dispose();

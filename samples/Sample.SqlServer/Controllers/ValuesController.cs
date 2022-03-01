@@ -10,9 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ShardingCore;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 
@@ -45,6 +47,14 @@ namespace Sample.SqlServer.Controllers
             //var tableRouteResults = tableRouteRuleEngineFactory.Route(queryable);
             var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
             var virtualTable = virtualTableManager.GetVirtualTable<SysUserMod>();
+
+            var physicTable1s = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingKeyValue:"123"));//获取值为123的所有分片
+
+            Expression<Func<SysUserMod, bool>> where = o => o.Id == "123";
+            var physicTable2s = virtualTable.RouteTo(new ShardingTableRouteConfig(predicate: where));//获取表达式o.Id == "123"的所有路由
+
+            var allPhysicTables = virtualTable.GetAllPhysicTables();
+
             var virtualTableRoute = virtualTable.GetVirtualRoute();
             var allTails = virtualTableRoute.GetAllTails();
             Console.WriteLine("------------------Get2x------------------------");
@@ -212,6 +222,20 @@ namespace Sample.SqlServer.Controllers
                 sp.ElapsedMilliseconds,
                 shardingPageResultAsync
             });
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get2a3()
+        {
+            Console.WriteLine("Get2a3-------------");
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(2).Skip(2).Take(2).OrderByDescending(o=>o.DateOfMonth).ToListAsync();
+            return Ok(sysUserMods);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get2a4()
+        {
+            Console.WriteLine("Get2a4-------------");
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(2).AsNoSequence().Skip(2).Take(2).OrderByDescending(o => o.DateOfMonth).ToListAsync();
+            return Ok(sysUserMods);
         }
         [HttpGet]
         public IActionResult Get2([FromQuery] int p, [FromQuery] int s)

@@ -15,17 +15,23 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class InMemoryReverseStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
+    internal class InMemoryReverseStreamMergeAsyncEnumerator<T> : IInMemoryStreamMergeAsyncEnumerator<T>
     {
         private readonly IStreamMergeAsyncEnumerator<T> _inMemoryStreamMergeAsyncEnumerator;
         private bool _first = true;
         private IEnumerator<T> _reverseEnumerator;
+        private int _inMemoryReallyCount;
         public InMemoryReverseStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> inMemoryStreamMergeAsyncEnumerator)
         {
             _inMemoryStreamMergeAsyncEnumerator = inMemoryStreamMergeAsyncEnumerator;
         }
+        public int GetReallyCount()
+        {
+            return _inMemoryReallyCount;
+        }
 
 #if !EFCORE2
+
         public async ValueTask DisposeAsync()
         {
             await _inMemoryStreamMergeAsyncEnumerator.DisposeAsync();
@@ -40,6 +46,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 while (await _inMemoryStreamMergeAsyncEnumerator.MoveNextAsync())
                 {
                     _reverseCollection.AddFirst(_inMemoryStreamMergeAsyncEnumerator.GetCurrent());
+                    _inMemoryReallyCount++;
                 }
 
                 _reverseEnumerator = _reverseCollection.GetEnumerator();
@@ -58,6 +65,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 while (await _inMemoryStreamMergeAsyncEnumerator.MoveNext(cancellationToken))
                 {
                     _reverseCollection.AddFirst(_inMemoryStreamMergeAsyncEnumerator.GetCurrent());
+                    _inMemoryReallyCount++;
                 }
 
                 _reverseEnumerator = _reverseCollection.GetEnumerator();

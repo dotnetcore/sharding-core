@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IDisposable,IPrint
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IParseContext, IDisposable,IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -122,7 +122,7 @@ namespace ShardingCore.Sharding
 
             var maxParallelExecuteCount = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
             var connectionMode = _shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
-            if (IsSingleShardingEntityQuery() && !Skip.HasValue && IsCrossTable && !IsNotSupportSharding())
+            if (IsSingleShardingEntityQuery() && IsCrossTable && !IsNotSupportSharding())
             {
                 var singleShardingEntityType = GetSingleShardingEntityType();
                 var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(MergeQueryCompilerContext.GetShardingDbContextType()));
@@ -502,6 +502,16 @@ namespace ShardingCore.Sharding
         {
             return
                 $"stream merge context:[max query connections limit:{GetMaxQueryConnectionsLimit()}],[is use read write separation:{IsUseReadWriteSeparation()}],[is parallel query:{IsParallelQuery()}],[is not support sharding:{IsNotSupportSharding()}],[is sequence query:{IsSeqQuery()}],[can trip:{CanTrip()}],[is route not match:{IsRouteNotMatch()}],[throw if query route not match:{ThrowIfQueryRouteNotMatch()}],[is pagination query:{IsPaginationQuery()}],[has group query:{HasGroupQuery()}],[is merge query:{IsMergeQuery()}],[is single sharding entity query:{IsSingleShardingEntityQuery()}]";
+        }
+
+        public int? GetSkip()
+        {
+            return Skip;
+        }
+
+        public int? GetTake()
+        {
+            return Take;
         }
     }
 }
