@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IParseContext, IDisposable,IPrint
+    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IParseContext, IDisposable, IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -133,14 +133,13 @@ namespace ShardingCore.Sharding
                     ShardingTailComparer =
                         virtualTable.EntityQueryMetadata.DefaultTailComparer ?? Comparer<string>.Default;
                     TailComparerNeedReverse = virtualTable.EntityQueryMetadata.DefaultTailComparerNeedReverse;
-                    string methodName = null;
-                    if (!MergeQueryCompilerContext.IsEnumerableQuery())
+                    string methodName = MergeQueryCompilerContext.IsEnumerableQuery() ?
+                        EntityQueryMetadata.QUERY_ENUMERATOR : 
+                        ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name;
+
+                    if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName, out var limit))
                     {
-                        methodName = ((MethodCallExpression)MergeQueryCompilerContext.GetQueryExpression()).Method.Name;
-                        if (virtualTable.EntityQueryMetadata.TryGetConnectionsLimit(methodName, out var limit))
-                        {
-                            maxParallelExecuteCount = Math.Min(limit, maxParallelExecuteCount);
-                        }
+                        maxParallelExecuteCount = Math.Min(limit, maxParallelExecuteCount);
                     }
 
                     var isSequence = mergeQueryCompilerContext.IsSequence();
@@ -184,7 +183,8 @@ namespace ShardingCore.Sharding
                 nameof(Queryable.Last) == methodName ||
                 nameof(Queryable.LastOrDefault) == methodName ||
                 nameof(Queryable.Single) == methodName ||
-                nameof(Queryable.SingleOrDefault) == methodName) &&
+                 nameof(Queryable.SingleOrDefault) == methodName ||
+                 EntityQueryMetadata.QUERY_ENUMERATOR == methodName) &&
                 propertyOrders.Length > 0)
                 return true;
             return false;
@@ -210,7 +210,7 @@ namespace ShardingCore.Sharding
                 if (!primaryOrderPropertyName.Contains("."))
                 {
                     if (virtualTable.EnableEntityQuery && virtualTable.EntityQueryMetadata.TryContainsComparerOrder(primaryOrderPropertyName, out var seqQueryOrderMatch)
-                                                       &&(primaryOrder.OwnerType == singleShardingEntityType|| seqQueryOrderMatch.OrderMatch.HasFlag(SeqOrderMatchEnum.Named)))//要么必须是当前对象查询要么就是名称一样
+                                                       && (primaryOrder.OwnerType == singleShardingEntityType || seqQueryOrderMatch.OrderMatch.HasFlag(SeqOrderMatchEnum.Named)))//要么必须是当前对象查询要么就是名称一样
                     {
                         tailComparerIsAsc = seqQueryOrderMatch.IsSameAsShardingTailComparer ? primaryOrder.IsAsc : !primaryOrder.IsAsc;
                         //如果是获取最后一个还需要再次翻转

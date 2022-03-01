@@ -53,6 +53,7 @@ namespace Sample.SqlServer
                 .AddConfig(op =>
                 {
                     op.ConfigId = "c1";
+                    op.MaxQueryConnectionsLimit = 5;
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>();

@@ -16,7 +16,8 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         SingleOrDefault,
         Any,
         All,
-        Contains
+        Contains,
+        Enumerator
     }
     public enum LimitMethodNameEnum
     {
@@ -34,6 +35,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         Count,
         LongCount,
         Sum,
-        Average
+        Average,
+        Enumerator
     }
 }

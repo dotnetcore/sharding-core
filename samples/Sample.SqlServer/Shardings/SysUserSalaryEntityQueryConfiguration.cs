@@ -30,12 +30,13 @@ namespace Sample.SqlServer.Shardings
             builder.ShardingTailComparer(Comparer<string>.Default, false);//表示他是倒叙
             //DateOfMonth的排序和月份分片的后缀一致所以用true如果false,无果无关就不需要配置
             builder.AddOrder(o => o.DateOfMonth, false);
-            builder.AddDefaultSequenceQueryTrip(false, CircuitBreakerMethodNameEnum.FirstOrDefault);
+            builder.AddDefaultSequenceQueryTrip(false, CircuitBreakerMethodNameEnum.FirstOrDefault, CircuitBreakerMethodNameEnum.Enumerator);
             #endregion
 
 
 
             builder.AddConnectionsLimit(2, LimitMethodNameEnum.First, LimitMethodNameEnum.FirstOrDefault, LimitMethodNameEnum.Any, LimitMethodNameEnum.LastOrDefault, LimitMethodNameEnum.Last, LimitMethodNameEnum.Max, LimitMethodNameEnum.Min);
+            builder.AddConnectionsLimit(1, LimitMethodNameEnum.Enumerator);
 
         }
     }

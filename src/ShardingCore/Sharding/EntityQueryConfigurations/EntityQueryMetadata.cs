@@ -6,6 +6,7 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
 {
     public class EntityQueryMetadata
     {
+        public const string QUERY_ENUMERATOR = "Enumerator";
         private static readonly IDictionary<CircuitBreakerMethodNameEnum, string> CircuitBreakerMethodNameSupports;
         private static readonly IDictionary<LimitMethodNameEnum, string> LimitMethodNameSupports;
 
@@ -21,7 +22,8 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
                 { CircuitBreakerMethodNameEnum.SingleOrDefault, nameof(Queryable.SingleOrDefault) },
                 { CircuitBreakerMethodNameEnum.Any, nameof(Queryable.Any) },
                 { CircuitBreakerMethodNameEnum.All, nameof(Queryable.All) },
-                { CircuitBreakerMethodNameEnum.Contains, nameof(Queryable.Contains) }
+                { CircuitBreakerMethodNameEnum.Contains, nameof(Queryable.Contains) },
+                { CircuitBreakerMethodNameEnum.Enumerator,QUERY_ENUMERATOR }
             };
             LimitMethodNameSupports = new Dictionary<LimitMethodNameEnum, string>()
             {
@@ -39,7 +41,8 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
                 { LimitMethodNameEnum.Count, nameof(Queryable.Count) },
                 { LimitMethodNameEnum.LongCount, nameof(Queryable.LongCount) },
                 { LimitMethodNameEnum.Sum, nameof(Queryable.Sum) },
-                { LimitMethodNameEnum.Average, nameof(Queryable.Average) }
+                { LimitMethodNameEnum.Average, nameof(Queryable.Average) },
+                { LimitMethodNameEnum.Enumerator, QUERY_ENUMERATOR }
             };
         }
 
