@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal.StreamMerge.ReWrite;
 using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
@@ -24,6 +23,7 @@ using ShardingCore.Core.NotSupportShardingProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.EntityQueryConfigurations;
+using ShardingCore.Sharding.MergeContexts;
 
 
 namespace ShardingCore.Sharding

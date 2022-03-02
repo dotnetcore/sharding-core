@@ -30,5 +30,6 @@
 
     <ItemGroup>
       <Folder Include="Sharding\Abstractions\MergeParseContexts" />
+      <Folder Include="Sharding\Visitors\GroupBys" />
     </ItemGroup>
 </Project>

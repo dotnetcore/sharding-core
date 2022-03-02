@@ -6,6 +6,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ReWrite

@@ -14,6 +14,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.Common;

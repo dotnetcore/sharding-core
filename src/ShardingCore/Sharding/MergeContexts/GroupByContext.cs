@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace ShardingCore.Core.Internal.Visitors.GroupBys
+namespace ShardingCore.Sharding.MergeContexts
 {
     /*
     * @Author: xjm

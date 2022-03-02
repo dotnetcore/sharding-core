@@ -1,6 +1,6 @@
 using System;
 
-namespace ShardingCore.Core.Internal.Visitors
+namespace ShardingCore.Sharding.MergeContexts
 {
     /*
     * @Author: xjm

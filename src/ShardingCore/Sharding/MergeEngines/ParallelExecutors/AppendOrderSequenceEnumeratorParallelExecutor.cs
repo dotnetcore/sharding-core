@@ -9,6 +9,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Base;

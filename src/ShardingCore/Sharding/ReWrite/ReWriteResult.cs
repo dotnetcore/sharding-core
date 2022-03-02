@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.Internal.Visitors.GroupBys;
 using ShardingCore.Core.Internal.Visitors.Selects;
+using ShardingCore.Sharding.MergeContexts;
 
 namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
 {
