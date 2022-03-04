@@ -21,7 +21,7 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
     {
 
         internal static readonly MethodInfo NotSupportMethodInfo
-            = typeof(EntityFrameworkShardingQueryableExtension).GetTypeInfo().GetDeclaredMethods(nameof(UnionMerge)).Single();
+            = typeof(EntityFrameworkShardingQueryableExtension).GetTypeInfo().GetDeclaredMethods(nameof(UseUnionAllMerge)).Single();
         internal static readonly MethodInfo AsRouteMethodInfo
             = typeof(EntityFrameworkShardingQueryableExtension)
                 .GetTypeInfo()
@@ -57,7 +57,7 @@ namespace ShardingCore.Extensions.ShardingQueryableExtensions
         /// <param name="source"></param>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public static IQueryable<TEntity> UnionMerge<TEntity>(this IQueryable<TEntity> source)
+        public static IQueryable<TEntity> UseUnionAllMerge<TEntity>(this IQueryable<TEntity> source)
         {
             Check.NotNull(source, nameof(source));
             return

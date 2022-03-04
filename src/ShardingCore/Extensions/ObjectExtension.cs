@@ -46,7 +46,7 @@ namespace ShardingCore.Extensions
             var property = obj.GetType().GetProperty(propertyName, _bindingFlags);
             if (property != null)
             {
-                return obj.GetType().GetProperty(propertyName, _bindingFlags)?.GetValue(obj);
+                return property.GetValue(obj);
             }
             else
             {
@@ -65,7 +65,7 @@ namespace ShardingCore.Extensions
             var property=type.GetProperty(propertyName, _bindingFlags);
             if (property != null)
             {
-                return type.GetProperty(propertyName, _bindingFlags)?.GetValue(obj);
+                return property.GetValue(obj);
             }
             else
             {

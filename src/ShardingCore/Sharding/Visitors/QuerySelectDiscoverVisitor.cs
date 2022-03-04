@@ -36,21 +36,25 @@ namespace ShardingCore.Core.Internal.Visitors
 
         private PropertyInfo GetAggregateFromProperty(MethodCallExpression aggregateMethodCallExpression)
         {
+            if (aggregateMethodCallExpression.Arguments.Count > 1)
+            {
+                var selector = aggregateMethodCallExpression.Arguments[1] as LambdaExpression;
+                if (selector == null)
+                {
+                    return null;
+                }
+                var memberExpression = selector.Body as MemberExpression;
+                if (memberExpression == null)
+                {
+                    return null;
+                }
+                if (memberExpression.Member.DeclaringType == null)
+                    return null;
+                var fromProperty = memberExpression.Member.DeclaringType.GetProperty(memberExpression.Member.Name);
+                return fromProperty;
+            }
 
-            var selector = aggregateMethodCallExpression.Arguments[1] as LambdaExpression;
-            if (selector == null)
-            {
-                return null;
-            }
-            var memberExpression = selector.Body as MemberExpression;
-            if (memberExpression == null)
-            {
-                return null;
-            }
-            if(memberExpression.Member.DeclaringType == null)
-                return null;
-            var fromProperty = memberExpression.Member.DeclaringType.GetProperty(memberExpression.Member.Name);
-            return fromProperty;
+            throw new ShardingCoreException($"cant {nameof(GetAggregateFromProperty)},{aggregateMethodCallExpression.ShardingPrint()}");
 
         }
         protected override Expression VisitNew(NewExpression node)
@@ -68,46 +72,46 @@ namespace ShardingCore.Core.Internal.Visitors
                     var method = methodCallExpression.Method;
                     if (method.Name == nameof(Queryable.Count) || method.Name == nameof(Queryable.Sum) || method.Name == nameof(Queryable.Max) || method.Name == nameof(Queryable.Min) || method.Name == nameof(Queryable.Average))
                     {
-                        SelectProperty selectProperty = null;
+                        SelectOwnerProperty selectOwnerProperty = null;
 
                         if (method.Name == nameof(Queryable.Average))
                         {
                             var fromProperty = GetAggregateFromProperty(methodCallExpression);
-                            selectProperty = new SelectAverageProperty(declaringType,
+                            selectOwnerProperty = new SelectAverageProperty(declaringType,
                                 propertyInfo, fromProperty, true, method.Name);
                         }
                         else if (method.Name == nameof(Queryable.Count))
                         {
-                            selectProperty = new SelectCountProperty(declaringType,
+                            selectOwnerProperty = new SelectCountProperty(declaringType,
                                 propertyInfo, true, method.Name);
                         }
                         else if (method.Name == nameof(Queryable.Sum))
                         {
                             var fromProperty = GetAggregateFromProperty(methodCallExpression);
-                            selectProperty = new SelectSumProperty(declaringType,
+                            selectOwnerProperty = new SelectSumProperty(declaringType,
                                 propertyInfo, fromProperty, true, method.Name);
                         }
                         else if (method.Name == nameof(Queryable.Max))
                         {
-                            selectProperty = new SelectMaxProperty(declaringType,
+                            selectOwnerProperty = new SelectMaxProperty(declaringType,
                                 propertyInfo, true, method.Name);
                         }
                         else if (method.Name == nameof(Queryable.Min))
                         {
-                            selectProperty = new SelectMinProperty(declaringType,
+                            selectOwnerProperty = new SelectMinProperty(declaringType,
                                 propertyInfo, true, method.Name);
                         }
                         else
                         {
-                            selectProperty = new SelectAggregateProperty(declaringType,
+                            selectOwnerProperty = new SelectAggregateProperty(declaringType,
                                 propertyInfo,
                                 true, method.Name);
                         }
-                        _selectContext.SelectProperties.Add(selectProperty);
+                        _selectContext.SelectProperties.Add(selectOwnerProperty);
                         continue;
                     }
                 }
-                _selectContext.SelectProperties.Add(new SelectProperty(declaringType,
+                _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType,
                     propertyInfo));
             }
             return base.VisitNew(node);

@@ -65,7 +65,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 return new SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
             }
 
-            if (_streamMergeContext.IsNotSupportSharding())
+            if (_streamMergeContext.UseUnionAllMerge())
             {
                 return new DefaultShardingEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
             }

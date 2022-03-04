@@ -23,9 +23,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private   QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
         private readonly bool? _isNoTracking;
-        private readonly bool _isUnion;
         private readonly bool _isParallelQuery;
-        private readonly bool _isNotSupport;
+        private readonly bool _useUnionAllMerge;
         private readonly int? _maxQueryConnectionsLimit;
         private readonly ConnectionModeEnum? _connectionMode;
         private readonly bool? _isSequence;
@@ -39,8 +38,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(_queryExpression, _shardingDbContextType);
             _queryEntities = compileParseResult.QueryEntities;
             _isNoTracking = compileParseResult.IsNoTracking;
-            _isUnion = compileParseResult.IsUnion;
-            _isNotSupport = compileParameter.IsNotSupport();
+            _useUnionAllMerge = compileParameter.IsNotSupport();
             _maxQueryConnectionsLimit = compileParameter.GetMaxQueryConnectionsLimit();
             _connectionMode = compileParameter.GetConnectionMode();
             _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);
@@ -102,14 +100,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             }
         }
 
-        public bool IsUnion()
+        public bool UseUnionAllMerge()
         {
-            return _isUnion;
-        }
-
-        public bool IsNotSupport()
-        {
-            return _isNotSupport;
+            return _useUnionAllMerge;
         }
 
         public int? GetMaxQueryConnectionsLimit()
@@ -132,6 +125,15 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _sameWithShardingComparer;
         }
 
+        public bool IsSingleShardingEntityQuery()
+        {
+            return _queryEntities.Count(o => _entityMetadataManager.IsSharding(o)) == 1;
+        }
+
+        public Type GetSingleShardingEntityType()
+        {
+            return _queryEntities.Single(o => _entityMetadataManager.IsSharding(o));
+        }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {

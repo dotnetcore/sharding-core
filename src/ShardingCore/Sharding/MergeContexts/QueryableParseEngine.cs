@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 /*
@@ -14,7 +15,12 @@ namespace ShardingCore.Sharding.MergeContexts
     {
         public IParseResult Parse(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            throw new NotImplementedException();
+            var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
+            var queryableExtraDiscoverVisitor = new QueryableExtraDiscoverVisitor();
+            queryableExtraDiscoverVisitor.Visit(combineQueryable.Expression);
+            return new ParseResult(queryableExtraDiscoverVisitor.GetPaginationContext(),
+                queryableExtraDiscoverVisitor.GetOrderByContext(), queryableExtraDiscoverVisitor.GetSelectContext(),
+                queryableExtraDiscoverVisitor.GetGroupByContext());
         }
     }
 }

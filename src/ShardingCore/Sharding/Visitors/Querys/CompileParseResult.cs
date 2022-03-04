@@ -8,17 +8,12 @@ namespace ShardingCore.Sharding.Visitors.Querys
 {
     public class CompileParseResult
     {
-        public CompileParseResult(bool isUnion, bool? isNoTracking, bool isIgnoreFilter, ISet<Type> queryEntities)
+        public CompileParseResult(bool? isNoTracking, bool isIgnoreFilter, ISet<Type> queryEntities)
         {
-            IsUnion = isUnion;
             IsNoTracking = isNoTracking;
             IsIgnoreFilter = isIgnoreFilter;
             QueryEntities = queryEntities;
         }
-        /// <summary>
-        /// 是否使用了union查询
-        /// </summary>
-        public bool IsUnion { get; }
         /// <summary>
         /// 是否使用了追踪
         /// </summary>

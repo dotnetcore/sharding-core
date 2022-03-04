@@ -6,29 +6,29 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore;
-using ShardingCore.Core.NotSupportShardingProviders.Abstractions;
+using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
-namespace Sample.SqlServer
+namespace Sample.SqlServer.UnionAllMerge
 {
-    public class ShardingSqlServerQuerySqlGeneratorFactory<TShardingDbContext> : IQuerySqlGeneratorFactory
-    where TShardingDbContext:DbContext,IShardingDbContext
+    public class UnionAllMergeSqlServerQuerySqlGeneratorFactory<TShardingDbContext> : IQuerySqlGeneratorFactory, IUnionAllMergeQuerySqlGeneratorFactory
+    where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies)
+        public UnionAllMergeSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies)
         {
             Dependencies = dependencies;
         }
 
         public QuerySqlGeneratorDependencies Dependencies { get; }
-        public QuerySqlGenerator Create() => new ShardingSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies);
+        public QuerySqlGenerator Create() => new UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies);
     }
 
-    public class ShardingSqlServerQuerySqlGenerator<TShardingDbContext> : SqlServerQuerySqlGenerator
+    public class UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext> : SqlServerQuerySqlGenerator
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies)
+        public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -48,14 +48,14 @@ namespace Sample.SqlServer
 
         private Expression OverrideVisitTable(TableExpression tableExpression)
         {
-            var supportManager = ShardingContainer.GetService<INotSupportManager>();
+            var supportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
             if (supportManager?.Current != null)
             {
                 var tableRouteResults = supportManager?.Current.TableRoutesResults.ToArray();
                 if (tableRouteResults.IsNotEmpty() &&
                     tableRouteResults[0].ReplaceTables.Any(o => o.OriginalName == tableExpression.Name))
                 {
-                    var tails = tableRouteResults.Select(o=>o.ReplaceTables.FirstOrDefault(r=>r.OriginalName==tableExpression.Name).Tail).ToHashSet();
+                    var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.OriginalName == tableExpression.Name).Tail).ToHashSet();
 
                     var sqlGenerationHelper = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
                     var tableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
@@ -70,9 +70,9 @@ namespace Sample.SqlServer
                         newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
                     }
 
-                   var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
-                   relationalCommandBuilder.Append(newTableName).Append(this.AliasSeparator).Append(sqlGenerationHelper.DelimitIdentifier(tableExpression.Alias));
-                   return tableExpression;
+                    var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
+                    relationalCommandBuilder.Append(newTableName).Append(this.AliasSeparator).Append(sqlGenerationHelper.DelimitIdentifier(tableExpression.Alias));
+                    return tableExpression;
                 }
             }
 

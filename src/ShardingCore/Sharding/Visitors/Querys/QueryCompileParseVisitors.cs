@@ -15,7 +15,6 @@ namespace ShardingCore.Sharding.Visitors.Querys
     internal class QueryCompileParseVisitors : ExpressionVisitor
     {
         private readonly ITrackerManager _trackerManager;
-        private bool isUnion;
         private bool? isNoTracking;
         private bool isIgnoreFilter;
         private readonly ISet<Type> shardingEntities = new HashSet<Type>();
@@ -27,7 +26,7 @@ namespace ShardingCore.Sharding.Visitors.Querys
 
         public CompileParseResult GetCompileParseResult()
         {
-            return new CompileParseResult(isUnion, isNoTracking, isIgnoreFilter, shardingEntities);
+            return new CompileParseResult(isNoTracking, isIgnoreFilter, shardingEntities);
         }
 #if EFCORE2 || EFCORE3
         protected override Expression VisitConstant(ConstantExpression node)
@@ -54,7 +53,6 @@ namespace ShardingCore.Sharding.Visitors.Querys
         {
             switch (node.Method.Name)
             {
-                case nameof(Queryable.Union): isUnion = true; break;
                 case nameof(EntityFrameworkQueryableExtensions.AsNoTracking): isNoTracking = true; break;
                 case nameof(EntityFrameworkQueryableExtensions.AsTracking): isNoTracking = false; break;
                 case nameof(EntityFrameworkQueryableExtensions.IgnoreQueryFilters): isIgnoreFilter = true; break;

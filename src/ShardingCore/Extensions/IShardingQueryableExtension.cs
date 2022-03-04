@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal.Visitors;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Visitors;
 
 namespace ShardingCore.Extensions
@@ -21,11 +23,15 @@ namespace ShardingCore.Extensions
 /// </summary>
     internal static class IShardingQueryableExtension
     {
+        private static readonly MethodInfo QueryableSkipMethod = typeof(Queryable).GetMethod(nameof(Queryable.Skip));
+        private static readonly MethodInfo QueryableTakeMethod = typeof(Queryable).GetMethods().First(
+            m => m.Name == nameof(Queryable.Take)
+                 && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType == typeof(int));
         internal static ExtraEntry GetExtraEntry<T>(this IQueryable<T> source)
         {
             var extraVisitor = new QueryableExtraDiscoverVisitor();
             extraVisitor.Visit(source.Expression);
-            var extraEntry = new ExtraEntry(extraVisitor.GetSkip(), extraVisitor.GetTake(), extraVisitor.GetOrders(),extraVisitor.GetSelectContext(),extraVisitor.GetGroupByContext());
+            var extraEntry = new ExtraEntry(extraVisitor.GetPaginationContext().Skip, extraVisitor.GetPaginationContext().Take, extraVisitor.GetOrderByContext().PropertyOrders,extraVisitor.GetSelectContext(),extraVisitor.GetGroupByContext());
             extraEntry.ProcessGroupBySelectProperties();
             return extraEntry;
         }
@@ -35,39 +41,57 @@ namespace ShardingCore.Extensions
         /// <typeparam name="T">实体类型</typeparam>
         /// <param name="source">数据源</param>
         /// <returns></returns>
-        internal static IQueryable<T> RemoveSkip<T>(this IQueryable<T> source)
+        internal static IQueryable RemoveSkip(this IQueryable source)
         {
             var expression = new RemoveSkipVisitor().Visit(source.Expression);
-            return (IQueryable<T>)source.Provider.CreateQuery(expression);
+            return source.Provider.CreateQuery(expression);
         }
 
+        internal static IQueryable ReSkip(this IQueryable source, int skip)
+        {
+            MethodInfo method = QueryableSkipMethod.MakeGenericMethod(source.ElementType);
+            var expression = Expression.Call(
+                method,
+                source.Expression,
+                Expression.Constant(skip));
+            return source.Provider.CreateQuery(expression);
+        }
+
+        internal static IQueryable ReTake(this IQueryable source, int take)
+        {
+            MethodInfo method = QueryableTakeMethod.MakeGenericMethod(source.ElementType);
+            var expression = Expression.Call(
+                method,
+                source.Expression,
+                Expression.Constant(take));
+            return source.Provider.CreateQuery(expression);
+        }
         /// <summary>
         /// 删除Take表达式
         /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
         /// <param name="source">数据源</param>
         /// <returns></returns>
-        internal static IQueryable<T> RemoveTake<T>(this IQueryable<T> source)
+        internal static IQueryable RemoveTake(this IQueryable source)
         {
             var expression = new RemoveTakeVisitor().Visit(source.Expression);
-            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+            return source.Provider.CreateQuery(expression);
         }
         [ExcludeFromCodeCoverage]
-        internal static IQueryable<T> RemoveOrderBy<T>(this IQueryable<T> source)
+        internal static IQueryable RemoveOrderBy(this IQueryable source)
         {
             var expression = new RemoveOrderByVisitor().Visit(source.Expression);
-            return (IQueryable<T>)source.Provider.CreateQuery(expression);
+            return source.Provider.CreateQuery(expression);
         }
         [ExcludeFromCodeCoverage]
-        internal static IQueryable<T> RemoveOrderByDescending<T>(this IQueryable<T> source)
+        internal static IQueryable RemoveOrderByDescending(this IQueryable source)
         {
             var expression = new RemoveOrderByDescendingVisitor().Visit(source.Expression);
-            return (IQueryable<T>)source.Provider.CreateQuery(expression);
+            return source.Provider.CreateQuery(expression);
         }
-        internal static IQueryable<T> RemoveAnyOrderBy<T>(this IQueryable<T> source)
+        internal static IQueryable RemoveAnyOrderBy(this IQueryable source)
         {
             var expression = new RemoveAnyOrderVisitor().Visit(source.Expression);
-            return (IQueryable<T>) source.Provider.CreateQuery(expression);
+            return source.Provider.CreateQuery(expression);
         }
 
         internal static bool? GetIsNoTracking(this IQueryable source)

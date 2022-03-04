@@ -1,22 +1,18 @@
-using System;
+ï»¿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
-/*
-* @Author: xjm
-* @Description:±í´ïselectÊôÐÔ 
-* @Date: Tuesday, 02 February 2021 08:17:48
-* @Email: 326308290@qq.com
-*/
-namespace ShardingCore.Core.Internal.Visitors.Selects
+namespace ShardingCore.Sharding.Visitors.Selects
 {
     public class SelectProperty
     {
-        public SelectProperty(Type ownerType, PropertyInfo property)
+        public SelectProperty( PropertyInfo property)
         {
-            OwnerType = ownerType;
             Property = property;
         }
-        public Type OwnerType { get; }
         public PropertyInfo Property { get; }
         public string PropertyName => Property.Name;
     }

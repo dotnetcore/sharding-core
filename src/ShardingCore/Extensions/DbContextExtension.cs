@@ -273,13 +273,17 @@ namespace ShardingCore.Extensions
 
         public static IEnumerable<object> GetPrimaryKeyValues<TEntity>(TEntity entity,IKey primaryKey) where TEntity : class
         {
-            return primaryKey.Properties.Select(o => entity.GetPropertyValue(o.Name));
+            return primaryKey.Properties.Select(o =>entity.GetPropertyValue(o.Name));
         }
 
         public static TEntity GetAttachedEntity<TEntity>(this DbContext context, TEntity entity) where TEntity:class
         {
             if (entity == null) { throw new ArgumentNullException(nameof(entity)); }
             var entityPrimaryKey = context.Model.FindEntityType(entity.GetType()).FindPrimaryKey();
+            if (entityPrimaryKey == null)
+            {
+                return entity;
+            }
             var primaryKeyValue = GetPrimaryKeyValues(entity, entityPrimaryKey).ToArray();
             if (primaryKeyValue.IsEmpty())
                 return null;

@@ -144,9 +144,9 @@ namespace Sample.SqlServer.Controllers
 
             var sresultx1121222 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").MaxAsync(o => o.Age);
             var unionUserIds = await _defaultTableDbContext.Set<SysUserMod>().Select(o=>new UnionUserId(){UserId = o.Id})
-                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).ToListAsync();
+                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().ToListAsync();
             var unionUserIdCounts = await _defaultTableDbContext.Set<SysUserMod>().Select(o=>new UnionUserId(){UserId = o.Id})
-                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).CountAsync();
+                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().CountAsync();
             var hashSet = unionUserIds.Select(o=>o.UserId).ToHashSet();
             var hashSetCount = hashSet.Count;
 
@@ -176,7 +176,7 @@ namespace Sample.SqlServer.Controllers
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
-            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().UnionMerge().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().UseUnionAllMerge().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {
@@ -226,8 +226,26 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2a3()
         {
+            var sql = from o in _defaultTableDbContext.Set<SysUserSalary>()
+                orderby o.Id descending
+                select new
+                {
+                    o.Id,
+                    o.UserId,
+                    o.DateOfMonth,
+                    o.SalaryDecimal,
+                    o.SalaryFloat
+                };
+            var xx=await sql.ToListAsync();
             Console.WriteLine("Get2a3-------------");
-            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().Skip(2).Take(2).ToListAsync();
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(1).Take(2).Select(o=>new 
+            {
+                o.Id,
+                o.UserId,
+                o.DateOfMonth,
+                o.SalaryDecimal,
+                o.SalaryFloat
+            }).OrderByDescending(o=>o.Id).ToListAsync();
             return Ok(sysUserMods);
         }
         [HttpGet]

@@ -12,13 +12,11 @@ namespace ShardingCore.Sharding.MergeContexts
 */
     public interface IParseResult
     {
-        int? GetSkip();
-        int? GetTake();
-        
-        PropertyOrder[] GetOrders();
+        PaginationContext GetPaginationContext();
+        OrderByContext GetOrderByContext();
         
         SelectContext GetSelectContext();
         
-        GroupByContext GetGroupByConteext();
+        GroupByContext GetGroupByContext();
     }
 }

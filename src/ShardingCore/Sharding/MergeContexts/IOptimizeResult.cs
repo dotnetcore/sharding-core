@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using ShardingCore.Core;
 
 namespace ShardingCore.Sharding.MergeContexts
@@ -18,5 +18,7 @@ namespace ShardingCore.Sharding.MergeContexts
         ConnectionModeEnum GetConnectionMode();
         bool IsSequenceQuery();
         bool SameWithTailComparer();
+        IComparer<string> ShardingTailComparer();
+         bool CanTrip();
     }
 }

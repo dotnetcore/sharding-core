@@ -25,7 +25,7 @@ namespace ShardingCore.Core.Internal.Visitors
     * @Date: Monday, 28 December 2020 22:09:39
     * @Email: 326308290@qq.com
     */
-    public class QueryableRouteShardingTableDiscoverVisitor : ExpressionVisitor
+    public class QueryableRouteShardingTableDiscoverVisitor : ShardingExpressionVisitor
     {
 
         private readonly EntityMetadata _entityMetadata;
@@ -131,117 +131,117 @@ namespace ShardingCore.Core.Internal.Visitors
             return expression is MethodCallExpression;
         }
 
-        private object GetShardingKeyValue(Expression expression)
-        {
-            if (expression == null)
-                return null;
-            switch (expression)
-            {
-                case ConstantExpression e:
-                    return e.Value;
+        //private object GetShardingKeyValue(Expression expression)
+        //{
+        //    if (expression == null)
+        //        return null;
+        //    switch (expression)
+        //    {
+        //        case ConstantExpression e:
+        //            return e.Value;
 
-                case MemberExpression e when e.Member is FieldInfo field:
-                    return field.GetValue(
-                        GetShardingKeyValue(
-                            e.Expression
-                        )
-                    );
+        //        case MemberExpression e when e.Member is FieldInfo field:
+        //            return field.GetValue(
+        //                GetShardingKeyValue(
+        //                    e.Expression
+        //                )
+        //            );
 
-                case MemberExpression e when e.Member is PropertyInfo property:
-                    return property.GetValue(
-                        GetShardingKeyValue(
-                            e.Expression
-                        )
-                    );
+        //        case MemberExpression e when e.Member is PropertyInfo property:
+        //            return property.GetValue(
+        //                GetShardingKeyValue(
+        //                    e.Expression
+        //                )
+        //            );
 
-                case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
-                    {
-                        var collection = e.NewExpression.Constructor.Invoke(new object[0]);
-                        foreach (var i in e.Initializers)
-                        {
-                            i.AddMethod.Invoke(
-                                collection,
-                                i.Arguments
-                                    .Select(
-                                        a => GetShardingKeyValue(a)
-                                    )
-                                    .ToArray()
-                            );
-                        }
-                        return collection;
-                    }
-                case NewArrayExpression e when e.NodeType == ExpressionType.NewArrayInit && e.Expressions.Count > 0:
-                    {
-                        var collection = new List<object>(e.Expressions.Count);
-                        foreach (var arrayItemExpression in e.Expressions)
-                        {
-                            collection.Add(GetShardingKeyValue(arrayItemExpression));
-                        }
-                        return collection;
-                    }
+        //        case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
+        //            {
+        //                var collection = e.NewExpression.Constructor.Invoke(new object[0]);
+        //                foreach (var i in e.Initializers)
+        //                {
+        //                    i.AddMethod.Invoke(
+        //                        collection,
+        //                        i.Arguments
+        //                            .Select(
+        //                                a => GetShardingKeyValue(a)
+        //                            )
+        //                            .ToArray()
+        //                    );
+        //                }
+        //                return collection;
+        //            }
+        //        case NewArrayExpression e when e.NodeType == ExpressionType.NewArrayInit && e.Expressions.Count > 0:
+        //            {
+        //                var collection = new List<object>(e.Expressions.Count);
+        //                foreach (var arrayItemExpression in e.Expressions)
+        //                {
+        //                    collection.Add(GetShardingKeyValue(arrayItemExpression));
+        //                }
+        //                return collection;
+        //            }
 
 
-                case MethodCallExpression e:
-                    return e.Method.Invoke(
-                        GetShardingKeyValue(e.Object),
-                        e.Arguments
-                            .Select(
-                                a => GetShardingKeyValue(a)
-                            )
-                            .ToArray()
-                    );
+        //        case MethodCallExpression e:
+        //            return e.Method.Invoke(
+        //                GetShardingKeyValue(e.Object),
+        //                e.Arguments
+        //                    .Select(
+        //                        a => GetShardingKeyValue(a)
+        //                    )
+        //                    .ToArray()
+        //            );
 
-                default:
-                    //TODO: better messaging
-                    throw new ShardingCoreException("cant get value " + expression);
-            }
-            //if (expression is ConstantExpression constantExpression)
-            //{
-            //    return constantExpression.Value;
-            //}
-            //if (expression is UnaryExpression unaryExpression)
-            //{
-            //    return Expression.Lambda(unaryExpression.Operand).Compile().DynamicInvoke();
-            //}
+        //        default:
+        //            //TODO: better messaging
+        //            throw new ShardingCoreException("cant get value " + expression);
+        //    }
+        //    //if (expression is ConstantExpression constantExpression)
+        //    //{
+        //    //    return constantExpression.Value;
+        //    //}
+        //    //if (expression is UnaryExpression unaryExpression)
+        //    //{
+        //    //    return Expression.Lambda(unaryExpression.Operand).Compile().DynamicInvoke();
+        //    //}
 
-            //if (expression is MemberExpression member1Expression)
-            //{
+        //    //if (expression is MemberExpression member1Expression)
+        //    //{
 
-            //    if (member1Expression.Expression is ConstantExpression memberConstantExpression)
-            //    {
-            //        if (member1Expression.Member is FieldInfo memberFieldInfo)
-            //        {
-            //            object container = memberConstantExpression.Value;
-            //            return memberFieldInfo.GetValue(container);
-            //        }
-            //        if (member1Expression.Member is PropertyInfo memberPropertyInfo)
-            //        {
-            //            object container = memberConstantExpression.Value;
-            //            return memberPropertyInfo.GetValue(container);
-            //        }
-            //        else
-            //        {
-            //            return memberConstantExpression.Value;
-            //        }
-            //    }
-            //    return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
-            //}
+        //    //    if (member1Expression.Expression is ConstantExpression memberConstantExpression)
+        //    //    {
+        //    //        if (member1Expression.Member is FieldInfo memberFieldInfo)
+        //    //        {
+        //    //            object container = memberConstantExpression.Value;
+        //    //            return memberFieldInfo.GetValue(container);
+        //    //        }
+        //    //        if (member1Expression.Member is PropertyInfo memberPropertyInfo)
+        //    //        {
+        //    //            object container = memberConstantExpression.Value;
+        //    //            return memberPropertyInfo.GetValue(container);
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            return memberConstantExpression.Value;
+        //    //        }
+        //    //    }
+        //    //    return Expression.Lambda(member1Expression).Compile().DynamicInvoke();
+        //    //}
 
-            //if (expression is MethodCallExpression methodCallExpression)
-            //{
-            //    return Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
-            //    //return methodCallExpression.Method.Invoke(
-            //    //    GetShardingKeyValue(methodCallExpression.Object),
-            //    //    methodCallExpression.Arguments
-            //    //        .Select(
-            //    //            a => GetShardingKeyValue(a)
-            //    //        )
-            //    //        .ToArray()
-            //    //);
-            //}
+        //    //if (expression is MethodCallExpression methodCallExpression)
+        //    //{
+        //    //    return Expression.Lambda(methodCallExpression).Compile().DynamicInvoke();
+        //    //    //return methodCallExpression.Method.Invoke(
+        //    //    //    GetShardingKeyValue(methodCallExpression.Object),
+        //    //    //    methodCallExpression.Arguments
+        //    //    //        .Select(
+        //    //    //            a => GetShardingKeyValue(a)
+        //    //    //        )
+        //    //    //        .ToArray()
+        //    //    //);
+        //    //}
 
-            //throw new ShardingCoreException("cant get value " + expression);
-        }
+        //    //throw new ShardingCoreException("cant get value " + expression);
+        //}
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
@@ -337,20 +337,20 @@ namespace ShardingCore.Core.Internal.Visitors
                     {
                         if (methodCallExpression.Object is MemberExpression member1Expression)
                         {
-                            arrayObject = GetShardingKeyValue(member1Expression);
+                            arrayObject = GetExpressionValue(member1Expression);
                         }
                         else if (methodCallExpression.Object is ListInitExpression member2Expression)
                         {
-                            arrayObject = GetShardingKeyValue(member2Expression);
+                            arrayObject = GetExpressionValue(member2Expression);
                         }
                     }
                     else if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
                     {
-                        arrayObject = GetShardingKeyValue(member2Expression);
+                        arrayObject = GetExpressionValue(member2Expression);
                     }
                     else if (methodCallExpression.Arguments[0] is NewArrayExpression member3Expression)
                     {
-                        arrayObject = GetShardingKeyValue(member3Expression);
+                        arrayObject = GetExpressionValue(member3Expression);
                     }
 
                     if (arrayObject != null)
@@ -418,11 +418,11 @@ namespace ShardingCore.Core.Internal.Visitors
                         object shardingValue = default;
                         if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
                         {
-                            shardingValue = GetShardingKeyValue(member2Expression);
+                            shardingValue = GetExpressionValue(member2Expression);
                         }
                         else if (methodCallExpression.Arguments[0] is ConstantExpression constantExpression)
                         {
-                            shardingValue = GetShardingKeyValue(constantExpression);
+                            shardingValue = GetExpressionValue(constantExpression);
                         }
 
                         if (shardingValue != default)
@@ -477,7 +477,7 @@ namespace ShardingCore.Core.Internal.Visitors
                     {
                         conditionOnRight = true;
                         shardingPropertyName = shardingPredicateResult.ShardingPropertyName;
-                        value = GetShardingKeyValue(binaryExpression.Right);
+                        value = GetExpressionValue(binaryExpression.Right);
                     }
                     else
                         return x => true;
@@ -489,7 +489,7 @@ namespace ShardingCore.Core.Internal.Visitors
                     {
                         conditionOnRight = false;
                         shardingPropertyName = shardingPredicateResult.ShardingPropertyName;
-                        value = GetShardingKeyValue(binaryExpression.Left);
+                        value = GetExpressionValue(binaryExpression.Left);
                     }
                     else
                         return x => true;

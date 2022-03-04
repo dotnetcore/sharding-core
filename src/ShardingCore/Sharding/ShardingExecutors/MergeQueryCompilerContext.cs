@@ -105,14 +105,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.IsQueryTrack();
         }
 
-        public bool IsUnion()
+        public bool UseUnionAllMerge()
         {
-            return _queryCompilerContext.IsUnion();
-        }
-
-        public bool IsNotSupport()
-        {
-            return _queryCompilerContext.IsNotSupport();
+            return _queryCompilerContext.UseUnionAllMerge();
         }
 
         public int? GetMaxQueryConnectionsLimit()
@@ -133,6 +128,16 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool? SameWithShardingComparer()
         {
             return _queryCompilerContext.SameWithShardingComparer();
+        }
+
+        public bool IsSingleShardingEntityQuery()
+        {
+            return _queryCompilerContext.IsSingleShardingEntityQuery();
+        }
+
+        public Type GetSingleShardingEntityType()
+        {
+            return _queryCompilerContext.GetSingleShardingEntityType();
         }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()

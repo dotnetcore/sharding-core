@@ -1,5 +1,4 @@
 ﻿using ShardingCore.Core;
-using ShardingCore.Core.NotSupportShardingProviders.Abstractions;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
@@ -10,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions
@@ -24,9 +24,9 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
     internal abstract class AbstractBaseMergeEngine<TEntity>
     {
         protected abstract StreamMergeContext<TEntity> GetStreamMergeContext();
-        protected bool IsUnSupport()
+        protected bool UseUnionAllMerge()
         {
-            return GetStreamMergeContext().IsNotSupportSharding();
+            return GetStreamMergeContext().UseUnionAllMerge();
         }
         /// <summary>
         /// 将查询分表分库结果按每个数据源进行分组
@@ -47,9 +47,9 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             {
                 return Task.Run(async () =>
                 {
-                    if (IsUnSupport())
+                    if (UseUnionAllMerge())
                     {
-                        var customerDatabaseSqlSupportManager = ShardingContainer.GetService<INotSupportManager>();
+                        var customerDatabaseSqlSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
                         using (customerDatabaseSqlSupportManager.CreateScope(
                                    ((UnSupportSqlRouteUnit)dataSourceSqlExecutorUnit.SqlExecutorGroups[0].Groups[0]
                                        .RouteUnit).TableRouteResults))
@@ -74,7 +74,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             return streamMergeContext.DataSourceRouteResult.IntersectDataSources.SelectMany(
                 dataSourceName =>
                 {
-                    if (IsUnSupport())
+                    if (UseUnionAllMerge())
                     {
                         return new []{ (ISqlRouteUnit)new UnSupportSqlRouteUnit(dataSourceName, streamMergeContext.TableRouteResults) };
                     }
@@ -112,7 +112,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         {
             var streamMergeContext = GetStreamMergeContext();
             var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
-            var sqlCount = sqlGroups.Count();
             ////根据用户配置单次查询期望并发数
             //int exceptCount =
             //    Math.Max(
@@ -120,7 +119,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             //            ? sqlCount / maxQueryConnectionsLimit
             //            : sqlCount / maxQueryConnectionsLimit + 1, 1);
             //计算应该使用那种链接模式
-            ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode(sqlCount);
+            ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode();
 
             //将SqlExecutorUnit进行分区,每个区maxQueryConnectionsLimit个
             //[1,2,3,4,5,6,7],maxQueryConnectionsLimit=3,结果就是[[1,2,3],[4,5,6],[7]]

@@ -18,11 +18,10 @@ namespace ShardingCore.Core.Internal.Visitors
     */
     internal class QueryableExtraDiscoverVisitor : ShardingExpressionVisitor
     {
-        private int? _skip;
-        private int? _take;
-        private LinkedList<PropertyOrder> _orders = new LinkedList<PropertyOrder>();
         private GroupByContext _groupByContext = new GroupByContext();
         private SelectContext _selectContext = new SelectContext();
+        private PaginationContext _paginationContext = new PaginationContext();
+        private OrderByContext _orderByContext = new OrderByContext();
 
 
         public SelectContext GetSelectContext()
@@ -35,51 +34,29 @@ namespace ShardingCore.Core.Internal.Visitors
             return _groupByContext;
         }
 
-        public int? GetSkip()
+        public PaginationContext GetPaginationContext()
         {
-            return _skip;
+            return _paginationContext;
         }
-
-        public bool HasSkip()
+        public OrderByContext GetOrderByContext()
         {
-            return _skip.HasValue;
+            return _orderByContext;
         }
-
-        public int? GetTake()
-        {
-            return _take;
-        }
-
-        public bool HasTake()
-        {
-            return _take.HasValue;
-        }
-
-        public IEnumerable<PropertyOrder> GetOrders()
-        {
-            return _orders;
-        }
-
-        public string GetOrderExpression()
-        {
-            return string.Join(",", _orders);
-        }
-
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             var method = node.Method;
             if (node.Method.Name == nameof(Queryable.Skip))
             {
-                if (HasSkip())
+                if (_paginationContext.HasSkip())
                     throw new ShardingCoreInvalidOperationException("more than one skip found");
-                _skip = (int)GetFieldValue(node.Arguments[1]);
+                _paginationContext.Skip = (int)GetExpressionValue(node.Arguments[1]);
             }
             else if (node.Method.Name == nameof(Queryable.Take))
             {
-                if (HasTake())
+                if (_paginationContext.HasTake())
                     throw new ShardingCoreInvalidOperationException("more than one take found");
-                _take = (int)GetFieldValue(node.Arguments[1]);
+                _paginationContext.Take = (int)GetExpressionValue(node.Arguments[1]);
             }
             else if (method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.OrderByDescending) || method.Name == nameof(Queryable.ThenBy) || method.Name == nameof(Queryable.ThenByDescending))
             {
@@ -94,7 +71,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         throw new NotSupportedException("sharding order only support property expression");
                     properties.Reverse();
                     var propertyExpression = string.Join(".", properties);
-                    _orders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy), expression.Member.DeclaringType));
+                    _orderByContext.PropertyOrders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy), expression.Member.DeclaringType));
 
                 }
             }
@@ -123,7 +100,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         var declaringType = memberExpression.Member.DeclaringType;
                         var memberName = memberExpression.Member.Name;
                         var propertyInfo = declaringType.GetProperty(memberName);
-                        _selectContext.SelectProperties.Add(new SelectProperty(declaringType, propertyInfo));
+                        _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType, propertyInfo));
                         //memberExpression.Acc
                     }
                     //if (expression != null)

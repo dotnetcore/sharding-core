@@ -180,7 +180,7 @@ namespace ShardingCore.Core.ShardingConfigurations
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
         /// <summary>
-        /// 仅内部DbContext配置的方法
+        /// 仅内部真实DbContext配置的方法
         /// </summary>
         /// <param name="innerDbContextConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>

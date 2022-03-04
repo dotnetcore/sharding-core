@@ -10,6 +10,7 @@ using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
@@ -36,7 +37,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var noPaginationNoOrderQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy();
+            var noPaginationNoOrderQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().As<IQueryable<TEntity>>();
             var skip = StreamMergeContext.Skip.GetValueOrDefault();
             var take = StreamMergeContext.Take.HasValue ? StreamMergeContext.Take.Value : (_total - skip);
             if (take > int.MaxValue)

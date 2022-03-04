@@ -16,6 +16,7 @@ using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -75,7 +76,7 @@ namespace ShardingCore.Bootstrapers
         public void Initialize()
         {
             var shardingEntityType = _entityType.ClrType;
-            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey().Properties.Select(o=>o.PropertyInfo).ToList(),_queryFilterExpression);
+            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey()?.Properties?.Select(o=>o.PropertyInfo)?.ToList()??new List<PropertyInfo>(),_queryFilterExpression);
             if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
                 throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");
             //设置标签

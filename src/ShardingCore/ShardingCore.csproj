@@ -5,7 +5,7 @@
 	    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE6;</DefineConstants>
         <LangVersion>latest</LangVersion>
-	    <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
+	    <RepositoryUrl>https://github.com/dotnetcore/sharding-core</RepositoryUrl>
 	    <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -17,6 +17,11 @@
       <LangVersion>latest</LangVersion>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="Sharding\Abstractions\MergeParseContexts\**" />
+      <EmbeddedResource Remove="Sharding\Abstractions\MergeParseContexts\**" />
+      <None Remove="Sharding\Abstractions\MergeParseContexts\**" />
+    </ItemGroup>
+    <ItemGroup>
       <None Include="..\..\Logo\logo.png">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>
@@ -24,12 +29,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Sharding\Abstractions\MergeParseContexts" />
       <Folder Include="Sharding\Visitors\GroupBys" />
     </ItemGroup>
 </Project>

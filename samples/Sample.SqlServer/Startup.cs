@@ -6,21 +6,17 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Shardings;
+using Sample.SqlServer.UnionAllMerge;
 using ShardingCore;
-using ShardingCore.Sharding.ReadWriteConfigurations;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using ShardingCore.Core;
-using ShardingCore.Core.NotSupportShardingProviders;
-using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.TableExists;
+using System;
+using System.Diagnostics;
 
 namespace Sample.SqlServer
 {
+    public static class SEX
+    {
+    }
     public class Startup
     {
         public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
@@ -42,25 +38,14 @@ namespace Sample.SqlServer
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
-                    o.UseInnerDbContextConfigure(builder =>
-                    {
-                        builder
-                            .ReplaceService<IQuerySqlGeneratorFactory,
-                                ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>()
-                            .ReplaceService<IQueryCompiler, NotSupportShardingCompiler>();
-                    });
                 })
                 .AddConfig(op =>
                 {
                     op.ConfigId = "c1";
                     op.MaxQueryConnectionsLimit = 5;
-                    op.UseShardingQuery((conStr, builder) =>
+                    op.UseSqlServer(builder =>
                     {
-                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger).ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>();
-                    });
-                    op.UseShardingTransaction((connection, builder) =>
-                    {
-                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger).ReplaceService<IQuerySqlGeneratorFactory, ShardingSqlServerQuerySqlGeneratorFactory<DefaultShardingDbContext>>();
+                        builder.UseLoggerFactory(efLogger).UseUnionAllMerge<DefaultShardingDbContext>();
                     });
                     op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
                     op.AddDefaultDataSource("A",
@@ -68,7 +53,6 @@ namespace Sample.SqlServer
                      "Data Source = 101.37.117.55;persist security info=True;Initial Catalog=ShardingCoreDBXA;uid=sa;pwd=xjmumixl7610#;Max Pool Size=100;"
                      );
                 }).EnsureConfig();
-            services.TryAddSingleton<INotSupportShardingProvider, UnionSupportShardingProvider>();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
             //            o.UseSqlServer(conn).UseLoggerFactory(efLogger)
@@ -131,18 +115,6 @@ namespace Sample.SqlServer
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.DbSeed();
-        }
-    }
-
-    public class UnionSupportShardingProvider : INotSupportShardingProvider
-    {
-        public void CheckNotSupportSharding(IQueryCompilerContext queryCompilerContext)
-        {
-        }
-
-        public bool IsNotSupportSharding(IQueryCompilerContext queryCompilerContext)
-        {
-            return queryCompilerContext.IsUnion();
         }
     }
 }

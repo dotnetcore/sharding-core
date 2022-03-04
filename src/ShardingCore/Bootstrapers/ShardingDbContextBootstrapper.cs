@@ -105,7 +105,8 @@ namespace ShardingCore.Bootstrapers
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;
-                        _trackerManager.AddDbContextModel(entityType);
+                        
+                        _trackerManager.AddDbContextModel(entityType,entity.FindPrimaryKey()!=null);
                         //entity.GetAnnotation("")
                         if (_entityConfigOptions.HasVirtualDataSourceRoute(entityType) ||
                             _entityConfigOptions.HasVirtualTableRoute(entityType))

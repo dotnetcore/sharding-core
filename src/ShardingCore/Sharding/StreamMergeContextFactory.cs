@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 namespace ShardingCore.Sharding
@@ -18,14 +19,25 @@ namespace ShardingCore.Sharding
     public class StreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
         private readonly IRouteTailFactory _routeTailFactory;
+        private readonly IQueryableParseEngine _queryableParseEngine;
+        private readonly IQueryableRewriteEngine _queryableRewriteEngine;
+        private readonly IQueryableOptimizeEngine _queryableOptimizeEngine;
 
-        public StreamMergeContextFactory(IRouteTailFactory routeTailFactory)
+        public StreamMergeContextFactory(IRouteTailFactory routeTailFactory
+            , IQueryableParseEngine queryableParseEngine, IQueryableRewriteEngine queryableRewriteEngine, IQueryableOptimizeEngine queryableOptimizeEngine
+            )
         {
             _routeTailFactory = routeTailFactory;
+            _queryableParseEngine = queryableParseEngine;
+            _queryableRewriteEngine = queryableRewriteEngine;
+            _queryableOptimizeEngine = queryableOptimizeEngine;
         }
         public StreamMergeContext<T> Create<T>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            return new StreamMergeContext<T>(mergeQueryCompilerContext, _routeTailFactory);
+            var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
+            var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
+            var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
+            return new StreamMergeContext<T>(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory);
         }
     }
 }

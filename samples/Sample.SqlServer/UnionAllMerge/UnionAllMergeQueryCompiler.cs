@@ -8,18 +8,19 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore;
-using ShardingCore.Core.NotSupportShardingProviders.Abstractions;
+using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
+using ShardingCore.Sharding.Abstractions;
 
-namespace Sample.SqlServer
+namespace Sample.SqlServer.UnionAllMerge
 {
-    public class NotSupportShardingCompiler : QueryCompiler
+    public class UnionAllMergeQueryCompiler : QueryCompiler, IUnionAllMergeQueryCompiler
 	{
 		private readonly IQueryContextFactory _queryContextFactory;
 		private readonly IDatabase _database;
 		private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
 		private readonly IModel _model;
 
-		public NotSupportShardingCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
+		public UnionAllMergeQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
 		{
 			_queryContextFactory = queryContextFactory;
 			_database = database;
@@ -29,8 +30,8 @@ namespace Sample.SqlServer
 
 		public override TResult Execute<TResult>(Expression query)
 		{
-            var notSupportManager = ShardingContainer.GetService<INotSupportManager>();
-            if (notSupportManager?.Current != null)
+			var notSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
+			if (notSupportManager?.Current != null)
 			{
 				return NotSupportShardingExecute<TResult>(query);
 			}
@@ -57,7 +58,7 @@ namespace Sample.SqlServer
 
 		public override TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken = new CancellationToken())
 		{
-			var notSupportManager = ShardingContainer.GetService<INotSupportManager>();
+			var notSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
 			if (notSupportManager?.Current != null)
 			{
 				var result = NotSupportShardingExecuteAsync<TResult>(query, cancellationToken);

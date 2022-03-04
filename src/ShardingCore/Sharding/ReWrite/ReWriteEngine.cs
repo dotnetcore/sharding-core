@@ -6,6 +6,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.Visitors.Selects;
 
@@ -37,12 +38,12 @@ namespace ShardingCore.Core.Internal.StreamMerge.ReWrite
             var reWriteQueryable = _queryable;
             if (take.HasValue)
             {
-                reWriteQueryable = reWriteQueryable.RemoveTake();
+                reWriteQueryable = reWriteQueryable.RemoveTake().As<IQueryable<T>>();
             }
 
             if (skip.HasValue)
             {
-                reWriteQueryable = reWriteQueryable.RemoveSkip();
+                reWriteQueryable = reWriteQueryable.RemoveSkip().As<IQueryable<T>>();
             }
 
             if (take.HasValue)

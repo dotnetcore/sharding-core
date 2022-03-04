@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
@@ -25,7 +26,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
         public AppendOrderSequenceEnumeratorParallelExecutor(StreamMergeContext<TEntity> streamMergeContext, bool async)
         {
             _streamMergeContext = streamMergeContext;
-            _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake(); ;
+            _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().As<IQueryable<TEntity>>(); ;
             _async = async;
         }
         public override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>> ExecuteAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
@@ -39,8 +40,8 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
         private (IQueryable<TEntity>, DbContext) CreateAsyncExecuteQueryable(SequenceResult sequenceResult, IEnumerable<PropertyOrder> reSetOrders, ConnectionModeEnum connectionMode)
         {
             var shardingDbContext = _streamMergeContext.CreateDbContext(sequenceResult.DSName, sequenceResult.TableRouteResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)(_noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(reSetOrders))
-                .ReplaceDbContextQueryable(shardingDbContext);
+            var newQueryable = _noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take).OrderWithExpression(reSetOrders)
+                .ReplaceDbContextQueryable(shardingDbContext).As<IQueryable<TEntity>>();
             return (newQueryable, shardingDbContext);
         }
     }

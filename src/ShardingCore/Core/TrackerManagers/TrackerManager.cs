@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,21 +17,25 @@ namespace ShardingCore.Core.TrackerManagers
     */
     public class TrackerManager<TShardingDbContext>: ITrackerManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ISet<Type> _dbContextModels = new HashSet<Type>();
+        private readonly ConcurrentDictionary<Type,bool> _dbContextModels = new ();
 
-        public bool AddDbContextModel(Type entityType)
+        public bool AddDbContextModel(Type entityType, bool hasKey)
         {
-            return _dbContextModels.Add(entityType);
+            return _dbContextModels.TryAdd(entityType, hasKey);
         }
 
         public bool EntityUseTrack(Type entityType)
         {
-            return _dbContextModels.Contains(entityType);
+            if (!_dbContextModels.TryGetValue(entityType, out var hasKey))
+            {
+                return false;
+            }
+            return hasKey;
         }
 
         public bool IsDbContextModel(Type entityType)
         {
-            return _dbContextModels.Contains(entityType);
+            return _dbContextModels.ContainsKey(entityType);
         }
     }
 }

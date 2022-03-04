@@ -13,7 +13,7 @@ namespace ShardingCore.Core.Internal.Visitors.Selects
 */
     public class SelectContext
     {
-        public List<SelectProperty> SelectProperties { get; set; } = new List<SelectProperty>();
+        public List<SelectOwnerProperty> SelectProperties { get;  } = new List<SelectOwnerProperty>();
 
         public bool HasAverage()
         {

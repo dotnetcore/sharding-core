@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
@@ -25,7 +26,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
         {
             _streamMergeContext = streamMergeContext;
             _async = async;
-            _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
+            _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().As<IQueryable<TEntity>>();
         }
         public override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>> ExecuteAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -38,8 +39,8 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
         private (IQueryable<TEntity>, DbContext) CreateAsyncExecuteQueryable( SequenceResult sequenceResult, ConnectionModeEnum connectionMode)
         {
             var shardingDbContext = _streamMergeContext.CreateDbContext(sequenceResult.DSName, sequenceResult.TableRouteResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)(_noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take))
-                .ReplaceDbContextQueryable(shardingDbContext);
+            var newQueryable = _noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take)
+                .ReplaceDbContextQueryable(shardingDbContext).As<IQueryable<TEntity>>();
             return (newQueryable, shardingDbContext);
         }
     }

@@ -8,7 +8,7 @@ using ShardingCore.Core.Internal.Visitors.Selects;
 
 namespace ShardingCore.Sharding.Visitors.Selects
 {
-    public class SelectAggregateProperty : SelectProperty
+    public class SelectAggregateProperty : SelectOwnerProperty
     {
         public SelectAggregateProperty(Type ownerType, PropertyInfo property, bool isAggregateMethod, string aggregateMethod):base(ownerType, property)
         {

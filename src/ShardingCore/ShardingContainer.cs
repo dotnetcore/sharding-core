@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.TrackerManagers;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 
 namespace ShardingCore
 {
@@ -159,6 +161,16 @@ namespace ShardingCore
             where TShardingDbContext : DbContext, IShardingDbContext
         {
             return (IEntityMetadataManager<TShardingDbContext>)GetRequiredEntityMetadataManager(typeof(TShardingDbContext));
+        }
+
+        public static ITrackerManager GetTrackerManager(Type shardingDbContextType)
+        {
+           return (ITrackerManager)ServiceProvider.GetService(typeof(ITrackerManager<>).GetGenericType0(shardingDbContextType));
+        }
+
+        public static IVirtualTableManager GetVirtualTableManager(Type shardingDbContextType)
+        {
+            return (IVirtualTableManager)ServiceProvider.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContextType));
         }
     }
 }

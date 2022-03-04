@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ShardingCore.Exceptions;
 
 namespace ShardingCore.Extensions
 {
@@ -59,6 +60,10 @@ namespace ShardingCore.Extensions
                 //propertyAccess = Expression.MakeMemberAccess(parameter, property);
                 for (int i = 1; i < childProperties.Length; i++)
                 {
+                    if (property == null)
+                    {
+                        throw new ShardingCoreException($"property:[{propertyExpression}] not in type:[{entityType}]");
+                    }
                     property = property.PropertyType.GetProperty(childProperties[i]);
                     //propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
                 }
@@ -67,6 +72,11 @@ namespace ShardingCore.Extensions
             {
                 property = entityType.GetProperty(propertyExpression);
                 //propertyAccess = Expression.MakeMemberAccess(parameter, property);
+            }
+
+            if (property == null)
+            {
+                throw new ShardingCoreException($"property:[{propertyExpression}] not in type:[{entityType}]");
             }
 
             return property.GetValue(obj);

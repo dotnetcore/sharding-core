@@ -29,12 +29,14 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
-using ShardingCore.Core.CustomerDatabaseSqlSupports;
-using ShardingCore.Core.NotSupportShardingProviders.Abstractions;
+using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.UnionAllMergeShardingProviders;
+using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.DynamicDataSources;
+using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
@@ -125,6 +127,11 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
+            //
+            services.TryAddSingleton<IQueryableParseEngine, QueryableParseEngine>();
+            services.TryAddSingleton<IQueryableRewriteEngine, QueryableRewriteEngine>();
+            services.TryAddSingleton<IQueryableOptimizeEngine, QueryableOptimizeEngine>();
+
             //route manage
             services.TryAddSingleton<IShardingRouteManager, ShardingRouteManager>();
             services.TryAddSingleton<IShardingRouteAccessor, ShardingRouteAccessor>();
@@ -133,13 +140,14 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
-            services.TryAddSingleton<INotSupportManager, NotSupportManager>();
-            services.TryAddSingleton<INotSupportAccessor, NotSupportAccessor>();
+            services.TryAddSingleton<IUnionAllMergeManager, UnionAllMergeManager>();
+            services.TryAddSingleton<IUnionAllMergeAccessor, UnionAllMergeAccessor>();
             services.TryAddSingleton<IQueryTracker, QueryTracker>();
             services.TryAddSingleton<IShardingTrackQueryExecutor, DefaultShardingTrackQueryExecutor>();
             services.TryAddSingleton<INativeTrackQueryExecutor, NativeTrackQueryExecutor>();
             //读写分离手动指定
             services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
+
 
             services.TryAddShardingJob();
             return services;
@@ -174,7 +182,7 @@ namespace ShardingCore
 
 
 
-        
+
         //public static IServiceCollection AddSingleShardingDbContext<TShardingDbContext>(this IServiceCollection services, Action<ShardingConfigOptions> configure,
         //    Action<string, DbContextOptionsBuilder> optionsAction = null,
         //    ServiceLifetime contextLifetime = ServiceLifetime.Scoped,

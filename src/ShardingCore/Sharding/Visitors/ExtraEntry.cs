@@ -41,7 +41,7 @@ namespace ShardingCore.Core.Internal.Visitors
             var selectAggregateProperties = SelectContext.SelectProperties.OfType<SelectAggregateProperty>().Where(o=>!(o is SelectAverageProperty)).ToList();
             foreach (var averageSelectProperty in averageSelectProperties)
             {
-                var selectCountProperty = selectAggregateProperties.FirstOrDefault(o=>o is SelectCountProperty);
+                var selectCountProperty = selectAggregateProperties.FirstOrDefault(o=>o is SelectCountProperty  selectCountProperty);
                 if (null != selectCountProperty)
                 {
                     averageSelectProperty.BindCountProperty(selectCountProperty.Property);
