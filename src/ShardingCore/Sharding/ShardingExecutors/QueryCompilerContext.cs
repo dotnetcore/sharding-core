@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(_queryExpression, _shardingDbContextType);
             _queryEntities = compileParseResult.QueryEntities;
             _isNoTracking = compileParseResult.IsNoTracking;
-            _useUnionAllMerge = compileParameter.IsNotSupport();
+            _useUnionAllMerge = compileParameter.UseUnionAllMerge();
             _maxQueryConnectionsLimit = compileParameter.GetMaxQueryConnectionsLimit();
             _connectionMode = compileParameter.GetConnectionMode();
             _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);

@@ -11,19 +11,19 @@ namespace ShardingCore.Sharding.Visitors.ShardingExtractParameters
 {
     internal class ShardingExtParameter
     {
-        public bool IsNotSupport { get; }
+        public bool UseUnionAllMerge { get; }
         public ShardingQueryableAsRouteOptions ShardingQueryableAsRouteOptions { get; }
         public ShardingQueryableUseConnectionModeOptions ShardingQueryableUseConnectionModeOptions { get; }
         public ShardingQueryableReadWriteSeparationOptions ShardingQueryableReadWriteSeparationOptions { get; }
         public ShardingQueryableAsSequenceOptions ShardingQueryableAsSequenceOptions { get; }
 
-        public ShardingExtParameter(bool isNotSupport,
+        public ShardingExtParameter(bool useUnionAllMerge,
             ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions,
             ShardingQueryableUseConnectionModeOptions shardingQueryableUseConnectionModeOptions,
             ShardingQueryableReadWriteSeparationOptions shardingQueryableReadWriteSeparationOptions,
             ShardingQueryableAsSequenceOptions shardingQueryableAsSequenceOptions)
         {
-            IsNotSupport = isNotSupport;
+            UseUnionAllMerge = useUnionAllMerge;
             ShardingQueryableAsRouteOptions = shardingQueryableAsRouteOptions;
             ShardingQueryableUseConnectionModeOptions = shardingQueryableUseConnectionModeOptions;
             ShardingQueryableReadWriteSeparationOptions = shardingQueryableReadWriteSeparationOptions;

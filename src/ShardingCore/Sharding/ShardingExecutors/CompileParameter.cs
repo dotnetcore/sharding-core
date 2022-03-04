@@ -20,7 +20,7 @@ namespace ShardingCore.ShardingExecutors
     {
         private readonly IShardingDbContext _shardingDbContext;
         private readonly Expression _nativeQueryExpression;
-        private readonly bool _isNotSupport;
+        private readonly bool _useUnionAllMerge;
         private readonly int? _maxQueryConnectionsLimit;
         private readonly ConnectionModeEnum? _connectionMode;
         private readonly bool? _readOnly;
@@ -34,7 +34,7 @@ namespace ShardingCore.ShardingExecutors
             _nativeQueryExpression = shardingQueryableExtractParameter.Visit(shardingQueryExpression);
             var extractShardingParameter = shardingQueryableExtractParameter.ExtractShardingParameter();
             _shardingRouteConfigure = extractShardingParameter.ShardingQueryableAsRouteOptions?.RouteConfigure;
-            _isNotSupport = extractShardingParameter.IsNotSupport;
+            _useUnionAllMerge = extractShardingParameter.UseUnionAllMerge;
             _maxQueryConnectionsLimit = extractShardingParameter.ShardingQueryableUseConnectionModeOptions?.MaxQueryConnectionsLimit;
             _connectionMode = extractShardingParameter.ShardingQueryableUseConnectionModeOptions?.ConnectionMode;
             if (shardingDbContext.IsUseReadWriteSeparation())
@@ -57,9 +57,9 @@ namespace ShardingCore.ShardingExecutors
             return _nativeQueryExpression;
         }
 
-        public bool IsNotSupport()
+        public bool UseUnionAllMerge()
         {
-            return _isNotSupport;
+            return _useUnionAllMerge;
         }
 
         public int? GetMaxQueryConnectionsLimit()
@@ -94,7 +94,7 @@ namespace ShardingCore.ShardingExecutors
 
         public string GetPrintInfo()
         {
-            return $"is not support :{_isNotSupport},max query connections limit:{_maxQueryConnectionsLimit},connection mode:{_connectionMode},readonly:{_readOnly},as route:{_shardingRouteConfigure!=null},is sequence:{_isSequence},same with sharding comparer:{_sameWithShardingComparer}";
+            return $"is not support :{_useUnionAllMerge},max query connections limit:{_maxQueryConnectionsLimit},connection mode:{_connectionMode},readonly:{_readOnly},as route:{_shardingRouteConfigure!=null},is sequence:{_isSequence},same with sharding comparer:{_sameWithShardingComparer}";
         }
     }
 }

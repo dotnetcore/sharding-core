@@ -26,10 +26,10 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         /// <returns></returns>
         Expression GetNativeQueryExpression();
         /// <summary>
-        /// 当前查询是否是支持的查询
+        /// 是否使用union all 聚合
         /// </summary>
         /// <returns></returns>
-        bool IsNotSupport();
+        bool UseUnionAllMerge();
         /// <summary>
         /// 当前查询的连接数限制
         /// </summary>
