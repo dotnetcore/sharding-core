@@ -105,7 +105,7 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             services.AddSingleton(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
 
             services.AddSingleton(sp => CreateShardingConfigurationOptions(isMultiConfig, configurationStrategy));
-            services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
+            services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
 
             services.AddInternalShardingCore();
             return services;
