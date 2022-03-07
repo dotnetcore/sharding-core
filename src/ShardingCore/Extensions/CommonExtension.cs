@@ -99,6 +99,62 @@ namespace ShardingCore.Extensions
         {
             return nameof(object.Equals).Equals(express.Method.Name);
         }
+        //public static bool IsNamedCompareOrdinal(this BinaryExpression express)
+        //{
+        //    express.
+        //    return nameof(string.CompareOrdinal).Equals(express.Method.Name) || nameof(string.CompareTo).Equals(express.Method.Name) || nameof(string.Compare).Equals(express.Method.Name);
+        //}
+        public static bool IsNamedComparison(this BinaryExpression express,out MethodCallExpression methodCallExpression)
+        {
+            if (express.Left is MethodCallExpression m1 && m1.IsNamedComparison())
+            {
+                methodCallExpression = m1;
+                return true;
+            }
+            if (express.Right is MethodCallExpression m2 && m2.IsNamedComparison())
+            {
+                methodCallExpression = m2;
+                return true;
+            }
+
+            methodCallExpression = null;
+            return false;
+        }
+        public static bool GetComparisonLeftAndRight(this MethodCallExpression methodCallExpression, out (Expression Left,Expression Right) comparisonValue)
+        {
+
+            if (methodCallExpression.IsNamedCompare())
+            {
+                if (methodCallExpression.Arguments.Count == 2)
+                {
+                    comparisonValue = (methodCallExpression.Arguments[0], methodCallExpression.Arguments[1]);
+                    return true;
+                }
+            }
+
+            if (methodCallExpression.IsNamedCompareTo())
+            {
+                if (methodCallExpression.Arguments.Count == 1 && methodCallExpression.Object != null)
+                {
+                    comparisonValue = (methodCallExpression.Object, methodCallExpression.Arguments[0]);
+                    return true;
+                }
+            }
+            comparisonValue = (null,null);
+            return false;
+        }
+        public static bool IsNamedComparison(this MethodCallExpression express)
+        {
+            return express.IsNamedCompare() || express.IsNamedCompareTo();
+        }
+        public static bool IsNamedCompare(this MethodCallExpression express)
+        {
+            return nameof(string.CompareTo).Equals(express.Method.Name) || nameof(string.Compare).Equals(express.Method.Name);
+        }
+        public static bool IsNamedCompareTo(this MethodCallExpression express)
+        {
+            return nameof(string.CompareTo).Equals(express.Method.Name) || nameof(string.Compare).Equals(express.Method.Name);
+        }
 
         public static ISet<Type> ParseQueryableEntities(this IQueryable queryable, Type dbContextType)
         {
