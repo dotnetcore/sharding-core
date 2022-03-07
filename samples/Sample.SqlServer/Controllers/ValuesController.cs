@@ -252,7 +252,7 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get2a4()
         {
             Console.WriteLine("Get2a4-------------");
-            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(2).AsNoSequence().Skip(2).Take(2).OrderByDescending(o => o.DateOfMonth).ToListAsync();
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(1).Skip(2).Take(2).OrderByDescending(o => o.DateOfMonth).ToListAsync();
             return Ok(sysUserMods);
         }
         [HttpGet]

@@ -204,9 +204,23 @@ namespace ShardingCore.Sharding
         {
             return OptimizeResult.GetMaxQueryConnectionsLimit();
         }
-        public ConnectionModeEnum GetConnectionMode()
+        public ConnectionModeEnum GetConnectionMode(int sqlCount)
         {
-            return OptimizeResult.GetConnectionMode();
+            return CalcConnectionMode(sqlCount);
+        }
+        private ConnectionModeEnum CalcConnectionMode(int sqlCount)
+        {
+            switch (OptimizeResult.GetConnectionMode())
+            {
+                case ConnectionModeEnum.MEMORY_STRICTLY:
+                case ConnectionModeEnum.CONNECTION_STRICTLY: return OptimizeResult.GetConnectionMode();
+                default:
+                {
+                    return GetMaxQueryConnectionsLimit() < sqlCount
+                        ? ConnectionModeEnum.CONNECTION_STRICTLY
+                        : ConnectionModeEnum.MEMORY_STRICTLY; ;
+                }
+            }
         }
 
         /// <summary>

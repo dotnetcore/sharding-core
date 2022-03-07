@@ -69,25 +69,10 @@ namespace ShardingCore.Sharding.MergeContexts
 
             maxParallelExecuteCount = mergeQueryCompilerContext.GetMaxQueryConnectionsLimit() ?? maxParallelExecuteCount;
             
-            connectionMode = CalcConnectionMode(mergeQueryCompilerContext.GetDataSourceRouteResult().IntersectDataSources.Count,maxParallelExecuteCount, mergeQueryCompilerContext.GetConnectionMode() ?? connectionMode);
+            connectionMode = mergeQueryCompilerContext.GetConnectionMode() ?? connectionMode;
             var canTrip = mergeQueryCompilerContext.GetTableRouteResults().Length > maxParallelExecuteCount;
             return new OptimizeResult(maxParallelExecuteCount, connectionMode, sequenceQuery, sameWithTailComparer,
                 shardingTailComparer, canTrip);
-        }
-
-        private ConnectionModeEnum CalcConnectionMode(int sqlCount,int maxQueryConnectionsLimit, ConnectionModeEnum connectionMode)
-        {
-            switch (connectionMode)
-            {
-                case ConnectionModeEnum.MEMORY_STRICTLY:
-                case ConnectionModeEnum.CONNECTION_STRICTLY: return connectionMode;
-                default:
-                {
-                    return maxQueryConnectionsLimit < sqlCount
-                        ? ConnectionModeEnum.CONNECTION_STRICTLY
-                        : ConnectionModeEnum.MEMORY_STRICTLY; ;
-                }
-            }
         }
         /// <summary>
         /// 是否需要判断order

@@ -112,6 +112,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         {
             var streamMergeContext = GetStreamMergeContext();
             var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();
+            var sqlCount = sqlGroups.Count();
             ////根据用户配置单次查询期望并发数
             //int exceptCount =
             //    Math.Max(
@@ -119,7 +120,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
             //            ? sqlCount / maxQueryConnectionsLimit
             //            : sqlCount / maxQueryConnectionsLimit + 1, 1);
             //计算应该使用那种链接模式
-            ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode();
+            ConnectionModeEnum connectionMode = streamMergeContext.GetConnectionMode(sqlCount);
 
             //将SqlExecutorUnit进行分区,每个区maxQueryConnectionsLimit个
             //[1,2,3,4,5,6,7],maxQueryConnectionsLimit=3,结果就是[[1,2,3],[4,5,6],[7]]
