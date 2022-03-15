@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 
 namespace Sample.SqlServer.Domain.Entities
@@ -12,6 +14,7 @@ namespace Sample.SqlServer.Domain.Entities
     /// <summary>
     /// 用户表
     /// </summary>
+    //[Index("Name")]
     public class SysUserMod
     {
         /// <summary>

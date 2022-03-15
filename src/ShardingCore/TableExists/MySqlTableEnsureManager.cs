@@ -24,8 +24,12 @@ namespace ShardingCore.TableExists
             {
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
-                    if (database.Equals(dataTable.Rows[i][TABLE_SCHEMA]?.ToString()??String.Empty,StringComparison.OrdinalIgnoreCase))
-                        result.Add(dataTable.Rows[i][TABLE_NAME].ToString());
+                    var schema = dataTable.Rows[i][TABLE_SCHEMA];
+                    if (database.Equals($"{schema}", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var tableName = dataTable.Rows[i][TABLE_NAME];
+                        result.Add($"{tableName}");
+                    }
                 }
             }
             return result;

@@ -41,6 +41,7 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2x()
         {
+            _defaultTableDbContext.ChangeTracker.HasChanges()
             //var queryable = _defaultTableDbContext.Set<SysUserMod>().Where(o=>true);
 
             //var tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
