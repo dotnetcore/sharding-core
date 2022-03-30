@@ -41,7 +41,7 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2x()
         {
-            _defaultTableDbContext.ChangeTracker.HasChanges()
+            _defaultTableDbContext.ChangeTracker.HasChanges();
             //var queryable = _defaultTableDbContext.Set<SysUserMod>().Where(o=>true);
 
             //var tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
@@ -49,7 +49,7 @@ namespace Sample.SqlServer.Controllers
             var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
             var virtualTable = virtualTableManager.GetVirtualTable<SysUserMod>();
 
-            var physicTable1s = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingKeyValue:"123"));//获取值为123的所有分片
+            var physicTable1s = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingKeyValue: "123"));//获取值为123的所有分片
 
             Expression<Func<SysUserMod, bool>> where = o => o.Id == "123";
             var physicTable2s = virtualTable.RouteTo(new ShardingTableRouteConfig(predicate: where));//获取表达式o.Id == "123"的所有路由
@@ -88,8 +88,8 @@ namespace Sample.SqlServer.Controllers
             //          };
             //var listAsync = await sql.ToListAsync();
             //var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
-            var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o=>o.Id=="2");
-            var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o=>o.Id=="2");
+            var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
+            var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             resultx112331ttaa2.UserId = "zzzz";
             var resultx112331tt2xx = await _defaultTableDbContext.Set<SysTest>().Where(o => o.Id == "2").FirstOrDefaultAsync();
             resultx112331tt2xx.UserId = "xxxxx";
@@ -134,7 +134,7 @@ namespace Sample.SqlServer.Controllers
 
             using (_shardingRouteManager.CreateScope())
             {
-                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00","01");
+                _shardingRouteManager.Current.TryCreateOrAddMustTail<SysUserMod>("00", "01");
                 //_shardingRouteManager.Current.TryCreateOrAddHintTail<SysUserMod>("00", "01");
                 //_shardingRouteManager.Current.TryCreateOrAddAssertTail<SysUserMod>(new TestRouteAssert());
 
@@ -144,11 +144,11 @@ namespace Sample.SqlServer.Controllers
             //await _defaultTableDbContext.SaveChangesAsync();
 
             var sresultx1121222 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").MaxAsync(o => o.Age);
-            var unionUserIds = await _defaultTableDbContext.Set<SysUserMod>().Select(o=>new UnionUserId(){UserId = o.Id})
+            var unionUserIds = await _defaultTableDbContext.Set<SysUserMod>().Select(o => new UnionUserId() { UserId = o.Id })
                 .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().ToListAsync();
-            var unionUserIdCounts = await _defaultTableDbContext.Set<SysUserMod>().Select(o=>new UnionUserId(){UserId = o.Id})
+            var unionUserIdCounts = await _defaultTableDbContext.Set<SysUserMod>().Select(o => new UnionUserId() { UserId = o.Id })
                 .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().CountAsync();
-            var hashSet = unionUserIds.Select(o=>o.UserId).ToHashSet();
+            var hashSet = unionUserIds.Select(o => o.UserId).ToHashSet();
             var hashSetCount = hashSet.Count;
 
             return Ok();
@@ -160,11 +160,16 @@ namespace Sample.SqlServer.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> Get1([FromQuery] int p, [FromQuery] int s)
-        
+
         {
             Stopwatch sp = new Stopwatch();
             sp.Start();
-            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>().OrderBy(o => o.Age).ToShardingPageAsync(p, s);
+            var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>()
+                .AsRoute(c =>
+                {
+                    c.TryCreateOrAddMustTail<SysUserMod>("01");
+                })
+                .OrderBy(o => o.Age).ToShardingPageAsync(p, s);
             sp.Stop();
             return Ok(new
             {
@@ -228,25 +233,25 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get2a3()
         {
             var sql = from o in _defaultTableDbContext.Set<SysUserSalary>()
-                orderby o.Id descending
-                select new
-                {
-                    o.Id,
-                    o.UserId,
-                    o.DateOfMonth,
-                    o.SalaryDecimal,
-                    o.SalaryFloat
-                };
-            var xx=await sql.ToListAsync();
+                      orderby o.Id descending
+                      select new
+                      {
+                          o.Id,
+                          o.UserId,
+                          o.DateOfMonth,
+                          o.SalaryDecimal,
+                          o.SalaryFloat
+                      };
+            var xx = await sql.ToListAsync();
             Console.WriteLine("Get2a3-------------");
-            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(1).Take(2).Select(o=>new 
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserSalary>().UseConnectionMode(1).Take(2).Select(o => new
             {
                 o.Id,
                 o.UserId,
                 o.DateOfMonth,
                 o.SalaryDecimal,
                 o.SalaryFloat
-            }).OrderByDescending(o=>o.Id).ToListAsync();
+            }).OrderByDescending(o => o.Id).ToListAsync();
             return Ok(sysUserMods);
         }
         [HttpGet]
@@ -291,7 +296,7 @@ namespace Sample.SqlServer.Controllers
             {
                 list.Add(new SysUserMod()
                 {
-                    Id =i.ToString(),
+                    Id = i.ToString(),
                     Name = i.ToString(),
                     Age = i,
                     AgeGroup = i
@@ -310,7 +315,7 @@ namespace Sample.SqlServer.Controllers
                 tran.Commit();
             }
 
-            
+
 
             return Ok();
         }
@@ -319,11 +324,11 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get4()
         {
             var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
-            
+
             Console.WriteLine("----0----");
-            var xxx = await _defaultTableDbContext.Set<SysUserSalary>().IgnoreQueryFilters().OrderByDescending(o=>o.DateOfMonth).FirstOrDefaultAsync();
+            var xxx = await _defaultTableDbContext.Set<SysUserSalary>().IgnoreQueryFilters().OrderByDescending(o => o.DateOfMonth).FirstOrDefaultAsync();
             Console.WriteLine("----1----");
-            var xxx1 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o=>o.DateOfMonth).LastOrDefaultAsync();
+            var xxx1 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o => o.DateOfMonth).LastOrDefaultAsync();
             Console.WriteLine("----2----");
             var xxx11 = await _defaultTableDbContext.Set<SysUserSalary>().OrderByDescending(o => o.DateOfMonth).FirstAsync();
             Console.WriteLine("----3----");
@@ -332,7 +337,7 @@ namespace Sample.SqlServer.Controllers
 
             await _defaultTableDbContext.Set<SysUserSalary>().MaxAsync(o => o.DateOfMonth);
             await _defaultTableDbContext.Set<SysUserSalary>().MinAsync(o => o.DateOfMonth);
-            return Ok(new{ xxx , xxx1});
+            return Ok(new { xxx, xxx1 });
         }
 
     }
