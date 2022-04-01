@@ -32,5 +32,9 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// <returns></returns>
         protected abstract string TimeFormatToTail(DateTime time);
 
+        protected override string ConvertNowToTail(DateTime now)
+        {
+            return ShardingKeyToTail(now);
+        }
     }
 }

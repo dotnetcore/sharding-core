@@ -1,3 +1,6 @@
+using System;
+using ShardingCore.Helpers;
+
 namespace ShardingCore.VirtualRoutes.Abstractions
 {
     /*
@@ -29,5 +32,9 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// <returns></returns>
         protected abstract string TimeFormatToTail(long time);
 
+        protected override string ConvertNowToTail(DateTime now)
+        {
+            return ShardingKeyToTail(ShardingCoreHelper.ConvertDateTimeToLong(now));
+        }
     }
 }

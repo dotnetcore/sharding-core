@@ -265,7 +265,7 @@ namespace ShardingCore.Extensions
                 {
                     var physicTables = virtualTableManager.GetVirtualTable(entityType).RouteTo(new ShardingTableRouteConfig(predicate: @where));
                     if (physicTables.IsEmpty())
-                        throw new ShardingCoreException($"{where.ShardingPrint()} cant found ant physic table");
+                        throw new ShardingCoreException($"{where.ShardingPrint()} cant found any physic table");
 
                     var dbs = physicTables.Select(o => shardingDbContext.GetDbContext(dataSourceName, false, routeTailFactory.Create(o.Tail))).ToList();
                     foreach (var dbContext in dbs)

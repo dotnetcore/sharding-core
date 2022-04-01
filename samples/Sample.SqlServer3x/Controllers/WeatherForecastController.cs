@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Entities;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Extensions;
 using ShardingCore.TableCreator;
 
 namespace Sample.SqlServer3x.Controllers
@@ -39,7 +40,6 @@ namespace Sample.SqlServer3x.Controllers
         {
             Console.WriteLine("---------------开始-----------------");
             var s = DateTime.Now.ToString("HHmmss");
-
             Task.Run(() =>
             {
                 try

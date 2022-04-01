@@ -54,6 +54,13 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// </summary>
         /// <returns></returns>
         public abstract string[] GetCronExpressions();
+
+        /// <summary>
+        /// 当前时间转成
+        /// </summary>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        protected abstract string ConvertNowToTail(DateTime now);
         public virtual Task ExecuteAsync()
         {
             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
@@ -69,7 +76,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var virtualDataSourceManager = (IVirtualDataSourceManager)ShardingContainer.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
             var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
             var now = DateTime.Now.AddMinutes(IncrementMinutes);
-            var tail = virtualTable.GetVirtualRoute().ShardingKeyToTail(now);
+            var tail = ConvertNowToTail(now);
             virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
             foreach (var virtualDataSource in allVirtualDataSources)
             {
