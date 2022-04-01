@@ -1,14 +1,6 @@
-using ShardingCore.Core;
-
-namespace Sample.SqlServer3x.Domain.Entities
+﻿namespace Sample.SqlServer3x.Domain.Entities
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Thursday, 14 January 2021 15:36:43
-* @Email: 326308290@qq.com
-*/
-    public class SysUserMod
+    public class SysUserModAbc
     {
         /// <summary>
         /// 用户Id用于分表
@@ -23,6 +15,5 @@ namespace Sample.SqlServer3x.Domain.Entities
         /// </summary>
         public int Age { get; set; }
         public int AgeGroup { get; set; }
-        
     }
 }

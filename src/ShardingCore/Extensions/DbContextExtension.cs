@@ -29,6 +29,9 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextRelationModelThatIsShardingTable(this DbContext dbContext)
         {
+#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
+            throw new NotImplementedException();
+#endif
 #if EFCORE6
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
@@ -102,6 +105,9 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextAllRelationModelThatIsNoSharding(this DbContext dbContext)
         {
+#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
+            throw new NotImplementedException();
+#endif
 #if EFCORE6
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
@@ -146,6 +152,9 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextAllRelationModel(this DbContext dbContext)
         {
+#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
+            throw new NotImplementedException();
+#endif
 #if EFCORE6
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
@@ -178,6 +187,9 @@ namespace ShardingCore.Extensions
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType(this DbContext dbContext,
             Type shardingType)
         {
+#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
+            throw new NotImplementedException();
+#endif
 #if EFCORE2 ||EFCORE3 ||EFCORE5
 
             var contextModel = dbContext.Model as Model;
@@ -228,6 +240,9 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveModelCache(this DbContext dbContext)
         {
+#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
+            throw new NotImplementedException();
+#endif
 #if EFCORE6
             var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();

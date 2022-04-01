@@ -10,13 +10,13 @@ namespace Sample.SqlServer3x.Shardings
 * @Date: Thursday, 14 January 2021 15:39:27
 * @Email: 326308290@qq.com
 */
-    public class SysUserModVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserMod>
+    public class SysUserModAbcVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<SysUserModAbc>
     {
-        public SysUserModVirtualTableRoute() : base(2,3)
+        public SysUserModAbcVirtualTableRoute() : base(2,3)
         {
         }
 
-        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        public override void Configure(EntityMetadataTableBuilder<SysUserModAbc> builder)
         {
             builder.ShardingProperty(o => o.Id);
         }

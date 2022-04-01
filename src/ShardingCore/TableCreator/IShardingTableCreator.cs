@@ -19,16 +19,18 @@ namespace ShardingCore.TableCreator
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <param name="tail"></param>
+        /// <param name="timeOut"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(string dataSourceName, string tail) where T : class;
+        void CreateTable<T>(string dataSourceName, string tail,int timeOut=6000) where T : class;
         /// <summary>
         /// 创建表
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
+        /// <param name="timeOut"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        void CreateTable(string dataSourceName, Type shardingEntityType, string tail);
+        void CreateTable(string dataSourceName, Type shardingEntityType, string tail, int timeOut = 6000);
     }
     public interface IShardingTableCreator<TShardingDbContext>: IShardingTableCreator where TShardingDbContext : DbContext, IShardingDbContext
     {

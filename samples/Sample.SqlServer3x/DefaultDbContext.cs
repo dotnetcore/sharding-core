@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Maps;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.SqlServer3x
@@ -12,17 +14,18 @@ namespace Sample.SqlServer3x
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DefaultDbContext : DbContext, IShardingTableDbContext
+    public class DefaultDbContext : AbstractShardingDbContext, IShardingTableDbContext
     {
         public DefaultDbContext(DbContextOptions<DefaultDbContext> options) : base(options)
         {
-
+            Console.WriteLine("DefaultDbContext ctor");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new SysUserModMap());
+            modelBuilder.ApplyConfiguration(new SysUserModAbcMap());
         }
 
         public IRouteTail RouteTail { get; set; }

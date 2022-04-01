@@ -11,13 +11,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServer3x.Domain.Entities;
+using Sample.SqlServer3x.Shardings;
 using ShardingCore;
 using ShardingCore.Bootstrapers;
+using ShardingCore.TableExists;
 
 namespace Sample.SqlServer3x
 {
     public class Startup
     {
+        public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
+        {
+            builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
+        });
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -42,6 +48,33 @@ namespace Sample.SqlServer3x
             // });
             // services.AddDbContext<DefaultDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB3x;Integrated Security=True")
             //     .UseShardingSqlServerUpdateSqlGenerator());
+            //services.AddDbContext<DefaultDbContext>(op=>op.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreCreate;Integrated Security=True;"));
+            //services.AddScoped<DbContext,DefaultDbContext>(s=>s.GetService<DefaultDbContext>());
+            services.AddShardingDbContext<DefaultDbContext>()
+                .AddEntityConfig(o =>
+                {
+                    o.CreateShardingTableOnStart = true;
+                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    o.AddShardingTableRoute<SysUserModAbcVirtualTableRoute>();
+                })
+                .AddConfig(op =>
+                {
+                    op.ConfigId = "c1";
+                    op.MaxQueryConnectionsLimit = 5;
+                    op.UseShardingQuery((conStr, builder) =>
+                    {
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                    });
+                    op.UseShardingTransaction((conn, builder) =>
+                    {
+                        builder.UseSqlServer(conn).UseLoggerFactory(efLogger);
+                    });
+                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>());
+                    op.AddDefaultDataSource("A",
+                        "Data Source=localhost;Initial Catalog=ShardingCoreCreate;Integrated Security=True;"
+                    );
+                }).EnsureConfig();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,7 +96,7 @@ namespace Sample.SqlServer3x
                 endpoints.MapControllers();
             });
 
-            InitData(app).GetAwaiter().GetResult();
+            //InitData(app).GetAwaiter().GetResult();
         }
 
     /// <summary>
