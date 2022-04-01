@@ -20,6 +20,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
 namespace Samples.AbpSharding
 {
+
     public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite
                                 where TDbContext : DbContext
     {
@@ -570,5 +571,6 @@ namespace Samples.AbpSharding
         {
             return _shardingDbContextExecutor.GetVirtualDataSource();
         }
+
     }
 }

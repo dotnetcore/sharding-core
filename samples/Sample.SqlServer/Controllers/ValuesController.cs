@@ -17,6 +17,9 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
+using ShardingCore.Sharding.Abstractions;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using ShardingCore.EFCores;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -88,6 +91,7 @@ namespace Sample.SqlServer.Controllers
             //          };
             //var listAsync = await sql.ToListAsync();
             //var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
+           
             var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             resultx112331ttaa2.UserId = "zzzz";
@@ -151,6 +155,8 @@ namespace Sample.SqlServer.Controllers
             var hashSet = unionUserIds.Select(o => o.UserId).ToHashSet();
             var hashSetCount = hashSet.Count;
 
+
+
             return Ok();
         }
 
@@ -162,6 +168,12 @@ namespace Sample.SqlServer.Controllers
         public async Task<IActionResult> Get1([FromQuery] int p, [FromQuery] int s)
 
         {
+           //var queryable= _defaultTableDbContext.Set<SysUserMod>().AsNoSequence().Where(o => true);
+           // var provider = queryable.Provider as EntityQueryProvider;
+           // var compiler = provider.GetFieldValue("_queryCompiler") as ShardingQueryCompiler;
+           // var shardingDbContext = compiler.GetFieldValue("_shardingDbContext") as IShardingDbContext;
+
+
             Stopwatch sp = new Stopwatch();
             sp.Start();
             var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>()
