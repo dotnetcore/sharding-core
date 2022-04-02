@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingAll.Entities;
 using ShardingCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.DynamicDataSources;
+using ShardingCore.Helpers;
 
 namespace Sample.SqlServerShardingAll.Controllers
 {
@@ -22,6 +24,9 @@ namespace Sample.SqlServerShardingAll.Controllers
         }
         public async Task<IActionResult> Query()
         {
+            var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<MyDbContext>>();
+            virtualTableManager.AddVirtualTable()
+
             #region 动态数据源
 
             var virtualDataSource = ShardingContainer.GetRequiredCurrentVirtualDataSource<MyDbContext>();

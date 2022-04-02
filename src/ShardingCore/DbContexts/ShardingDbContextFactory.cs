@@ -28,7 +28,7 @@ namespace ShardingCore.DbContexts
             {
                 shardingTableDbContext.RouteTail = routeTail;
             }
-            var dbContextModel = dbContext.Model;
+            _ = dbContext.Model;
             return dbContext;
         }
 

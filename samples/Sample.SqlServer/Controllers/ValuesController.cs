@@ -148,8 +148,19 @@ namespace Sample.SqlServer.Controllers
             //await _defaultTableDbContext.SaveChangesAsync();
 
             var sresultx1121222 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "198").MaxAsync(o => o.Age);
+
+
+
+
             var unionUserIds = await _defaultTableDbContext.Set<SysUserMod>().Select(o => new UnionUserId() { UserId = o.Id })
                 .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().ToListAsync();
+
+
+
+
+
+
+
             var unionUserIdCounts = await _defaultTableDbContext.Set<SysUserMod>().Select(o => new UnionUserId() { UserId = o.Id })
                 .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().CountAsync();
             var hashSet = unionUserIds.Select(o => o.UserId).ToHashSet();
