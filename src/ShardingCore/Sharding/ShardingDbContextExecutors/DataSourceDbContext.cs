@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.DbContexts;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
@@ -34,7 +33,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
         public bool IsDefault { get; }
         public int DbContextCount => _dataSourceDbContexts.Count;
-        private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
+        private readonly IDbContextCreator<TShardingDbContext> _dbContextCreator;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
 
@@ -68,19 +67,19 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <param name="dataSourceName"></param>
         /// <param name="isDefault"></param>
         /// <param name="shardingDbContext"></param>
-        /// <param name="shardingDbContextFactory"></param>
+        /// <param name="dbContextCreator"></param>
         /// <param name="actualConnectionStringManager"></param>
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
             DbContext shardingDbContext,
-            IShardingDbContextFactory<TShardingDbContext> shardingDbContextFactory,
+            IDbContextCreator<TShardingDbContext> dbContextCreator,
             ActualConnectionStringManager<TShardingDbContext> actualConnectionStringManager)
         {
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingDbContext = shardingDbContext;
             _virtualDataSource = (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingDbContext).GetVirtualDataSource();
-            _shardingDbContextFactory = shardingDbContextFactory;
+            _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
             _logger = ShardingContainer.GetService<ILogger<DataSourceDbContext<TShardingDbContext>>>();
 
@@ -167,7 +166,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
-                dbContext = _shardingDbContextFactory.Create(CreateShareDbContextOptionsBuilder(), routeTail);
+                dbContext = _dbContextCreator.CreateDbContext(_shardingDbContext,CreateShareDbContextOptionsBuilder(), routeTail);
                 _dataSourceDbContexts.Add(cacheKey, dbContext);
                 ShardingDbTransaction();
             }

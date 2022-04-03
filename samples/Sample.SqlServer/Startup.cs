@@ -11,6 +11,10 @@ using ShardingCore;
 using ShardingCore.TableExists;
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Sharding.ShardingComparision;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace Sample.SqlServer
 {
@@ -75,6 +79,7 @@ namespace Sample.SqlServer
             //    }).End();
 
             services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
+            services.Replace(ServiceDescriptor.Singleton<IDbContextCreator<DefaultShardingDbContext>, ActivatorDbContextCreator<DefaultShardingDbContext>>());
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
             //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
             //    , op =>

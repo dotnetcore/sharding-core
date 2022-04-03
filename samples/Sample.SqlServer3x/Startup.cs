@@ -10,10 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sample.SqlServer3x.Domain.Entities;
 using Sample.SqlServer3x.Shardings;
 using ShardingCore;
 using ShardingCore.Bootstrapers;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.TableExists;
 
 namespace Sample.SqlServer3x
@@ -75,6 +77,9 @@ namespace Sample.SqlServer3x
                         "Data Source=localhost;Initial Catalog=ShardingCoreCreate;Integrated Security=True;"
                     );
                 }).EnsureConfig();
+            services.AddScoped<IScopedService, ScopedService>();
+            services.Replace(
+                ServiceDescriptor.Singleton<IDbContextCreator<DefaultDbContext>, CustomerDbContextCreator>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

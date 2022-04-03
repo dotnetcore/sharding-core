@@ -24,8 +24,6 @@ namespace Sample.SqlServerShardingAll.Controllers
         }
         public async Task<IActionResult> Query()
         {
-            var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<MyDbContext>>();
-            virtualTableManager.AddVirtualTable()
 
             #region 动态数据源
 

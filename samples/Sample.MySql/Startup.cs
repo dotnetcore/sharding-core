@@ -50,12 +50,12 @@ namespace Sample.MySql
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                         //builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
+                        builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                     });
                 })
                 .AddConfig(op =>

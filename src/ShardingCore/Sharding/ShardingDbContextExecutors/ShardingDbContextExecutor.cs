@@ -11,8 +11,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.DbContexts;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -38,7 +37,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IShardingDbContextFactory<TShardingDbContext> _shardingDbContextFactory;
+        private readonly IDbContextCreator<TShardingDbContext> _dbContextCreator;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
@@ -62,7 +61,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _shardingDbContext = shardingDbContext;
             _virtualDataSource = ShardingContainer.GetRequiredCurrentVirtualDataSource<TShardingDbContext>();
             _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            _shardingDbContextFactory = ShardingContainer.GetService<IShardingDbContextFactory<TShardingDbContext>>();
+            _dbContextCreator = ShardingContainer.GetService<IDbContextCreator<TShardingDbContext>>();
             _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
             _routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
             _actualConnectionStringManager = new ActualConnectionStringManager<TShardingDbContext>(_virtualDataSource);
@@ -72,7 +71,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private IDataSourceDbContext GetDataSourceDbContext(string dataSourceName)
         {
-            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext<TShardingDbContext>(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _shardingDbContextFactory, _actualConnectionStringManager));
+            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext<TShardingDbContext>(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _dbContextCreator, _actualConnectionStringManager));
 
         }
         /// <summary>
@@ -92,7 +91,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             else
             {
                 var parallelDbContextOptions = CreateParallelDbContextOptions(dataSourceName);
-                var dbContext = _shardingDbContextFactory.Create(parallelDbContextOptions, routeTail);
+                var dbContext = _dbContextCreator.CreateDbContext(_shardingDbContext, parallelDbContextOptions, routeTail);
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 return dbContext;
             }

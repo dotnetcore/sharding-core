@@ -18,7 +18,6 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.DbContexts;
 using ShardingCore.DIExtensions;
 using ShardingCore.EFCores;
 using ShardingCore.EFCores.OptionsExtensions;
@@ -30,6 +29,7 @@ using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
 using Microsoft.EntityFrameworkCore.Query;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.UnionAllMergeShardingProviders;
@@ -79,7 +79,7 @@ namespace ShardingCore
         public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(this IServiceCollection services)
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-            ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
+            //ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
             return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
 
@@ -89,38 +89,36 @@ namespace ShardingCore
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
              virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
         }
-        internal static IServiceCollection AddInternalShardingCore(this IServiceCollection services)
+        internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
             //虚拟数据源管理者
-            services.TryAddSingleton(typeof(IVirtualDataSourceManager<>), typeof(VirtualDataSourceManager<>));
+            services.TryAddSingleton<IVirtualDataSourceManager<TShardingDbContext>, VirtualDataSourceManager<TShardingDbContext>>();
             services.TryAddSingleton<IVirtualDataSourceAccessor, VirtualDataSourceAccessor>();
-            //添加创建TActualDbContext创建者
-            services.TryAddSingleton(typeof(IShardingDbContextCreatorConfig<>), typeof(DefaultShardingDbContextCreatorConfig<>));
+            //分表dbcontext创建
+            services.TryAddSingleton<IDbContextCreator<TShardingDbContext>, ActivatorDbContextCreator<TShardingDbContext>>();
 
 
-            services.TryAddSingleton(typeof(IDataSourceInitializer<>), typeof(DataSourceInitializer<>));
-            services.TryAddSingleton(typeof(ITrackerManager<>), typeof(TrackerManager<>));
-            services.TryAddSingleton(typeof(IStreamMergeContextFactory<>), typeof(StreamMergeContextFactory<>));
-            services.TryAddSingleton(typeof(IShardingTableCreator<>), typeof(ShardingTableCreator<>));
+            services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();
+            services.TryAddSingleton<ITrackerManager<TShardingDbContext>, TrackerManager<TShardingDbContext>>();
+            services.TryAddSingleton<IStreamMergeContextFactory<TShardingDbContext>, StreamMergeContextFactory<TShardingDbContext>>();
+            services.TryAddSingleton<IShardingTableCreator<TShardingDbContext>, ShardingTableCreator<TShardingDbContext>>();
             //虚拟数据源管理
-            services.TryAddSingleton(typeof(IVirtualDataSourceRouteManager<>), typeof(VirtualDataSourceRouteManager<>));
-            services.TryAddSingleton(typeof(IDataSourceRouteRuleEngine<>), typeof(DataSourceRouteRuleEngine<>));
-            services.TryAddSingleton(typeof(IDataSourceRouteRuleEngineFactory<>), typeof(DataSourceRouteRuleEngineFactory<>));
+            services.TryAddSingleton<IVirtualDataSourceRouteManager<TShardingDbContext>, VirtualDataSourceRouteManager<TShardingDbContext>>();
+            services.TryAddSingleton<IDataSourceRouteRuleEngine<TShardingDbContext>, DataSourceRouteRuleEngine<TShardingDbContext>>();
+            services.TryAddSingleton<IDataSourceRouteRuleEngineFactory<TShardingDbContext>, DataSourceRouteRuleEngineFactory<TShardingDbContext>>();
             //读写分离链接创建工厂
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //虚拟表管理
-            services.TryAddSingleton(typeof(IVirtualTableManager<>), typeof(VirtualTableManager<>));
-            //分表dbcontext创建
-            services.TryAddSingleton(typeof(IShardingDbContextFactory<>), typeof(ShardingDbContextFactory<>));
+            services.TryAddSingleton<IVirtualTableManager<TShardingDbContext>, VirtualTableManager<TShardingDbContext>>();
             //分表分库对象元信息管理
-            services.TryAddSingleton(typeof(IEntityMetadataManager<>), typeof(DefaultEntityMetadataManager<>));
+            services.TryAddSingleton<IEntityMetadataManager<TShardingDbContext>, DefaultEntityMetadataManager<TShardingDbContext>>();
 
             //分表引擎
-            services.TryAddSingleton(typeof(ITableRouteRuleEngine<>), typeof(TableRouteRuleEngine<>));
+            services.TryAddSingleton<ITableRouteRuleEngineFactory<TShardingDbContext>, TableRouteRuleEngineFactory<TShardingDbContext>>();
+            services.TryAddSingleton<ITableRouteRuleEngine<TShardingDbContext>, TableRouteRuleEngine<TShardingDbContext>>();
             //分表引擎工程
-            services.TryAddSingleton(typeof(ITableRouteRuleEngineFactory<>), typeof(TableRouteRuleEngineFactory<>));
-            services.TryAddSingleton(typeof(IParallelTableManager<>), typeof(ParallelTableManager<>));
+            services.TryAddSingleton<IParallelTableManager<TShardingDbContext>, ParallelTableManager<TShardingDbContext>>();
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.TryAddSingleton<IShardingComplierExecutor, DefaultShardingComplierExecutor>();
             services.TryAddSingleton<IQueryCompilerContextFactory, QueryCompilerContextFactory>();

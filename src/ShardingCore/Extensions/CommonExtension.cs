@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.VirtualTables;
-using ShardingCore.DbContexts.ShardingDbContexts;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
 

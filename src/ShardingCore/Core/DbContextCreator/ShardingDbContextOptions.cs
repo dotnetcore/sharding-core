@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
-namespace ShardingCore.DbContexts.ShardingDbContexts
+namespace ShardingCore.Core.DbContextCreator
 {
     /*
     * @Author: xjm

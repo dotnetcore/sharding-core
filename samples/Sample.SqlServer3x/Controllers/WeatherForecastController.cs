@@ -38,34 +38,34 @@ namespace Sample.SqlServer3x.Controllers
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            Console.WriteLine("---------------开始-----------------");
-            var s = DateTime.Now.ToString("HHmmss");
-            Task.Run(() =>
-            {
-                try
-                {
-                    var virtualTable = _virtualTableManager.GetVirtualTable(typeof(SysUserMod));
-                    _virtualTableManager.AddPhysicTable(typeof(SysUserMod), new DefaultPhysicTable(virtualTable, s));
-                    _shardingTableCreator.CreateTable<SysUserMod>("A", s);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            });
-            Task.Run(() =>
-            {
-                try
-                {
-                    var virtualTable = _virtualTableManager.GetVirtualTable(typeof(SysUserModAbc));
-                    _virtualTableManager.AddPhysicTable(typeof(SysUserModAbc), new DefaultPhysicTable(virtualTable, s));
-                    _shardingTableCreator.CreateTable<SysUserModAbc>("A", s);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            });
+            //Console.WriteLine("---------------开始-----------------");
+            //var s = DateTime.Now.ToString("HHmmss");
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        var virtualTable = _virtualTableManager.GetVirtualTable(typeof(SysUserMod));
+            //        _virtualTableManager.AddPhysicTable(typeof(SysUserMod), new DefaultPhysicTable(virtualTable, s));
+            //        _shardingTableCreator.CreateTable<SysUserMod>("A", s);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Console.WriteLine(e);
+            //    }
+            //});
+            //Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        var virtualTable = _virtualTableManager.GetVirtualTable(typeof(SysUserModAbc));
+            //        _virtualTableManager.AddPhysicTable(typeof(SysUserModAbc), new DefaultPhysicTable(virtualTable, s));
+            //        _shardingTableCreator.CreateTable<SysUserModAbc>("A", s);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Console.WriteLine(e);
+            //    }
+            //});
             //try
             //{
             //    var virtualTable = _virtualTableManager.GetVirtualTable(typeof(SysUserMod));

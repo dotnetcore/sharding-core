@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServer3x.Domain.Maps;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
@@ -14,10 +16,40 @@ namespace Sample.SqlServer3x
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    public interface IScopedService
+    {
+
+    }
+
+    public class ScopedService : IScopedService
+    {
+
+    }
+
+    public class CustomerDbContextCreator : IDbContextCreator<DefaultDbContext>
+    {
+        public DbContext CreateDbContext(DbContext mainDbContext, ShardingDbContextOptions shardingDbContextOptions)
+        {
+            var dbContext = new DefaultDbContext((DbContextOptions<DefaultDbContext>)shardingDbContextOptions.DbContextOptions,((DefaultDbContext)mainDbContext).ServiceProvider);
+
+            if (dbContext is IShardingTableDbContext shardingTableDbContext)
+            {
+                shardingTableDbContext.RouteTail = shardingDbContextOptions.RouteTail;
+            }
+            _ = dbContext.Model;
+            return dbContext;
+        }
+    }
+
     public class DefaultDbContext : AbstractShardingDbContext, IShardingTableDbContext
     {
-        public DefaultDbContext(DbContextOptions<DefaultDbContext> options) : base(options)
+        public IServiceProvider ServiceProvider { get; }
+        private readonly IScopedService _scopedService;
+
+        public DefaultDbContext(DbContextOptions<DefaultDbContext> options,IServiceProvider serviceProvider) : base(options)
         {
+            ServiceProvider = serviceProvider;
+            _scopedService = serviceProvider.GetRequiredService<IScopedService>();
             Console.WriteLine("DefaultDbContext ctor");
         }
 
