@@ -118,7 +118,7 @@ namespace ShardingCore.Extensions
         /// <summary>
         /// 切换数据源,保留原始数据源中的Expression
         /// </summary>
-        /// <param name="source">元数据源</param>
+        /// <param name="source">原数据源</param>
         /// <param name="dbContext">新数据源</param>
         /// <returns></returns>
         internal static IQueryable ReplaceDbContextQueryable(this IQueryable source, DbContext dbContext)

@@ -102,12 +102,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
             try
             {
-
-                if (_dbContextOptions != null)
-                {
-                    return _dbContextOptions;
-                }
-
                 var dbContextOptionsBuilder = CreateDbContextOptionBuilder();
 
                 if (IsDefault)
