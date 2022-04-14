@@ -613,7 +613,25 @@ namespace ShardingCore.Test
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").FirstOrDefaultAsync();
             Assert.NotNull(sysUserMod);
             Assert.Equal("2", sysUserMod.Id);
+            var sysUserMod2 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").Select(o => new
+            {
+                Name=o.Name
+            }).FirstOrDefaultAsync();
+            var sysUserMod1 = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_2").Select(o => new TestClass(o.Name,""){Id = o.Id}).FirstOrDefaultAsync();
+            Assert.NotNull(sysUserMod1);
 
+        }
+        public class TestClass
+        {
+            public string Name { get; }
+            public string Aa { get; }
+            public string Id { get; set; }
+
+            public TestClass(string name,string aa)
+            {
+                Name = name;
+                Aa = aa;
+            }
         }
 
         [Fact]
@@ -630,6 +648,7 @@ namespace ShardingCore.Test
             var sysUserMod = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Name == "name_1001").FirstOrDefaultAsync();
             Assert.Null(sysUserMod);
         }
+
 
         [Fact]
         public async Task Count_Test()

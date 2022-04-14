@@ -59,60 +59,78 @@ namespace ShardingCore.Core.Internal.Visitors
         }
         protected override Expression VisitNew(NewExpression node)
         {
-            //select 对象的数据和参数必须一致
-            if (node.Members.Count != node.Arguments.Count)
-                throw new ShardingCoreInvalidOperationException("cant parse select members length not eq arguments length");
-            for (int i = 0; i < node.Members.Count; i++)
+            if (node.Members == null)
             {
-                var declaringType = node.Members[i].DeclaringType;
-                var memberName = node.Members[i].Name;
-                var propertyInfo = declaringType.GetProperty(memberName);
-                if (node.Arguments[i] is MethodCallExpression methodCallExpression)
+                for (int i = 0; i < node.Arguments.Count; i++)
                 {
-                    var method = methodCallExpression.Method;
-                    if (method.Name == nameof(Queryable.Count) || method.Name == nameof(Queryable.Sum) || method.Name == nameof(Queryable.Max) || method.Name == nameof(Queryable.Min) || method.Name == nameof(Queryable.Average))
+                    var arg = node.Arguments[i];
+                    if (arg is MemberExpression memberExpression)
                     {
-                        SelectOwnerProperty selectOwnerProperty = null;
-
-                        if (method.Name == nameof(Queryable.Average))
-                        {
-                            var fromProperty = GetAggregateFromProperty(methodCallExpression);
-                            selectOwnerProperty = new SelectAverageProperty(declaringType,
-                                propertyInfo, fromProperty, true, method.Name);
-                        }
-                        else if (method.Name == nameof(Queryable.Count))
-                        {
-                            selectOwnerProperty = new SelectCountProperty(declaringType,
-                                propertyInfo, true, method.Name);
-                        }
-                        else if (method.Name == nameof(Queryable.Sum))
-                        {
-                            var fromProperty = GetAggregateFromProperty(methodCallExpression);
-                            selectOwnerProperty = new SelectSumProperty(declaringType,
-                                propertyInfo, fromProperty, true, method.Name);
-                        }
-                        else if (method.Name == nameof(Queryable.Max))
-                        {
-                            selectOwnerProperty = new SelectMaxProperty(declaringType,
-                                propertyInfo, true, method.Name);
-                        }
-                        else if (method.Name == nameof(Queryable.Min))
-                        {
-                            selectOwnerProperty = new SelectMinProperty(declaringType,
-                                propertyInfo, true, method.Name);
-                        }
-                        else
-                        {
-                            selectOwnerProperty = new SelectAggregateProperty(declaringType,
-                                propertyInfo,
-                                true, method.Name);
-                        }
-                        _selectContext.SelectProperties.Add(selectOwnerProperty);
-                        continue;
+                        var declaringType = memberExpression.Member.DeclaringType;
+                        var memberName = memberExpression.Member.Name;
+                        var propertyInfo = declaringType.GetProperty(memberName);
+                        _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType,
+                            propertyInfo));
                     }
                 }
-                _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType,
-                    propertyInfo));
+            }
+            else
+            {
+                //select 对象的数据和参数必须一致
+                if (node.Members.Count != node.Arguments.Count)
+                    throw new ShardingCoreInvalidOperationException("cant parse select members length not eq arguments length");
+                for (int i = 0; i < node.Members.Count; i++)
+                {
+                    var declaringType = node.Members[i].DeclaringType;
+                    var memberName = node.Members[i].Name;
+                    var propertyInfo = declaringType.GetProperty(memberName);
+                    if (node.Arguments[i] is MethodCallExpression methodCallExpression)
+                    {
+                        var method = methodCallExpression.Method;
+                        if (method.Name == nameof(Queryable.Count) || method.Name == nameof(Queryable.Sum) || method.Name == nameof(Queryable.Max) || method.Name == nameof(Queryable.Min) || method.Name == nameof(Queryable.Average))
+                        {
+                            SelectOwnerProperty selectOwnerProperty = null;
+
+                            if (method.Name == nameof(Queryable.Average))
+                            {
+                                var fromProperty = GetAggregateFromProperty(methodCallExpression);
+                                selectOwnerProperty = new SelectAverageProperty(declaringType,
+                                    propertyInfo, fromProperty, true, method.Name);
+                            }
+                            else if (method.Name == nameof(Queryable.Count))
+                            {
+                                selectOwnerProperty = new SelectCountProperty(declaringType,
+                                    propertyInfo, true, method.Name);
+                            }
+                            else if (method.Name == nameof(Queryable.Sum))
+                            {
+                                var fromProperty = GetAggregateFromProperty(methodCallExpression);
+                                selectOwnerProperty = new SelectSumProperty(declaringType,
+                                    propertyInfo, fromProperty, true, method.Name);
+                            }
+                            else if (method.Name == nameof(Queryable.Max))
+                            {
+                                selectOwnerProperty = new SelectMaxProperty(declaringType,
+                                    propertyInfo, true, method.Name);
+                            }
+                            else if (method.Name == nameof(Queryable.Min))
+                            {
+                                selectOwnerProperty = new SelectMinProperty(declaringType,
+                                    propertyInfo, true, method.Name);
+                            }
+                            else
+                            {
+                                selectOwnerProperty = new SelectAggregateProperty(declaringType,
+                                    propertyInfo,
+                                    true, method.Name);
+                            }
+                            _selectContext.SelectProperties.Add(selectOwnerProperty);
+                            continue;
+                        }
+                    }
+                    _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType,
+                        propertyInfo));
+                }
             }
             return base.VisitNew(node);
         }
