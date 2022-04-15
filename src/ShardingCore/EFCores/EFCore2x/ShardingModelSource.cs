@@ -45,18 +45,24 @@ namespace ShardingCore.EFCores
         {
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
-                if (shardingTableDbContext.RouteTail is IMultiQueryRouteTail)
+                if (shardingTableDbContext.RouteTail is INoCacheRouteTail)
                 {
                     var multiModel = CreateModel(context, conventionSetBuilder, validator);
                     return multiModel;
                 }
             }
 
+            int waitSeconds = 3;
+            if (context is IShardingModelCacheOption shardingModelCacheOption)
+            {
+                waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
+            }
+
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context);
             if (!_models.TryGetValue(cacheKey, out var model))
             {
 
-                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(3));
+                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
                     throw new ShardingCoreInvalidOperationException("cache model timeout");

@@ -65,27 +65,32 @@ namespace ShardingCore.EFCores
         {
 
             var priority = CacheItemPriority.High;
+            var size = 200;
+            var waitSeconds = 3;
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
-                if (shardingTableDbContext.RouteTail is ISingleQueryRouteTail singleQueryRouteTail)
+                if (shardingTableDbContext.RouteTail is INoCacheRouteTail)
                 {
-                    if (singleQueryRouteTail.IsShardingTableQuery())
-                    {
-                        priority = CacheItemPriority.Normal;
-                    }
+                    var noCacheModel = CreateModel(context, conventionSetBuilder, modelDependencies);
+                    return noCacheModel;
                 }
-                else if (shardingTableDbContext.RouteTail is IMultiQueryRouteTail)
+                else if (shardingTableDbContext.RouteTail is ISingleQueryRouteTail singleQueryRouteTail&& singleQueryRouteTail.IsShardingTableQuery())
                 {
-                    var multiModel = CreateModel(context, conventionSetBuilder, modelDependencies);
-                    return multiModel;
+                    priority = CacheItemPriority.Normal;
                 }
+            }
+            if (context is IShardingModelCacheOption shardingModelCacheOption)
+            {
+                priority = shardingModelCacheOption.GetModelCachePriority();
+                size = shardingModelCacheOption.GetModelCacheEntrySize();
+                waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
             }
             var cache = Dependencies.MemoryCache;
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context);
             if (!cache.TryGetValue(cacheKey, out IModel model))
             {
                 // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
-                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(3));
+                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
                     throw new ShardingCoreInvalidOperationException("cache model timeout");
@@ -95,7 +100,7 @@ namespace ShardingCore.EFCores
                     if (!cache.TryGetValue(cacheKey, out model))
                     {
                         model = CreateModel(context, conventionSetBuilder, modelDependencies);
-                        model = cache.Set(cacheKey, model, new MemoryCacheEntryOptions { Size = 200, Priority = priority });
+                        model = cache.Set(cacheKey, model, new MemoryCacheEntryOptions { Size = size, Priority = priority });
                     }
                 }
                 finally

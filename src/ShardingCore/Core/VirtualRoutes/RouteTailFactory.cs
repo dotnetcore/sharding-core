@@ -16,7 +16,19 @@ namespace ShardingCore.Core.VirtualRoutes
     {
         public IRouteTail Create(string tail)
         {
-            return new SingleQueryRouteTail(tail);
+            return Create(tail, true);
+        }
+
+        public IRouteTail Create(string tail, bool cache)
+        {
+            if (cache)
+            {
+                return new SingleQueryRouteTail(tail);
+            }
+            else
+            {
+                return new NoCacheSingleQueryRouteTail(tail);
+            }
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult)

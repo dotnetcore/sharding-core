@@ -15,12 +15,12 @@ namespace Sample.SqlServer.UnionAllMerge
         {
             option.UseShardingQuery((conStr, builder) =>
             {
-                builder.UseSqlServer(conStr);
+                builder.UseSqlServer(conStr).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 builderConfigure?.Invoke(builder);
             });
             option.UseShardingTransaction((connection, builder) =>
             {
-                builder.UseSqlServer(connection);
+                builder.UseSqlServer(connection).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 builderConfigure?.Invoke(builder);
             });
         }
@@ -33,7 +33,7 @@ namespace Sample.SqlServer.UnionAllMerge
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             return optionsBuilder.ReplaceService<IQuerySqlGeneratorFactory,
                     UnionAllMergeSqlServerQuerySqlGeneratorFactory<TShardingDbContext>>()
-                .ReplaceService<IQueryCompiler, UnionAllMergeQueryCompiler>(); ;
+                .ReplaceService<IQueryCompiler, UnionAllMergeQueryCompiler>();
         }
 
     }

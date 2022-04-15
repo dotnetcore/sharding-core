@@ -25,7 +25,6 @@ namespace ShardingCore.TableCreator
         private readonly IServiceProvider _serviceProvider;
         private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
-        private readonly object _lock = new object();
 
         public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger, IServiceProvider serviceProvider, IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions, IRouteTailFactory routeTailFactory)
         {
@@ -35,9 +34,9 @@ namespace ShardingCore.TableCreator
             _routeTailFactory = routeTailFactory;
         }
 
-        public void CreateTable<T>(string dataSourceName, string tail, int timeOut = 6000) where T : class
+        public void CreateTable<T>(string dataSourceName, string tail) where T : class
         {
-            CreateTable(dataSourceName, typeof(T), tail, timeOut);
+            CreateTable(dataSourceName, typeof(T), tail);
         }
 
         /// <summary>
@@ -46,22 +45,15 @@ namespace ShardingCore.TableCreator
         /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
-        public void CreateTable(string dataSourceName, Type shardingEntityType, string tail, int timeOut = 6000)
+        public void CreateTable(string dataSourceName, Type shardingEntityType, string tail)
         {
-            var acquire = Monitor.TryEnter(_lock, TimeSpan.FromMilliseconds(timeOut));
-            if (!acquire)
+            using (var serviceScope = _serviceProvider.CreateScope())
             {
-                throw new ShardingCoreException("CreateTable cant get _lock");
-            }
-            try
-            {
-                using (var serviceScope = _serviceProvider.CreateScope())
+                var dbContext = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
+                var shardingDbContext = (IShardingDbContext)dbContext;
+                using (var context = shardingDbContext.GetDbContext(dataSourceName, false,
+                           _routeTailFactory.Create(tail, false)))
                 {
-                    var dbContext = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
-                    var shardingDbContext = (IShardingDbContext)dbContext;
-                    var context = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(tail));
-
-
                     context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
                     var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
                     try
@@ -77,16 +69,7 @@ namespace ShardingCore.TableCreator
                             throw new ShardingCoreException($" create table error :{ex.Message}", ex);
                         }
                     }
-                    finally
-                    {
-                        context.RemoveModelCache();
-                    }
-
                 }
-            }
-            finally
-            {
-                Monitor.Exit(_lock);
             }
         }
     }
