@@ -33,10 +33,34 @@ namespace ShardingCore.Core.VirtualRoutes
 
         public IRouteTail Create(TableRouteResult tableRouteResult)
         {
+            return Create(tableRouteResult,true);
+        }
+
+        public IRouteTail Create(TableRouteResult tableRouteResult, bool cache)
+        {
             if (tableRouteResult == null || tableRouteResult.ReplaceTables.IsEmpty())
-                return new SingleQueryRouteTail(string.Empty);
+            {
+                if (cache)
+                {
+                    return new SingleQueryRouteTail(string.Empty);
+                }
+                else
+                {
+                    return new NoCacheSingleQueryRouteTail(string.Empty);
+                }
+            }
+
             if (tableRouteResult.ReplaceTables.Count == 1)
-                return new SingleQueryRouteTail(tableRouteResult);
+            {
+                if (cache)
+                {
+                    return new SingleQueryRouteTail(tableRouteResult);
+                }
+                else
+                {
+                    return new NoCacheSingleQueryRouteTail(tableRouteResult);
+                }
+            }
             return new MultiQueryRouteTail(tableRouteResult);
         }
     }

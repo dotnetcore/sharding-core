@@ -79,7 +79,7 @@ namespace Sample.SqlServer
             //    }).End();
 
             services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
-            services.Replace(ServiceDescriptor.Singleton<IDbContextCreator<DefaultShardingDbContext>, ActivatorDbContextCreator<DefaultShardingDbContext>>());
+            //services.Replace(ServiceDescriptor.Singleton<IDbContextCreator<DefaultShardingDbContext>, ActivatorDbContextCreator<DefaultShardingDbContext>>());
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
             //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
             //    , op =>

@@ -28,7 +28,6 @@ namespace ShardingCore.Core.DbContextCreator
         public DbContext CreateDbContext(DbContext mainDbContext, ShardingDbContextOptions shardingDbContextOptions)
         {
             var dbContext = _creator(shardingDbContextOptions);
-
             if (dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.RouteTail = shardingDbContextOptions.RouteTail;

@@ -11,6 +11,10 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IShardingTableDbContext
     {
+        /// <summary>
+        /// 无需实现
+        /// </summary>
         IRouteTail RouteTail { get; set; }
     }
+
 }

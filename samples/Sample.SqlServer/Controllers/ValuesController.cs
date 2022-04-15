@@ -38,6 +38,7 @@ namespace Sample.SqlServer.Controllers
         public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager)
         {
             _defaultTableDbContext = defaultTableDbContext;
+            _ = defaultTableDbContext.Model;
             _shardingRouteManager = shardingRouteManager;
         }
 

@@ -45,6 +45,10 @@ namespace ShardingCore.EFCores
         {
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
+                if (shardingTableDbContext.RouteTail is null)
+                {
+                    throw new ShardingCoreInvalidOperationException("db context model is inited before RouteTail set value");
+                }
                 if (shardingTableDbContext.RouteTail is INoCacheRouteTail)
                 {
                     var multiModel = CreateModel(context, conventionSetBuilder, validator);

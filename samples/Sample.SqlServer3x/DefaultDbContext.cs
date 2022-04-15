@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServer3x.Domain.Maps;
 using ShardingCore.Core.DbContextCreator;
@@ -31,7 +32,7 @@ namespace Sample.SqlServer3x
         public DbContext CreateDbContext(DbContext mainDbContext, ShardingDbContextOptions shardingDbContextOptions)
         {
             var dbContext = new DefaultDbContext((DbContextOptions<DefaultDbContext>)shardingDbContextOptions.DbContextOptions,((DefaultDbContext)mainDbContext).ServiceProvider);
-
+            Console.WriteLine("IsFrozen" + shardingDbContextOptions.DbContextOptions.IsFrozen);
             if (dbContext is IShardingTableDbContext shardingTableDbContext)
             {
                 shardingTableDbContext.RouteTail = shardingDbContextOptions.RouteTail;
@@ -50,6 +51,7 @@ namespace Sample.SqlServer3x
         {
             ServiceProvider = serviceProvider;
             _scopedService = serviceProvider.GetRequiredService<IScopedService>();
+            //Database.SetCommandTimeout(10000);
             Console.WriteLine("DefaultDbContext ctor");
         }
 

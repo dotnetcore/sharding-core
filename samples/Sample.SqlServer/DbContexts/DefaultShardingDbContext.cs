@@ -15,6 +15,7 @@ namespace Sample.SqlServer.DbContexts
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
+            //Database.SetCommandTimeout(10000);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

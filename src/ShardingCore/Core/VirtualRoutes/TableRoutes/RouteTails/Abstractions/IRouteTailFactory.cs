@@ -24,10 +24,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions
         /// <returns></returns>
         IRouteTail Create(string tail, bool cache);
         /// <summary>
-        /// dbcontext模型不会被缓存
+        /// 创建路由默认单个会被缓存
         /// </summary>
         /// <param name="tableRouteResult"></param>
         /// <returns></returns>
         IRouteTail Create(TableRouteResult tableRouteResult);
+        /// <summary>
+        /// 创建爱你路由默认单个是否路由根据cache多个肯定不缓存
+        /// </summary>
+        /// <param name="tableRouteResult"></param>
+        /// <param name="cache"></param>
+        /// <returns></returns>
+        IRouteTail Create(TableRouteResult tableRouteResult, bool cache);
     }
 }
