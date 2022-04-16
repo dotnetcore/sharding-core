@@ -75,7 +75,7 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             if (expression is MemberExpression member)
             {
-                if (member.Expression.Type == _entityMetadata.EntityType)
+                if (member.Expression.Type == _entityMetadata.EntityType|| MemberExpressionIsConvertAndOriginalIsEntityType(member))
                 {
                     var isShardingKey = false;
                     if (_shardingTableRoute)
@@ -97,6 +97,17 @@ namespace ShardingCore.Core.Internal.Visitors
 
             shardingPredicateResult = _noShardingPredicateResult;
             return false;
+        }
+        /// <summary>
+        /// 成员表达式是强转并且强转前的类型是当前对象
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        private bool MemberExpressionIsConvertAndOriginalIsEntityType(MemberExpression member)
+        {
+            return member.Expression.NodeType == ExpressionType.Convert &&
+                   member.Expression is UnaryExpression unaryExpression &&
+                   unaryExpression.Operand.Type == _entityMetadata.EntityType;
         }
         /// <summary>
         /// 方法是否包含shardingKey xxx.invoke(shardingkey) eg. <code>o=>new[]{}.Contains(o.Id)</code>

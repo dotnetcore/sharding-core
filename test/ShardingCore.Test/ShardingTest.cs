@@ -536,7 +536,7 @@ namespace ShardingCore.Test
         [Fact]
         public async Task ToList_Id_Eq_Not_In_Db_Test()
         {
-            var mod1s = await _virtualDbContext.Set<SysUserMod>().Where(o =>string.Compare(o.Id,"1001") ==0).ToListAsync();
+            var mod1s = await _virtualDbContext.Set<SysUserMod>().Where(o =>string.Compare(((IId)o).Id,"1001") ==0).ToListAsync();
             var mod2s = await _virtualDbContext.Set<SysUserMod>().Where(o => string.Compare("1001", o.Id) == 0).ToListAsync();
             var mod3s = await _virtualDbContext.Set<SysUserMod>().Where(o => "1001".CompareTo(o.Id)==0).ToListAsync();
             var mod4s = await _virtualDbContext.Set<SysUserMod>().Where(o => o.Id.CompareTo("1001") == 0).ToListAsync();
