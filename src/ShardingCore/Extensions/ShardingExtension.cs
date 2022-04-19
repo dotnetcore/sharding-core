@@ -62,6 +62,10 @@ namespace ShardingCore.Extensions
 
         public static string ShardingPrint(this Expression expression)
         {
+            if (expression == null)
+            {
+                return null;
+            }
 #if !EFCORE2
             return expression.Print();
 #endif

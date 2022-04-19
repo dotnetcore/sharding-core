@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
@@ -48,14 +49,14 @@ namespace ShardingCore.Core.Internal.Visitors
                     return field.GetValue(
                         GetExpressionValue(
                             e.Expression
-                        )
+                        ) ?? throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
                     );
 
                 case MemberExpression e when e.Member is PropertyInfo property:
                     return property.GetValue(
                         GetExpressionValue(
                             e.Expression
-                        )
+                        )??throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
                     );
 
                 case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
