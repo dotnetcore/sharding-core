@@ -95,9 +95,13 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// </summary>
         public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
         /// <summary>
-        /// 仅内部DbContext生效的配置委托
+        /// 外部dbcontext的配置委托
         /// </summary>
-        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+        public Action<DbContextOptionsBuilder> ShellDbContextConfigure { get; private set; }
+        /// <summary>
+        /// 仅内部真正执行的DbContext生效的配置委托
+        /// </summary>
+        public Action<DbContextOptionsBuilder> ExecutorDbContextConfigure { get; private set; }
         /// <summary>
         /// 如何使用字符串创建DbContext
         /// </summary>
@@ -117,13 +121,22 @@ namespace ShardingCore.Core.ShardingConfigurations
             ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
         }
         /// <summary>
-        /// 仅内部DbContext生效,作为最外面的壳DbContext将不会生效
+        /// 仅内部正真执行DbContext生效,作为最外面的壳DbContext将不会生效
         /// </summary>
-        /// <param name="innerDbContextConfigure"></param>
+        /// <param name="executorDbContextConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
+        public void UseExecutorDbContextConfigure(Action<DbContextOptionsBuilder> executorDbContextConfigure)
         {
-            InnerDbContextConfigure= innerDbContextConfigure?? throw new ArgumentNullException(nameof(innerDbContextConfigure));
+            ExecutorDbContextConfigure= executorDbContextConfigure ?? throw new ArgumentNullException(nameof(executorDbContextConfigure));
+        }
+        /// <summary>
+        /// 仅外部DbContext生效
+        /// </summary>
+        /// <param name="shellDbContextConfigure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UseShellDbContextConfigure(Action<DbContextOptionsBuilder> shellDbContextConfigure)
+        {
+            ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
         }
         public Func<IServiceProvider, IShardingComparer> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer();
         /// <summary>

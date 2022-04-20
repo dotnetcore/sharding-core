@@ -74,10 +74,15 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <returns></returns>
         DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
         /// <summary>
+        /// 外部db context
+        /// </summary>
+        /// <param name="dbContextOptionsBuilder"></param>
+        void UseShellDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder);
+        /// <summary>
         /// 真实DbContextOptionBuilder的配置
         /// </summary>
         /// <param name="dbContextOptionsBuilder"></param>
-        void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder);
+        void UseExecutorDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder);
         /// <summary>
         /// 使用读写分离
         /// </summary>

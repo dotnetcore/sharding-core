@@ -97,20 +97,37 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return dbContextOptionsBuilder;
         }
 
-        public override void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        public override void UseShellDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.InnerDbContextConfigure == null && _shardingEntityConfigOptions.InnerDbContextConfigure == null)
+            if (_options.ShellDbContextConfigure == null && _shardingEntityConfigOptions.ShellDbContextConfigure == null)
             {
                 return;
             }
 
-            if (_options.InnerDbContextConfigure != null)
+            if (_options.ShellDbContextConfigure != null)
             {
-                _options.InnerDbContextConfigure.Invoke(dbContextOptionsBuilder);
+                _options.ShellDbContextConfigure.Invoke(dbContextOptionsBuilder);
             }
             else
             {
-                _shardingEntityConfigOptions.InnerDbContextConfigure?.Invoke(dbContextOptionsBuilder);
+                _shardingEntityConfigOptions.ShellDbContextConfigure?.Invoke(dbContextOptionsBuilder);
+            }
+        }
+
+        public override void UseExecutorDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            if (_options.ExecutorDbContextConfigure == null && _shardingEntityConfigOptions.ExecutorDbContextConfigure == null)
+            {
+                return;
+            }
+
+            if (_options.ExecutorDbContextConfigure != null)
+            {
+                _options.ExecutorDbContextConfigure.Invoke(dbContextOptionsBuilder);
+            }
+            else
+            {
+                _shardingEntityConfigOptions.ExecutorDbContextConfigure?.Invoke(dbContextOptionsBuilder);
             }
         }
     }

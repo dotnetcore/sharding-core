@@ -162,7 +162,8 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <summary>
         /// 仅内部DbContext生效的配置委托
         /// </summary>
-        public Action<DbContextOptionsBuilder> InnerDbContextConfigure { get; private set; }
+        public Action<DbContextOptionsBuilder> ExecutorDbContextConfigure { get; private set; }
+        public Action<DbContextOptionsBuilder> ShellDbContextConfigure { get; private set; }
 
 
         /// <summary>
@@ -182,11 +183,16 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <summary>
         /// 仅内部真实DbContext配置的方法
         /// </summary>
-        /// <param name="innerDbContextConfigure"></param>
+        /// <param name="executorDbContextConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void UseInnerDbContextConfigure(Action<DbContextOptionsBuilder> innerDbContextConfigure)
+        public void UseExecutorDbContextConfigure(Action<DbContextOptionsBuilder> executorDbContextConfigure)
         {
-            InnerDbContextConfigure = innerDbContextConfigure ?? throw new ArgumentNullException(nameof(innerDbContextConfigure));
+            ExecutorDbContextConfigure = executorDbContextConfigure ?? throw new ArgumentNullException(nameof(executorDbContextConfigure));
+        }
+
+        public void UseShellDbContextConfigure(Action<DbContextOptionsBuilder> shellDbContextConfigure)
+        {
+            ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
         }
     }
 }

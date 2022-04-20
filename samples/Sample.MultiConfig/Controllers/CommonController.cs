@@ -60,7 +60,12 @@ namespace Sample.MultiConfig.Controllers
             return dbContextOptionsBuilder;
         }
 
-        public override void UseInnerDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        public override void UseShellDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
+        {
+            
+        }
+
+        public override void UseExecutorDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             
         }

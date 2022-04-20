@@ -87,7 +87,8 @@ namespace ShardingCore
         {
             var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager<TShardingDbContext>>().GetCurrentVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
-             virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+            virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {

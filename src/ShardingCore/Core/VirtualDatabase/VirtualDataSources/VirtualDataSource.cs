@@ -228,7 +228,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
             doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
-            ConfigurationParams.UseInnerDbContextOptionBuilder(dbContextOptionsBuilder);
+            ConfigurationParams.UseExecutorDbContextOptionBuilder(dbContextOptionsBuilder);
             return doUseDbContextOptionsBuilder;
         }
 
@@ -237,7 +237,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
             doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
-            ConfigurationParams.UseInnerDbContextOptionBuilder(dbContextOptionsBuilder);
+            ConfigurationParams.UseExecutorDbContextOptionBuilder(dbContextOptionsBuilder);
             return doUseDbContextOptionsBuilder;
         }
 
