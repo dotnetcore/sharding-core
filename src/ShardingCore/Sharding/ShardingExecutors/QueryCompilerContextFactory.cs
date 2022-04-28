@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Exceptions;
@@ -13,7 +6,9 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
-using ShardingCore.Sharding.Visitors;
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {

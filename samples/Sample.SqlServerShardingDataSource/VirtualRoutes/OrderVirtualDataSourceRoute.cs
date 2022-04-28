@@ -11,10 +11,7 @@ namespace Sample.SqlServerShardingDataSource.VirtualRoutes
 {
     public class OrderVirtualDataSourceRoute : AbstractShardingOperatorVirtualDataSourceRoute<Order, string>
     {
-        private readonly List<string> _dataSources = new List<string>()
-        {
-            "A", "B", "C"
-        };
+        private readonly List<string> _dataSources = Enumerable.Range(0,100).Select(o=>(o % 100).ToString().PadLeft(2,'0')).ToList();
         //我们设置区域就是数据库
         public override string ShardingKeyToDataSourceName(object shardingKey)
         {

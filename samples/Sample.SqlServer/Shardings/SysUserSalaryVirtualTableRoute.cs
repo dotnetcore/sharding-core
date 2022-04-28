@@ -43,7 +43,7 @@ namespace Sample.SqlServer.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserSalary> builder)
         {
-            
+
         }
 
         protected  string TimeFormatToTail(int time)

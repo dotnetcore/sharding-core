@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Sample.SqlServerShardingDataSource.VirtualRoutes;
 using ShardingCore;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using ShardingCore.TableExists;
 
 namespace Sample.SqlServerShardingDataSource
@@ -34,8 +37,8 @@ namespace Sample.SqlServerShardingDataSource
             services.AddShardingDbContext<MyDbContext>()
                 .AddEntityConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
+                    o.CreateShardingTableOnStart = false;
+                    o.EnsureCreatedWithOutShardingTable = false;
                     o.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();
                     o.AddShardingDataSourceRoute<SysUserVirtualDataSourceRoute>();
                 })
@@ -51,21 +54,14 @@ namespace Sample.SqlServerShardingDataSource
                         builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
                     op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyDbContext>());
-                    op.AddDefaultDataSource("A",
-                    "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBA;Integrated Security=True;");
+                    op.AddDefaultDataSource("00",
+                    "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly00;Integrated Security=True;");
                     op.AddExtraDataSource(sp =>
                     {
-                        return new Dictionary<string, string>()
-                    {
-                        {
-                            "B",
-                            "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBB;Integrated Security=True;"
-                        },
-                        {
-                            "C",
-                            "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBC;Integrated Security=True;"
-                        },
-                    };
+                        return Enumerable.Range(1, 100).Select(o => (o % 100).ToString().PadLeft(2, '0')).ToList()
+                            .ToDictionary(o => o,
+                                o =>
+                                    $"Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly{o};Integrated Security=True;");
                     });
                 }).EnsureConfig();
         }
@@ -78,7 +74,10 @@ namespace Sample.SqlServerShardingDataSource
                 app.UseDeveloperExceptionPage();
             }
 
+            Stopwatch sp=Stopwatch.StartNew();
             app.UseShardingCore();
+            sp.Stop();
+            Console.WriteLine("ºÄÊ±"+sp.ElapsedMilliseconds);
             app.UseRouting();
 
             app.UseAuthorization();
@@ -87,7 +86,7 @@ namespace Sample.SqlServerShardingDataSource
             {
                 endpoints.MapControllers();
             });
-            app.InitSeed();
+            //app.InitSeed();
         }
     }
 }

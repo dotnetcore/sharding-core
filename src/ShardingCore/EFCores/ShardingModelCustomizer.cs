@@ -43,11 +43,9 @@ namespace ShardingCore.EFCores
                 {
                     var singleQueryRouteTail = (ISingleQueryRouteTail) shardingTableDbContext.RouteTail;
                     var tail = singleQueryRouteTail.GetTail();
-                    var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-                    var typeMap = virtualTableManager.GetAllVirtualTables().Where(o => o.GetTableAllTails().Contains(tail)).Select(o => o.EntityMetadata.EntityType).ToHashSet();
 
                     //设置分表
-                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => _entityMetadataManager.IsShardingTable(o.ClrType) && typeMap.Contains(o.ClrType)).ToArray();
+                    var mutableEntityTypes = modelBuilder.Model.GetEntityTypes().Where(o => _entityMetadataManager.IsShardingTable(o.ClrType)).ToArray();
                     foreach (var entityType in mutableEntityTypes)
                     {
                         MappingToTable(entityType.ClrType, modelBuilder, tail);

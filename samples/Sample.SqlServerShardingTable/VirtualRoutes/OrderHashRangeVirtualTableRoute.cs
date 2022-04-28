@@ -17,7 +17,7 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
 
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var stringHashCode = ShardingCoreHelper.GetStringHashCode("123");
+            var stringHashCode = ShardingCoreHelper.GetStringHashCode(shardingKey.ToString());
             var hashCode = stringHashCode % 10000;
             if (hashCode >= 0 && hashCode <= 3000)
             {

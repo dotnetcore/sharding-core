@@ -166,7 +166,7 @@ namespace Sample.SqlServer.Controllers
                 .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().CountAsync();
             var hashSet = unionUserIds.Select(o => o.UserId).ToHashSet();
             var hashSetCount = hashSet.Count;
-
+            var averageAsync = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Age != 19).AverageAsync(o => o.Age);
 
 
             return Ok();
