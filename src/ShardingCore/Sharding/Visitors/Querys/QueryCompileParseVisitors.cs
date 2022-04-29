@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Extensions;
 
@@ -49,6 +51,39 @@ namespace ShardingCore.Sharding.Visitors.Querys
             return base.VisitExtension(node);
         }
 #endif
+
+        protected override Expression VisitMember
+            (MemberExpression memberExpression)
+        {
+            // Recurse down to see if we can simplify...
+            var expression = Visit(memberExpression.Expression);
+
+            // If we've ended up with a constant, and it's a property or a field,
+            // we can simplify ourselves to a constant
+            if (expression is ConstantExpression)
+            {
+                object container = ((ConstantExpression)expression).Value;
+                var member = memberExpression.Member;
+                if (member is FieldInfo fieldInfo)
+                {
+                    object value = fieldInfo.GetValue(container);
+                    if (value is IQueryable queryable)
+                    {
+                        shardingEntities.Add(queryable.ElementType);
+                    }
+                    //return Expression.Constant(value);
+                }
+                if (member is PropertyInfo propertyInfo)
+                {
+                    object value = propertyInfo.GetValue(container, null);
+                    if (value is IQueryable queryable)
+                    {
+                        shardingEntities.Add(queryable.ElementType);
+                    }
+                }
+            }
+            return base.VisitMember(memberExpression);
+        }
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             switch (node.Method.Name)

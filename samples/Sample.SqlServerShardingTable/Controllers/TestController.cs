@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,20 +25,38 @@ namespace Sample.SqlServerShardingTable.Controllers
         }
         public async Task<IActionResult> Query()
         {
-            var sysUser =await _myDbContext.Set<SysUser>().Where(o=>o.Id=="1").FirstOrDefaultAsync();
-            var dateTime = new DateTime(2021,3,5);
-            var order = await _myDbContext.Set<Order>().Where(o=>o.CreationTime>= dateTime).OrderBy(o=>o.CreationTime).FirstOrDefaultAsync();
-            var orderIdOne = await _myDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == "3");
+            Console.WriteLine("123123");
+            var dateTime = new DateTime(2021,2,1);
+            var orderSet = _myDbContext.Set<Order>().Where(o=>o.CreationTime== dateTime);
+            var listAsync = await _myDbContext.Set<SysUser>().Where(o=> orderSet.Any(u=>u.Id== o.Id)).ToListAsync();
+            //Console.WriteLine("123123456");
+            //var orderSet1 = _myDbContext.Set<Order>().Select(o => o);
+            //var listAsync2 = await _myDbContext.Set<SysUser>().Where(o => orderSet1.Any(u => u.Id == o.Id)).ToListAsync();
 
-            var sysUsers = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1" || o.Id=="6").ToListAsync();
+            //Console.WriteLine("456456");
+            //var dbSet1 = _myDbContext.Set<Order>();
+            //var dbSet2 = _myDbContext.Set<Order>();
+            //var queryable = (from u in dbSet1
+            //                 join x in dbSet2
+            //        on u.Id equals x.Id
+            //                 select u
+            //        );
+            //var @async = queryable.ToListAsync();
+            //var sysUser =await _myDbContext.Set<SysUser>().Where(o=>o.Id=="1").FirstOrDefaultAsync();
+            //var dateTime = new DateTime(2021,3,5);
+            //var order = await _myDbContext.Set<Order>().Where(o=>o.CreationTime>= dateTime).OrderBy(o=>o.CreationTime).FirstOrDefaultAsync();
+            //var orderIdOne = await _myDbContext.Set<Order>().FirstOrDefaultAsync(o => o.Id == "3");
 
-            return Ok(new object[]
-            {
-                sysUser,
-                order,
-                orderIdOne,
-                sysUsers
-            });
+            //var sysUsers = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1" || o.Id=="6").ToListAsync();
+
+            //return Ok(new object[]
+            //{
+            //    sysUser,
+            //    order,
+            //    orderIdOne,
+            //    sysUsers
+            //});
+            return Ok();
         }
         public async Task<IActionResult> Query2()
         {

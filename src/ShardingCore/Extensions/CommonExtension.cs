@@ -161,6 +161,12 @@ namespace ShardingCore.Extensions
             return ShardingUtil.GetQueryEntitiesFilter(queryable, dbContextType);
         }
 
+        public static bool IsMemberQueryable(this MemberExpression memberExpression)
+        {
+            if (memberExpression == null)
+                throw new ArgumentNullException(nameof(memberExpression));
+            return memberExpression.Type.FullName?.StartsWith("System.Linq.IQueryable`1") ?? false;
+        }
 
         public static Type GetSequenceType(this Type type)
         {

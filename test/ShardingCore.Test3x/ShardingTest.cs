@@ -1531,6 +1531,13 @@ namespace ShardingCore.Test3x
                 .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).SumAsync();
             Assert.Equal(0, sum);
         }
+        [Fact]
+        public async Task QueryInner_Test()
+        {
+            var sysUserMods = _virtualDbContext.Set<SysUserMod>().Select(o => o);
+            var sysUserModInts = await _virtualDbContext.Set<SysUserModInt>().Where(o => sysUserMods.Select(i => i.Age).Any(i => i == o.Age)).ToListAsync();
+            Assert.Equal(1000, sysUserModInts.Count);
+        }
         // [Fact]
         // public async Task Group_API_Test()
         // {

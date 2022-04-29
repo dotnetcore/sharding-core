@@ -1458,6 +1458,13 @@ namespace ShardingCore.Test
                 .Where(o => o.CreateTime == fiveBegin).Select(o => o.Money).Sum();
             Assert.Equal(0, sum);
         }
+        [Fact]
+        public void QueryInner_Test()
+        {
+            var sysUserMods = _virtualDbContext.Set<SysUserMod>().Select(o => o);
+            var sysUserModInts = _virtualDbContext.Set<SysUserModInt>().Where(o => sysUserMods.Select(i => i.Age).Any(i => i == o.Age)).ToList();
+            Assert.Equal(1000, sysUserModInts.Count);
+        }
         // [Fact]
         // public void Group_API_Test()
         // {
