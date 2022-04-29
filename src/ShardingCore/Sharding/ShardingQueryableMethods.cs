@@ -26,6 +26,9 @@ namespace ShardingCore.Sharding
         private static Dictionary<Type, MethodInfo> SumWithoutSelectorMethods { get; }
 
         private static Dictionary<Type, MethodInfo> SumWithSelectorMethods { get; }
+        public static MethodInfo AsQueryable { get; }
+        public static MethodInfo LongCountWithoutPredicate { get; }
+        public static MethodInfo Select { get; }
 
         static ShardingQueryableMethods()
         {
@@ -47,6 +50,20 @@ namespace ShardingCore.Sharding
             ShardingQueryableMethods.AverageWithSelectorMethods = new Dictionary<Type, MethodInfo>();
             ShardingQueryableMethods.SumWithoutSelectorMethods = new Dictionary<Type, MethodInfo>();
             ShardingQueryableMethods.SumWithSelectorMethods = new Dictionary<Type, MethodInfo>();
+            ShardingQueryableMethods.AsQueryable = GetMethod(nameof(AsQueryable), 1, (Func<Type[], Type[]>)(types => new Type[1]
+            {
+                typeof (IEnumerable<>).MakeGenericType(types[0])
+            }));
+
+            ShardingQueryableMethods.LongCountWithoutPredicate = GetMethod("LongCount", 1, (Func<Type[], Type[]>)(types => new Type[1]
+            {
+                typeof (IQueryable<>).MakeGenericType(types[0])
+            }));
+            ShardingQueryableMethods.Select = GetMethod(nameof(Select), 2, (Func<Type[], Type[]>)(types => new Type[2]
+            {
+                typeof (IQueryable<>).MakeGenericType(types[0]),
+                typeof (Expression<>).MakeGenericType(typeof (Func<,>).MakeGenericType(types[0], types[1]))
+            }));
             foreach (Type type1 in typeArray)
             {
                 Type type = type1;
@@ -68,6 +85,7 @@ namespace ShardingCore.Sharding
                     typeof (IQueryable<>).MakeGenericType(types[0]),
                     typeof (Expression<>).MakeGenericType(typeof (Func<,>).MakeGenericType(types[0], type))
                 }));
+
             }
             MethodInfo GetMethod(
                 string name,

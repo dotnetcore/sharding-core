@@ -979,7 +979,7 @@ namespace ShardingCore.Test
             var fourBegin = new DateTime(2021, 4, 1).Date;
             var fiveBegin = new DateTime(2021, 5, 1).Date;
             var moneyAverage = await _virtualDbContext.Set<Order>()
-                .Where(o => o.CreateTime >= fourBegin && o.CreateTime <= fiveBegin).Select(o => o.Money).AverageAsync();
+                .Where(o => o.CreateTime >= fourBegin&& o.CreateTime <= fiveBegin).Select(o => o.Money).AverageAsync();
             Assert.Equal(105, moneyAverage);
 
             using (_shardingRouteManager.CreateScope())
