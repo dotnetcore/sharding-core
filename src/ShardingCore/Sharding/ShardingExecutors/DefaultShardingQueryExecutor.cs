@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
+using ShardingCore.Extensions.InternalExtensions;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
@@ -123,7 +124,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             var streamMergeContext= streamMergeContextMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamMergeContextFactory, new object[] { mergeQueryCompilerContext });
             if (streamMergeContext is IPrint print)
             {
-                _logger.LogDebug(print.GetPrintInfo());
+                _logger.LogLazyDebug(()=> print.GetPrintInfo());
             }
             return streamMergeContext;
 #endif

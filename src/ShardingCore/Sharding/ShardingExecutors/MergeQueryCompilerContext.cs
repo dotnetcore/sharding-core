@@ -62,7 +62,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             if (_queryCompilerContext.GetQueryEntities().Count > 1&& routeResults.Length>0)
             {
                 var entityMetadataManager = _queryCompilerContext.GetEntityMetadataManager();
-                var queryShardingTables = _queryCompilerContext.GetQueryEntities().Where(o => entityMetadataManager.IsShardingTable(o)).ToArray();
+                var queryShardingTables = _queryCompilerContext.GetQueryEntities().Keys.Where(o => entityMetadataManager.IsShardingTable(o)).ToArray();
                 if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
                 {
                     return routeResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
@@ -75,7 +75,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return new MergeQueryCompilerContext(queryCompilerContext, queryCombineResult,dataSourceRouteResult, tableRouteResults);
         }
-        public ISet<Type> GetQueryEntities()
+        public Dictionary<Type,IQueryable> GetQueryEntities()
         {
             return _queryCompilerContext.GetQueryEntities();
         }

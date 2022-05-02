@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.ShardingExtractParameters;
 using ShardingCore.ShardingExecutors;
@@ -16,20 +17,24 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly ILogger<DefaultShardingComplierExecutor> _logger;
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
+        private readonly IPrepareParser _prepareParser;
 
-        public DefaultShardingComplierExecutor(ILogger<DefaultShardingComplierExecutor> logger,IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory)
+        public DefaultShardingComplierExecutor(ILogger<DefaultShardingComplierExecutor> logger,
+            IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory,IPrepareParser prepareParser)
         {
             _logger = logger;
             _shardingTrackQueryExecutor = shardingTrackQueryExecutor;
             _queryCompilerContextFactory = queryCompilerContextFactory;
+            _prepareParser = prepareParser;
         }
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
-            var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
-            using (new CustomerQueryScope(compileParameter))
+            //预解析表达式
+            var prepareParseResult = _prepareParser.Parse(shardingDbContext,query);
+            _logger.LogDebug($"compile parameter:{prepareParseResult}");
+            using (new CustomerQueryScope(prepareParseResult))
             {
-                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
+                var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
                 return _shardingTrackQueryExecutor.Execute<TResult>(queryCompilerContext);
             }
 
@@ -41,12 +46,13 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public TResult ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
+            //预解析表达式
+            var prepareParseResult = _prepareParser.Parse(shardingDbContext, query);
+            _logger.LogDebug($"compile parameter:{prepareParseResult}");
 
-            using (new CustomerQueryScope(compileParameter))
+            using (new CustomerQueryScope(prepareParseResult))
             {
-                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
+                var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
             }
         }
@@ -55,11 +61,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
 #if EFCORE2
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
-            var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
-            using (new CustomerQueryScope(compileParameter))
+            //预解析表达式
+            var prepareParseResult = _prepareParser.Parse(shardingDbContext, query);
+            _logger.LogDebug($"compile parameter:{prepareParseResult}");
+            using (new CustomerQueryScope(prepareParseResult))
             {
-                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
+                var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
             }
         }
@@ -67,11 +74,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken)
         {
-            var compileParameter = new CompileParameter(shardingDbContext,query);
-            _logger.LogDebug($"compile parameter:{compileParameter.GetPrintInfo()}");
-            using (new CustomerQueryScope(compileParameter))
+            //预解析表达式
+            var prepareParseResult = _prepareParser.Parse(shardingDbContext, query);
+            _logger.LogDebug($"compile parameter:{prepareParseResult}");
+            using (new CustomerQueryScope(prepareParseResult))
             {
-                var queryCompilerContext = _queryCompilerContextFactory.Create(compileParameter);
+                var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
                 return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext, cancellationToken);
             }
         }

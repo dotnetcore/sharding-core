@@ -63,42 +63,42 @@ namespace ShardingCore.Utils
             return visitor.GetRouteParseExpression();
         }
 
-        /// <summary>
-        /// 获取本次查询的所有涉及到的对象
-        /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="dbContextType"></param>
-        /// <returns></returns>
-        public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable,Type dbContextType)
-        {
-            return GetQueryEntitiesByExpression(queryable.Expression, dbContextType);
-        }
-        public static ISet<Type> GetQueryEntitiesByExpression(Expression expression, Type dbContextType)
-        {
-            var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
+        ///// <summary>
+        ///// 获取本次查询的所有涉及到的对象
+        ///// </summary>
+        ///// <param name="queryable"></param>
+        ///// <param name="dbContextType"></param>
+        ///// <returns></returns>
+        //public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable,Type dbContextType)
+        //{
+        //    return GetQueryEntitiesByExpression(queryable.Expression, dbContextType);
+        //}
+        //public static ISet<Type> GetQueryEntitiesByExpression(Expression expression, Type dbContextType)
+        //{
+        //    var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
 
-            QueryEntitiesVisitor visitor = new QueryEntitiesVisitor(trackerManager);
+        //    QueryEntitiesVisitor visitor = new QueryEntitiesVisitor(trackerManager);
 
-            visitor.Visit(expression);
+        //    visitor.Visit(expression);
 
-            return visitor.GetQueryEntities();
-        }
-        /// <summary>
-        /// 获取次需要编译的表达式解析信息
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <param name="dbContextType"></param>
-        /// <returns></returns>
-        public static CompileParseResult GetQueryCompileParseResultByExpression(Expression expression, Type dbContextType)
-        {
-            var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
+        //    return visitor.GetQueryEntities();
+        //}
+        ///// <summary>
+        ///// 获取次需要编译的表达式解析信息
+        ///// </summary>
+        ///// <param name="expression"></param>
+        ///// <param name="dbContextType"></param>
+        ///// <returns></returns>
+        //public static CompileParseResult GetQueryCompileParseResultByExpression(Expression expression, Type dbContextType)
+        //{
+        //    var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
 
-            QueryCompileParseVisitors visitor = new QueryCompileParseVisitors(trackerManager);
+        //    QueryCompileParseVisitors visitor = new QueryCompileParseVisitors(trackerManager);
 
-            visitor.Visit(expression);
+        //    visitor.Visit(expression);
 
-            return visitor.GetCompileParseResult();
-        }
+        //    return visitor.GetCompileParseResult();
+        //}
 
     }
 }

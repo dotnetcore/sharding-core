@@ -38,6 +38,8 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
+using ShardingCore.Sharding.Parsers;
+using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
@@ -127,6 +129,7 @@ namespace ShardingCore
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //
+            services.TryAddSingleton<IPrepareParser, DefaultPrepareParser>();
             services.TryAddSingleton<IQueryableParseEngine, QueryableParseEngine>();
             services.TryAddSingleton<IQueryableRewriteEngine, QueryableRewriteEngine>();
             services.TryAddSingleton<IQueryableOptimizeEngine, QueryableOptimizeEngine>();

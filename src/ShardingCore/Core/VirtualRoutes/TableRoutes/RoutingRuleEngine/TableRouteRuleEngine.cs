@@ -33,16 +33,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         public IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext)
         {
             Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
-            var queryEntities = tableRouteRuleContext.Queryable.ParseQueryableEntities(typeof(TShardingDbContext));
+            var queryEntities = tableRouteRuleContext.QueryEntities;
 
 
-            foreach (var shardingEntity in queryEntities)
+            foreach (var shardingEntityKv in queryEntities)
             {
-                if(!_entityMetadataManager.IsShardingTable(shardingEntity))
+                var shardingEntity = shardingEntityKv.Key;
+                if (!_entityMetadataManager.IsShardingTable(shardingEntity))
                     continue;
                 var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
 
-                var physicTables = virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: tableRouteRuleContext.Queryable));
+                var physicTables = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingEntityKv.Value ?? tableRouteRuleContext.Queryable));
                 if (!routeMaps.ContainsKey(virtualTable))
                 {
                     routeMaps.Add(virtualTable, physicTables.ToHashSet());

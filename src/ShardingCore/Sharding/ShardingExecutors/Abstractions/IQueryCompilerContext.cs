@@ -14,7 +14,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
 {
     public interface IQueryCompilerContext
     {
-        ISet<Type> GetQueryEntities();
+        Dictionary<Type, IQueryable> GetQueryEntities();
         IShardingDbContext GetShardingDbContext();
         Expression GetQueryExpression();
         IEntityMetadataManager GetEntityMetadataManager();

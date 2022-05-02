@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -22,6 +23,20 @@ namespace Sample.SqlServerShardingTable.Controllers
         {
             _myDbContext = myDbContext;
             _virtualDataSourceManager = virtualDataSourceManager;
+        }
+        public async Task<IActionResult> Testa()
+        {
+            Stopwatch sp=Stopwatch.StartNew();
+            var listAsync = await _myDbContext.Set<SysUser>().AsTracking().ToListAsync();
+            sp.Stop();
+            return Ok(sp.ElapsedMilliseconds);
+        }
+        public async Task<IActionResult> Testb()
+        {
+            Stopwatch sp = Stopwatch.StartNew();
+            var listAsync = await _myDbContext.Set<SysUser>().AsNoTracking().ToListAsync();
+            sp.Stop();
+            return Ok(sp.ElapsedMilliseconds);
         }
         public async Task<IActionResult> Query()
         {

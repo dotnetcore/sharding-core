@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.Extensions.ShardingQueryableExtensions
 {
-    internal class ShardingQueryableAsSequenceOptions
+    public class ShardingQueryableAsSequenceOptions
     {
         public bool SameWithShardingComparer { get; }
         public bool AsSequence { get; }

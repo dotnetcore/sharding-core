@@ -10,12 +10,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
+using ShardingCore.Sharding.Parsers;
+using ShardingCore.Sharding.Parsers.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
     public class QueryCompilerContext: IQueryCompilerContext
     {
-        private readonly ISet<Type> _queryEntities;
+        private readonly Dictionary<Type/* 查询对象类型 */, IQueryable/* 查询对象对应的表达式 */> _queryEntities;
         private readonly IShardingDbContext _shardingDbContext;
         private readonly Expression _queryExpression;
         private readonly IEntityMetadataManager _entityMetadataManager;
@@ -30,31 +32,31 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly bool? _isSequence;
         private readonly bool? _sameWithShardingComparer;
 
-        private QueryCompilerContext(ICompileParameter compileParameter)
+        private QueryCompilerContext(IPrepareParseResult prepareParseResult)
         {
-            _shardingDbContext = compileParameter.GetShardingDbContext();
-            _queryExpression = compileParameter.GetNativeQueryExpression();
+            _shardingDbContext = prepareParseResult.GetShardingDbContext();
+            _queryExpression = prepareParseResult.GetNativeQueryExpression();
             _shardingDbContextType = _shardingDbContext.GetType();
-            var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(_queryExpression, _shardingDbContextType);
-            _queryEntities = compileParseResult.QueryEntities;
-            _isNoTracking = compileParseResult.IsNoTracking;
-            _useUnionAllMerge = compileParameter.UseUnionAllMerge();
-            _maxQueryConnectionsLimit = compileParameter.GetMaxQueryConnectionsLimit();
-            _connectionMode = compileParameter.GetConnectionMode();
+            //var compileParseResult = ShardingUtil.GetQueryCompileParseResultByExpression(_queryExpression, _shardingDbContextType);
+            _queryEntities = prepareParseResult.GetQueryEntities();
+            _isNoTracking = prepareParseResult.IsNotracking();
+            _useUnionAllMerge = prepareParseResult.UseUnionAllMerge();
+            _maxQueryConnectionsLimit = prepareParseResult.GetMaxQueryConnectionsLimit();
+            _connectionMode = prepareParseResult.GetConnectionMode();
             _entityMetadataManager = ShardingContainer.GetRequiredEntityMetadataManager(_shardingDbContextType);
 
             //原生对象的原生查询如果是读写分离就需要启用并行查询
-            _isParallelQuery = compileParameter.ReadOnly().GetValueOrDefault();
-            _isSequence = compileParameter.IsSequence();
-            _sameWithShardingComparer = compileParameter.SameWithShardingComparer();
+            _isParallelQuery = prepareParseResult.ReadOnly().GetValueOrDefault();
+            _isSequence = prepareParseResult.IsSequence();
+            _sameWithShardingComparer = prepareParseResult.SameWithShardingComparer();
         }
 
-        public static QueryCompilerContext Create(ICompileParameter compileParameter)
+        public static QueryCompilerContext Create(IPrepareParseResult prepareParseResult)
         {
-            return new QueryCompilerContext(compileParameter);
+            return new QueryCompilerContext(prepareParseResult);
         }
 
-        public ISet<Type> GetQueryEntities()
+        public Dictionary<Type, IQueryable> GetQueryEntities()
         {
             return _queryEntities;
         }
@@ -127,19 +129,19 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public bool IsSingleShardingEntityQuery()
         {
-            return _queryEntities.Count(o => _entityMetadataManager.IsSharding(o)) == 1;
+            return _queryEntities.Keys.Where(o => _entityMetadataManager.IsSharding(o)).Take(2).Count() == 1;
         }
 
         public Type GetSingleShardingEntityType()
         {
-            return _queryEntities.Single(o => _entityMetadataManager.IsSharding(o));
+            return _queryEntities.Keys.Single(o => _entityMetadataManager.IsSharding(o));
         }
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                hasQueryCompilerExecutor = _queryEntities.All(o => !_entityMetadataManager.IsSharding(o));
+                hasQueryCompilerExecutor = _queryEntities.Keys.All(o => !_entityMetadataManager.IsSharding(o));
                 if (hasQueryCompilerExecutor.Value)
                 {
                     var virtualDataSource = _shardingDbContext.GetVirtualDataSource();

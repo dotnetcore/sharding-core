@@ -156,10 +156,10 @@ namespace ShardingCore.Extensions
             return nameof(string.CompareTo).Equals(express.Method.Name) || nameof(string.Compare).Equals(express.Method.Name);
         }
 
-        public static ISet<Type> ParseQueryableEntities(this IQueryable queryable, Type dbContextType)
-        {
-            return ShardingUtil.GetQueryEntitiesFilter(queryable, dbContextType);
-        }
+        //public static ISet<Type> ParseQueryableEntities(this IQueryable queryable, Type dbContextType)
+        //{
+        //    return ShardingUtil.GetQueryEntitiesFilter(queryable, dbContextType);
+        //}
 
         public static bool IsMemberQueryable(this MemberExpression memberExpression)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 /*
@@ -9,17 +10,17 @@ using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 */
 namespace ShardingCore.Extensions
 {
-    public static class CompileParameterExtension
+    public static class CompileExtension
     {
         /// <summary>
         /// 是否存在自定义查询
         /// </summary>
-        /// <param name="compileParameter"></param>
+        /// <param name="prepareParseResult"></param>
         /// <returns></returns>
-        public static bool HasCustomerQuery(this ICompileParameter compileParameter)
+        public static bool HasCustomerQuery(this IPrepareParseResult prepareParseResult)
         {
             //compileParameter.ReadOnly().HasValue || compileParameter.GetAsRoute() != null;
-            return compileParameter.GetAsRoute() != null;
+            return prepareParseResult.GetAsRoute() != null;
         }
     }
 }

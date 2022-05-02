@@ -2,6 +2,7 @@
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
@@ -18,12 +19,12 @@ namespace ShardingCore.ShardingExecutors
     {
         private readonly ShardingRouteScope _shardingRouteScope;
         private readonly bool _hasCustomerQuery;
-        public CustomerQueryScope(ICompileParameter compileParameter)
+        public CustomerQueryScope(IPrepareParseResult prepareParseResult)
         {
-            _hasCustomerQuery = compileParameter.HasCustomerQuery();
+            _hasCustomerQuery = prepareParseResult.HasCustomerQuery();
             if (_hasCustomerQuery)
             {
-                var asRoute = compileParameter.GetAsRoute();
+                var asRoute = prepareParseResult.GetAsRoute();
                 if ( asRoute!= null)
                 {
                     var shardingRouteManager = ShardingContainer.GetService<IShardingRouteManager>();

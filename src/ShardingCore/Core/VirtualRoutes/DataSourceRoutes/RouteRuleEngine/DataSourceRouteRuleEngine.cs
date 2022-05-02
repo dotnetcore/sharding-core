@@ -31,21 +31,16 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         {
             var virtualDataSource = routeRuleContext.VirtualDataSource;
             var dataSourceMaps = new Dictionary<Type, ISet<string>>();
-            var notShardingDataSourceEntityType = routeRuleContext.QueryEntities.FirstOrDefault(o => !_entityMetadataManager.IsShardingDataSource(o));
-            //存在不分库的
-            if (notShardingDataSourceEntityType != null)
-                dataSourceMaps.Add(notShardingDataSourceEntityType, new HashSet<string>() { virtualDataSource.DefaultDataSourceName });
 
-
-            //if (queryEntities.Count > 1)
-            //    throw new ShardingCoreNotSupportedException($"{routeRuleContext.Queryable.ShardingPrint()}");
-            foreach (var queryEntity in routeRuleContext.QueryEntities)
+            foreach (var queryEntityKv in routeRuleContext.QueryEntities)
             {
+                var queryEntity = queryEntityKv.Key;
                 if (!_entityMetadataManager.IsShardingDataSource(queryEntity))
                 {
+                    dataSourceMaps.Add(queryEntity, new HashSet<string>() { virtualDataSource.DefaultDataSourceName });
                     continue;
                 }
-                var dataSourceConfigs = virtualDataSource.RouteTo(queryEntity,new ShardingDataSourceRouteConfig(routeRuleContext.Queryable));
+                var dataSourceConfigs = virtualDataSource.RouteTo(queryEntity, new ShardingDataSourceRouteConfig(queryEntityKv.Value??routeRuleContext.Queryable));
                 if (!dataSourceMaps.ContainsKey(queryEntity))
                 {
                     dataSourceMaps.Add(queryEntity, dataSourceConfigs.ToHashSet());

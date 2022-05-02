@@ -52,7 +52,8 @@ namespace ShardingCore.Sharding
         /// <summary>
         /// 本次查询涉及的对象
         /// </summary>
-        public ISet<Type> QueryEntities => MergeQueryCompilerContext.GetQueryEntities();
+        public ISet<Type> QueryEntities { get; }
+        
 
         /// <summary>
         /// 本次查询跨库
@@ -86,7 +87,7 @@ namespace ShardingCore.Sharding
             RewriteQueryable = rewriteQueryable;
             OptimizeResult = optimizeResult;
             _routeTailFactory = routeTailFactory;
-            
+            QueryEntities= MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
             _trackerManager = ShardingContainer.GetTrackerManager(mergeQueryCompilerContext.GetShardingDbContextType());
             _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
@@ -184,7 +185,7 @@ namespace ShardingCore.Sharding
 
         public bool IsSingleShardingEntityQuery()
         {
-            return QueryEntities.Count(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o)) == 1;
+            return QueryEntities.Where(o => MergeQueryCompilerContext.GetEntityMetadataManager().IsSharding(o)).Take(2).Count() == 1;
         }
         public Type GetSingleShardingEntityType()
         {

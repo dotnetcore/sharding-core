@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Extensions;
@@ -21,14 +22,14 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     /// <typeparam name="T"></typeparam>
     public class DataSourceRouteRuleContext
     {
-        public DataSourceRouteRuleContext(IQueryable queryable,IShardingDbContext shardingDbContext)
+        public DataSourceRouteRuleContext(IQueryable queryable,IShardingDbContext shardingDbContext, Dictionary<Type, IQueryable> queryEntities)
         {
             Queryable = queryable;
             ShardingDbContext = shardingDbContext;
             VirtualDataSource = shardingDbContext.GetVirtualDataSource();
-            QueryEntities = queryable.ParseQueryableEntities(shardingDbContext.GetType());
+            QueryEntities = queryEntities;
         }
-        public ISet<Type> QueryEntities { get; }
+        public Dictionary<Type, IQueryable> QueryEntities { get; }
         /// <summary>
         /// 查询条件
         /// </summary>
