@@ -8,8 +8,8 @@ using ShardingCore.Sharding.Enumerators;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions
 {
-    internal interface IStreamMergeCombine<TEntity>
+    internal interface IStreamMergeCombine
     {
-        IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine(StreamMergeContext<TEntity> streamMergeContext,IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
+        IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine<TEntity>(StreamMergeContext streamMergeContext,IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators);
     }
 }

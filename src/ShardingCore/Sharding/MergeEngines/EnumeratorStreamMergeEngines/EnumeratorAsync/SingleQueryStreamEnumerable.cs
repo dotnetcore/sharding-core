@@ -21,20 +21,20 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Date: Thursday, 02 September 2021 20:58:10
     * @Email: 326308290@qq.com
     */
-    internal class SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class SingleQueryStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public SingleQueryEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext, new SingleStreamMergeCombine<TEntity>())
+        public SingleQueryStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext, new SingleStreamMergeCombine())
         {
         }
 
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var dataSourceName = StreamMergeContext.DataSourceRouteResult.IntersectDataSources.First();
-            var routeResult = StreamMergeContext.TableRouteResults[0];
-            var shardingDbContext = StreamMergeContext.CreateDbContext(dataSourceName, routeResult, ConnectionModeEnum.MEMORY_STRICTLY);
-            var newQueryable = (IQueryable<TEntity>)StreamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
+            var dataSourceName = GetStreamMergeContext().DataSourceRouteResult.IntersectDataSources.First();
+            var routeResult = GetStreamMergeContext().TableRouteResults[0];
+            var shardingDbContext = GetStreamMergeContext().CreateDbContext(dataSourceName, routeResult, ConnectionModeEnum.MEMORY_STRICTLY);
+            var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
             var enumeratorParallelExecutor = new SingleQueryEnumeratorParallelExecutor<TEntity>();
             if (async)
             {

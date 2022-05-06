@@ -9,16 +9,16 @@ using ShardingCore.Sharding.MergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines
 {
-    internal class ReverseStreamMergeCombine<TEntity>:IStreamMergeCombine<TEntity>
+    internal class ReverseStreamMergeCombine:IStreamMergeCombine
     {
-        public IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine(StreamMergeContext<TEntity> streamMergeContext,
+        public IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine<TEntity>(StreamMergeContext streamMergeContext,
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             var doGetStreamMergeAsyncEnumerator = DoGetStreamMergeAsyncEnumerator(streamMergeContext, streamsAsyncEnumerators);
             return new InMemoryReverseStreamMergeAsyncEnumerator<TEntity>(doGetStreamMergeAsyncEnumerator);
         }
 
-        private static IStreamMergeAsyncEnumerator<TEntity> DoGetStreamMergeAsyncEnumerator(StreamMergeContext<TEntity> streamMergeContext, IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
+        private static IStreamMergeAsyncEnumerator<TEntity> DoGetStreamMergeAsyncEnumerator<TEntity>(StreamMergeContext streamMergeContext, IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             if (streamMergeContext.IsPaginationQuery())
             {

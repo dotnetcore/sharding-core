@@ -14,17 +14,17 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
     */
     internal class PaginationStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
-        private readonly StreamMergeContext<T> _mergeContext;
+        private readonly StreamMergeContext _mergeContext;
         private readonly IStreamMergeAsyncEnumerator<T> _enumerator;
         private readonly int? _skip;
         private readonly int? _take;
         private int realSkip = 0;
         private int realTake = 0;
 
-        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources):this(mergeContext, sources,mergeContext.Skip, mergeContext.Take)
+        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources):this(mergeContext, sources,mergeContext.Skip, mergeContext.Take)
         {
         }
-        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources,int? skip,int? take)
+        public PaginationStreamMergeAsyncEnumerator(StreamMergeContext mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> sources,int? skip,int? take)
         {
             _mergeContext = mergeContext;
             _skip = skip;

@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class FirstAsyncInMemoryMergeEngine<TEntity>: AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity>
     {
-        public FirstAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public FirstAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 

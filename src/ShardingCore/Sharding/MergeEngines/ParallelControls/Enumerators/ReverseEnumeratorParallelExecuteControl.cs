@@ -13,9 +13,9 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators
 {
     internal class ReverseEnumeratorParallelExecuteControl<TResult>: AbstractEnumeratorParallelExecuteControl<TResult>
     {
-        private readonly IStreamMergeCombine<TResult> _streamMergeCombine;
+        private readonly IStreamMergeCombine _streamMergeCombine;
 
-        public ReverseEnumeratorParallelExecuteControl(StreamMergeContext<TResult> streamMergeContext, IParallelExecutor<IStreamMergeAsyncEnumerator<TResult>> executor, IStreamMergeCombine<TResult> streamMergeCombine) : base(streamMergeContext, executor)
+        public ReverseEnumeratorParallelExecuteControl(StreamMergeContext streamMergeContext, IParallelExecutor<IStreamMergeAsyncEnumerator<TResult>> executor, IStreamMergeCombine streamMergeCombine) : base(streamMergeContext, executor)
         {
             _streamMergeCombine = streamMergeCombine;
         }

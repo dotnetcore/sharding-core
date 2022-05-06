@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class AnyAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,bool>
     {
-        public AnyAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public AnyAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 

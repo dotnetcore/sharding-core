@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
     internal abstract class AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
-        protected AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        protected AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         protected override IParallelExecuteControl<TQResult> CreateParallelExecuteControl<TQResult>(IParallelExecutor<TQResult> executor)

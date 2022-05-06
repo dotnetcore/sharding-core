@@ -32,11 +32,11 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
     internal class EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly StreamMergeContext<TEntity> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
         private readonly IShardingPageManager _shardingPageManager;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private EnumeratorStreamMergeEngineFactory(StreamMergeContext<TEntity> streamMergeContext)
+        private EnumeratorStreamMergeEngineFactory(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
         }
 
-        public static EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity> Create(StreamMergeContext<TEntity> streamMergeContext)
+        public static EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity> Create(StreamMergeContext streamMergeContext)
         {
             return new EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>(streamMergeContext);
         }
@@ -53,21 +53,21 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         {
             return _streamMergeContext.GetShardingDbContext().GetVirtualDataSource().GetRoute(entityType);
         }
-        public IEnumeratorStreamMergeEngine<TEntity> GetMergeEngine()
+        public IStreamEnumerable<TEntity> GetMergeEngine()
         {
             if (_streamMergeContext.IsRouteNotMatch())
             {
-                return new EmptyQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new EmptyQueryStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
             }
             //本次查询没有跨库没有跨表就可以直接执行
             if (!_streamMergeContext.IsMergeQuery())
             {
-                return new SingleQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new SingleQueryStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
             }
 
             if (_streamMergeContext.UseUnionAllMerge())
             {
-                return new DefaultShardingEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new DefaultShardingStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
             }
 
             //未开启系统分表或者本次查询涉及多张分表
@@ -96,10 +96,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
 
-            return new DefaultShardingEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext);
+            return new DefaultShardingStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
         }
 
-        private IEnumeratorStreamMergeEngine<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
+        private IStreamEnumerable<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
         {
 
             var isShardingDataSource = _entityMetadataManager.IsShardingDataSource(shardingEntityType);
@@ -132,14 +132,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
+                return new AppendOrderSequenceStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
             }
 
 
             return null;
         }
 
-        private IEnumeratorStreamMergeEngine<TEntity> DoOrderSequencePaginationEnumeratorStreamMergeEngine(Type shardingEntityType)
+        private IStreamEnumerable<TEntity> DoOrderSequencePaginationEnumeratorStreamMergeEngine(Type shardingEntityType)
         {
 
             var orderCount = _streamMergeContext.Orders.Count();
@@ -175,7 +175,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                                                                              !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                return new SequenceStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
@@ -194,7 +194,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             //skip过大reserve skip
             if (dataSourceUseReverse && tableUseReverse)
             {
-                return new ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity>(_streamMergeContext, total);
+                return new ReverseShardingStreamEnumerable<TEntity>(_streamMergeContext, total);
             }
 
 

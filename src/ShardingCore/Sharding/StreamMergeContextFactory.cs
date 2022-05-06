@@ -32,12 +32,12 @@ namespace ShardingCore.Sharding
             _queryableRewriteEngine = queryableRewriteEngine;
             _queryableOptimizeEngine = queryableOptimizeEngine;
         }
-        public StreamMergeContext<T> Create<T>(IMergeQueryCompilerContext mergeQueryCompilerContext)
+        public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
             var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
-            return new StreamMergeContext<T>(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory);
+            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory);
         }
     }
 }

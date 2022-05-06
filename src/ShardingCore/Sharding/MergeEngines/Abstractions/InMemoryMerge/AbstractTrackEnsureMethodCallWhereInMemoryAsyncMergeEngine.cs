@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     */
     internal abstract  class AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,TEntity>
     {
-        protected AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        protected AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 

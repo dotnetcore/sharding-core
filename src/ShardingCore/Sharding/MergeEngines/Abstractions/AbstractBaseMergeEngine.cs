@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
     */
     internal abstract class AbstractBaseMergeEngine<TEntity>
     {
-        protected abstract StreamMergeContext<TEntity> GetStreamMergeContext();
+        protected abstract StreamMergeContext GetStreamMergeContext();
         protected bool UseUnionAllMerge()
         {
             return GetStreamMergeContext().UseUnionAllMerge();

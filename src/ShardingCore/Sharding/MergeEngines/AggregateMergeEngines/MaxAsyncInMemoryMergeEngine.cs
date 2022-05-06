@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     */
     internal class MaxAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
-        public MaxAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public MaxAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         private TResult GetMaxTResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)

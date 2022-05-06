@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class FirstOrDefaultAsyncInMemoryMergeEngine<TEntity> : AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity>
     {
-        public FirstOrDefaultAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public FirstOrDefaultAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

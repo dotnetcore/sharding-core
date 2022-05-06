@@ -11,10 +11,10 @@ using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMerg
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
-    internal class EmptyQueryEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class EmptyQueryStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public EmptyQueryEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext,new EmptyStreamMergeCombine<TEntity>())
+        public EmptyQueryStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext,new EmptyStreamMergeCombine())
         {
         }
 

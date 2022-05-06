@@ -21,12 +21,12 @@ namespace ShardingCore.Sharding.Enumerators
         /// <summary>
         /// 合并数据上下文
         /// </summary>
-        private readonly StreamMergeContext<T> _mergeContext;
+        private readonly StreamMergeContext _mergeContext;
 
         private readonly IStreamMergeAsyncEnumerator<T> _enumerator;
         private List<IComparable> _orderValues;
 
-        public OrderStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IStreamMergeAsyncEnumerator<T> enumerator)
+        public OrderStreamMergeAsyncEnumerator(StreamMergeContext mergeContext, IStreamMergeAsyncEnumerator<T> enumerator)
         {
             _mergeContext = mergeContext;
             _enumerator = enumerator;

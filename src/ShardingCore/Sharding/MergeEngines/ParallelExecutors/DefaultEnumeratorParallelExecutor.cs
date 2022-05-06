@@ -16,10 +16,10 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
 {
     internal class DefaultEnumeratorParallelExecutor<TEntity>:AbstractEnumeratorParallelExecutor<TEntity>
     {
-        private readonly StreamMergeContext<TEntity> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
         private readonly bool _async;
 
-        public DefaultEnumeratorParallelExecutor(StreamMergeContext<TEntity> streamMergeContext,bool async)
+        public DefaultEnumeratorParallelExecutor(StreamMergeContext streamMergeContext,bool async)
         {
             _streamMergeContext = streamMergeContext;
             _async = async;

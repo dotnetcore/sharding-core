@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     internal class LongCountAsyncInMemoryMergeEngine<TEntity> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity,long>
     {
         private readonly IShardingPageManager _shardingPageManager;
-        public LongCountAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public LongCountAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
             _shardingPageManager= ShardingContainer.GetService<IShardingPageManager>();
         }

@@ -33,14 +33,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class SequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class SequenceStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly PaginationSequenceConfig _dataSourceSequenceMatchOrderConfig;
         private readonly PaginationSequenceConfig _tableSequenceMatchOrderConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
         private readonly bool _isAsc;
-        public SequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig dataSourceSequenceMatchOrderConfig, PaginationSequenceConfig tableSequenceMatchOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext, new SequenceStreamMergeCombine<TEntity>())
+        public SequenceStreamEnumerable(StreamMergeContext streamMergeContext, PaginationSequenceConfig dataSourceSequenceMatchOrderConfig, PaginationSequenceConfig tableSequenceMatchOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext, new SequenceStreamMergeCombine())
         {
             _dataSourceSequenceMatchOrderConfig = dataSourceSequenceMatchOrderConfig;
             _tableSequenceMatchOrderConfig = tableSequenceMatchOrderConfig;
@@ -51,11 +51,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var skip = StreamMergeContext.Skip.GetValueOrDefault();
+            var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
             if (skip < 0)
                 throw new ShardingCoreException("skip must ge 0");
 
-            var take = StreamMergeContext.Take;
+            var take = GetStreamMergeContext().Take;
             if (take.HasValue && take.Value <= 0)
                 throw new ShardingCoreException("take must gt 0");
             //分库是主要排序

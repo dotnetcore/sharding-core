@@ -16,11 +16,11 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
 {
     internal class ReverseEnumeratorParallelExecutor<TEntity>:AbstractEnumeratorParallelExecutor<TEntity>
     {
-        private readonly StreamMergeContext<TEntity> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
         private readonly IOrderedQueryable<TEntity> _reverseOrderQueryable;
         private readonly bool _async;
 
-        public ReverseEnumeratorParallelExecutor(StreamMergeContext<TEntity> streamMergeContext,IOrderedQueryable<TEntity> reverseOrderQueryable, bool async)
+        public ReverseEnumeratorParallelExecutor(StreamMergeContext streamMergeContext,IOrderedQueryable<TEntity> reverseOrderQueryable, bool async)
         {
             _streamMergeContext = streamMergeContext;
             _reverseOrderQueryable = reverseOrderQueryable;

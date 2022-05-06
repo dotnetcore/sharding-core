@@ -18,9 +18,9 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     */
     internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine<TEntity>
     {
-        private readonly StreamMergeContext<TEntity> _mergeContext;
+        private readonly StreamMergeContext _mergeContext;
 
-        protected AbstractInMemoryAsyncMergeEngine(StreamMergeContext<TEntity> streamMergeContext)
+        protected AbstractInMemoryAsyncMergeEngine(StreamMergeContext streamMergeContext)
         {
             _mergeContext = streamMergeContext;
         }
@@ -39,7 +39,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 
 
 
-        protected override StreamMergeContext<TEntity> GetStreamMergeContext()
+        protected override StreamMergeContext GetStreamMergeContext()
         {
             return _mergeContext;
         }

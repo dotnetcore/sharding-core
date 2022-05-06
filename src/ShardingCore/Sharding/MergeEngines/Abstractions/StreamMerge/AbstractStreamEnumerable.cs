@@ -19,25 +19,25 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractEnumeratorStreamMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IEnumeratorStreamMergeEngine<TEntity>
+    internal abstract class AbstractStreamEnumerable<TEntity> : AbstractBaseMergeEngine<TEntity>, IStreamEnumerable<TEntity>
     {
-        private readonly IStreamMergeCombine<TEntity> _streamMergeCombine;
-        public StreamMergeContext<TEntity> StreamMergeContext { get; }
+        private readonly IStreamMergeCombine _streamMergeCombine;
+        private readonly StreamMergeContext _streamMergeContext;
 
-        protected override StreamMergeContext<TEntity> GetStreamMergeContext()
+        protected override StreamMergeContext GetStreamMergeContext()
         {
-            return StreamMergeContext;
+            return _streamMergeContext;
         }
 
-        protected IStreamMergeCombine<TEntity> GetStreamMergeCombine()
+        protected IStreamMergeCombine GetStreamMergeCombine()
         {
             return _streamMergeCombine;
         }
 
-        protected AbstractEnumeratorStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext,IStreamMergeCombine<TEntity> streamMergeCombine)
+        protected AbstractStreamEnumerable(StreamMergeContext streamMergeContext,IStreamMergeCombine streamMergeCombine)
         {
+            _streamMergeContext = streamMergeContext;
             _streamMergeCombine = streamMergeCombine;
-            StreamMergeContext = streamMergeContext;
         }
 
 
@@ -69,7 +69,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
 
         public void Dispose()
         {
-            StreamMergeContext.Dispose();
+            _streamMergeContext.Dispose();
         }
 
 
@@ -104,7 +104,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
         private IStreamMergeAsyncEnumerator<TEntity> CombineStreamMergeAsyncEnumerator(
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
-            return GetStreamMergeCombine().StreamMergeEnumeratorCombine(GetStreamMergeContext(), streamsAsyncEnumerators);
+            return GetStreamMergeCombine().StreamMergeEnumeratorCombine<TEntity>(GetStreamMergeContext(), streamsAsyncEnumerators);
         }
 
         protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(

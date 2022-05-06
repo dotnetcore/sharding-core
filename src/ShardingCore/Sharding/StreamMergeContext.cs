@@ -28,7 +28,7 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext<TEntity> : ISeqQueryProvider, IMergeParseContext, IDisposable, IPrint
+    public class StreamMergeContext : ISeqQueryProvider, IMergeParseContext, IDisposable, IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
@@ -147,13 +147,13 @@ namespace ShardingCore.Sharding
         //    return _routeTailFactory.Create(tableRouteResult);
         //}
 
-        public IQueryable<TEntity> GetReWriteQueryable()
+        public IQueryable GetReWriteQueryable()
         {
-            return RewriteQueryable.As<IQueryable<TEntity>>();
+            return RewriteQueryable;
         }
-        public IQueryable<TEntity> GetOriginalQueryable()
+        public IQueryable GetOriginalQueryable()
         {
-            return MergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable().As<IQueryable<TEntity>>();
+            return MergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
         }
 
         public int? GetPaginationReWriteTake()

@@ -9,9 +9,9 @@ using ShardingCore.Sharding.MergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines
 {
-    internal class DefaultStreamMergeCombine<TEntity>:IStreamMergeCombine<TEntity>
+    internal class DefaultStreamMergeCombine:IStreamMergeCombine
     {
-        public IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine(StreamMergeContext<TEntity> streamMergeContext,
+        public IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine<TEntity>(StreamMergeContext streamMergeContext,
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {
             if (streamMergeContext.IsPaginationQuery())

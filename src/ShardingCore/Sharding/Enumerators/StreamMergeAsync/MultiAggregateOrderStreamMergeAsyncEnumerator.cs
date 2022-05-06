@@ -21,14 +21,14 @@ namespace ShardingCore.Sharding.Enumerators
     internal class MultiAggregateOrderStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
 
-        private readonly StreamMergeContext<T> _mergeContext;
+        private readonly StreamMergeContext _mergeContext;
         private readonly IEnumerable<IStreamMergeAsyncEnumerator<T>> _enumerators;
         private readonly PriorityQueue<IOrderStreamMergeAsyncEnumerator<T>> _queue;
         private T CurrentValue;
         private List<object> CurrentGroupValues;
         private bool _skipFirst;
 
-        public MultiAggregateOrderStreamMergeAsyncEnumerator(StreamMergeContext<T> mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> enumerators)
+        public MultiAggregateOrderStreamMergeAsyncEnumerator(StreamMergeContext mergeContext, IEnumerable<IStreamMergeAsyncEnumerator<T>> enumerators)
         {
             _mergeContext = mergeContext;
             _enumerators = enumerators;

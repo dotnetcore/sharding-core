@@ -110,27 +110,10 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             throw new ShardingCoreException($"db context operator not support query expression:[{mergeQueryCompilerContext.GetQueryExpression().ShardingPrint()}]  result type:[{typeof(TResult).FullName}]");
         }
 
-        private object GetStreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext)
+        private StreamMergeContext GetStreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            var queryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
-            Type resultType = queryable.ElementType;
-
             var streamMergeContextFactory = (IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(mergeQueryCompilerContext.GetShardingDbContextType()));
-
-            var streamMergeContextMethod = streamMergeContextFactory.GetType().GetMethod(nameof(IStreamMergeContextFactory.Create));
-            if (streamMergeContextMethod == null)
-                throw new ShardingCoreException($"cant found {nameof(IStreamMergeContextFactory)} method [{nameof(IStreamMergeContextFactory.Create)}]");
-#if DEBUG
-            var streamMergeContext= streamMergeContextMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamMergeContextFactory, new object[] { mergeQueryCompilerContext });
-            if (streamMergeContext is IPrint print)
-            {
-                _logger.LogLazyDebug(()=> print.GetPrintInfo());
-            }
-            return streamMergeContext;
-#endif
-#if !DEBUG
-            return streamMergeContextMethod.MakeGenericMethod(new Type[] { resultType }).Invoke(streamMergeContextFactory, new object[] { mergeQueryCompilerContext });
-#endif
+            return streamMergeContextFactory.Create(mergeQueryCompilerContext);
 
         }
         private TResult EnumerableExecute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)

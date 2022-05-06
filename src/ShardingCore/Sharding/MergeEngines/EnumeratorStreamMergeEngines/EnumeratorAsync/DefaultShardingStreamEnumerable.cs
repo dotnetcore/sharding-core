@@ -27,10 +27,10 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class DefaultShardingEnumeratorAsyncStreamMergeEngine<TShardingDbContext,TEntity> :AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class DefaultShardingStreamEnumerable<TShardingDbContext,TEntity> :AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public DefaultShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext,new DefaultStreamMergeCombine<TEntity>())
+        public DefaultShardingStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext,new DefaultStreamMergeCombine())
         {
         }
 

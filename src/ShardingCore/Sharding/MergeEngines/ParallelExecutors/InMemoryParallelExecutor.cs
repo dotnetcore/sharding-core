@@ -15,35 +15,29 @@ using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
 {
-    internal class InMemoryParallelExecutor<TEntity,TResult>:IParallelExecutor<RouteQueryResult<TResult>>
+    internal class InMemoryParallelExecutor<TEntity, TResult> : IParallelExecutor<RouteQueryResult<TResult>>
     {
-        private readonly StreamMergeContext<TEntity> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
         private readonly Func<IQueryable, Task<TResult>> _efQuery;
 
-        public InMemoryParallelExecutor(StreamMergeContext<TEntity> streamMergeContext, Func<IQueryable, Task<TResult>> efQuery)
+        public InMemoryParallelExecutor(StreamMergeContext streamMergeContext, Func<IQueryable, Task<TResult>> efQuery)
         {
             _streamMergeContext = streamMergeContext;
             _efQuery = efQuery;
         }
         public async Task<ShardingMergeResult<RouteQueryResult<TResult>>> ExecuteAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
-             var connectionMode = _streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
+            var connectionMode = _streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
             var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
-            var (asyncExecuteQueryable, dbContext) =
-                CreateAsyncExecuteQueryable(dataSourceName, routeResult, connectionMode);
-
-            var queryResult = await _efQuery(asyncExecuteQueryable);
-            var routeQueryResult = new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-            return new ShardingMergeResult<RouteQueryResult<TResult>>(dbContext, routeQueryResult);
-        }
-        private (IQueryable queryable, DbContext dbContext) CreateAsyncExecuteQueryable(string dsname, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
-        {
-            var shardingDbContext = _streamMergeContext.CreateDbContext(dsname, tableRouteResult, connectionMode);
+            var shardingDbContext = _streamMergeContext.CreateDbContext(dataSourceName, routeResult, connectionMode);
             var newQueryable = (IQueryable<TEntity>)_streamMergeContext.GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
-            return (newQueryable, shardingDbContext);
+
+            var queryResult = await _efQuery(newQueryable);
+            var routeQueryResult = new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
+            return new ShardingMergeResult<RouteQueryResult<TResult>>(shardingDbContext, routeQueryResult);
         }
 
     }

@@ -14,14 +14,14 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators
 {
     internal abstract class AbstractEnumeratorParallelExecuteControl<TResult>:AbstractParallelExecuteControl<IStreamMergeAsyncEnumerator<TResult>>
     {
-        private readonly StreamMergeContext<TResult> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
 
-        protected AbstractEnumeratorParallelExecuteControl(StreamMergeContext<TResult> streamMergeContext, IParallelExecutor<IStreamMergeAsyncEnumerator<TResult>> executor) : base(streamMergeContext, executor)
+        protected AbstractEnumeratorParallelExecuteControl(StreamMergeContext streamMergeContext, IParallelExecutor<IStreamMergeAsyncEnumerator<TResult>> executor) : base(streamMergeContext, executor)
         {
             _streamMergeContext = streamMergeContext;
         }
 
-        protected StreamMergeContext<TResult> GetStreamMergeContext()
+        protected StreamMergeContext GetStreamMergeContext()
         {
             return _streamMergeContext;
         }

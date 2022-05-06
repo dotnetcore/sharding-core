@@ -19,11 +19,11 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
 {
     internal class AppendOrderSequenceEnumeratorParallelExecutor<TEntity>:AbstractEnumeratorParallelExecutor<TEntity>
     {
-        private readonly StreamMergeContext<TEntity> _streamMergeContext;
+        private readonly StreamMergeContext _streamMergeContext;
         private readonly IQueryable<TEntity> _noPaginationQueryable;
         private readonly bool _async;
 
-        public AppendOrderSequenceEnumeratorParallelExecutor(StreamMergeContext<TEntity> streamMergeContext, bool async)
+        public AppendOrderSequenceEnumeratorParallelExecutor(StreamMergeContext streamMergeContext, bool async)
         {
             _streamMergeContext = streamMergeContext;
             _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().As<IQueryable<TEntity>>(); ;

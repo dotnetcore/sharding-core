@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     */
     internal class LastAsyncInMemoryMergeEngine<TEntity> : AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity>
     {
-        public LastAsyncInMemoryMergeEngine(StreamMergeContext<TEntity> streamMergeContext) : base(streamMergeContext)
+        public LastAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

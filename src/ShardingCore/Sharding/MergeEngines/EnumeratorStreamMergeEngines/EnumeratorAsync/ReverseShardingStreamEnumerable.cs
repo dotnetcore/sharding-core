@@ -25,11 +25,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class ReverseShardingEnumeratorAsyncStreamMergeEngine<TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class ReverseShardingStreamEnumerable<TEntity> : AbstractStreamEnumerable<TEntity>
     {
         private readonly long _total;
 
-        public ReverseShardingEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, long total) : base(streamMergeContext,new ReverseStreamMergeCombine<TEntity>())
+        public ReverseShardingStreamEnumerable(StreamMergeContext streamMergeContext, long total) : base(streamMergeContext,new ReverseStreamMergeCombine())
         {
             _total = total;
         }
@@ -37,15 +37,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var noPaginationNoOrderQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().As<IQueryable<TEntity>>();
-            var skip = StreamMergeContext.Skip.GetValueOrDefault();
-            var take = StreamMergeContext.Take.HasValue ? StreamMergeContext.Take.Value : (_total - skip);
+            var noPaginationNoOrderQueryable = GetStreamMergeContext().GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().As<IQueryable<TEntity>>();
+            var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
+            var take = GetStreamMergeContext().Take.HasValue ? GetStreamMergeContext().Take.Value : (_total - skip);
             if (take > int.MaxValue)
                 throw new ShardingCoreException($"not support take more than {int.MaxValue}");
             var realSkip = _total - take - skip;
-            StreamMergeContext.ReSetSkip((int)realSkip);
-            var propertyOrders = StreamMergeContext.Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
-            StreamMergeContext.ReSetOrders(propertyOrders);
+            GetStreamMergeContext().ReSetSkip((int)realSkip);
+            var propertyOrders = GetStreamMergeContext().Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
+            GetStreamMergeContext().ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip + (int)take).OrderWithExpression(propertyOrders);
 
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();

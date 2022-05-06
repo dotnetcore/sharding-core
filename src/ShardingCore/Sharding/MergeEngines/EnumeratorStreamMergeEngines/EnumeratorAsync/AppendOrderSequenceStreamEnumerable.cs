@@ -34,13 +34,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class AppendOrderSequenceEnumeratorAsyncStreamMergeEngine<TShardingDbContext, TEntity> : AbstractEnumeratorStreamMergeEngine<TEntity>
+    internal class AppendOrderSequenceStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly PaginationSequenceConfig _dataSourceSequenceOrderConfig;
         private readonly PaginationSequenceConfig _tableSequenceOrderConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
-        public AppendOrderSequenceEnumeratorAsyncStreamMergeEngine(StreamMergeContext<TEntity> streamMergeContext, PaginationSequenceConfig dataSourceSequenceOrderConfig, PaginationSequenceConfig tableSequenceOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext,new AppendOrderSequenceStreamMergeCombine<TEntity>())
+        public AppendOrderSequenceStreamEnumerable(StreamMergeContext streamMergeContext, PaginationSequenceConfig dataSourceSequenceOrderConfig, PaginationSequenceConfig tableSequenceOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults) : base(streamMergeContext,new AppendOrderSequenceStreamMergeCombine())
         {
             _dataSourceSequenceOrderConfig = dataSourceSequenceOrderConfig;
             _tableSequenceOrderConfig = tableSequenceOrderConfig;
@@ -50,12 +50,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var noPaginationQueryable = StreamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake();
-            var skip = StreamMergeContext.Skip.GetValueOrDefault();
+            var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
             if (skip < 0)
                 throw new ShardingCoreException("skip must ge 0");
 
-            var take = StreamMergeContext.Take;
+            var take = GetStreamMergeContext().Take;
             if (take.HasValue && take.Value <= 0)
                 throw new ShardingCoreException("take must gt 0");
 
@@ -111,7 +110,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
 
-            StreamMergeContext.ReSetOrders(reSetOrders);
+            GetStreamMergeContext().ReSetOrders(reSetOrders);
             var sqlSequenceRouteUnits = sequenceResults.Select(sequenceResult => new SqlSequenceRouteUnit(sequenceResult));
             var appendOrderSequenceEnumeratorParallelExecutor = new AppendOrderSequenceEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(),async);
             var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,sqlSequenceRouteUnits,
