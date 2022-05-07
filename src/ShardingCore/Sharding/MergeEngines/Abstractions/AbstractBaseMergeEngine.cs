@@ -1,7 +1,6 @@
 ﻿using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using System;
@@ -139,7 +138,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         ///// <param name="sqlExecutorUnitExecuteAsync"></param>
         ///// <param name="cancellationToken"></param>
         ///// <returns></returns>
-        //protected async Task<LinkedList<ShardingMergeResult<TResult>>> GroupExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
+        //protected async Task<LinkedList<ShardingMergeResult<TResult>>> ExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
         //{
         //    if (sqlExecutorUnits.Count <= 0)
         //    {

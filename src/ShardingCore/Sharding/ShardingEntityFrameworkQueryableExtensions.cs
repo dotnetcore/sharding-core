@@ -93,7 +93,7 @@ namespace ShardingCore.Sharding
 #if EFCORE2
         
 
-    public static Task<TResult> GroupExecuteAsync<TSource, TResult>(
+    public static Task<TResult> ExecuteAsync<TSource, TResult>(
       MethodInfo operatorMethodInfo,
       IQueryable<TSource> source,
       CancellationToken cancellationToken = default (CancellationToken))
@@ -104,7 +104,7 @@ namespace ShardingCore.Sharding
         operatorMethodInfo = operatorMethodInfo.MakeGenericMethod(typeof (TSource));
       MethodCallExpression methodCallExpression = Expression.Call((Expression) null, operatorMethodInfo, source.Expression);
       CancellationToken cancellationToken1 = cancellationToken;
-      return provider.GroupExecuteAsync<TResult>((Expression) methodCallExpression, cancellationToken1);
+      return provider.ExecuteAsync<TResult>((Expression) methodCallExpression, cancellationToken1);
     }
     public static TResult Execute<TSource, TResult>(
       MethodInfo operatorMethodInfo,

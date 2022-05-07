@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
+namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
 {
     internal class NoTripCircuitBreaker:AbstractCircuitBreaker
     {

@@ -16,9 +16,8 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
-using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync;
+using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables;
 using ShardingCore.Sharding.PaginationConfigurations;
-using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 {
@@ -179,15 +178,15 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
-            if (isShardingDataSource && virtualDataSourceRoute.EnablePagination)
+            if (isShardingDataSource)
             {
                 dataSourceUseReverse =
-                    EntityDataSourceUseReverseShardingPage(virtualDataSourceRoute, total);
+                    virtualDataSourceRoute.EnablePagination && EntityDataSourceUseReverseShardingPage(virtualDataSourceRoute, total);
             }
-            if (isShardingTable && virtualTable.EnablePagination)
+            if (isShardingTable)
             {
                 tableUseReverse =
-                    EntityTableReverseShardingPage(virtualTable, total);
+                    virtualTable.EnablePagination && EntityTableReverseShardingPage(virtualTable, total);
             }
 
 

@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
 {
@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
                 (Expression)null, cancellationToken);
 #endif
 #if EFCORE2
-           return ShardingEntityFrameworkQueryableExtensions.GroupExecuteAsync<TEntity, TEntity>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TResult>)queryable, cancellationToken);
+           return ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEntity, TEntity>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEntity>)queryable, cancellationToken);
 #endif
         }
     }

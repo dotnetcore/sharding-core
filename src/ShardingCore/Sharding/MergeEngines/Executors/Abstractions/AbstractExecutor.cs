@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core;
 using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
 

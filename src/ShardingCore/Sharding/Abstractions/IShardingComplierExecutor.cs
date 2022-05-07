@@ -39,8 +39,8 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="shardingDbContext"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        IAsyncEnumerable<TResult> GroupExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query);
-        Task<TResult> GroupExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query, CancellationToken cancellationToken);
+        IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query);
+        Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query, CancellationToken cancellationToken);
 #endif
     }
 }

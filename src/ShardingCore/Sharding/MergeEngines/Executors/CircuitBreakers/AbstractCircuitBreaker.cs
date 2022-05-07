@@ -1,8 +1,8 @@
-﻿using ShardingCore.Sharding.Abstractions.ParallelExecutors;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 
-namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
+namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
 {
     internal  abstract class AbstractCircuitBreaker: ICircuitBreaker
     {

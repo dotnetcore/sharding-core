@@ -59,7 +59,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 #endif
 
 #if EFCORE2
-        public IAsyncEnumerable<TResult> GroupExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
+        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             //预解析表达式
             var prepareParseResult = _prepareParser.Parse(shardingDbContext, query);
@@ -67,11 +67,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             using (new CustomerQueryScope(prepareParseResult))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
-                return _shardingTrackQueryExecutor.GroupExecuteAsync<TResult>(queryCompilerContext);
+                return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext);
             }
         }
 
-        public Task<TResult> GroupExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
+        public Task<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken)
         {
             //预解析表达式
@@ -80,7 +80,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             using (new CustomerQueryScope(prepareParseResult))
             {
                 var queryCompilerContext = _queryCompilerContextFactory.Create(prepareParseResult);
-                return _shardingTrackQueryExecutor.GroupExecuteAsync<TResult>(queryCompilerContext, cancellationToken);
+                return _shardingTrackQueryExecutor.ExecuteAsync<TResult>(queryCompilerContext, cancellationToken);
             }
         }
 #endif

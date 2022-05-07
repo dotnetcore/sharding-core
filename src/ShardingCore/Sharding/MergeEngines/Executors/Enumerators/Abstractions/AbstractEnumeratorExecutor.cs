@@ -6,12 +6,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Exceptions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
+using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
+
+#if EFCORE2
+using Microsoft.EntityFrameworkCore.Extensions.Internal;
+#endif
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
 {
@@ -120,7 +124,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             return enumator;
 #endif
 #if EFCORE2
-            var enumator = new EFCore2TryCurrentAsyncEnumerator<TEntity>(newQueryable.AsAsyncEnumerable().GetEnumerator());
+            var enumator = new EFCore2TryCurrentAsyncEnumerator<TResult>(newQueryable.AsAsyncEnumerable().GetEnumerator());
             await enumator.MoveNext();
             return enumator;
 #endif

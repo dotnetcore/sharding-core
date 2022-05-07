@@ -1,17 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 
-namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
+namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables
 {
     internal class EmptyQueryStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext

@@ -1,9 +1,9 @@
-﻿using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 
-namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
+namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
 {
     internal class EnumeratorCircuitBreaker : AbstractCircuitBreaker
     {

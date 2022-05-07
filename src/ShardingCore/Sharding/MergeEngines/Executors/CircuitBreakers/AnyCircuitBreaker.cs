@@ -1,8 +1,8 @@
-﻿using ShardingCore.Sharding.StreamMergeEngines;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Sharding.StreamMergeEngines;
 
-namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
+namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
 {
     internal class AnyCircuitBreaker:AbstractCircuitBreaker
     {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Enumerators;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions;
@@ -50,6 +51,19 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
         protected override IStreamMergeCombine GetStreamMergeCombine()
         {
             return _streamMergeCombine;
+        }
+
+        public override IStreamMergeAsyncEnumerator<TResult> CombineInMemoryStreamMergeAsyncEnumerator(
+            IStreamMergeAsyncEnumerator<TResult>[] streamsAsyncEnumerators)
+        {
+            if (GetStreamMergeContext().IsPaginationQuery() && GetStreamMergeContext().HasGroupQuery())
+            {
+                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TResult>(GetStreamMergeContext(), streamsAsyncEnumerators);
+                return new PaginationStreamMergeAsyncEnumerator<TResult>(GetStreamMergeContext(), new[] { multiAggregateOrderStreamMergeAsyncEnumerator }, 0, GetStreamMergeContext().GetPaginationReWriteTake());
+            }
+            if (GetStreamMergeContext().IsPaginationQuery())
+                return new PaginationStreamMergeAsyncEnumerator<TResult>(GetStreamMergeContext(), streamsAsyncEnumerators, 0, GetStreamMergeContext().GetPaginationReWriteTake());
+            return base.CombineInMemoryStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
         }
     }
 }

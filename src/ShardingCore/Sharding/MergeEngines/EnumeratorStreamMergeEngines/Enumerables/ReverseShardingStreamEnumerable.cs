@@ -1,24 +1,16 @@
-﻿using ShardingCore.Core.Internal.Visitors;
+﻿using System.Linq;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
-using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
-using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
-using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Helpers;
+using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
+namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables
 {
     /*
     * @Author: xjm

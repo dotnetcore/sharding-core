@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ShardingCore.Sharding.Abstractions.ParallelExecutors
+namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
 {
     /// <summary>
     /// 断路器

@@ -135,37 +135,37 @@ namespace ShardingCore.Sharding.ShardingExecutors
 #endif
 #if EFCORE2
 
-        public IAsyncEnumerable<TResult> GroupExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext)
+        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext)
         {
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor == null)
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    return _shardingQueryExecutor.GroupExecuteAsync<IAsyncEnumerable<TResult>>(mergeQueryCompilerContext);
+                    return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
             //native query
-            var result = queryCompilerExecutor.GetQueryCompiler().GroupExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression());
+            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression());
 
             //native query track
             return ResultTrackExecute(result, queryCompilerContext, TrackAsyncEnumerable, Track);
         }
 
-        public Task<TResult> GroupExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext, CancellationToken cancellationToken)
+        public Task<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext, CancellationToken cancellationToken)
         {
             var queryCompilerExecutor = queryCompilerContext.GetQueryCompilerExecutor();
             if (queryCompilerExecutor == null)
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    return _shardingQueryExecutor.GroupExecuteAsync<Task<TResult>>(mergeQueryCompilerContext);
+                    return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
             //native query
-            var result = queryCompilerExecutor.GetQueryCompiler().GroupExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
+            var result = queryCompilerExecutor.GetQueryCompiler().ExecuteAsync<TResult>(queryCompilerExecutor.GetReplaceQueryExpression(), cancellationToken);
        
             //native query track
             return ResultTrackExecute(result, queryCompilerContext, TrackEnumerable, TrackAsync);

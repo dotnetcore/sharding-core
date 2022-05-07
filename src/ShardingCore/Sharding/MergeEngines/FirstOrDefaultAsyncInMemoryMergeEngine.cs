@@ -6,11 +6,8 @@ using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods;
-using ShardingCore.Sharding.MergeEngines.ParallelControls;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {

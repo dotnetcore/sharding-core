@@ -6,11 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods

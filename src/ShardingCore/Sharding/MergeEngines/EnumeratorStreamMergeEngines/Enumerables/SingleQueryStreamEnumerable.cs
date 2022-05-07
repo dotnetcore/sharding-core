@@ -2,20 +2,16 @@ using System.Linq;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
-using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
-using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
-using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 
-namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
+namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables
 {
     /*
     * @Author: xjm
@@ -42,7 +38,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var routeResult = GetStreamMergeContext().TableRouteResults[0];
             var shardingDbContext = GetStreamMergeContext().CreateDbContext(dataSourceName, routeResult, ConnectionModeEnum.MEMORY_STRICTLY);
             var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
-            var enumeratorParallelExecutor = new SingleQueryEnumeratorParallelExecutor<TEntity>();
+            var enumeratorParallelExecutor = new SingleQueryEnumeratorExecutor<TEntity>(GetStreamMergeContext());
             if (async)
             {
                 var asyncEnumerator = enumeratorParallelExecutor.GetAsyncEnumerator0(newQueryable).WaitAndUnwrapException();
