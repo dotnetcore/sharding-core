@@ -1,39 +1,34 @@
-﻿using System;
+﻿using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 {
     internal  abstract class AbstractCircuitBreaker: ICircuitBreaker
     {
-        private readonly ISeqQueryProvider _seqQueryProvider;
+        private readonly StreamMergeContext _streamMergeContext;
         private const int TRIP = 1;
         private const int UNTRIP = 0;
         private int _trip = UNTRIP;
         private Action _afterTrip;
 
-        protected AbstractCircuitBreaker(ISeqQueryProvider seqQueryProvider)
+        protected AbstractCircuitBreaker(StreamMergeContext streamMergeContext)
         {
-            _seqQueryProvider = seqQueryProvider;
+            _streamMergeContext = streamMergeContext;
         }
 
-        protected ISeqQueryProvider GetSeqQueryProvider()
+        protected StreamMergeContext GetStreamMergeContext()
         {
-            return _seqQueryProvider;
+            return _streamMergeContext;
         }
         public bool IsTrip<TResult>(IEnumerable<TResult> results)
         {
 
             if (_trip == TRIP)
                 return true;
-            if (_seqQueryProvider.IsSeqQuery())
+            if (_streamMergeContext.IsSeqQuery())
             {
-                if (_seqQueryProvider.CanTrip())
+                if (_streamMergeContext.CanTrip())
                 {
                     if (SeqConditionalTrip(results))
                     {

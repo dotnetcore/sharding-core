@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var asyncEnumerator = EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine()
+            var asyncEnumerator = EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable()
                 .GetAsyncEnumerator(cancellationToken);
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
@@ -51,7 +51,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine())
+            var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
@@ -67,7 +67,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetMergeEngine())
+            var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))

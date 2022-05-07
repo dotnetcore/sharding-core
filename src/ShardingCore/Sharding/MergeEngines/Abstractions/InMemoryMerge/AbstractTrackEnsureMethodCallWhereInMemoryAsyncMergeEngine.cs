@@ -1,9 +1,11 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
@@ -40,16 +42,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             }
             return current;
         }
-        public override async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+
+        protected override TEntity DoMergeResult(List<RouteQueryResult<TEntity>> resultList)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var current = await DoMergeResultAsync(cancellationToken);
-            return ProcessTrackResult(current);
+            var entity = DoMergeResult0(resultList);
+            return ProcessTrackResult(entity);
         }
 
-        public abstract Task<TEntity> DoMergeResultAsync(
-            CancellationToken cancellationToken = new CancellationToken());
-
-
+        protected abstract TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList);
     }
 }

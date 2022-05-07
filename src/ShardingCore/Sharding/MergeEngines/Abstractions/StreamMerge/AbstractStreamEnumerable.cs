@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ShardingCore.Helpers;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif
@@ -21,7 +23,6 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     */
     internal abstract class AbstractStreamEnumerable<TEntity> : AbstractBaseMergeEngine<TEntity>, IStreamEnumerable<TEntity>
     {
-        private readonly IStreamMergeCombine _streamMergeCombine;
         private readonly StreamMergeContext _streamMergeContext;
 
         protected override StreamMergeContext GetStreamMergeContext()
@@ -29,15 +30,11 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
             return _streamMergeContext;
         }
 
-        protected IStreamMergeCombine GetStreamMergeCombine()
-        {
-            return _streamMergeCombine;
-        }
+        protected abstract IStreamMergeCombine GetStreamMergeCombine();
 
-        protected AbstractStreamEnumerable(StreamMergeContext streamMergeContext,IStreamMergeCombine streamMergeCombine)
+        protected AbstractStreamEnumerable(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
-            _streamMergeCombine = streamMergeCombine;
         }
 
 
@@ -88,13 +85,22 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
                 throw new ShardingCoreException("GetRouteQueryStreamMergeAsyncEnumerators empty");
             return CombineStreamMergeAsyncEnumerator(dbStreamMergeAsyncEnumerators);
         }
+
         /// <summary>
         /// 获取路由查询的迭代器
         /// </summary>
         /// <param name="async"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public abstract IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken());
+        public virtual IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
+            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async, defaultSqlRouteUnits, cancellationToken);
+            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o => o).ToArray();
+            return streamEnumerators;
+        }
 
         /// <summary>
         /// 合并成一个迭代器
@@ -107,13 +113,11 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
             return GetStreamMergeCombine().StreamMergeEnumeratorCombine<TEntity>(GetStreamMergeContext(), streamsAsyncEnumerators);
         }
 
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(
-            IParallelExecutor<TResult> executor)
+        protected override IExecutor<TResult> CreateExecutor<TResult>(bool async)
         {
-            return CreateParallelExecuteControl0(executor as IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>>) as IParallelExecuteControl<TResult>;
+            return CreateExecutor0(async) as IExecutor<TResult>;
         }
 
-        protected abstract IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(
-                IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor);
+        protected abstract IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async);
     }
 }

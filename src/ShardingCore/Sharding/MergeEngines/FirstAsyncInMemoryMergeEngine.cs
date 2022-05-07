@@ -3,12 +3,15 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
@@ -21,16 +24,20 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class FirstAsyncInMemoryMergeEngine<TEntity>: AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity>
+    internal class FirstAsyncInMemoryMergeEngine<TEntity> : AbstractTrackEnsureMethodCallWhereInMemoryAsyncMergeEngine<TEntity>
     {
         public FirstAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        protected override IExecutor<RouteQueryResult<TEntity>> CreateExecutor0(bool async)
         {
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
-            var notNullResult=result.Where(o => o.HasQueryResult()).Select(o => o.QueryResult).ToList();
+            return new FirstMethodExecutor<TEntity>(GetStreamMergeContext());
+        }
+
+        protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
+        {
+            var notNullResult = resultList.Where(o => o.HasQueryResult()).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
@@ -40,11 +47,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).First();
 
             return notNullResult.First();
-        }
-
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
-        {
-            return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

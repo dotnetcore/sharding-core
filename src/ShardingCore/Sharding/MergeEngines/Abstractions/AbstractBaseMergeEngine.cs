@@ -10,7 +10,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions
 {
@@ -35,12 +37,11 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         /// <typeparam name="TResult"></typeparam>
         /// <param name="async"></param>
         /// <param name="sqlRouteUnits"></param>
-        /// <param name="executor"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(bool async, IEnumerable<ISqlRouteUnit> sqlRouteUnits,IParallelExecutor<TResult>  executor, CancellationToken cancellationToken = new CancellationToken())
+        public Task<LinkedList<TResult>>[] GetDataSourceGroupAndExecutorGroup<TResult>(bool async, IEnumerable<ISqlRouteUnit> sqlRouteUnits, CancellationToken cancellationToken = new CancellationToken())
         {
-            var parallelExecuteControl = CreateParallelExecuteControl(executor);
+            var executor = CreateExecutor<TResult>(async) ?? throw new ShardingCoreInvalidOperationException($"cant create executor type:{GetType()}");
             var waitTaskQueue = AggregateQueryByDataSourceName(sqlRouteUnits)
                 .Select(GetSqlExecutorGroups)
                 .Select(dataSourceSqlExecutorUnit =>
@@ -54,19 +55,20 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
                                    ((UnSupportSqlRouteUnit)dataSourceSqlExecutorUnit.SqlExecutorGroups[0].Groups[0]
                                        .RouteUnit).TableRouteResults))
                         {
-                            return await parallelExecuteControl.ExecuteAsync(async, dataSourceSqlExecutorUnit, cancellationToken);
+                            return await executor.ExecuteAsync(async, dataSourceSqlExecutorUnit, cancellationToken);
                         }
                     }
                     else
                     {
-                        return await parallelExecuteControl.ExecuteAsync(async, dataSourceSqlExecutorUnit, cancellationToken);
+                        return await executor.ExecuteAsync(async, dataSourceSqlExecutorUnit, cancellationToken);
                     }
                 }, cancellationToken);
             }).ToArray();
             return waitTaskQueue;
         }
 
-        protected abstract IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor);
+        //protected abstract IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor);
+        protected abstract IExecutor<TResult> CreateExecutor<TResult>(bool async);
 
         protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
         {
@@ -137,7 +139,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         ///// <param name="sqlExecutorUnitExecuteAsync"></param>
         ///// <param name="cancellationToken"></param>
         ///// <returns></returns>
-        //protected async Task<LinkedList<ShardingMergeResult<TResult>>> ExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
+        //protected async Task<LinkedList<ShardingMergeResult<TResult>>> GroupExecuteAsync<TResult>(List<SqlExecutorUnit> sqlExecutorUnits, Func<SqlExecutorUnit, Task<ShardingMergeResult<TResult>>> sqlExecutorUnitExecuteAsync, CancellationToken cancellationToken = new CancellationToken())
         //{
         //    if (sqlExecutorUnits.Count <= 0)
         //    {

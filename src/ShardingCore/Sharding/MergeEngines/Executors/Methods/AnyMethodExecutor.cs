@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Extensions.InternalExtensions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
+using ShardingCore.Sharding.StreamMergeEngines;
+
+namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    /// Author: xjm
+    /// Created: 2022/5/7 7:46:50
+    /// Email: 326308290@qq.com
+    internal class AnyMethodExecutor<TEntity> : AbstractMethodExecutor<bool>
+    {
+        public AnyMethodExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
+        {
+        }
+
+        public override ICircuitBreaker CreateCircuitBreaker()
+        {
+            return new AnyElementCircuitBreaker(GetStreamMergeContext());
+        }
+
+        protected override Task<bool> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())
+        {
+            return queryable.As<IQueryable<TEntity>>().AnyAsync(cancellationToken);
+        }
+    }
+}

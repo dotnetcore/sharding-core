@@ -38,8 +38,8 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="queryCompilerContext"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext);
-        Task<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext, CancellationToken cancellationToken);
+        IAsyncEnumerable<TResult> GroupExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext);
+        Task<TResult> GroupExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext, CancellationToken cancellationToken);
 #endif
     }
 }

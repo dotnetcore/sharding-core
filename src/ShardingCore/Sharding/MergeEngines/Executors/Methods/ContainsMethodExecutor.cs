@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Extensions.InternalExtensions;
+using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
+using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
+
+namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    /// Author: xjm
+    /// Created: 2022/5/7 8:42:53
+    /// Email: 326308290@qq.com
+    internal class ContainsMethodExecutor<TEntity> : AbstractMethodExecutor<bool>
+    {
+        public ContainsMethodExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
+        {
+        }
+
+        public override ICircuitBreaker CreateCircuitBreaker()
+        {
+            var circuitBreaker = new ContainsCircuitBreaker(GetStreamMergeContext());
+            circuitBreaker.Register(() =>
+            {
+                Cancel();
+            });
+            return circuitBreaker;
+        }
+
+        protected override Task<bool> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var constantQueryCombineResult = (ConstantQueryCombineResult)GetStreamMergeContext().MergeQueryCompilerContext.GetQueryCombineResult();
+            var constantItem = (TEntity)constantQueryCombineResult.GetConstantItem();
+            return queryable.As<IQueryable<TEntity>>().ContainsAsync(constantItem, cancellationToken);
+        }
+    }
+}

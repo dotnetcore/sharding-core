@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Helpers;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 {
@@ -16,7 +17,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine<TEntity>
+    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine
     {
         private readonly StreamMergeContext _mergeContext;
 
@@ -25,18 +26,16 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
             _mergeContext = streamMergeContext;
         }
 
-        public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(Func<IQueryable, Task<TResult>> efQuery, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
             var routeQueryResults = _mergeContext.PreperExecute(() => new List<RouteQueryResult<TResult>>(0));
             if (routeQueryResults != null)
                 return routeQueryResults;
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var inMemoryParallelExecutor = new InMemoryParallelExecutor<TEntity,TResult>(_mergeContext,efQuery);
-            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true, defaultSqlRouteUnits, inMemoryParallelExecutor).ToArray();
+            var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true, defaultSqlRouteUnits, cancellationToken).ToArray();
 
             return (await TaskHelper.WhenAllFastFail(waitExecuteQueue)).SelectMany(o => o).ToList();
         }
-
 
 
         protected override StreamMergeContext GetStreamMergeContext()

@@ -11,6 +11,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -21,62 +23,31 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class AverageAsyncInMemoryMergeEngine<TEntity, TResult, TSelect> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal class AverageAsyncInMemoryMergeEngine<TEntity, TResult, TSelect> : AbstractEnsureMethodCallInMemoryAverageAsyncMergeEngine<TEntity, TResult>
     {
         public AverageAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        private async Task<List<RouteQueryResult<AverageResult<T>>>> AggregateAverageResultAsync<T>(CancellationToken cancellationToken = new CancellationToken())
+
+        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-
-            return (await base.ExecuteAsync(
-                async queryable =>
-                {
-                    var count = 0L;
-                    T sum = default;
-                    var newQueryable = ((IQueryable<T>)queryable);
-                    var r = await newQueryable.GroupBy(o => 1).BuildExpression().FirstOrDefaultAsync(cancellationToken);
-                    if (r != null)
-                    {
-                        count = r.Item1;
-                        sum = r.Item2;
-                    }
-                    if (count <= 0)
-                    {
-                        return default;
-                    }
-                    return new AverageResult<T>(sum, count);
-
-
-
-                },
-                cancellationToken)).Where(o => o.QueryResult != null).ToList();
-        }
-
-        public override async Task<TResult> MergeResultAsync(
-            CancellationToken cancellationToken = new CancellationToken())
-        {
+            var resultList = await base.ExecuteAsync<AverageResult<TSelect>>(cancellationToken);
+            if (resultList.IsEmpty())
+                throw new InvalidOperationException("Sequence contains no elements.");
+            var queryable = resultList.Select(o => new
             {
-                if (!typeof(TSelect).IsNumericType())
-                {
-                    throw new ShardingCoreException(
-                        $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {typeof(TSelect)}");
-                }
-                var result = await AggregateAverageResultAsync<TSelect>(cancellationToken);
-                if (result.IsEmpty())
-                    throw new InvalidOperationException("Sequence contains no elements.");
-                var queryable = result.Select(o => new
-                {
-                    Sum = o.QueryResult.Sum,
-                    Count = o.QueryResult.Count
-                }).AsQueryable();
-                var sum = queryable.SumByPropertyName<TSelect>(nameof(AverageResult<object>.Sum));
-                var count = queryable.Sum(o => o.Count);
-                return AggregateExtension.AverageConstant<TSelect, long, TResult>(sum, count);
-            }
-
+                Sum = o.QueryResult.Sum,
+                Count = o.QueryResult.Count
+            }).AsQueryable();
+            var sum = queryable.SumByPropertyName<TSelect>(nameof(AverageResult<object>.Sum));
+            var count = queryable.Sum(o => o.Count);
+            return AggregateExtension.AverageConstant<TSelect, long, TResult>(sum, count);
         }
 
+        protected override IExecutor<TR> CreateExecutor<TR>(bool async)
+        {
+            return new AverageMethodExecutor<TSelect>(GetStreamMergeContext()) as IExecutor<TR>;
+        }
     }
 }

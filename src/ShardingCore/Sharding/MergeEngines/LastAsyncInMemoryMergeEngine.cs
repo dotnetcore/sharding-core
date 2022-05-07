@@ -3,11 +3,14 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -24,11 +27,33 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public LastAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-        public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
+        //public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        //{
 
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LastOrDefaultAsync(cancellationToken), cancellationToken);
-            var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
+        //    var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LastOrDefaultAsync(cancellationToken), cancellationToken);
+        //    var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
+
+        //    if (notNullResult.IsEmpty())
+        //        throw new InvalidOperationException("Sequence contains no elements.");
+        //    var streamMergeContext = GetStreamMergeContext();
+        //    if (streamMergeContext.Orders.Any())
+        //        return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).Last();
+
+        //    return notNullResult.Last();
+        //}
+
+        //protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        //{
+        //    return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+        //}
+        protected override IExecutor<RouteQueryResult<TEntity>> CreateExecutor0(bool async)
+        {
+            return new LastMethodExecutor<TEntity>(GetStreamMergeContext());
+        }
+
+        protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
+        {
+            var notNullResult = resultList.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
@@ -37,11 +62,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).Last();
 
             return notNullResult.Last();
-        }
-
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
-        {
-            return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

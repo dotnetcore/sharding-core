@@ -53,7 +53,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         {
             return _streamMergeContext.GetShardingDbContext().GetVirtualDataSource().GetRoute(entityType);
         }
-        public IStreamEnumerable<TEntity> GetMergeEngine()
+        public IStreamEnumerable<TEntity> GetStreamEnumerable()
         {
             if (_streamMergeContext.IsRouteNotMatch())
             {

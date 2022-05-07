@@ -10,6 +10,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
@@ -26,82 +28,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         public MinAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-
-        private TResult GetMinTResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
+        protected override TResult DoMergeResult(List<RouteQueryResult<TResult>> resultList)
         {
-            var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
-            if (routeQueryResults.IsEmpty())
-                throw new InvalidOperationException("Sequence contains no elements.");
-            var min = routeQueryResults.Min(o => o.QueryResult);
-
-            return ConvertMin<TInnerSelect>(min);
-        }
-        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-
-            var resultType = typeof(TResult);
-            if (!resultType.IsNullableType())
-            {
-                if (typeof(decimal) == typeof(TResult))
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MinAsync(cancellationToken), cancellationToken);
-                    return GetMinTResult<decimal?>(result);
-                }
-                if (typeof(float) == typeof(TResult))
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<float>)queryable).Select(o => (float?)o).MinAsync(cancellationToken),cancellationToken);
-                    return GetMinTResult<float?>(result);
-                }
-                if (typeof(int) == typeof(TResult))
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<int>)queryable).Select(o => (int?)o).MinAsync(cancellationToken),
-                        cancellationToken);
-
-
-                    return GetMinTResult<int?>(result);
-                }
-                if (typeof(long) == typeof(TResult))
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<long>)queryable).Select(o => (long?)o).MinAsync(cancellationToken),
-                        cancellationToken);
-
-                    return GetMinTResult<long?>(result);
-                }
-                if (typeof(double) == typeof(TResult))
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<double>)queryable).Select(o => (double?)o).MinAsync(cancellationToken),
-                        cancellationToken);
-                    return GetMinTResult<double?>(result);
-                }
-                throw new ShardingCoreException($"cant calc min value, type:[{resultType}]");
-            }
-            //返回结果是否可以为空
-            //可以为空
-            else
-            {
-                var result = (await base.ExecuteAsync(queryable => ((IQueryable<TResult>)queryable).MinAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                return result.Min(o => o.QueryResult);
-            }
-
-        }
-        private TResult ConvertMin<TNumber>(TNumber number)
-        {
-            if (number == null)
-                return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
-            return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
+            return resultList.Min(o => o.QueryResult);
         }
 
-        protected override IParallelExecuteControl<TResult1> CreateParallelExecuteControl<TResult1>(IParallelExecutor<TResult1> executor)
+        protected override IExecutor<RouteQueryResult<TResult>> CreateExecutor0(bool async)
         {
-            return AnyElementParallelExecuteControl<TResult1>.Create(GetStreamMergeContext(), executor);
+            return new MinMethodExecutor<TResult>(GetStreamMergeContext());
         }
     }
 }

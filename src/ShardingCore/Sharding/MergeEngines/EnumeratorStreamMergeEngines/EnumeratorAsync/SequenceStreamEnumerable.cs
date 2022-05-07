@@ -16,8 +16,11 @@ using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
 using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
@@ -40,7 +43,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
         private readonly PaginationSequenceConfig _tableSequenceMatchOrderConfig;
         private readonly ICollection<RouteQueryResult<long>> _routeQueryResults;
         private readonly bool _isAsc;
-        public SequenceStreamEnumerable(StreamMergeContext streamMergeContext, PaginationSequenceConfig dataSourceSequenceMatchOrderConfig, PaginationSequenceConfig tableSequenceMatchOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) : base(streamMergeContext, new SequenceStreamMergeCombine())
+        public SequenceStreamEnumerable(StreamMergeContext streamMergeContext, PaginationSequenceConfig dataSourceSequenceMatchOrderConfig, PaginationSequenceConfig tableSequenceMatchOrderConfig, ICollection<RouteQueryResult<long>> routeQueryResults, bool isAsc) 
+            : base(streamMergeContext)
         {
             _dataSourceSequenceMatchOrderConfig = dataSourceSequenceMatchOrderConfig;
             _tableSequenceMatchOrderConfig = tableSequenceMatchOrderConfig;
@@ -48,9 +52,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             _isAsc = isAsc;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
+        protected override IStreamMergeCombine GetStreamMergeCombine()
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            return SequenceStreamMergeCombine.Instance;
+        }
+
+        protected override IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
+        {
             var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
             if (skip < 0)
                 throw new ShardingCoreException("skip must ge 0");
@@ -97,16 +105,13 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
 
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
-            var sqlSequenceRouteUnits = sequenceResults.Select(sequenceResult => new SqlSequenceRouteUnit(sequenceResult));
-            var sequenceEnumeratorParallelExecutor = new SequenceEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(), async);
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async, sqlSequenceRouteUnits, sequenceEnumeratorParallelExecutor, cancellationToken);
-            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o => o).ToArray();
-            return streamEnumerators;
+            return  sequenceResults.Select(sequenceResult => new SqlSequenceRouteUnit(sequenceResult));
+
         }
 
-        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
+        protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async)
         {
-            return new SequenceEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
+            return new SequenceEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(), async);
         }
     }
 }

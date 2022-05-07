@@ -10,6 +10,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
@@ -26,76 +28,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
         public MaxAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-        private TResult GetMaxTResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
+        protected override TResult DoMergeResult(List<RouteQueryResult<TResult>> resultList)
         {
-            var routeQueryResults = source.Where(o => o.QueryResult != null).ToList();
-            if (routeQueryResults.IsEmpty())
-                throw new InvalidOperationException("Sequence contains no elements.");
-            var max = routeQueryResults.Max(o => o.QueryResult);
-
-            return ConvertMax<TInnerSelect>(max);
-        }
-        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            var resultType = typeof(TResult);
-            if (!resultType.IsNullableType())
-            {
-                if (typeof(decimal) == resultType)
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<decimal>)queryable).Select(o => (decimal?)o).MaxAsync(cancellationToken), cancellationToken);
-                    return GetMaxTResult<decimal?>(result);
-                }
-                if (typeof(float) == resultType)
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                        ((IQueryable<float>)queryable).Select(o => (float?)o).MaxAsync(cancellationToken), cancellationToken);
-
-                    return GetMaxTResult<float?>(result);
-                }
-                if (typeof(int) == resultType)
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<int>)queryable).Select(o => (int?)o).MaxAsync(cancellationToken),cancellationToken);
-                    return GetMaxTResult<int?>(result);
-                }
-                if (typeof(long) == resultType)
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<long>)queryable).Select(o => (long?)o).MaxAsync(cancellationToken), cancellationToken);
-
-                    return GetMaxTResult<long?>(result);
-                }
-                if (typeof(double) == resultType)
-                {
-                    var result = await base.ExecuteAsync(queryable =>
-                            ((IQueryable<double>)queryable).Select(o => (double?)o).MaxAsync(cancellationToken), cancellationToken);
-                    return GetMaxTResult<double?>(result);
-                }
-
-                throw new ShardingCoreException($"cant calc max value, type:[{resultType}]");
-            }
-            else
-            {
-
-                var result = (await base.ExecuteAsync(queryable => ((IQueryable<TResult>)queryable).MaxAsync(cancellationToken), cancellationToken))
-                    .Where(o => o.QueryResult != null)
-                    .ToList();
-                return result.Max(o => o.QueryResult);
-            }
+           return resultList.Max(o => o.QueryResult);
         }
 
-        private TResult ConvertMax<TNumber>(TNumber number)
+        protected override IExecutor<RouteQueryResult<TResult>> CreateExecutor0(bool async)
         {
-            if (number == null)
-                return default;
-            var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
-            return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
-        }
-
-        protected override IParallelExecuteControl<TResult1> CreateParallelExecuteControl<TResult1>(IParallelExecutor<TResult1> executor)
-        {
-            return AnyElementParallelExecuteControl<TResult1>.Create(GetStreamMergeContext(), executor);
+            return new MaxMethodExecutor<TResult>(GetStreamMergeContext());
         }
     }
 }

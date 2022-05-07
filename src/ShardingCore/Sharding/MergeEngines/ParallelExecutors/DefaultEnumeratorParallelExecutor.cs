@@ -29,9 +29,11 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
              var connectionMode = _streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
             var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
-            var (newQueryable, dbContext) = CreateAsyncExecuteQueryable(dataSourceName, routeResult, connectionMode);
+            var shardingDbContext = _streamMergeContext.CreateDbContext(dataSourceName, routeResult, connectionMode);
+            var newQueryable = (IQueryable<TEntity>)_streamMergeContext.GetReWriteQueryable()
+                .ReplaceDbContextQueryable(shardingDbContext);
             var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, _async, cancellationToken);
-            return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext, streamMergeAsyncEnumerator);
+            return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(shardingDbContext, streamMergeAsyncEnumerator);
         }
         private (IQueryable<TEntity>, DbContext) CreateAsyncExecuteQueryable(string dsname, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
         {

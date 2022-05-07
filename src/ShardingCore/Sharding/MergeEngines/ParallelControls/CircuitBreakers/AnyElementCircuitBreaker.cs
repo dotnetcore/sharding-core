@@ -1,14 +1,6 @@
-﻿using System;
+﻿using ShardingCore.Sharding.StreamMergeEngines;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
-using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 {
@@ -17,7 +9,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
     /// </summary>
     internal class AnyElementCircuitBreaker : AbstractCircuitBreaker
     {
-        public AnyElementCircuitBreaker(ISeqQueryProvider seqQueryProvider) : base(seqQueryProvider)
+        public AnyElementCircuitBreaker(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         /// <summary>

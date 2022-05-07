@@ -77,9 +77,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private IQueryableCombine GetMethodQueryableCombine(IQueryCompilerContext queryCompilerContext)
         {
+            string methodName=null;
             if (queryCompilerContext.GetQueryExpression() is MethodCallExpression methodCallExpression)
             {
-                switch (methodCallExpression.Method.Name)
+                methodName = methodCallExpression.Method.Name;
+                switch (methodName)
                 {
                     case nameof(Queryable.First):
                     case nameof(Queryable.FirstOrDefault):
@@ -103,7 +105,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 }
             }
 
-            throw new ShardingCoreException($"query expression:[{queryCompilerContext.GetQueryExpression().ShardingPrint()}] is not terminate operate");
+            throw new ShardingCoreException($"query expression:[{methodName}] is not terminate operate");
         }
     }
 }

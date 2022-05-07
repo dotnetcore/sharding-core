@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
             var shardingDbContext = _streamMergeContext.CreateDbContext(dataSourceName, routeResult, connectionMode);
-            var newQueryable = (IQueryable<TEntity>)_streamMergeContext.GetReWriteQueryable()
+            var newQueryable = _streamMergeContext.GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
 
             var queryResult = await _efQuery(newQueryable);

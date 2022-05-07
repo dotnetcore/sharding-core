@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
@@ -7,6 +8,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -24,10 +27,33 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         {
         }
 
-        public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        //public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        //{
+        //    var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LastOrDefaultAsync(cancellationToken), cancellationToken);
+        //    var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
+
+        //    if (notNullResult.IsEmpty())
+        //        return default;
+
+        //    var streamMergeContext = GetStreamMergeContext();
+        //    if (streamMergeContext.Orders.Any())
+        //        return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).LastOrDefault();
+
+        //    return notNullResult.LastOrDefault();
+        //}
+
+        //protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        //{
+        //    return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+        //}
+        protected override IExecutor<RouteQueryResult<TEntity>> CreateExecutor0(bool async)
         {
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LastOrDefaultAsync(cancellationToken), cancellationToken);
-            var notNullResult = result.Where(o => o != null&&o.QueryResult!=null).Select(o=>o.QueryResult).ToList();
+            return new LastOrDefaultMethodExecutor<TEntity>(GetStreamMergeContext());
+        }
+
+        protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
+        {
+            var notNullResult = resultList.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 return default;
@@ -37,11 +63,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).LastOrDefault();
 
             return notNullResult.LastOrDefault();
-        }
-
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
-        {
-            return AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

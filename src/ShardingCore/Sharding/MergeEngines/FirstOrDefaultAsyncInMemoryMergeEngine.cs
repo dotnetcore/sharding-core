@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
@@ -6,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 using ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers;
 
@@ -23,12 +26,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public FirstOrDefaultAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-        public override async Task<TEntity> DoMergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        protected override IExecutor<RouteQueryResult<TEntity>> CreateExecutor0(bool async)
         {
+            return new FirstOrDefaultMethodExecutor<TEntity>(GetStreamMergeContext());
+        }
 
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).FirstOrDefaultAsync(cancellationToken), cancellationToken);
-           
-            var notNullResult = result.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
+        protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
+        {
+            var notNullResult = resultList.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 return default;
@@ -38,11 +43,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
                 return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).FirstOrDefault();
 
             return notNullResult.FirstOrDefault();
-        }
-
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
-        {
-            return  AnyElementParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using System.Linq;
@@ -6,6 +7,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 
@@ -25,21 +28,14 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         }
 
 
-        public override async Task<bool> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        protected override bool DoMergeResult(List<RouteQueryResult<bool>> resultList)
         {
-            var result = await base.ExecuteAsync(queryable =>
-            {
-                var constantQueryCombineResult = (ConstantQueryCombineResult)GetStreamMergeContext().MergeQueryCompilerContext.GetQueryCombineResult();
-                var constantItem = (TEntity)constantQueryCombineResult.GetConstantItem();
-                return ((IQueryable<TEntity>)queryable).ContainsAsync(constantItem, cancellationToken);
-            }, cancellationToken);
-
-            return result.Any(o => o.QueryResult);
+            return resultList.Any(o => o.QueryResult);
         }
 
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        protected override IExecutor<RouteQueryResult<bool>> CreateExecutor0(bool async)
         {
-            return ContainsParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+            return new ContainsMethodExecutor<TEntity>(GetStreamMergeContext());
         }
     }
 }

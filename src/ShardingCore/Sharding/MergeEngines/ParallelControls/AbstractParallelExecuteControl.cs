@@ -121,24 +121,13 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControls
             else
             {
                 var result = new LinkedList<ShardingMergeResult<TResult>>();
-                Task<ShardingMergeResult<TResult>>[] tasks = null;
-                if (sqlExecutorUnits.Count > 1)
+
+                var tasks = sqlExecutorUnits.Select(sqlExecutorUnit => _executor.ExecuteAsync(sqlExecutorUnit, cancellationToken)).ToArray();
+              
+                var results = await TaskHelper.WhenAllFastFail(tasks);
+                foreach (var r in results)
                 {
-                    tasks = sqlExecutorUnits.Skip(1).Select(sqlExecutorUnit =>
-                    {
-                        return _executor.ExecuteAsync(sqlExecutorUnit, cancellationToken);
-                    }).ToArray();
-                }
-                else
-                {
-                    tasks = Array.Empty<Task<ShardingMergeResult<TResult>>>();
-                }
-                var firstResult = await _executor.ExecuteAsync(sqlExecutorUnits[0], cancellationToken);
-                result.AddLast(firstResult);
-                var otherResults = await TaskHelper.WhenAllFastFail(tasks);
-                foreach (var otherResult in otherResults)
-                {
-                    result.AddLast(otherResult);
+                    result.AddLast(r);
                 }
 
                 return result;

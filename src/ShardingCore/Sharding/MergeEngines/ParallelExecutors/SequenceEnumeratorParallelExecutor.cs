@@ -31,10 +31,12 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelExecutors
         public override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>> ExecuteAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             var connectionMode = _streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
-            var (newQueryable, dbContext) = CreateAsyncExecuteQueryable(
-                ((SqlSequenceRouteUnit)sqlExecutorUnit.RouteUnit).SequenceResult, connectionMode);
+            var sequenceResult = sqlExecutorUnit.RouteUnit.As<SqlSequenceRouteUnit>().SequenceResult;
+            var shardingDbContext = _streamMergeContext.CreateDbContext(sequenceResult.DSName, sequenceResult.TableRouteResult, connectionMode);
+            var newQueryable = _noPaginationQueryable.Skip(sequenceResult.Skip).Take(sequenceResult.Take)
+                .ReplaceDbContextQueryable(shardingDbContext).As<IQueryable<TEntity>>();
             var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, _async, cancellationToken);
-            return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(dbContext, streamMergeAsyncEnumerator);
+            return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TEntity>>(shardingDbContext, streamMergeAsyncEnumerator);
         }
         private (IQueryable<TEntity>, DbContext) CreateAsyncExecuteQueryable( SequenceResult sequenceResult, ConnectionModeEnum connectionMode)
         {

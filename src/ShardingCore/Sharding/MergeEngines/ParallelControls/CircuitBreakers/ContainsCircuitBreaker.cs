@@ -1,16 +1,12 @@
-﻿using System;
+﻿using ShardingCore.Sharding.StreamMergeEngines;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 {
     internal class ContainsCircuitBreaker:AbstractCircuitBreaker
     {
-        public ContainsCircuitBreaker(ISeqQueryProvider seqQueryProvider) : base(seqQueryProvider)
+        public ContainsCircuitBreaker(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 

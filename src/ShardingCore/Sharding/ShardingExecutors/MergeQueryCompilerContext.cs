@@ -202,6 +202,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             return _queryCompilerContext.IsEnumerableQuery();
         }
+
         /// <summary>
         /// 如果需要聚合并且存在跨tail的查询或者本次是读链接
         /// </summary>

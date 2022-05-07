@@ -61,14 +61,14 @@ namespace ShardingCore.EFCores
 #if EFCORE2
 
 
-        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
+        public IAsyncEnumerable<TResult> GroupExecuteAsync<TResult>(Expression query)
         {
-            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);
+            return _shardingComplierExecutor.GroupExecuteAsync<TResult>(_shardingDbContext, query);
         }
 
-        public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
+        public Task<TResult> GroupExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
+            return _shardingComplierExecutor.GroupExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
         
         [ExcludeFromCodeCoverage]

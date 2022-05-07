@@ -15,6 +15,8 @@ using ShardingCore.Helpers;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.EnumeratorAsync
 {
@@ -29,14 +31,19 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
     {
         private readonly long _total;
 
-        public ReverseShardingStreamEnumerable(StreamMergeContext streamMergeContext, long total) : base(streamMergeContext,new ReverseStreamMergeCombine())
+        public ReverseShardingStreamEnumerable(StreamMergeContext streamMergeContext, long total) : base(streamMergeContext)
         {
             _total = total;
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
+        protected override IStreamMergeCombine GetStreamMergeCombine()
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            return ReverseStreamMergeCombine.Instance;
+        }
+
+
+        protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async)
+        {
             var noPaginationNoOrderQueryable = GetStreamMergeContext().GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().As<IQueryable<TEntity>>();
             var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
             var take = GetStreamMergeContext().Take.HasValue ? GetStreamMergeContext().Take.Value : (_total - skip);
@@ -47,16 +54,8 @@ namespace ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.
             var propertyOrders = GetStreamMergeContext().Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
             GetStreamMergeContext().ReSetOrders(propertyOrders);
             var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip + (int)take).OrderWithExpression(propertyOrders);
-
-            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var reverseEnumeratorParallelExecutor = new ReverseEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(), reverseOrderQueryable, async);
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async, defaultSqlRouteUnits, reverseEnumeratorParallelExecutor, cancellationToken);
-            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o => o).ToArray();
-            return streamEnumerators;
-        }
-        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
-        {
-            return new ReverseEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
+            return new ReverseEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(),
+                reverseOrderQueryable, async);
         }
     }
 }

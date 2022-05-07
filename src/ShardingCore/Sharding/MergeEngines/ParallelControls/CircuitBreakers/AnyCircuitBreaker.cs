@@ -1,17 +1,12 @@
-﻿using System;
+﻿using ShardingCore.Sharding.StreamMergeEngines;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShardingCore.Exceptions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.ParallelControls.CircuitBreakers
 {
     internal class AnyCircuitBreaker:AbstractCircuitBreaker
     {
-        public AnyCircuitBreaker(ISeqQueryProvider seqQueryProvider) : base(seqQueryProvider)
+        public AnyCircuitBreaker(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
         protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)

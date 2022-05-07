@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
@@ -7,6 +8,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.Abstractions.ParallelExecutors;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
@@ -26,25 +29,27 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             _shardingPageManager= ShardingContainer.GetService<IShardingPageManager>();
         }
 
-        public override async Task<long> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        protected override long DoMergeResult(List<RouteQueryResult<long>> resultList)
         {
-
-            var result = await base.ExecuteAsync( queryable =>  ((IQueryable<TEntity>)queryable).LongCountAsync(cancellationToken), cancellationToken);
 
             if (_shardingPageManager.Current != null)
             {
-                foreach (var routeQueryResult in result)
+                long r = 0;
+                foreach (var routeQueryResult in resultList)
                 {
                     _shardingPageManager.Current.RouteQueryResults.Add(routeQueryResult);
+                    r+= routeQueryResult.QueryResult;
                 }
+
+                return r;
             }
 
-            return result.Sum(o=>o.QueryResult);
+            return resultList.Sum(o => o.QueryResult);
         }
 
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        protected override IExecutor<RouteQueryResult<long>> CreateExecutor0(bool async)
         {
-            return NoTripParallelExecuteControl<TResult>.Create(GetStreamMergeContext(),executor);
+            return new LongCountMethodExecutor<TEntity>(GetStreamMergeContext());
         }
     }
 }

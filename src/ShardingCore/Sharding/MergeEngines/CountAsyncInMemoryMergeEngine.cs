@@ -1,13 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingPage.Abstractions;
-using ShardingCore.Sharding.Abstractions;
+﻿using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
+using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using ShardingCore.Sharding.Abstractions.ParallelExecutors;
-using ShardingCore.Sharding.MergeEngines.ParallelControls;
 
 namespace ShardingCore.Sharding.StreamMergeEngines
 {
@@ -26,24 +22,26 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
         }
 
-
-        public override async Task<int> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
+        protected override int DoMergeResult(List<RouteQueryResult<int>> resultList)
         {
-            var result = await base.ExecuteAsync(queryable =>((IQueryable<TEntity>)queryable).CountAsync(cancellationToken), cancellationToken);
 
             if (_shardingPageManager.Current != null)
             {
-                foreach (var routeQueryResult in result)
+                int r = 0;
+                foreach (var routeQueryResult in resultList)
                 {
                     _shardingPageManager.Current.RouteQueryResults.Add(new RouteQueryResult<long>(routeQueryResult.DataSourceName, routeQueryResult.TableRouteResult, routeQueryResult.QueryResult));
+                    r += routeQueryResult.QueryResult;
                 }
+
+                return r;
             }
-            return result.Sum(o=>o.QueryResult);
+            return resultList.Sum(o => o.QueryResult);
         }
 
-        protected override IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor)
+        protected override IExecutor<RouteQueryResult<int>> CreateExecutor0(bool async)
         {
-            return NoTripParallelExecuteControl<TResult>.Create(GetStreamMergeContext(), executor);
+            return new CountMethodExecutor<TEntity>(GetStreamMergeContext());
         }
     }
 }

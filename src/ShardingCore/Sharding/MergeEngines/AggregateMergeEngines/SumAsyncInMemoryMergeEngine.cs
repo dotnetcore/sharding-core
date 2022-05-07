@@ -8,6 +8,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 
 namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
 {
@@ -18,27 +20,11 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class SumAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractNoTripEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
+    internal class SumAsyncInMemoryMergeEngine<TEntity, TResult> : AbstractEnsureMethodCallInMemoryAsyncMergeEngine<TEntity, TResult>
     {
         public SumAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-
-        public override async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            var resultType = typeof(TResult);
-            if(!resultType.IsNumericType())
-                throw new ShardingCoreException(
-                    $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {resultType}");
-#if !EFCORE2
-            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TResult, Task<TResult>>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TResult>)queryable, (Expression)null, cancellationToken), cancellationToken);
-#endif
-#if EFCORE2
-            var result = await base.ExecuteAsync(queryable => ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TResult, TResult>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TResult>)queryable, cancellationToken), cancellationToken);
-#endif
-            return GetSumResult(result);
-        }
-
         private TResult GetSumResult<TInnerSelect>(List<RouteQueryResult<TInnerSelect>> source)
         {
             if (source.IsEmpty())
@@ -52,6 +38,15 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
                 return default;
             var convertExpr = Expression.Convert(Expression.Constant(number), typeof(TResult));
             return Expression.Lambda<Func<TResult>>(convertExpr).Compile()();
+        }
+        protected override TResult DoMergeResult(List<RouteQueryResult<TResult>> resultList)
+        {
+            return GetSumResult(resultList);
+        }
+
+        protected override IExecutor<RouteQueryResult<TResult>> CreateExecutor0(bool async)
+        {
+            return new SumMethodExecutor<TResult>(GetStreamMergeContext());
         }
     }
 }

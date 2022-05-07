@@ -11,6 +11,18 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Stream
 {
     internal class DefaultStreamMergeCombine:IStreamMergeCombine
     {
+
+        private static readonly IStreamMergeCombine _instance;
+        static DefaultStreamMergeCombine()
+        {
+            _instance = new DefaultStreamMergeCombine();
+        }
+
+        private DefaultStreamMergeCombine()
+        {
+
+        }
+        public static IStreamMergeCombine Instance => _instance;
         public IStreamMergeAsyncEnumerator<TEntity> StreamMergeEnumeratorCombine<TEntity>(StreamMergeContext streamMergeContext,
             IStreamMergeAsyncEnumerator<TEntity>[] streamsAsyncEnumerators)
         {

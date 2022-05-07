@@ -15,6 +15,8 @@ using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.StreamMergeCombines;
+using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 using ShardingCore.Sharding.MergeEngines.ParallelControls.Enumerators;
 using ShardingCore.Sharding.MergeEngines.ParallelExecutors;
 
@@ -30,24 +32,18 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     internal class DefaultShardingStreamEnumerable<TShardingDbContext,TEntity> :AbstractStreamEnumerable<TEntity>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public DefaultShardingStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext,new DefaultStreamMergeCombine())
+        public DefaultShardingStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
+        protected override IStreamMergeCombine GetStreamMergeCombine()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
-            var defaultEnumeratorParallelExecutor = new DefaultEnumeratorParallelExecutor<TEntity>(GetStreamMergeContext(),async);
-            var enumeratorTasks = GetDataSourceGroupAndExecutorGroup<IStreamMergeAsyncEnumerator<TEntity>>(async,defaultSqlRouteUnits, defaultEnumeratorParallelExecutor, cancellationToken);
-
-            var streamEnumerators = TaskHelper.WhenAllFastFail(enumeratorTasks).WaitAndUnwrapException().SelectMany(o=>o).ToArray();
-            return streamEnumerators;
+            return DefaultStreamMergeCombine.Instance;
         }
 
-        protected override IParallelExecuteControl<IStreamMergeAsyncEnumerator<TEntity>> CreateParallelExecuteControl0(IParallelExecutor<IStreamMergeAsyncEnumerator<TEntity>> executor)
+        protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async)
         {
-            return new DefaultEnumeratorParallelExecuteControl<TEntity>(GetStreamMergeContext(), executor, GetStreamMergeCombine());
+            return new DefaultEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(), async);
         }
     }
 }
