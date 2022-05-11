@@ -20,6 +20,7 @@ using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Sharding.Abstractions;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.EFCores;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace Sample.SqlServer.Controllers
 {
@@ -34,12 +35,14 @@ namespace Sample.SqlServer.Controllers
 
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
+        private readonly IShardingReadWriteManager _readWriteManager;
 
-        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager,IShardingReadWriteManager readWriteManager)
         {
             _defaultTableDbContext = defaultTableDbContext;
             _ = defaultTableDbContext.Model;
             _shardingRouteManager = shardingRouteManager;
+            _readWriteManager = readWriteManager;
         }
 
         [HttpGet]
@@ -362,6 +365,20 @@ namespace Sample.SqlServer.Controllers
             await _defaultTableDbContext.Set<SysUserSalary>().MaxAsync(o => o.DateOfMonth);
             await _defaultTableDbContext.Set<SysUserSalary>().MinAsync(o => o.DateOfMonth);
             return Ok(new { xxx, xxx1 });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get5(string readNodeName)
+        {
+            using (_readWriteManager.CreateScope<DefaultShardingDbContext>())
+            {
+                _readWriteManager.GetCurrent<DefaultShardingDbContext>().SetReadWriteSeparation(100,true);
+
+                _readWriteManager.GetCurrent<DefaultShardingDbContext>().AddDataSourceReadNode("A", readNodeName);
+                var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
+
+            }
+            return Ok();
         }
 
     }

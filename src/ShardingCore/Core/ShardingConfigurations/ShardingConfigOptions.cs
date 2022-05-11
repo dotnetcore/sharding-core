@@ -85,6 +85,20 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
+        public void AddReadWriteNodeSeparation(
+            Func<IServiceProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
+            ReadStrategyEnum readStrategyEnum,
+            bool defaultEnable = false,
+            int defaultPriority = 10,
+            ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
+        {
+            ShardingReadWriteSeparationOptions = new ShardingReadWriteSeparationOptions();
+            ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure= readWriteNodeSeparationConfigure ?? throw new ArgumentNullException(nameof(readWriteNodeSeparationConfigure));
+            ShardingReadWriteSeparationOptions.ReadStrategy = readStrategyEnum;
+            ShardingReadWriteSeparationOptions.DefaultEnable=defaultEnable;
+            ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
+            ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
+        }
 
         /// <summary>
         /// 多个DbContext事务传播委托

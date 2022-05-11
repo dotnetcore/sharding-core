@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ShardingCore.Exceptions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations.Connectors.Abstractions;
 
@@ -16,17 +17,28 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     */
     public class ReadWriteRandomConnector:AbstractionReadWriteConnector
     {
-        public ReadWriteRandomConnector(string dataSourceName,IEnumerable<string> connectionStrings):base(dataSourceName,connectionStrings)
+        public ReadWriteRandomConnector(string dataSourceName,ReadNode[] readNodes):base(dataSourceName, readNodes)
         {
         }
 
-        public override string DoGetConnectionString()
+        private string DoGetNoReadNameConnectionString()
         {
             if (Length == 1)
-                return ConnectionStrings[0];
+                return ReadNodes[0].ConnectionString;
             var next = RandomHelper.Next(0, Length);
-            return ConnectionStrings[next];
+            return ReadNodes[next].ConnectionString;
         }
 
+        public override string DoGetConnectionString(string readNodeName)
+        {
+            if (readNodeName == null)
+            {
+                return DoGetNoReadNameConnectionString();
+            }else
+            {
+                return ReadNodes.FirstOrDefault(o => o.Name == readNodeName)?.ConnectionString ??
+                    throw new ShardingCoreInvalidOperationException($"read node name :[{readNodeName}] not found");
+            }
+        }
     }
 }

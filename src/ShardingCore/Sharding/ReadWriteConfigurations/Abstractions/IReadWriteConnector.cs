@@ -15,13 +15,15 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
         /// <summary>
         /// 获取链接字符串
         /// </summary>
+        /// <param name="readNodeName">可为null</param>
         /// <returns></returns>
-        public string GetConnectionString();
+        public string GetConnectionString(string readNodeName);
         /// <summary>
         /// 添加链接字符串
         /// </summary>
         /// <param name="connectionString"></param>
+        /// <param name="readNodeName"></param>
         /// <returns></returns>
-        public bool AddConnectionString(string connectionString);
+        public bool AddConnectionString(string connectionString, string readNodeName);
     }
 }

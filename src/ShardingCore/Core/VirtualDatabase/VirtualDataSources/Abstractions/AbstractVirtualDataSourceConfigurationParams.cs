@@ -28,7 +28,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public abstract string DefaultDataSourceName { get; }
         public abstract string DefaultConnectionString { get; }
         public virtual IDictionary<string, string> ExtraDataSources { get; }=new ConcurrentDictionary<string, string>();
-        public virtual IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
+        public virtual IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
         public virtual ReadStrategyEnum? ReadStrategy { get; }
         public virtual bool? ReadWriteDefaultEnable { get; }
         public virtual int? ReadWriteDefaultPriority { get; }
@@ -52,7 +52,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 
         public virtual bool UseReadWriteSeparation()
         {
-            return ReadWriteSeparationConfigs!=null;
+            return ReadWriteNodeSeparationConfigs!=null;
         }
         
     }

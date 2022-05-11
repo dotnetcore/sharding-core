@@ -10,9 +10,11 @@ using Sample.SqlServer.UnionAllMerge;
 using ShardingCore;
 using ShardingCore.TableExists;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
@@ -55,6 +57,24 @@ namespace Sample.SqlServer
                     op.AddDefaultDataSource("A",
                       "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"
                      );
+                    op.AddReadWriteNodeSeparation(sp =>new Dictionary<string, IEnumerable<ReadNode>>()
+                    {
+                        {"A",new List<ReadNode>()
+                        {
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A2","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A3","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A4","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A5","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A6","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
+                            new ReadNode("X","Data Source=localhost;Initial Catalog=ShardingCoreDBXA123;Integrated Security=True;"),
+                        }}
+                    },ReadStrategyEnum.Loop);
                 }).EnsureConfig();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>

@@ -33,7 +33,7 @@ namespace Sample.MultiConfig.Controllers
         public override int Priority { get; }
         public override string DefaultDataSourceName { get; }
         public override string DefaultConnectionString { get; }
-        public override IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
+        public override IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
         public override ReadStrategyEnum? ReadStrategy { get; }
         public override bool? ReadWriteDefaultEnable { get; }
         public override int? ReadWriteDefaultPriority { get; }

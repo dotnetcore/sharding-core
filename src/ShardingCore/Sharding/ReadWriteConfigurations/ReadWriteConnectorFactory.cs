@@ -12,16 +12,16 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
 {
     public class ReadWriteConnectorFactory: IReadWriteConnectorFactory
     {
-        public IReadWriteConnector CreateConnector(ReadStrategyEnum strategy,string dataSourceName, IEnumerable<string> connectionStrings)
+        public IReadWriteConnector CreateConnector(ReadStrategyEnum strategy,string dataSourceName, ReadNode[] readNodes)
         {
 
             if (strategy == ReadStrategyEnum.Loop)
             {
-                return new ReadWriteLoopConnector(dataSourceName, connectionStrings);
+                return new ReadWriteLoopConnector(dataSourceName, readNodes);
             }
             else if (strategy == ReadStrategyEnum.Random)
             {
-                return new ReadWriteRandomConnector(dataSourceName, connectionStrings);
+                return new ReadWriteRandomConnector(dataSourceName, readNodes);
             }
             else
             {

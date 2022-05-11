@@ -35,27 +35,26 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
             return _connectors.ContainsKey(dataSourceName);
         }
 
-        public string GetConnectionString(string dataSourceName)
+        public string GetConnectionString(string dataSourceName, string readNodeName)
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
                 throw new ShardingCoreInvalidOperationException($"read write connector not found, data source name:[{dataSourceName}]");
-            return connector.GetConnectionString();
+            return connector.GetConnectionString(readNodeName);
         }
-
-        public bool AddConnectionString(string dataSourceName, string connectionString)
+        public bool AddConnectionString(string dataSourceName, string connectionString, string readNodeName)
         {
             if (!_connectors.TryGetValue(dataSourceName, out var connector))
             {
                 connector = _readWriteConnectorFactory.CreateConnector(_readStrategy,
-                    dataSourceName, new List<string>()
+                    dataSourceName, new ReadNode[]
                     {
-                        connectionString
+                        new ReadNode(readNodeName??Guid.NewGuid().ToString("n"),connectionString)
                     });
                 return _connectors.TryAdd(dataSourceName, connector);
             }
             else
             {
-                return connector.AddConnectionString(connectionString);
+                return connector.AddConnectionString(connectionString, readNodeName);
             }
         }
     }

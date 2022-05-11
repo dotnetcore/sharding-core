@@ -11,6 +11,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 
@@ -28,7 +29,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override string DefaultDataSourceName { get; }
         public override string DefaultConnectionString { get; }
         public override IDictionary<string, string> ExtraDataSources { get; }
-        public override IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
+        public override IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
         public override ReadStrategyEnum? ReadStrategy { get; }
         public override bool? ReadWriteDefaultEnable { get; }
         public override int? ReadWriteDefaultPriority { get; }
@@ -53,7 +54,23 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                                  new EmptyTableEnsureManager<TShardingDbContext>();
             if (options.ShardingReadWriteSeparationOptions != null)
             {
-                ReadWriteSeparationConfigs = options.ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure?.Invoke(serviceProvider);
+                if (options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure != null)
+                {
+                    var readConfig = options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure?.Invoke(serviceProvider);
+                    if (readConfig != null)
+                    {
+                        ReadWriteNodeSeparationConfigs = readConfig.ToDictionary(kv=>kv.Key,kv=>kv.Value.ToArray());
+                    }
+                }
+                else
+                {
+                    var nodeConfig = options.ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure?.Invoke(serviceProvider);
+                    if (nodeConfig != null)
+                    {
+                        ReadWriteNodeSeparationConfigs = nodeConfig.ToDictionary(kv => kv.Key,
+                            kv => kv.Value.Select(o => new ReadNode(Guid.NewGuid().ToString("n"), o)).ToArray());
+                    }
+                }
                 ReadStrategy = options.ShardingReadWriteSeparationOptions.ReadStrategy;
                 ReadWriteDefaultEnable = options.ShardingReadWriteSeparationOptions.DefaultEnable;
                 ReadWriteDefaultPriority = options.ShardingReadWriteSeparationOptions.DefaultPriority;

@@ -79,7 +79,7 @@ namespace ShardingCore.Test
             _routeTailFactory = routeTailFactory;
             _readWriteConnectorFactory = readWriteConnectorFactory;
             _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
-            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
+            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
             _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
         [Fact]
@@ -229,9 +229,9 @@ namespace ShardingCore.Test
                 {  new ParallelTableComparerType(typeof(SysUserSalary)),new ParallelTableComparerType(typeof(SysUserMod)), });
             Assert.Equal(x1x1, x2x2);
             Assert.Equal(x1x1.GetHashCode(), x2x2.GetHashCode());
-            var succeedAddConnectionString = _shardingConnectionStringResolver.AddConnectionString("X", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;");
+            var succeedAddConnectionString = _shardingConnectionStringResolver.AddConnectionString("X", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;",null);
             Assert.True(succeedAddConnectionString);
-            var connectionString = _shardingConnectionStringResolver.GetConnectionString("X");
+            var connectionString = _shardingConnectionStringResolver.GetConnectionString("X", null);
             Assert.Equal("Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;", connectionString);
         }
 

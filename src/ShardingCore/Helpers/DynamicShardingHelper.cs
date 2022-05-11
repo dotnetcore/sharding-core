@@ -82,14 +82,15 @@ namespace ShardingCore.Helpers
         /// <param name="virtualDataSource"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
+        /// <param name="readNodeName"></param>
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public static void DynamicAppendReadWriteConnectionString<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName,
-            string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+            string connectionString, string readNodeName=null) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            if (virtualDataSource.ConnectionStringManager is IReadWriteAppendConnectionString
+            if (virtualDataSource.ConnectionStringManager is IReadWriteConnectionStringManager
                 readWriteAppendConnectionString)
             {
-                readWriteAppendConnectionString.AddReadConnectionString(dataSourceName, connectionString);
+                readWriteAppendConnectionString.AddReadConnectionString(dataSourceName, connectionString, readNodeName);
                 return;
             }
 
@@ -103,12 +104,13 @@ namespace ShardingCore.Helpers
         /// <param name="configId"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
+        /// <param name="readNodeName"></param>
         public static void DynamicAppendReadWriteConnectionString<TShardingDbContext>(string configId, string dataSourceName,
-            string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+            string connectionString, string readNodeName = null) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var virtualDataSourceManager = ShardingContainer.GetRequiredVirtualDataSourceManager<TShardingDbContext>();
             var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource(configId);
-            DynamicAppendReadWriteConnectionString(virtualDataSource, dataSourceName, connectionString);
+            DynamicAppendReadWriteConnectionString(virtualDataSource, dataSourceName, connectionString, readNodeName);
         }
     }
 }

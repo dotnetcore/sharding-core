@@ -42,7 +42,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <summary>
         /// null表示不启用读写分离,if null mean not enable read write
         /// </summary>
-        IDictionary<string, IEnumerable<string>> ReadWriteSeparationConfigs { get; }
+        IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
 
         ReadStrategyEnum? ReadStrategy { get; }
         bool? ReadWriteDefaultEnable { get; }

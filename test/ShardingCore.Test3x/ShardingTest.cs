@@ -73,7 +73,7 @@ namespace ShardingCore.Test3x
             _shardingReadWriteManager = shardingReadWriteManager;
             _routeTailFactory = routeTailFactory;
             _readWriteConnectorFactory = readWriteConnectorFactory;
-            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
+            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
             _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
         [Fact]

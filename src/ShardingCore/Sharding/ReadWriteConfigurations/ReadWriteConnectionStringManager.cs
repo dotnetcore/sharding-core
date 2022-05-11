@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ReadWriteConnectionStringManager: IConnectionStringManager, IReadWriteAppendConnectionString
+    public class ReadWriteConnectionStringManager: IConnectionStringManager, IReadWriteConnectionStringManager
     {
         private IShardingConnectionStringResolver _shardingConnectionStringResolver;
         private readonly IVirtualDataSource _virtualDataSource;
@@ -26,20 +26,25 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         {
             _virtualDataSource = virtualDataSource;
             var readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
-            var readWriteConnectors = virtualDataSource.ConfigurationParams.ReadWriteSeparationConfigs.Select(o=> readWriteConnectorFactory.CreateConnector(virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key,o.Value));
+            var readWriteConnectors = virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o=> readWriteConnectorFactory.CreateConnector(virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key,o.Value));
             _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
         }
         public string GetConnectionString(string dataSourceName)
         {
-            if (!_shardingConnectionStringResolver.ContainsReadWriteDataSourceName(dataSourceName))
-                return _virtualDataSource.GetConnectionString(dataSourceName);
-            return _shardingConnectionStringResolver.GetConnectionString(dataSourceName);
+            return GetReadNodeConnectionString(dataSourceName,null);
            
         }
 
-        public bool AddReadConnectionString(string dataSourceName, string connectionString)
+        public string GetReadNodeConnectionString(string dataSourceName, string readNodeName)
         {
-            return _shardingConnectionStringResolver.AddConnectionString(dataSourceName, connectionString);
+            if (!_shardingConnectionStringResolver.ContainsReadWriteDataSourceName(dataSourceName))
+                return _virtualDataSource.GetConnectionString(dataSourceName);
+            return _shardingConnectionStringResolver.GetConnectionString(dataSourceName, readNodeName);
+        }
+
+        public bool AddReadConnectionString(string dataSourceName, string connectionString, string readNodeName)
+        {
+            return _shardingConnectionStringResolver.AddConnectionString(dataSourceName, connectionString, readNodeName);
         }
     }
 }
