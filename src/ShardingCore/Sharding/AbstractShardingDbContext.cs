@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding
     /// <summary>
     /// 分表分库的dbcontext
     /// </summary>
-    public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingTransaction, ISupportShardingReadWrite//,ICurrentDbContextDiscover
+    public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingReadWrite//,ICurrentDbContextDiscover
     {
         protected IShardingDbContextExecutor ShardingDbContextExecutor { get; }
 

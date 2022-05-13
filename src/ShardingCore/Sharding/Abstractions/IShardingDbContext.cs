@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.Abstractions
     * @Date: Saturday, 14 August 2021 21:47:11
     * @Email: 326308290@qq.com
     */
-    public interface IShardingDbContext
+    public interface IShardingDbContext: IShardingTransaction
     {
         /// <summary>
         /// create DbContext

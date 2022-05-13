@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.EFCores
@@ -21,26 +22,25 @@ namespace ShardingCore.EFCores
     */
     public class ShardingRelationalTransaction : RelationalTransaction
     {
-        private readonly ISupportShardingTransaction _supportShardingTransaction;
-        private bool supportShardingTransaction => _supportShardingTransaction != null;
+        private readonly IShardingDbContext _shardingDbContext;
 #if EFCORE6
-        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned, ISqlGenerationHelper sqlGenerationHelper) : base(connection, transaction, transactionId, logger, transactionOwned, sqlGenerationHelper)
+        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned, ISqlGenerationHelper sqlGenerationHelper) : base(connection, transaction, transactionId, logger, transactionOwned, sqlGenerationHelper)
         {
-            _supportShardingTransaction = supportShardingTransaction;
+            _shardingDbContext = shardingDbContext ?? throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
 #if EFCORE3 || EFCORE5
-        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
+        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
         {
-            _supportShardingTransaction = supportShardingTransaction;
+            _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
 #if EFCORE2
-        public ShardingRelationalTransaction(ISupportShardingTransaction supportShardingTransaction, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
+        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
         {
-            _supportShardingTransaction = supportShardingTransaction;
+            _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
@@ -57,15 +57,15 @@ namespace ShardingCore.EFCores
         public override void Commit()
         {
             base.Commit();
-            _supportShardingTransaction?.Commit();
-            _supportShardingTransaction.NotifyShardingTransaction();
+            _shardingDbContext.Commit();
+            _shardingDbContext.NotifyShardingTransaction();
         }
 
         public override void Rollback()
         {
             base.Rollback();
-            _supportShardingTransaction?.Rollback();
-            _supportShardingTransaction.NotifyShardingTransaction();
+            _shardingDbContext.Rollback();
+            _shardingDbContext.NotifyShardingTransaction();
         }
 
 #if !EFCORE2
@@ -73,21 +73,17 @@ namespace ShardingCore.EFCores
         public override async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await base.RollbackAsync(cancellationToken);
-            if (supportShardingTransaction)
-            {
-                await _supportShardingTransaction.RollbackAsync(cancellationToken);
-            }
-            _supportShardingTransaction.NotifyShardingTransaction();
+
+            await _shardingDbContext.RollbackAsync(cancellationToken);
+            _shardingDbContext.NotifyShardingTransaction();
         }
 
         public override async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await base.CommitAsync(cancellationToken);
-            if (supportShardingTransaction)
-            {
-                await _supportShardingTransaction.CommitAsync(cancellationToken);
-            }
-            _supportShardingTransaction.NotifyShardingTransaction();
+
+            await _shardingDbContext.CommitAsync(cancellationToken);
+            _shardingDbContext.NotifyShardingTransaction();
         }
 #endif
     }

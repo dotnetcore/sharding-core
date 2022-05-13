@@ -30,8 +30,8 @@ namespace ShardingCore.EFCores
         public override RelationalTransaction Create(IRelationalConnection connection, DbTransaction transaction, Guid transactionId,
             IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned)
         {
-            var supportShardingTransaction = connection.Context as ISupportShardingTransaction;
-            return new ShardingRelationalTransaction(supportShardingTransaction, connection, transaction, transactionId, logger, transactionOwned, this.Dependencies.SqlGenerationHelper);
+            var shardingDbContext = connection.Context as IShardingDbContext;
+            return new ShardingRelationalTransaction(shardingDbContext, connection, transaction, transactionId, logger, transactionOwned, this.Dependencies.SqlGenerationHelper);
         }
     }
 #endif
@@ -47,8 +47,8 @@ namespace ShardingCore.EFCores
         public override RelationalTransaction Create(IRelationalConnection connection, DbTransaction transaction, Guid transactionId,
             IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned)
         {
-            var supportShardingTransaction = connection.Context as ISupportShardingTransaction;
-            return new ShardingRelationalTransaction(supportShardingTransaction, connection, transaction, transactionId, logger, transactionOwned);
+            var shardingDbContext = connection.Context as IShardingDbContext;
+            return new ShardingRelationalTransaction(shardingDbContext, connection, transaction, transactionId, logger, transactionOwned);
         }
     }
 #endif
@@ -65,8 +65,8 @@ namespace ShardingCore.EFCores
             , IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
             bool transactionOwned)
         {
-            var supportShardingTransaction = GetDbContext(connection) as ISupportShardingTransaction;
-            return new ShardingRelationalTransaction(supportShardingTransaction, connection, transaction, logger,
+            var shardingDbContext = GetDbContext(connection) as IShardingDbContext;
+            return new ShardingRelationalTransaction(shardingDbContext, connection, transaction, logger,
                 transactionOwned);
         }
 

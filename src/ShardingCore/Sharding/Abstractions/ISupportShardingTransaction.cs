@@ -16,15 +16,15 @@ namespace ShardingCore.Sharding.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    [Obsolete]
+    [Obsolete("can remove")]
     public interface ISupportShardingTransaction
     {
-        void NotifyShardingTransaction();
-        void Rollback();
-        void Commit();
-#if !EFCORE2
-        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
-        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
-#endif
+//        void NotifyShardingTransaction();
+//        void Rollback();
+//        void Commit();
+//#if !EFCORE2
+//        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
+//        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
+//#endif
     }
 }
