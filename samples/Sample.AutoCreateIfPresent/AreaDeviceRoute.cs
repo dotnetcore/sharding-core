@@ -118,7 +118,9 @@ namespace Sample.AutoCreateIfPresent
             if (needRefresh)
             {
                 var virtualTable = _virtualTableManager.GetVirtualTable(typeof(AreaDevice));
-                foreach (var tail in _tails.Keys)
+                //修复可能导致迭代器遍历时添加的bug
+                var keys = _tails.Keys.ToList();
+                foreach (var tail in keys)
                 {
                     var hashSet = allPhysicTables.Select(o => o.Tail).ToHashSet();
                     if (!hashSet.Contains(tail))
