@@ -69,6 +69,10 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         //protected abstract IParallelExecuteControl<TResult> CreateParallelExecuteControl<TResult>(IParallelExecutor<TResult> executor);
         protected abstract IExecutor<TResult> CreateExecutor<TResult>(bool async);
 
+        /// <summary>
+        /// sql执行的路由最小单元
+        /// </summary>
+        /// <returns></returns>
         protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
         {
             var streamMergeContext = GetStreamMergeContext();

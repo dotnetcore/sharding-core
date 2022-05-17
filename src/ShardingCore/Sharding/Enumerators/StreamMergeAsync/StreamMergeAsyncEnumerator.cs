@@ -17,6 +17,8 @@ namespace ShardingCore.Sharding.Enumerators
         private readonly IAsyncEnumerator<T> _asyncSource;
         private readonly IEnumerator<T> _syncSource;
         private bool skip;
+        private readonly bool _asyncEnumerator;
+        private readonly bool _syncEnumerator;
 
         public StreamMergeAsyncEnumerator(IAsyncEnumerator<T> asyncSource)
         {
@@ -24,6 +26,7 @@ namespace ShardingCore.Sharding.Enumerators
                 throw new ArgumentNullException(nameof(_syncSource));
 
             _asyncSource = asyncSource;
+            _asyncEnumerator = asyncSource!=null;
             skip = true;
         }
 
@@ -32,6 +35,7 @@ namespace ShardingCore.Sharding.Enumerators
             if (_asyncSource != null)
                 throw new ArgumentNullException(nameof(_asyncSource));
             _syncSource = syncSource;
+            _syncEnumerator = syncSource!=null;
             skip = true;
         }
 
@@ -47,7 +51,7 @@ namespace ShardingCore.Sharding.Enumerators
 #if !EFCORE2
         public async ValueTask DisposeAsync()
         {
-            if (_asyncSource != null)
+            if (_asyncEnumerator)
                 await _asyncSource.DisposeAsync();
         }
 
@@ -79,8 +83,8 @@ namespace ShardingCore.Sharding.Enumerators
 
         public bool HasElement()
         {
-            if (_asyncSource != null) return null != _asyncSource.Current;
-            if (_syncSource != null) return null != _syncSource.Current;
+            if (_asyncEnumerator) return null != _asyncSource.Current;
+            if (_syncEnumerator) return null != _syncSource.Current;
             return false;
         }
 
@@ -97,14 +101,14 @@ namespace ShardingCore.Sharding.Enumerators
         {
             if (skip)
                 return default;
-            if (_asyncSource != null) return _asyncSource.Current;
-            if (_syncSource != null) return _syncSource.Current;
+            if (_asyncEnumerator) return _asyncSource.Current;
+            if (_syncEnumerator) return _syncSource.Current;
             return default;
         }
         public T GetReallyCurrent()
         {
-            if (_asyncSource != null) return _asyncSource.Current;
-            if (_syncSource != null) return _syncSource.Current;
+            if (_asyncEnumerator) return _asyncSource.Current;
+            if (_syncEnumerator) return _syncSource.Current;
             return default;
         }
 #if EFCORE2

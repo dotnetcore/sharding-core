@@ -49,4 +49,21 @@ public class WeatherForecastController : ControllerBase
         await _defaultDbContext.SaveChangesAsync();
         return Ok();
     }
+    public async Task<IActionResult> Query1()
+    {
+        var list = await _defaultDbContext.Set<AreaDevice>().ToListAsync();
+        return Ok(list);
+    }
+    public async Task<IActionResult> Insert1()
+    {
+        var list = new List<string>(){"A","B","C","D","E", "F", "G" };
+        var orderByHour = new AreaDevice();
+        orderByHour.Id = Guid.NewGuid().ToString("n");
+        orderByHour.Area = list[new Random().Next(0, list.Count)];
+        var dateTime = DateTime.Now;
+        orderByHour.CreateTime = dateTime.AddHours(new Random().Next(1, 20));
+        await _defaultDbContext.AddAsync(orderByHour);
+        await _defaultDbContext.SaveChangesAsync();
+        return Ok();
+    }
 }

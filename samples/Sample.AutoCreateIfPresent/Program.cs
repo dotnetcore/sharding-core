@@ -24,11 +24,12 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
         o.CreateShardingTableOnStart = true;
         o.EnsureCreatedWithOutShardingTable = true;
         o.AddShardingTableRoute<OrderByHourRoute>();
+        o.AddShardingTableRoute<AreaDeviceRoute>();
     })
     .AddConfig(o =>
     {
         o.ConfigId = "c1";
-        o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=shardingTest;userid=root;password=root;");
+        o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=shardingTest;userid=root;password=L6yBtV6qNENrwBy7;");
         o.UseShardingQuery((conn, b) =>
         {
             b.UseMySql(conn, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);

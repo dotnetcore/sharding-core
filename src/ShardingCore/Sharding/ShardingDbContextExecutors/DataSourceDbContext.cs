@@ -31,29 +31,59 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext where TShardingDbContext : DbContext, IShardingDbContext
     {
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
+        /// <summary>
+        /// 当前是否是默认的dbcontext 也就是不分片的dbcontext
+        /// </summary>
         public bool IsDefault { get; }
+        /// <summary>
+        /// 当前同库有多少dbcontext了
+        /// </summary>
         public int DbContextCount => _dataSourceDbContexts.Count;
+        /// <summary>
+        /// dbcontext 创建接口
+        /// </summary>
         private readonly IDbContextCreator<TShardingDbContext> _dbContextCreator;
+        /// <summary>
+        /// 实际的链接字符串管理者 用来提供查询和插入dbcontext的创建链接的获取
+        /// </summary>
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
+        /// <summary>
+        /// 当前的数据源是什么默认单数据源可以支持多数据源配置
+        /// </summary>
         private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
 
         /// <summary>
         /// 数据源名称
         /// </summary>
         public string DataSourceName { get; }
-
+        /// <summary>
+        /// 数据源排序默认提交将未分片的数据库最先提交
+        /// </summary>
         private SortedDictionary<string, DbContext> _dataSourceDbContexts =
             new SortedDictionary<string, DbContext>(_comparer);
 
-
-        private bool _isBeginTransaction => _shardingDbContext.Database.CurrentTransaction != null;
-        private readonly DbContext _shardingDbContext;
-        private IDbContextTransaction _shardingContextTransaction => _shardingDbContext?.Database?.CurrentTransaction;
+        /// <summary>
+        /// 是否开启了事务
+        /// </summary>
+        private bool _isBeginTransaction => _shardingShellDbContext.Database.CurrentTransaction != null;
+        /// <summary>
+        /// shell dbcontext最外面的壳
+        /// </summary>
+        private readonly DbContext _shardingShellDbContext;
+        /// <summary>
+        /// 数据库事务
+        /// </summary>
+        private IDbContextTransaction _shardingContextTransaction => _shardingShellDbContext?.Database?.CurrentTransaction;
 
 
         private readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger;
+        /// <summary>
+        /// 同库下公用一个db context options
+        /// </summary>
         private DbContextOptions<TShardingDbContext> _dbContextOptions;
-
+        /// <summary>
+        /// 是否触发了并发如果是的话就报错
+        /// </summary>
         private OneByOneChecker oneByOne = new OneByOneChecker();
 
         private IDbContextTransaction CurrentDbContextTransaction => IsDefault
@@ -66,26 +96,26 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <param name="isDefault"></param>
-        /// <param name="shardingDbContext"></param>
+        /// <param name="shardingShellDbContext"></param>
         /// <param name="dbContextCreator"></param>
         /// <param name="actualConnectionStringManager"></param>
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
-            DbContext shardingDbContext,
+            DbContext shardingShellDbContext,
             IDbContextCreator<TShardingDbContext> dbContextCreator,
             ActualConnectionStringManager<TShardingDbContext> actualConnectionStringManager)
         {
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
-            _shardingDbContext = shardingDbContext;
-            _virtualDataSource = (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingDbContext).GetVirtualDataSource();
+            _shardingShellDbContext = shardingShellDbContext;
+            _virtualDataSource = (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingShellDbContext).GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
             _logger = ShardingContainer.GetService<ILogger<DataSourceDbContext<TShardingDbContext>>>();
 
         }
         /// <summary>
-        /// 不支持并发后期发现直接报错而不是用lock
+        /// 创建共享的数据源配置用来做事务 不支持并发后期发现直接报错
         /// </summary>
         /// <returns></returns>
         private DbContextOptions<TShardingDbContext> CreateShareDbContextOptionsBuilder()
@@ -94,7 +124,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 return _dbContextOptions;
             }
-
+            //是否触发并发了
             var acquired = oneByOne.Start();
             if (!acquired)
             {
@@ -102,16 +132,19 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
             try
             {
+                //先创建dbcontext option builder
                 var dbContextOptionsBuilder = CreateDbContextOptionBuilder();
 
                 if (IsDefault)
                 {
-                    var dbConnection = _shardingDbContext.Database.GetDbConnection();
+                    //如果是默认的需要使用shell的dbconnection为了保证可以使用事务
+                    var dbConnection = _shardingShellDbContext.Database.GetDbConnection();
                     _virtualDataSource.UseDbContextOptionsBuilder(dbConnection,
                         dbContextOptionsBuilder);
                 }
                 else
                 {
+                    //不同数据库下的链接需要自行获取 如果当前没有dbcontext那么就是第一个,应该用链接字符串创建后续的用dbconnection创建
                     if (_dataSourceDbContexts.IsEmpty())
                     {
                         var connectionString =
@@ -160,7 +193,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
-                dbContext = _dbContextCreator.CreateDbContext(_shardingDbContext,CreateShareDbContextOptionsBuilder(), routeTail);
+                dbContext = _dbContextCreator.CreateDbContext(_shardingShellDbContext,CreateShareDbContextOptionsBuilder(), routeTail);
                 _dataSourceDbContexts.Add(cacheKey, dbContext);
                 ShardingDbTransaction();
             }
@@ -213,7 +246,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
             }
         }
-
+        /// <summary>
+        /// 通知事务自动管理是否要清理还是开启还是加入事务
+        /// </summary>
         public void NotifyTransaction()
         {
             if (!_isBeginTransaction)
@@ -226,6 +261,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 JoinCurrentTransaction();
             }
         }
+        /// <summary>
+        /// 清理事务
+        /// </summary>
         private void ClearTransaction()
         {
             foreach (var dataSourceDbContext in _dataSourceDbContexts)
@@ -250,6 +288,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             return i;
         }
+        /// <summary>
+        /// 异步提交
+        /// </summary>
+        /// <param name="acceptAllChangesOnSuccess"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
 
@@ -261,12 +305,17 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             return i;
         }
-
+        /// <summary>
+        /// 获取当前的后缀数据库字典数据
+        /// </summary>
+        /// <returns></returns>
         public IDictionary<string, DbContext> GetCurrentContexts()
         {
             return _dataSourceDbContexts;
         }
-
+        /// <summary>
+        /// 回滚数据
+        /// </summary>
         public void Rollback()
         {
             if (IsDefault)
@@ -280,7 +329,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 _logger.LogError(e, "rollback error.");
             }
         }
-
+        /// <summary>
+        /// 提交数据
+        /// </summary>
+        /// <param name="dataSourceCount">如果只有一个数据源那么就直接报错否则就忽略</param>
         public void Commit(int dataSourceCount)
         {
             if (IsDefault)

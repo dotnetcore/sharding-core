@@ -38,7 +38,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
         public TResult Execute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            //如果根表达式为iqueryable表示需要迭代
+            //如果根表达式为tolist toarray getenumerator等表示需要迭代
             if (mergeQueryCompilerContext.IsEnumerableQuery())
             {
                 return EnumerableExecute<TResult>(mergeQueryCompilerContext);

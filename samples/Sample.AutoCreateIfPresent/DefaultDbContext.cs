@@ -22,6 +22,7 @@ namespace Sample.AutoCreateIfPresent
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new OrderByHourMap());
+            modelBuilder.ApplyConfiguration(new AreaDeviceMap());
         }
 
         public IRouteTail RouteTail { get; set; }

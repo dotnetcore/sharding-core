@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using MySqlConnector;
-using ShardingCore;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
@@ -15,45 +11,32 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.TableCreator;
 
-/*
-* @Author: xjm
-* @Description:
-* @Date: DATE
-* @Email: 326308290@qq.com
-*/
 namespace Sample.AutoCreateIfPresent
 {
-    public class OrderByHourRoute : AbstractShardingOperatorVirtualTableRoute<OrderByHour, DateTime>
+    public class AreaDeviceRoute : AbstractShardingOperatorVirtualTableRoute<AreaDevice, string>
     {
         private const string Tables = "Tables";
         private const string TABLE_SCHEMA = "TABLE_SCHEMA";
         private const string TABLE_NAME = "TABLE_NAME";
 
-        private const string CurrentTableName = nameof(OrderByHour);
+        private const string CurrentTableName = nameof(AreaDevice);
         private readonly IVirtualDataSourceManager<DefaultDbContext> _virtualDataSourceManager;
         private readonly IVirtualTableManager<DefaultDbContext> _virtualTableManager;
         private readonly IShardingTableCreator<DefaultDbContext> _shardingTableCreator;
         private readonly ConcurrentDictionary<string, object?> _tails = new ConcurrentDictionary<string, object?>();
         private readonly object _lock = new object();
 
-        public OrderByHourRoute(IVirtualDataSourceManager<DefaultDbContext> virtualDataSourceManager,IVirtualTableManager<DefaultDbContext> virtualTableManager, IShardingTableCreator<DefaultDbContext> shardingTableCreator)
+        public AreaDeviceRoute(IVirtualDataSourceManager<DefaultDbContext> virtualDataSourceManager, IVirtualTableManager<DefaultDbContext> virtualTableManager, IShardingTableCreator<DefaultDbContext> shardingTableCreator)
         {
             _virtualDataSourceManager = virtualDataSourceManager;
             _virtualTableManager = virtualTableManager;
             _shardingTableCreator = shardingTableCreator;
         }
-
-        private string ShardingKeyFormat(DateTime dateTime)
-        {
-            var tail = $"{dateTime:yyyyMMddHH}";
-
-            return tail;
-        }
+        
 
         public override string ShardingKeyToTail(object shardingKey)
         {
-            var dateTime = (DateTime)shardingKey;
-            return ShardingKeyFormat(dateTime);
+            return $"{shardingKey}";
         }
 
         public override List<string> GetAllTails()
@@ -63,7 +46,7 @@ namespace Sample.AutoCreateIfPresent
             {
                 connection.Open();
                 var database = connection.Database;
-                
+
                 using (var dataTable = connection.GetSchema(Tables))
                 {
                     for (int i = 0; i < dataTable.Rows.Count; i++)
@@ -71,11 +54,11 @@ namespace Sample.AutoCreateIfPresent
                         var schema = dataTable.Rows[i][TABLE_SCHEMA];
                         if (database.Equals($"{schema}", StringComparison.OrdinalIgnoreCase))
                         {
-                            var tableName = dataTable.Rows[i][TABLE_NAME]?.ToString()??string.Empty;
-                            if (tableName.StartsWith(CurrentTableName, StringComparison.OrdinalIgnoreCase))
+                            var tableName = dataTable.Rows[i][TABLE_NAME]?.ToString() ?? string.Empty;
+                            if (tableName.StartsWith(CurrentTableName,StringComparison.OrdinalIgnoreCase))
                             {
                                 //如果没有下划线那么需要CurrentTableName.Length-1
-                                _tails.TryAdd(tableName.Substring(CurrentTableName.Length),null);
+                                _tails.TryAdd(tableName.Substring(CurrentTableName.Length), null);
                             }
                         }
                     }
@@ -84,37 +67,24 @@ namespace Sample.AutoCreateIfPresent
             return _tails.Keys.ToList();
         }
 
-        public override void Configure(EntityMetadataTableBuilder<OrderByHour> builder)
+        public override void Configure(EntityMetadataTableBuilder<AreaDevice> builder)
         {
-            builder.ShardingProperty(o => o.CreateTime);
+            builder.ShardingProperty(o => o.Area);
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
-            var t = ShardingKeyFormat(shardingKey);
+            var t = ShardingKeyToTail(shardingKey);
             switch (shardingOperator)
             {
-                case ShardingOperatorEnum.GreaterThan:
-                case ShardingOperatorEnum.GreaterThanOrEqual:
-                    return tail => String.Compare(tail, t, StringComparison.Ordinal) >= 0;
-                case ShardingOperatorEnum.LessThan:
-                {
-                    var currentHourBeginTime = new DateTime(shardingKey.Year,shardingKey.Month,shardingKey.Day,shardingKey.Hour,0,0);
-                    //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
-                    if (currentHourBeginTime == shardingKey)
-                        return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
-                    return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
-                }
-                case ShardingOperatorEnum.LessThanOrEqual:
-                    return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
                 case ShardingOperatorEnum.Equal: return tail => tail == t;
                 default:
-                {
+                    {
 #if DEBUG
-                    Console.WriteLine($"shardingOperator is not equal scan all table tail");
+                        Console.WriteLine($"shardingOperator is not equal scan all table tail");
 #endif
-                    return tail => true;
-                }
+                        return tail => true;
+                    }
             }
         }
 
@@ -122,24 +92,24 @@ namespace Sample.AutoCreateIfPresent
         {
             var shardingKeyToTail = ShardingKeyToTail(shardingKey);
 
-            if (!_tails.TryGetValue(shardingKeyToTail,out var _))
+            if (!_tails.TryGetValue(shardingKeyToTail, out var _))
             {
                 lock (_lock)
                 {
-                    if (!_tails.TryGetValue(shardingKeyToTail,out var _))
+                    if (!_tails.TryGetValue(shardingKeyToTail, out var _))
                     {
-                        var virtualTable = _virtualTableManager.GetVirtualTable(typeof(OrderByHour));
+                        var virtualTable = _virtualTableManager.GetVirtualTable(typeof(AreaDevice));
                         _virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, shardingKeyToTail));
                         try
                         {
-                            _shardingTableCreator.CreateTable<OrderByHour>(_virtualDataSourceManager.GetCurrentVirtualDataSource().DefaultDataSourceName, shardingKeyToTail);
+                            _shardingTableCreator.CreateTable<AreaDevice>(_virtualDataSourceManager.GetCurrentVirtualDataSource().DefaultDataSourceName, shardingKeyToTail);
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine("尝试添加表失败" + ex);
                         }
 
-                        _tails.TryAdd(shardingKeyToTail,null);
+                        _tails.TryAdd(shardingKeyToTail, null);
                     }
                 }
             }
@@ -147,25 +117,25 @@ namespace Sample.AutoCreateIfPresent
             var needRefresh = allPhysicTables.Count != _tails.Count;
             if (needRefresh)
             {
-                var virtualTable = _virtualTableManager.GetVirtualTable(typeof(OrderByHour));
+                var virtualTable = _virtualTableManager.GetVirtualTable(typeof(AreaDevice));
                 foreach (var tail in _tails.Keys)
                 {
-                    var hashSet = allPhysicTables.Select(o=>o.Tail).ToHashSet();
+                    var hashSet = allPhysicTables.Select(o => o.Tail).ToHashSet();
                     if (!hashSet.Contains(tail))
                     {
                         var tables = virtualTable.GetAllPhysicTables();
-                        var physicTable = tables.FirstOrDefault(o=>o.Tail==tail);
-                        if (physicTable!= null)
+                        var physicTable = tables.FirstOrDefault(o => o.Tail == tail);
+                        if (physicTable != null)
                         {
                             allPhysicTables.Add(physicTable);
                         }
                     }
                 }
             }
-            var physicTables = allPhysicTables.Where(o => o.Tail== shardingKeyToTail).ToList();
+            var physicTables = allPhysicTables.Where(o => o.Tail == shardingKeyToTail).ToList();
             if (physicTables.IsEmpty())
             {
-                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all tails ->[{string.Join(",", allPhysicTables.Select(o=>o.FullName))}]");
+                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all tails ->[{string.Join(",", allPhysicTables.Select(o => o.FullName))}]");
             }
 
             if (physicTables.Count > 1)

@@ -36,7 +36,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
         {
             return _streamMergeContext;
         }
-
+        /// <summary>
+        /// 创建熔断器来中断符合查询的结果比如firstordefault只需要在顺序查询下查询到第一个
+        /// 如果不是顺序查询则需要所有表的第一个进行内存再次查询
+        /// </summary>
+        /// <returns></returns>
         public abstract ICircuitBreaker CreateCircuitBreaker();
 
         protected void Cancel()

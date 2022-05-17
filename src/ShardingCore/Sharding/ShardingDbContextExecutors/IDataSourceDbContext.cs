@@ -32,6 +32,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         bool IsDefault { get; }
         int DbContextCount { get; }
         DbContext CreateDbContext(IRouteTail routeTail);
+
+        /// <summary>
+        /// 通知事务自动管理是否要清理还是开启还是加入事务
+        /// </summary>
         void NotifyTransaction();
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
