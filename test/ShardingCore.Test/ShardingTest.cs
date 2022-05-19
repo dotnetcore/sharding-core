@@ -247,9 +247,13 @@ namespace ShardingCore.Test
 
             var multiOrder = await _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 232398109278351360).FirstOrDefaultAsync();
             Assert.NotNull(multiOrder);
+            var allMultiOrders = await _virtualDbContext.Set<MultiShardingOrder>().ToListAsync();
+            Assert.Equal(8, allMultiOrders.Count);
             var longs = new[] { 232398109278351360, 255197859283087360 };
             var multiOrders = await _virtualDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToListAsync();
             Assert.Equal(2, multiOrders.Count);
+            var multinNotOrders = await _virtualDbContext.Set<MultiShardingOrder>().Where(o => !longs.Contains(o.Id)).ToListAsync();
+            Assert.Equal(6, multinNotOrders.Count);
             var dateTime = new DateTime(2021, 11, 1);
             var multiOrder404 = await _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 250345338962063360 && o.CreateTime < dateTime).FirstOrDefaultAsync();
             Assert.Null(multiOrder404);

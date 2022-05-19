@@ -75,7 +75,7 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             if (expression is MemberExpression member)
             {
-                if (member.Expression.Type == _entityMetadata.EntityType|| MemberExpressionIsConvertAndOriginalIsEntityType(member))
+                if (member.Expression?.Type == _entityMetadata.EntityType|| MemberExpressionIsConvertAndOriginalIsEntityType(member))
                 {
                     var isShardingKey = false;
                     if (_shardingTableRoute)
@@ -89,7 +89,7 @@ namespace ShardingCore.Core.Internal.Visitors
 
                     if (isShardingKey)
                     {
-                        shardingPredicateResult = new ShardingPredicateResult(isShardingKey, isShardingKey ? member.Member.Name : null);
+                        shardingPredicateResult = new ShardingPredicateResult(true, member.Member.Name);
                         return true;
                     }
                 }
@@ -105,7 +105,7 @@ namespace ShardingCore.Core.Internal.Visitors
         /// <returns></returns>
         private bool MemberExpressionIsConvertAndOriginalIsEntityType(MemberExpression member)
         {
-            return member.Expression.NodeType == ExpressionType.Convert &&
+            return member.Expression?.NodeType == ExpressionType.Convert &&
                    member.Expression is UnaryExpression unaryExpression &&
                    unaryExpression.Operand.Type == _entityMetadata.EntityType;
         }
