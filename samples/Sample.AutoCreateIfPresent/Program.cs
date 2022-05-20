@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddShardingDbContext<DefaultDbContext>()
     .AddEntityConfig(o =>
     {
+        o.ThrowIfQueryRouteNotMatch = false;
         o.CreateShardingTableOnStart = true;
         o.EnsureCreatedWithOutShardingTable = true;
         o.AddShardingTableRoute<OrderByHourRoute>();

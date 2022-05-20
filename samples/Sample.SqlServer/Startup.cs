@@ -39,6 +39,7 @@ namespace Sample.SqlServer
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
+                    o.ThrowIfQueryRouteNotMatch = false;
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();

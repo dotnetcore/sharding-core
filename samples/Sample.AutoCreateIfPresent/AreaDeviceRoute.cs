@@ -38,7 +38,11 @@ namespace Sample.AutoCreateIfPresent
         {
             return $"{shardingKey}";
         }
-
+        /// <summary>
+        /// 如果你是非mysql数据库请自行实现这个方法返回当前类在数据库已经存在的后缀
+        /// 仅启动时调用
+        /// </summary>
+        /// <returns></returns>
         public override List<string> GetAllTails()
         {
             //启动寻找有哪些表后缀
