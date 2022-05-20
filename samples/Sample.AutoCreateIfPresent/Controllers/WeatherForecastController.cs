@@ -51,7 +51,7 @@ public class WeatherForecastController : ControllerBase
     }
     public async Task<IActionResult> Query1()
     {
-        var list = await _defaultDbContext.Set<AreaDevice>().Where(o=>o.Area=="x").ToListAsync();
+        var list = await _defaultDbContext.Set<AreaDevice>().ToListAsync();
         return Ok(list);
     }
     public async Task<IActionResult> Insert1()

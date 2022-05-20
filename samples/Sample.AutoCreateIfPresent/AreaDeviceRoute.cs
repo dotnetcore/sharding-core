@@ -61,7 +61,7 @@ namespace Sample.AutoCreateIfPresent
                             var tableName = dataTable.Rows[i][TABLE_NAME]?.ToString() ?? string.Empty;
                             if (tableName.StartsWith(CurrentTableName,StringComparison.OrdinalIgnoreCase))
                             {
-                                //如果没有下划线那么需要CurrentTableName.Length
+                                //如果没有下划线那么需要CurrentTableName.Length有下划线就要CurrentTableName.Length+1
                                 _tails.TryAdd(tableName.Substring(CurrentTableName.Length+1), null);
                             }
                         }
