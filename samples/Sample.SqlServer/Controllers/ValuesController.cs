@@ -95,7 +95,8 @@ namespace Sample.SqlServer.Controllers
             //          };
             //var listAsync = await sql.ToListAsync();
             //var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
-           
+            var resultx112331tt112 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync();
+
             var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             resultx112331ttaa2.UserId = "zzzz";
