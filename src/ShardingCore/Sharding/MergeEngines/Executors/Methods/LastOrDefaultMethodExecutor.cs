@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
     /// Author: xjm
     /// Created: 2022/5/7 11:01:12
     /// Email: 326308290@qq.com
-    internal class LastOrDefaultMethodExecutor<TEntity> : AbstractMethodExecutor<TEntity>
+    internal class LastOrDefaultMethodExecutor<TEntity> : AbstractOneMethodExecutor<TEntity>
     {
         public LastOrDefaultMethodExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
@@ -29,9 +29,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
             return new AnyElementCircuitBreaker(GetStreamMergeContext());
         }
 
-        protected override Task<TEntity> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())
+        protected override Task<OneMethodResult<TEntity>> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())
         {
-            return queryable.As<IQueryable<TEntity>>().LastOrDefaultAsync(cancellationToken);
+            return queryable.As<IQueryable<TEntity>>().Select(o => new OneMethodResult<TEntity>(o)).LastOrDefaultAsync(cancellationToken);
         }
     }
 }

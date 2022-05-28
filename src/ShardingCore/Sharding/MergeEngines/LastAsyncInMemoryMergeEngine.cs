@@ -51,7 +51,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
         {
-            var notNullResult = resultList.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
+            var notNullResult = resultList.Where(o => o != null && o.HasQueryResult()).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");

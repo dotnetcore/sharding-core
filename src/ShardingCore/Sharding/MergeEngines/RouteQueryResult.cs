@@ -15,6 +15,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
     }
     public class RouteQueryResult<TResult>: IRouteQueryResult
     {
+        private readonly bool _hasValue;
         public string DataSourceName { get; }
         public TableRouteResult TableRouteResult { get; }
         public TResult QueryResult { get; }
@@ -24,11 +25,19 @@ namespace ShardingCore.Sharding.StreamMergeEngines
             DataSourceName = dataSourceName;
             TableRouteResult = tableRouteResult;
             QueryResult = queryResult;
+            _hasValue = QueryResult != null;
+        }
+        public RouteQueryResult(string dataSourceName,TableRouteResult tableRouteResult,TResult queryResult,bool hasValue)
+        {
+            _hasValue = hasValue;
+            DataSourceName = dataSourceName;
+            TableRouteResult = tableRouteResult;
+            QueryResult = queryResult;
         }
 
         public bool HasQueryResult()
         {
-            return QueryResult!= null;
+            return _hasValue;
         }
     }
 }

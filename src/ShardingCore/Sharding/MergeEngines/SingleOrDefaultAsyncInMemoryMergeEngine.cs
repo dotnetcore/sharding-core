@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
 
         protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
         {
-            var notNullResult = resultList.Where(o => o != null && o.QueryResult != null).Select(o => o.QueryResult).ToList();
+            var notNullResult = resultList.Where(o => o != null && o.HasQueryResult()).Select(o => o.QueryResult).ToList();
 
             if (notNullResult.Count > 1)
                 throw new InvalidOperationException("Sequence contains more than one element.");
