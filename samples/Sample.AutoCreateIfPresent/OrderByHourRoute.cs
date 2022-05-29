@@ -14,6 +14,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.TableCreator;
+using ShardingCore.TableExists;
 
 /*
 * @Author: xjm
@@ -43,17 +44,16 @@ namespace Sample.AutoCreateIfPresent
             _shardingTableCreator = shardingTableCreator;
         }
 
+        public override string ShardingKeyToTail(object shardingKey)
+        {
+            var dateTime = (DateTime)shardingKey;
+            return ShardingKeyFormat(dateTime);
+        }
         private string ShardingKeyFormat(DateTime dateTime)
         {
             var tail = $"{dateTime:yyyyMMddHH}";
 
             return tail;
-        }
-
-        public override string ShardingKeyToTail(object shardingKey)
-        {
-            var dateTime = (DateTime)shardingKey;
-            return ShardingKeyFormat(dateTime);
         }
 
         /// <summary>
@@ -134,6 +134,7 @@ namespace Sample.AutoCreateIfPresent
                     if (!_tails.TryGetValue(shardingKeyToTail,out var _))
                     {
                         var virtualTable = _virtualTableManager.GetVirtualTable(typeof(OrderByHour));
+//必须先执行AddPhysicTable在进行CreateTable
                         _virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, shardingKeyToTail));
                         try
                         {

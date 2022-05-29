@@ -77,6 +77,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
             var now = DateTime.Now.AddMinutes(IncrementMinutes);
             var tail = ConvertNowToTail(now);
+//必须先执行AddPhysicTable在进行CreateTable
             virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
             foreach (var virtualDataSource in allVirtualDataSources)
             {

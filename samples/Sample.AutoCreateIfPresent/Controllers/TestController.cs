@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,32 +5,20 @@ namespace Sample.AutoCreateIfPresent.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class WeatherForecastController : ControllerBase
+public class TestController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
     private readonly ILogger<WeatherForecastController> _logger;
     private readonly DefaultDbContext _defaultDbContext;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger,DefaultDbContext defaultDbContext)
+    public TestController(ILogger<WeatherForecastController> logger,DefaultDbContext defaultDbContext)
     {
         _logger = logger;
         _defaultDbContext = defaultDbContext;
     }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    public IActionResult HelloWorld()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+        return Ok("hello world");
     }
 
     public async Task<IActionResult> Query()
@@ -67,4 +54,5 @@ public class WeatherForecastController : ControllerBase
         await _defaultDbContext.SaveChangesAsync();
         return Ok();
     }
+    
 }
