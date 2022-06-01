@@ -29,7 +29,8 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             //获取路由后缀表达式
             var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter, false);
             //表达式缓存编译
-            var filter = CachingCompile(routeParseExpression);
+            // var filter = CachingCompile(routeParseExpression);
+            var filter = routeParseExpression.GetRoutePredicate();
             //通过编译结果进行过滤
             var dataSources = allDataSourceNames.Where(o => filter(o)).ToList();
             return dataSources;
@@ -43,7 +44,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         /// <param name="shardingOperator">操作</param>
         /// <param name="shardingPropertyName">操作</param>
         /// <returns>如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表</returns>
-        public virtual Expression<Func<string, bool>> GetRouteFilter(object shardingKey,
+        public virtual Func<string, bool> GetRouteFilter(object shardingKey,
             ShardingOperatorEnum shardingOperator, string shardingPropertyName)
         {
             if (EntityMetadata.IsMainShardingDataSourceKey(shardingPropertyName))
@@ -56,10 +57,10 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             }
         }
 
-        public abstract Expression<Func<string, bool>> GetRouteToFilter(TKey shardingKey,
+        public abstract Func<string, bool> GetRouteToFilter(TKey shardingKey,
             ShardingOperatorEnum shardingOperator);
 
-        public virtual Expression<Func<string, bool>> GetExtraRouteFilter(object shardingKey,
+        public virtual Func<string, bool> GetExtraRouteFilter(object shardingKey,
             ShardingOperatorEnum shardingOperator, string shardingPropertyName)
         {
             throw new NotImplementedException(shardingPropertyName);

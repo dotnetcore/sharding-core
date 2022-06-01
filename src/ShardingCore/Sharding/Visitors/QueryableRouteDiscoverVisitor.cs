@@ -29,24 +29,25 @@ namespace ShardingCore.Core.Internal.Visitors
     {
 
         private readonly EntityMetadata _entityMetadata;
-        private readonly Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> _keyToTailWithFilter;
+        private readonly Func<object, ShardingOperatorEnum, string, Func<string, bool>> _keyToTailWithFilter;
         /// <summary>
         /// 是否是分表路由
         /// </summary>
         private readonly bool _shardingTableRoute;
-        private Expression<Func<string, bool>> _where = x => true;
+        // private Expression<Func<string, bool>> _where = x => true;
         private LambdaExpression _entityLambdaExpression;
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
         private bool isIgnoreQueryFilter;
+        private RoutePredicateExpression _where = RoutePredicateExpression.Default; 
 
-        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Expression<Func<string, bool>>> keyToTailWithFilter, bool shardingTableRoute)
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _keyToTailWithFilter = keyToTailWithFilter;
             _shardingTableRoute = shardingTableRoute;
         }
 
-        public Expression<Func<string, bool>> GetRouteParseExpression()
+        public RoutePredicateExpression GetRouteParseExpression()
         {
 
             if (_entityMetadata.QueryFilterExpression != null && !isIgnoreQueryFilter)
@@ -185,7 +186,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
 
 
-        private Expression<Func<string, bool>> Resolve(Expression expression)
+        private RoutePredicateExpression Resolve(Expression expression)
         {
             if (expression is LambdaExpression lambda)
             {
@@ -211,10 +212,10 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 return ResolveInFunc(methodCallExpression, true);
             }
-            return o => true;
+            return RoutePredicateExpression.Default;
         }
 
-        private Expression<Func<string, bool>> ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
+        private RoutePredicateExpression ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
         {
             if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name))
             {
@@ -244,9 +245,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
                     if (arrayObject != null)
                     {
-                        Expression<Func<string, bool>> contains = x => false;
-                        if (!@in)
-                            contains = x => true;
+                        var contains=@in ? RoutePredicateExpression.DefaultFalse : RoutePredicateExpression.Default;
+                      
 
                         if (arrayObject is IEnumerable enumerableObj)
                         {
@@ -254,9 +254,9 @@ namespace ShardingCore.Core.Internal.Visitors
                             {
                                 var eq = _keyToTailWithFilter(shardingValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual, shardingPredicateResult.ShardingPropertyName);
                                 if (@in)
-                                    contains = contains.Or(eq);
+                                    contains = contains.Or(new RoutePredicateExpression(eq));
                                 else
-                                    contains = contains.And(eq);
+                                    contains = contains.And(new RoutePredicateExpression(eq));
                             }
                         }
                         return contains;
@@ -273,7 +273,8 @@ namespace ShardingCore.Core.Internal.Visitors
                     if (methodCallExpression.Object is ConstantExpression constantExpression)
                     {
                         var shardingValue = constantExpression.Value;
-                        return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                        return new RoutePredicateExpression(keyToTailWithFilter);
                     }
                 }
                 else
@@ -294,7 +295,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
                         if (shardingValue != default)
                         {
-                            return _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                            var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                            return new RoutePredicateExpression(keyToTailWithFilter);
                         }
                     }
                 }
@@ -306,7 +308,7 @@ namespace ShardingCore.Core.Internal.Visitors
             //}
 
             //var shardingKeyValue = GetShardingKeyValue(methodCallExpression);
-            return x => true;
+            return RoutePredicateExpression.Default;
         }
 
         private ShardingOperatorEnum GetParseCompareShardingOperatorEnum(bool conditionOnRight, ExpressionType expressionType, int compare)
@@ -354,7 +356,7 @@ namespace ShardingCore.Core.Internal.Visitors
             }
             return ShardingOperatorEnum.UnKnown;
         }
-        private Expression<Func<string, bool>> ParseCompare(MethodCallExpression methodCallExpression, Expression left,Expression right, ExpressionType expressionType, int compare)
+        private RoutePredicateExpression ParseCompare(MethodCallExpression methodCallExpression, Expression left,Expression right, ExpressionType expressionType, int compare)
         {
             if (left.Type == right.Type)
             {
@@ -363,10 +365,10 @@ namespace ShardingCore.Core.Internal.Visitors
                     return ParseCondition0(left, right, conditionOnRight => GetParseCompareShardingOperatorEnum(conditionOnRight, expressionType, compare));
                 }
             }
-            return x => true;
+            return RoutePredicateExpression.Default;
         }
 
-        private Expression<Func<string, bool>> ParseCondition0(Expression left, Expression right,Func<bool,ShardingOperatorEnum> shardingOperatorFunc)
+        private RoutePredicateExpression ParseCondition0(Expression left, Expression right,Func<bool,ShardingOperatorEnum> shardingOperatorFunc)
         {
 
             bool conditionOnRight = false;
@@ -383,7 +385,7 @@ namespace ShardingCore.Core.Internal.Visitors
                     value = GetExpressionValue(right);
                 }
                 else
-                    return x => true;
+                    return RoutePredicateExpression.Default;
             }
             else if (IsShardingKey(right, out var predicateRightResult) && IsConstantOrMember(left))
             {
@@ -394,20 +396,20 @@ namespace ShardingCore.Core.Internal.Visitors
                     value = GetExpressionValue(left);
                 }
                 else
-                    return x => true;
+                    return RoutePredicateExpression.Default;
             }
             else
-                return x => true;
+                return RoutePredicateExpression.Default;
             var op = shardingOperatorFunc(conditionOnRight);
 
             if (shardingPropertyName == null || value == default)
-                return x => true;
+                return RoutePredicateExpression.Default;
 
 
-            return _keyToTailWithFilter(value, op, shardingPropertyName);
+            return new RoutePredicateExpression( _keyToTailWithFilter(value, op, shardingPropertyName));
         }
 
-        private Expression<Func<string, bool>> ParseCondition(BinaryExpression binaryExpression)
+        private RoutePredicateExpression ParseCondition(BinaryExpression binaryExpression)
         {
             if (binaryExpression.IsNamedComparison(out var methodCallExpression))
             {
@@ -435,13 +437,13 @@ namespace ShardingCore.Core.Internal.Visitors
                     return op;
                 });
             }
-            return x => true;
+            return RoutePredicateExpression.Default;
         }
 
-        private Expression<Func<string, bool>> ParseGetWhere(BinaryExpression binaryExpression)
+        private RoutePredicateExpression ParseGetWhere(BinaryExpression binaryExpression)
         {
-            Expression<Func<string, bool>> left = x => true;
-            Expression<Func<string, bool>> right = x => true;
+            RoutePredicateExpression left = RoutePredicateExpression.Default;
+            RoutePredicateExpression right = RoutePredicateExpression.Default;
 
             //递归获取
             if (binaryExpression.Left is BinaryExpression binaryExpression1)

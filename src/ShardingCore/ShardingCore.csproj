@@ -34,6 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Core\VirtualRoutes\RouteConditions" />
       <Folder Include="Sharding\Visitors\GroupBys" />
     </ItemGroup>
 </Project>

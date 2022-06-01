@@ -50,7 +50,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
             return $"{currentMonday:yyyyMM}{currentMonday:dd}_{currentSunday:dd}";
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

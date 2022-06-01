@@ -60,7 +60,7 @@ namespace ShardingCore.VirtualRoutes.Years
         /// <param name="shardingKey"></param>
         /// <param name="shardingOperator"></param>
         /// <returns>当传入表后缀你告诉框架这个后缀是否需要被返回，分片字段如何筛选出后缀</returns>
-        public override Expression<Func<string, bool>> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(long shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

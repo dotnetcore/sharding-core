@@ -76,7 +76,7 @@ namespace Sample.AutoCreateIfPresent
             builder.ShardingProperty(o => o.Area);
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = ShardingKeyToTail(shardingKey);
             switch (shardingOperator)

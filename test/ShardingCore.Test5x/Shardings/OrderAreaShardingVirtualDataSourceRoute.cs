@@ -42,7 +42,7 @@ namespace ShardingCore.Test5x.Shardings
             
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
 
             var t = ShardingKeyToDataSourceName(shardingKey);

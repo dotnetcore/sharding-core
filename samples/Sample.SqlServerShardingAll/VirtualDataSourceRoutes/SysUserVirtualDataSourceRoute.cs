@@ -34,7 +34,7 @@ namespace Sample.SqlServerShardingAll.VirtualDataSourceRoutes
             return true;
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
 
             var t = ShardingKeyToDataSourceName(shardingKey);

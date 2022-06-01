@@ -94,7 +94,7 @@ namespace Sample.AutoCreateIfPresent
             builder.ShardingProperty(o => o.CreateTime);
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = ShardingKeyFormat(shardingKey);
             switch (shardingOperator)

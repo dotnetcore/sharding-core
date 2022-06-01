@@ -29,7 +29,7 @@ namespace ShardingCore.Utils
     {
 
         ///// <summary>
-        ///// ·Ö¿âÂ·ÓÉ¹ýÂË
+        ///// ï¿½Ö¿ï¿½Â·ï¿½É¹ï¿½ï¿½ï¿½
         ///// </summary>
         ///// <typeparam name="TKey"></typeparam>
         ///// <param name="queryable"></param>
@@ -46,14 +46,14 @@ namespace ShardingCore.Utils
         //    return visitor.GetDataSourceFilter();
         //}
         /// <summary>
-        /// ·Ö±íÂ·ÓÉ¹ýÂË
+        /// ï¿½Ö±ï¿½Â·ï¿½É¹ï¿½ï¿½ï¿½
         /// </summary>
         /// <param name="queryable"></param>
         /// <param name="entityMetadata"></param>
         /// <param name="keyToTailExpression"></param>
         /// <param name="shardingTableRoute">sharding table or data source</param>
         /// <returns></returns>
-        public static Expression<Func<string, bool>> GetRouteParseExpression(IQueryable queryable, EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum,string, Expression<Func<string, bool>>> keyToTailExpression,bool shardingTableRoute)
+        public static RoutePredicateExpression GetRouteParseExpression(IQueryable queryable, EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum,string, Func<string, bool>> keyToTailExpression,bool shardingTableRoute)
         {
 
             QueryableRouteShardingTableDiscoverVisitor visitor = new QueryableRouteShardingTableDiscoverVisitor(entityMetadata, keyToTailExpression, shardingTableRoute);
@@ -64,7 +64,7 @@ namespace ShardingCore.Utils
         }
 
         ///// <summary>
-        ///// »ñÈ¡±¾´Î²éÑ¯µÄËùÓÐÉæ¼°µ½µÄ¶ÔÏó
+        ///// ï¿½ï¿½È¡ï¿½ï¿½ï¿½Î²ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ¼°ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½
         ///// </summary>
         ///// <param name="queryable"></param>
         ///// <param name="dbContextType"></param>
@@ -84,7 +84,7 @@ namespace ShardingCore.Utils
         //    return visitor.GetQueryEntities();
         //}
         ///// <summary>
-        ///// »ñÈ¡´ÎÐèÒª±àÒëµÄ±í´ïÊ½½âÎöÐÅÏ¢
+        ///// ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
         ///// </summary>
         ///// <param name="expression"></param>
         ///// <param name="dbContextType"></param>

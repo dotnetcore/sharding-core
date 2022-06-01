@@ -48,7 +48,7 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
             
         }
 
-        public override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
         {
             //因为hash路由仅支持等于所以仅仅只需要写等于的情况
             var t = ShardingKeyToTail(shardingKey);

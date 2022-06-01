@@ -17,7 +17,7 @@ namespace ShardingCore.Test5x.Shardings
             builder.ShardingExtraProperty(o => o.Id);
         }
 
-        public override Expression<Func<string, bool>> GetExtraRouteFilter(object shardingKey, ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        public override Func<string, bool> GetExtraRouteFilter(object shardingKey, ShardingOperatorEnum shardingOperator, string shardingPropertyName)
         {
             switch (shardingPropertyName)
             {
@@ -26,7 +26,7 @@ namespace ShardingCore.Test5x.Shardings
             }
         }
 
-        private Expression<Func<string, bool>> GetIdRouteFilter(object shardingKey,
+        private Func<string, bool> GetIdRouteFilter(object shardingKey,
             ShardingOperatorEnum shardingOperator)
         {
             //解析雪花id 需要考虑异常情况,传入的可能不是雪花id那么可以随机查询一张表
