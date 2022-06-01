@@ -38,14 +38,14 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// 当查询遇到没有路由被命中时是否抛出错误
         /// </summary>
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
-        /// <summary>
-        /// 全局启用分表路由表达式缓存,仅缓存单个表达式
-        /// </summary>
-        public bool? EnableTableRouteCompileCache { get; set; }
-        /// <summary>
-        /// 全局启用分库路由表达式缓存,仅缓存单个表达式
-        /// </summary>
-        public bool? EnableDataSourceRouteCompileCache { get; set; }
+        ///// <summary>
+        ///// 全局启用分表路由表达式缓存,仅缓存单个表达式
+        ///// </summary>
+        //public bool? EnableTableRouteCompileCache { get; set; }
+        ///// <summary>
+        ///// 全局启用分库路由表达式缓存,仅缓存单个表达式
+        ///// </summary>
+        //public bool? EnableDataSourceRouteCompileCache { get; set; }
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>

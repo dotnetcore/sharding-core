@@ -11,7 +11,7 @@ namespace ShardingCore6x.ShardingDbContexts
 {
     internal class OrderVirtualTableRoute:AbstractSimpleShardingModKeyStringVirtualTableRoute<Order>
     {
-        public override bool? EnableRouteParseCompileCache => true;
+        ////public override bool? EnableRouteParseCompileCache => true;
 
         public OrderVirtualTableRoute() : base(2, 5)
         {

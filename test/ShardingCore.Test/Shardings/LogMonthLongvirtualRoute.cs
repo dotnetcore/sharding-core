@@ -12,7 +12,7 @@ namespace ShardingCore.Test.Shardings
 {
     public class LogMonthLongvirtualRoute:AbstractSimpleShardingMonthKeyLongVirtualTableRoute<LogMonthLong>
     {
-        public override bool? EnableRouteParseCompileCache => true;
+        //public override bool? EnableRouteParseCompileCache => true;
         protected override bool EnableHintRoute => true;
 
         public override bool AutoCreateTableByTime()

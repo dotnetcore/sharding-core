@@ -7,7 +7,7 @@ namespace ShardingCore.Test2x.Shardings
     public class SysUserModIntVirtualRoute:AbstractSimpleShardingModKeyIntVirtualTableRoute<SysUserModInt>
     {
         protected override bool EnableHintRoute => true;
-        public override bool? EnableRouteParseCompileCache => true;
+        //public override bool? EnableRouteParseCompileCache => true;
 
         public SysUserModIntVirtualRoute() : base(2, 3)
         {

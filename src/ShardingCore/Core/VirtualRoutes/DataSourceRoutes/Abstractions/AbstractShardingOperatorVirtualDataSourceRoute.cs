@@ -22,7 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey> : AbstractShardingRouteParseCompileCacheVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
+    public abstract class AbstractShardingOperatorVirtualDataSourceRoute<TEntity, TKey> : AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {

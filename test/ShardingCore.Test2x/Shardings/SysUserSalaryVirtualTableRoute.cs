@@ -16,7 +16,7 @@ namespace ShardingCore.Test2x.Shardings
 */
     public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int>
     {
-        public override bool? EnableRouteParseCompileCache => true;
+        //public override bool? EnableRouteParseCompileCache => true;
         public override string ShardingKeyToTail(object shardingKey)
         {
             var time = Convert.ToInt32(shardingKey);

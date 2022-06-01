@@ -9,7 +9,7 @@ namespace ShardingCore.Test2x.Shardings
 {
    public  class OrderCreateTimeVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
-        public override bool? EnableRouteParseCompileCache => true;
+        //public override bool? EnableRouteParseCompileCache => true;
         public override DateTime GetBeginTime()
         {
             return new DateTime(2021, 1, 1);

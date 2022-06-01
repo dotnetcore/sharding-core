@@ -31,16 +31,16 @@ namespace ShardingCore.Core.ShardingConfigurations.Abstractions
         /// 忽略建表时的错误
         /// </summary>
         bool? IgnoreCreateTableError { get; set; }
-        /// <summary>
-        /// 是否启用分表路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
-        /// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
-        /// </summary>
-        bool? EnableTableRouteCompileCache { get; set; }
-        /// <summary>
-        /// 是否启用分库路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
-        /// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
-        /// </summary>
-        bool? EnableDataSourceRouteCompileCache { get; set; }
+        ///// <summary>
+        ///// 是否启用分表路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
+        ///// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
+        ///// </summary>
+        //bool? EnableTableRouteCompileCache { get; set; }
+        ///// <summary>
+        ///// 是否启用分库路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
+        ///// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
+        ///// </summary>
+        //bool? EnableDataSourceRouteCompileCache { get; set; }
         /// <summary>
         /// 添加分库路由
         /// </summary>

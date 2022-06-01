@@ -13,7 +13,7 @@ namespace ShardingCore.Test.Shardings
 {
     public class LogYearLongVirtualRoute:AbstractSimpleShardingYearKeyLongVirtualTableRoute<LogYearLong>
     {
-        public override bool? EnableRouteParseCompileCache => true;
+        //public override bool? EnableRouteParseCompileCache => true;
         protected override bool EnableHintRoute => true;
 
         public override void Configure(EntityMetadataTableBuilder<LogYearLong> builder)

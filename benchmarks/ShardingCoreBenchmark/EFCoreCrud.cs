@@ -113,7 +113,7 @@ namespace ShardingCore6x
         }
 
 
-        [Params(1)]
+        [Params(10)]
         public int N;
 
 
