@@ -34,7 +34,6 @@ namespace ShardingCore.Core.Internal.Visitors
         /// 是否是分表路由
         /// </summary>
         private readonly bool _shardingTableRoute;
-        // private Expression<Func<string, bool>> _where = x => true;
         private LambdaExpression _entityLambdaExpression;
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
         private bool isIgnoreQueryFilter;
@@ -47,6 +46,10 @@ namespace ShardingCore.Core.Internal.Visitors
             _shardingTableRoute = shardingTableRoute;
         }
 
+        /// <summary>
+        /// 获取路由表达式
+        /// </summary>
+        /// <returns></returns>
         public RoutePredicateExpression GetRouteParseExpression()
         {
 

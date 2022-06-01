@@ -11,26 +11,26 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions
     public interface IRouteTailFactory
     {
         /// <summary>
-        /// dbcontextÄ£ĞÍ»á±»»º´æ
+        /// dbcontextæ¨¡å‹ä¼šè¢«ç¼“å­˜
         /// </summary>
         /// <param name="tail"></param>
         /// <returns></returns>
         IRouteTail Create(string tail);
         /// <summary>
-        /// cache false´´½¨µÄdbcontextÄ£ĞÍ²»»á±»»º´æ
+        /// cache falseåˆ›å»ºçš„dbcontextæ¨¡å‹ä¸ä¼šè¢«ç¼“å­˜
         /// </summary>
         /// <param name="tail"></param>
         /// <param name="cache"></param>
         /// <returns></returns>
         IRouteTail Create(string tail, bool cache);
         /// <summary>
-        /// ´´½¨Â·ÓÉÄ¬ÈÏµ¥¸ö»á±»»º´æ
+        /// åˆ›å»ºè·¯ç”±é»˜è®¤å•ä¸ªä¼šè¢«ç¼“å­˜
         /// </summary>
         /// <param name="tableRouteResult"></param>
         /// <returns></returns>
         IRouteTail Create(TableRouteResult tableRouteResult);
         /// <summary>
-        /// ´´½¨°®ÄãÂ·ÓÉÄ¬ÈÏµ¥¸öÊÇ·ñÂ·ÓÉ¸ù¾İcache¶à¸ö¿Ï¶¨²»»º´æ
+        /// åˆ›å»ºè·¯ç”±é»˜è®¤å•ä¸ªæ˜¯å¦è·¯ç”±æ ¹æ®cacheå¤šä¸ªè‚¯å®šä¸ç¼“å­˜
         /// </summary>
         /// <param name="tableRouteResult"></param>
         /// <param name="cache"></param>

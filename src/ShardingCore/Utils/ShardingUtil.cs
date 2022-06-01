@@ -27,26 +27,8 @@ namespace ShardingCore.Utils
 */
     public class ShardingUtil
     {
-
-        ///// <summary>
-        ///// �ֿ�·�ɹ���
-        ///// </summary>
-        ///// <typeparam name="TKey"></typeparam>
-        ///// <param name="queryable"></param>
-        ///// <param name="entityMetadata"></param>
-        ///// <param name="shardingKeyConvert"></param>
-        ///// <param name="keyToTailExpression"></param>
-        ///// <returns></returns>
-        //public static Func<string, bool> GetRouteDataSourceFilter<TKey>(IQueryable queryable, EntityMetadata entityMetadata, Func<object, TKey> shardingKeyConvert, Func<TKey, ShardingOperatorEnum, Expression<Func<string, bool>>> keyToTailExpression)
-        //{
-        //    QueryableRouteShardingDataSourceDiscoverVisitor<TKey> visitor = new QueryableRouteShardingDataSourceDiscoverVisitor<TKey>(entityMetadata, shardingKeyConvert, keyToTailExpression);
-
-        //    visitor.Visit(queryable.Expression);
-
-        //    return visitor.GetDataSourceFilter();
-        //}
         /// <summary>
-        /// �ֱ�·�ɹ���
+        /// 获取表达式路由
         /// </summary>
         /// <param name="queryable"></param>
         /// <param name="entityMetadata"></param>
@@ -62,43 +44,6 @@ namespace ShardingCore.Utils
 
             return visitor.GetRouteParseExpression();
         }
-
-        ///// <summary>
-        ///// ��ȡ���β�ѯ�������漰���Ķ���
-        ///// </summary>
-        ///// <param name="queryable"></param>
-        ///// <param name="dbContextType"></param>
-        ///// <returns></returns>
-        //public static ISet<Type> GetQueryEntitiesFilter(IQueryable queryable,Type dbContextType)
-        //{
-        //    return GetQueryEntitiesByExpression(queryable.Expression, dbContextType);
-        //}
-        //public static ISet<Type> GetQueryEntitiesByExpression(Expression expression, Type dbContextType)
-        //{
-        //    var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
-
-        //    QueryEntitiesVisitor visitor = new QueryEntitiesVisitor(trackerManager);
-
-        //    visitor.Visit(expression);
-
-        //    return visitor.GetQueryEntities();
-        //}
-        ///// <summary>
-        ///// ��ȡ����Ҫ����ı���ʽ������Ϣ
-        ///// </summary>
-        ///// <param name="expression"></param>
-        ///// <param name="dbContextType"></param>
-        ///// <returns></returns>
-        //public static CompileParseResult GetQueryCompileParseResultByExpression(Expression expression, Type dbContextType)
-        //{
-        //    var trackerManager = (ITrackerManager)ShardingContainer.GetService(typeof(ITrackerManager<>).GetGenericType0(dbContextType));
-
-        //    QueryCompileParseVisitors visitor = new QueryCompileParseVisitors(trackerManager);
-
-        //    visitor.Visit(expression);
-
-        //    return visitor.GetCompileParseResult();
-        //}
 
     }
 }
