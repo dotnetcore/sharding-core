@@ -471,9 +471,9 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
             }
 
-            if (binaryExpression.Left is UnaryExpression unaryExpression1&& binaryExpression.Right is not MemberExpression)
+            if (binaryExpression.Left is UnaryExpression unaryExpression1 && (binaryExpression.Right is MemberExpression&& !IsShardingKey(binaryExpression.Right, out var _)))
                 left = Resolve(unaryExpression1);
-            if (binaryExpression.Right is UnaryExpression unaryExpression2 && binaryExpression.Left is not MemberExpression)
+            if (binaryExpression.Right is UnaryExpression unaryExpression2 && (binaryExpression.Left is MemberExpression && !IsShardingKey(binaryExpression.Left, out var _)))
                 right = Resolve(unaryExpression2);
 
             //组合
