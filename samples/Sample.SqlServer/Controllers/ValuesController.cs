@@ -385,6 +385,7 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get6()
         {
+            var resultx111 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "198");
             var sysUserSalaries = await _defaultTableDbContext.Set<SysUserSalary>().Where(o=>o.DateOfMonth==202101).ToListAsync();
             return Ok();
         }

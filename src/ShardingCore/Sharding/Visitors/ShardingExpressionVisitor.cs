@@ -95,6 +95,10 @@ namespace ShardingCore.Core.Internal.Visitors
                             )
                             .ToArray()
                     );
+                case UnaryExpression e when e.NodeType == ExpressionType.Convert:
+                {
+                    return GetExpressionValue(e.Operand);
+                }
 
                 default:
                     //TODO: better messaging

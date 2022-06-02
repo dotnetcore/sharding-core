@@ -146,7 +146,8 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             return expression is ConstantExpression
                    || (expression is MemberExpression member && (member.Expression is ConstantExpression || member.Expression is MemberExpression || member.Expression is MemberExpression))
-                   || expression is MethodCallExpression;
+                   || expression is MethodCallExpression
+                   || (expression is UnaryExpression unaryExpression && unaryExpression.NodeType is ExpressionType.Convert ) ;
         }
 
         private bool IsMethodCall(Expression expression)
@@ -470,9 +471,9 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
             }
 
-            if (binaryExpression.Left is UnaryExpression unaryExpression1)
+            if (binaryExpression.Left is UnaryExpression unaryExpression1&& binaryExpression.Right is not MemberExpression)
                 left = Resolve(unaryExpression1);
-            if (binaryExpression.Right is UnaryExpression unaryExpression2)
+            if (binaryExpression.Right is UnaryExpression unaryExpression2 && binaryExpression.Left is not MemberExpression)
                 right = Resolve(unaryExpression2);
 
             //组合
