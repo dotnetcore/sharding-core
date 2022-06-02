@@ -14,9 +14,12 @@ namespace Sample.SqlServer.Shardings
             builder.PaginationSequence(o => o.Id)
                 .UseRouteComparer(Comparer<string>.Default)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch);
+            //设置当
             builder.PaginationSequence(o => o.DateOfMonth)
+                .UseRouteComparer(Comparer<string>.Default)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch).UseAppendIfOrderNone(10);
             builder.PaginationSequence(o => o.Salary)
+                .UseRouteComparer(Comparer<string>.Default)
                 .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch).UseAppendIfOrderNone();
             builder.ConfigReverseShardingPage(0.5d,10000L);
         }

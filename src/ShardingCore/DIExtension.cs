@@ -122,7 +122,7 @@ namespace ShardingCore
             //分表引擎工程
             services.TryAddSingleton<IParallelTableManager<TShardingDbContext>, ParallelTableManager<TShardingDbContext>>();
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
-            services.TryAddSingleton<IShardingComplierExecutor, DefaultShardingComplierExecutor>();
+            services.TryAddSingleton<IShardingCompilerExecutor, DefaultShardingCompilerExecutor>();
             services.TryAddSingleton<IQueryCompilerContextFactory, QueryCompilerContextFactory>();
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();

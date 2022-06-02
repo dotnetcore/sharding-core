@@ -16,7 +16,7 @@ namespace Sample.SqlServer.Shardings
 * @Date: Monday, 01 February 2021 15:54:55
 * @Email: 326308290@qq.com
 */
-    public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int>
+    public class SysUserSalaryVirtualTableRoute:AbstractShardingOperatorVirtualTableRoute<SysUserSalary,int?>
     {
 
         public override string ShardingKeyToTail(object shardingKey)
@@ -46,13 +46,13 @@ namespace Sample.SqlServer.Shardings
 
         }
 
-        protected  string TimeFormatToTail(int time)
+        protected  string TimeFormatToTail(int? time)
         {
             var dateOfMonth=DateTime.ParseExact($"{time}","yyyyMM",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.AdjustToUniversal);
             return $"{dateOfMonth:yyyyMM}";
         }
 
-        public override Func<string, bool> GetRouteToFilter(int shardingKey, ShardingOperatorEnum shardingOperator)
+        public override Func<string, bool> GetRouteToFilter(int? shardingKey, ShardingOperatorEnum shardingOperator)
         {
             var t = TimeFormatToTail(shardingKey);
             switch (shardingOperator)

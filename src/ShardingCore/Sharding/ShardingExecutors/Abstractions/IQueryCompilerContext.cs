@@ -19,6 +19,15 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         Expression GetQueryExpression();
         IEntityMetadataManager GetEntityMetadataManager();
         Type GetShardingDbContextType();
+        /// <summary>
+        /// 如果当前是QueryCompilerContext
+        /// 获取编译后的执行结果,如果当前是没有分表分库
+        /// 直接返回默认的dbcontext并且替换内部所有的dbcontext为执行dbcontext，简单理解为原生查询
+        /// 如果当前是MergeQueryCompilerContext
+        /// 获取编译的执行结果,如果当前是有分表分库
+        /// 但是如果是只涉及到一张表那么也可以简单理解为原生查询
+        /// </summary>
+        /// <returns></returns>
         QueryCompilerExecutor GetQueryCompilerExecutor();
         bool IsEnumerableQuery();
 

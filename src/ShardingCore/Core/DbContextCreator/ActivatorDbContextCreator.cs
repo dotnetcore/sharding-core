@@ -12,7 +12,10 @@ using ShardingCore.Sharding.Abstractions;
 namespace ShardingCore.Core.DbContextCreator
 {
     /// <summary>
-    /// 
+    /// dbcontext的创建者
+    /// 反射创建默认框架采用这个可以，
+    /// 如果需要dbcontext构造函数支持依赖注入参数
+    /// 可以自行重写这个接口
     /// </summary>
     /// Author: xjm
     /// Created: 2022/4/2 21:15:09
@@ -25,7 +28,13 @@ namespace ShardingCore.Core.DbContextCreator
             ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
             _creator = ShardingCoreHelper.CreateActivator<TShardingDbContext>();
         }
-        public DbContext CreateDbContext(DbContext mainDbContext, ShardingDbContextOptions shardingDbContextOptions)
+        /// <summary>
+        /// 如何创建dbcontext
+        /// </summary>
+        /// <param name="shellDbContext"></param>
+        /// <param name="shardingDbContextOptions"></param>
+        /// <returns></returns>
+        public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)
         {
             var dbContext = _creator(shardingDbContextOptions);
             if (dbContext is IShardingTableDbContext shardingTableDbContext)

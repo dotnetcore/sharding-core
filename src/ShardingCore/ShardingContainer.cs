@@ -22,6 +22,9 @@ namespace ShardingCore
     * @Date: Saturday, 02 January 2021 19:37:27
     * @Email: 326308290@qq.com
     */
+    /// <summary>
+    /// 分片容器全局唯一提供静态依赖注入<code>IServiceProvider</code>
+    /// </summary>
     public class ShardingContainer
     {
         private ShardingContainer()
@@ -45,14 +48,29 @@ namespace ShardingCore
                 serviceProvider = services;
         }
 
+        /// <summary>
+        /// 获取服务
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T GetService<T>()
         {
             return ServiceProvider.GetService<T>();
         }
+        /// <summary>
+        /// 获取服务集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static IEnumerable<T> GetServices<T>()
         {
             return ServiceProvider.GetServices<T>();
         }
+        /// <summary>
+        /// 根据类型获取服务
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
         public static object GetService(Type serviceType)
         {
             return ServiceProvider.GetService(serviceType);

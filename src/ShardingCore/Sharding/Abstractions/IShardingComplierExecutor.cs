@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ShardingCore.Sharding.Abstractions
 {
-    public interface IShardingComplierExecutor
+    public interface IShardingCompilerExecutor
     {
 
         /// <summary>

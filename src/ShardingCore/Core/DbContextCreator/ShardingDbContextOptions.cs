@@ -13,7 +13,6 @@ namespace ShardingCore.Core.DbContextCreator
     */
     public class ShardingDbContextOptions
     {
-
         public ShardingDbContextOptions(DbContextOptions dbContextOptions, IRouteTail routeTail)
         {
             RouteTail = routeTail;

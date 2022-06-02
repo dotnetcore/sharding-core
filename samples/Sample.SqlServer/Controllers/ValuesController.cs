@@ -382,5 +382,12 @@ namespace Sample.SqlServer.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get6()
+        {
+            var sysUserSalaries = await _defaultTableDbContext.Set<SysUserSalary>().Where(o=>o.DateOfMonth==202101).ToListAsync();
+            return Ok();
+        }
+
     }
 }

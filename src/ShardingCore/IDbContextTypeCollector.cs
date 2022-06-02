@@ -8,6 +8,9 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore
 {
+    /// <summary>
+    /// 启动dbContext类型收集器用于初始化确定dbcontext 类型
+    /// </summary>
     public interface IDbContextTypeCollector
     {
         Type ShardingDbContextType { get; }

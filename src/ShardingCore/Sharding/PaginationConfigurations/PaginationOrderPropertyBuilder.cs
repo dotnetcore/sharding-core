@@ -22,9 +22,17 @@ namespace ShardingCore.Sharding.PaginationConfigurations
 
         /// <summary>
         /// 使用哪个后缀比较
+        /// 设置的比较器是asc的情况下
         /// </summary>
         /// <param name="routeComparer"></param>
         /// <returns></returns>
+        public PaginationOrderPropertyBuilder UseRouteComparerAsc(IComparer<string> routeComparer)
+        {
+
+            _paginationSequenceConfig.RouteComparer= routeComparer ?? throw new ArgumentException(nameof(routeComparer));
+            return this;
+        }
+        [Obsolete("plz use UseRouteComparerAsc")]
         public PaginationOrderPropertyBuilder UseRouteComparer(IComparer<string> routeComparer)
         {
 

@@ -12,14 +12,17 @@ using ShardingCore.ShardingExecutors;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
-    public class DefaultShardingComplierExecutor: IShardingComplierExecutor
+    /// <summary>
+    /// 默认的分片编译执行者
+    /// </summary>
+    public class DefaultShardingCompilerExecutor: IShardingCompilerExecutor
     {
-        private readonly ILogger<DefaultShardingComplierExecutor> _logger;
+        private readonly ILogger<DefaultShardingCompilerExecutor> _logger;
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
         private readonly IPrepareParser _prepareParser;
 
-        public DefaultShardingComplierExecutor(ILogger<DefaultShardingComplierExecutor> logger,
+        public DefaultShardingCompilerExecutor(ILogger<DefaultShardingCompilerExecutor> logger,
             IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory,IPrepareParser prepareParser)
         {
             _logger = logger;

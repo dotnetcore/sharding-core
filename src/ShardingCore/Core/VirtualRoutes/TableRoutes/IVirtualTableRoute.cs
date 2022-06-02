@@ -51,11 +51,28 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
     {
         /// <summary>
         /// 返回null就是表示不开启分页配置
+        /// 譬如如下配置
+        /// <code><![CDATA[builder.PaginationSequence(o => o.DateOfMonth)
+        /// .UseRouteComparer(Comparer<string>.Default)
+        /// .UseQueryMatch(PaginationMatchEnum.Owner | PaginationMatchEnum.Named | PaginationMatchEnum.PrimaryMatch)
+        /// .UseAppendIfOrderNone(10);]]></code>
+        /// 表示当前分页配置如果使用<code>DateOfMonth</code>属性排序并且只要符合属性属于这个对象或者名称一样并且只要是第一个排序即可
+        /// 当前排序将可以使用高性能排序，这边需要设置一个当前属性<code>DateOfMonth</code> order by asc的时候当前分表多表是如何排序的
         /// </summary>
         /// <returns></returns>
         IPaginationConfiguration<TEntity> CreatePaginationConfiguration();
         /// <summary>
         /// 配置查询
+        /// <code><![CDATA[
+        /// //DateOfMonth的排序和月份分片的后缀一致所以用true如果false,无果无关就不需要配置
+        /// builder.ShardingTailComparer(Comparer<string>.Default, false);
+        /// //表示他是倒叙
+        /// builder.AddOrder(o => o.DateOfMonth, false);
+        /// //
+        /// builder.AddDefaultSequenceQueryTrip(false, CircuitBreakerMethodNameEnum.FirstOrDefault, CircuitBreakerMethodNameEnum.Enumerator);
+        ///
+        /// builder.AddConnectionsLimit(2, LimitMethodNameEnum.First, LimitMethodNameEnum.FirstOrDefault, LimitMethodNameEnum.Any, LimitMethodNameEnum.LastOrDefault, LimitMethodNameEnum.Last, LimitMethodNameEnum.Max, LimitMethodNameEnum.Min);
+        /// builder.AddConnectionsLimit(1, LimitMethodNameEnum.Enumerator);]]></code>
         /// </summary>
         /// <returns></returns>
         IEntityQueryConfiguration<TEntity> CreateEntityQueryConfiguration();

@@ -15,6 +15,9 @@ namespace ShardingCore.Core.PhysicTables
     /// </summary>
     public interface IPhysicTable
     {
+        /// <summary>
+        /// 对象信息
+        /// </summary>
         EntityMetadata EntityMetadata { get; }
         /// <summary>
         /// 表全称

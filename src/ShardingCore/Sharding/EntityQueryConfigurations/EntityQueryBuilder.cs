@@ -13,6 +13,10 @@ using Microsoft.EntityFrameworkCore.Internal;
 
 namespace ShardingCore.Sharding.EntityQueryConfigurations
 {
+    /// <summary>
+    /// 对象查询配置
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
     public class EntityQueryBuilder<TEntity> where TEntity : class
     {
         private readonly EntityQueryMetadata _entityQueryMetadata;
@@ -78,7 +82,6 @@ namespace ShardingCore.Sharding.EntityQueryConfigurations
         /// <exception cref="ArgumentNullException"></exception>
         public EntityQueryBuilder<TEntity> AddDefaultSequenceQueryTrip(bool isSameAsShardingTailComparer,params CircuitBreakerMethodNameEnum[] methodNames)
         {
-            
             foreach (var methodName in methodNames)
             {
                 _entityQueryMetadata.AddDefaultSequenceQueryTrip(isSameAsShardingTailComparer, methodName);

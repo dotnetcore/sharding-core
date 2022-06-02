@@ -14,26 +14,24 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.EFCores
 {
-    /**
-	 * 描述：
-	 * 
-	 * Author：xuejiaming
-	 * Created: 2020/12/28 13:58:46
-	 **/
+    /// <summary>
+    /// 当前查询编译拦截
+    /// </summary>
     public class ShardingQueryCompiler : IQueryCompiler
     {
         private readonly IShardingDbContext _shardingDbContext;
-        private readonly IShardingComplierExecutor _shardingComplierExecutor;
+        private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
 
         public ShardingQueryCompiler(ICurrentDbContext currentContext)
         {
-            _shardingDbContext = currentContext.Context as IShardingDbContext?? throw new ShardingCoreException("db context operator is not IShardingDbContext");
-            _shardingComplierExecutor = ShardingContainer.GetService<IShardingComplierExecutor>();
+            _shardingDbContext = currentContext.Context as IShardingDbContext ??
+                                 throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            _shardingCompilerExecutor = ShardingContainer.GetService<IShardingCompilerExecutor>();
         }
 
         public TResult Execute<TResult>(Expression query)
         {
-            return _shardingComplierExecutor.Execute<TResult>(_shardingDbContext, query);
+            return _shardingCompilerExecutor.Execute<TResult>(_shardingDbContext, query);
         }
 
 
@@ -41,7 +39,7 @@ namespace ShardingCore.EFCores
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
+            return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
 
         [ExcludeFromCodeCoverage]
@@ -59,16 +57,14 @@ namespace ShardingCore.EFCores
 #endif
 
 #if EFCORE2
-
-
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
-            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);
+            return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);
         }
 
         public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
-            return _shardingComplierExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
+            return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
         
         [ExcludeFromCodeCoverage]
@@ -89,6 +85,5 @@ namespace ShardingCore.EFCores
             throw new NotImplementedException();
         }
 #endif
-
     }
 }
