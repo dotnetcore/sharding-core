@@ -274,9 +274,9 @@ namespace ShardingCore.Core.Internal.Visitors
                 var shardingPredicateResult = IsMethodWrapShardingKey(methodCallExpression);
                 if (shardingPredicateResult.IsShardingKey)
                 {
-                    if (methodCallExpression.Object is ConstantExpression constantExpression)
+                    var shardingValue = GetExpressionValue(methodCallExpression.Object);
+                    if (shardingValue != null)
                     {
-                        var shardingValue = constantExpression.Value;
                         var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
                         return new RoutePredicateExpression(keyToTailWithFilter);
                     }
