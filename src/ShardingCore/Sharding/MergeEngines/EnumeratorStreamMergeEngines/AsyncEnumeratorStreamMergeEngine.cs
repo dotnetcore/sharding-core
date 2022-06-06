@@ -9,7 +9,7 @@ using ShardingCore.Sharding.ShardingQueryExecutors;
 
 /*
 * @Author: xjm
-* @Description: 迭代聚合流式引擎
+* @Description: 杩唬鑱氬悎娴佸紡寮曟搸
 * @Date: Saturday, 14 August 2021 22:07:28
 * @Email: 326308290@qq.com
 */

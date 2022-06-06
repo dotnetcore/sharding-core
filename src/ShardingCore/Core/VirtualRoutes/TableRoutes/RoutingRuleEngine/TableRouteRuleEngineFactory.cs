@@ -15,7 +15,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     * @Email: 326308290@qq.com
     */
     /// <summary>
-    /// ±íÂ·ÓÉ¹æÔòÒıÇæ¹¤³§
+    /// è¡¨è·¯ç”±è§„åˆ™å¼•æ“å·¥å‚
     /// </summary>
     public class TableRouteRuleEngineFactory<TShardingDbContext> : ITableRouteRuleEngineFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
@@ -26,7 +26,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             _tableRouteRuleEngine = tableRouteRuleEngine;
         }
         /// <summary>
-        /// ´´½¨±íÂ·ÓÉÉÏÏÂÎÄ
+        /// åˆ›å»ºè¡¨è·¯ç”±ä¸Šä¸‹æ–‡
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
