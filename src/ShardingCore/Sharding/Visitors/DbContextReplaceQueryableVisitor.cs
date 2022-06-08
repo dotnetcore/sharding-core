@@ -48,6 +48,11 @@ namespace ShardingCore.Core.Internal.Visitors
                         {
                             return ReplaceMemberExpression(queryable);
                         }
+
+                        if (value is DbContext dbContext)
+                        {
+                            return ReplaceMemberExpression(dbContext);
+                        }
                         //return Expression.Constant(value);
                     }
 
@@ -57,6 +62,10 @@ namespace ShardingCore.Core.Internal.Visitors
                         if (value is IQueryable queryable)
                         {
                             return ReplaceMemberExpression(queryable);
+                        }
+                        if (value is DbContext dbContext)
+                        {
+                            return ReplaceMemberExpression(dbContext);
                         }
                     }
                 }
@@ -76,6 +85,14 @@ namespace ShardingCore.Core.Internal.Visitors
                 Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempVariable<object>.Queryable));
             return queryableMemberReplaceExpression;
         }
+        private MemberExpression ReplaceMemberExpression(DbContext dbContext)
+        {
+            var tempVariableGenericType = typeof(TempDbVariable<>).GetGenericType0(dbContext.GetType());
+            var tempVariable = Activator.CreateInstance(tempVariableGenericType, _dbContext);
+            MemberExpression queryableMemberReplaceExpression =
+                Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempDbVariable<object>.DbContext));
+            return queryableMemberReplaceExpression;
+        }
 
         internal sealed class TempVariable<T1>
         {
@@ -84,6 +101,15 @@ namespace ShardingCore.Core.Internal.Visitors
             public TempVariable(IQueryable<T1> queryable)
             {
                 Queryable = queryable;
+            }
+        }
+        internal sealed class TempDbVariable<T1>
+        {
+            public T1 DbContext { get; }
+
+            public TempDbVariable(T1 dbContext)
+            {
+                DbContext = dbContext;
             }
         }
 

@@ -165,7 +165,7 @@ namespace ShardingCore.Extensions
         {
             if (memberExpression == null)
                 throw new ArgumentNullException(nameof(memberExpression));
-            return memberExpression.Type.FullName?.StartsWith("System.Linq.IQueryable`1") ?? false;
+            return (memberExpression.Type.FullName?.StartsWith("System.Linq.IQueryable`1") ?? false) || typeof(DbContext).IsAssignableFrom(memberExpression.Type);
         }
 
         public static Type GetSequenceType(this Type type)
