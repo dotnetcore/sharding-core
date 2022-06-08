@@ -31,8 +31,8 @@ namespace ShardingCore.Core.Internal.Visitors
             (MemberExpression memberExpression)
         {
             // Recurse down to see if we can simplify...
-            if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
-            {
+            //if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
+            //{
                 var expression = Visit(memberExpression.Expression);
 
                 // If we've ended up with a constant, and it's a property or a field,
@@ -69,7 +69,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         }
                     }
                 }
-            }
+            //}
 
             return base.VisitMember(memberExpression);
         }
@@ -89,9 +89,9 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             var tempVariableGenericType = typeof(TempDbVariable<>).GetGenericType0(dbContext.GetType());
             var tempVariable = Activator.CreateInstance(tempVariableGenericType, _dbContext);
-            MemberExpression queryableMemberReplaceExpression =
+            MemberExpression dbContextMemberReplaceExpression =
                 Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempDbVariable<object>.DbContext));
-            return queryableMemberReplaceExpression;
+            return dbContextMemberReplaceExpression;
         }
 
         internal sealed class TempVariable<T1>

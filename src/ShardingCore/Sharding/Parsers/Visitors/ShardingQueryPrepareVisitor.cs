@@ -85,36 +85,36 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             (MemberExpression memberExpression)
         {
 
-            if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
-            {
-                // Recurse down to see if we can simplify...
-                var expression = Visit(memberExpression.Expression);
+            //if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
+            //{
+            // Recurse down to see if we can simplify...
+            var expression = Visit(memberExpression.Expression);
 
-                // If we've ended up with a constant, and it's a property or a field,
-                // we can simplify ourselves to a constant
-                if (expression is ConstantExpression)
+            // If we've ended up with a constant, and it's a property or a field,
+            // we can simplify ourselves to a constant
+            if (expression is ConstantExpression)
+            {
+                object container = ((ConstantExpression)expression).Value;
+                var member = memberExpression.Member;
+                if (member is FieldInfo fieldInfo)
                 {
-                    object container = ((ConstantExpression)expression).Value;
-                    var member = memberExpression.Member;
-                    if (member is FieldInfo fieldInfo)
+                    object value = fieldInfo.GetValue(container);
+                    if (value is IQueryable queryable)
                     {
-                        object value = fieldInfo.GetValue(container);
-                        if (value is IQueryable queryable)
-                        {
-                            TryAddShardingEntities(queryable.ElementType, queryable);
-                        }
-                        //return Expression.Constant(value);
+                        TryAddShardingEntities(queryable.ElementType, queryable);
                     }
-                    if (member is PropertyInfo propertyInfo)
+                    //return Expression.Constant(value);
+                }
+                if (member is PropertyInfo propertyInfo)
+                {
+                    object value = propertyInfo.GetValue(container, null);
+                    if (value is IQueryable queryable)
                     {
-                        object value = propertyInfo.GetValue(container, null);
-                        if (value is IQueryable queryable)
-                        {
-                            TryAddShardingEntities(queryable.ElementType, queryable);
-                        }
+                        TryAddShardingEntities(queryable.ElementType, queryable);
                     }
                 }
             }
+            //}
             return base.VisitMember(memberExpression);
         }
         protected override Expression VisitMethodCall(MethodCallExpression node)
