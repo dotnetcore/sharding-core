@@ -389,6 +389,19 @@ namespace Sample.SqlServer.Controllers
             var sysUserSalaries = await _defaultTableDbContext.Set<SysUserSalary>().Where(o=>o.DateOfMonth==202101).ToListAsync();
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get7()
+        {
+            
+            var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().Where(o => o.Id == "2")
+                .Select(o => new
+                {
+                    Idd=o.Id,
+                    Tests=_defaultTableDbContext.Set<SysTest>().Where(o => o.Id == "2").ToList()
+                })
+                .FirstOrDefaultAsync();
+            return Ok();
+        }
 
     }
 }
