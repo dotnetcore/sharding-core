@@ -10,6 +10,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Threading;
+using ShardingCore.Logger;
 
 namespace ShardingCore.TableCreator
 {
@@ -21,14 +22,14 @@ namespace ShardingCore.TableCreator
     */
     public class ShardingTableCreator<TShardingDbContext> : IShardingTableCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger;
+        private static readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger =
+            InternalLoggerFactory.CreateLogger<ShardingTableCreator<TShardingDbContext>>();
         private readonly IServiceProvider _serviceProvider;
         private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(ILogger<ShardingTableCreator<TShardingDbContext>> logger, IServiceProvider serviceProvider, IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions, IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(IServiceProvider serviceProvider, IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions, IRouteTailFactory routeTailFactory)
         {
-            _logger = logger;
             _serviceProvider = serviceProvider;
             _entityConfigOptions = entityConfigOptions;
             _routeTailFactory = routeTailFactory;

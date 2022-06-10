@@ -10,13 +10,15 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Extensions.InternalExtensions;
+using ShardingCore.Logger;
 using ShardingCore.Sharding.Parsers.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
     public class QueryCompilerContextFactory : IQueryCompilerContextFactory
     {
-        private readonly ILogger<QueryCompilerContextFactory> _logger;
+        private static readonly ILogger<QueryCompilerContextFactory> _logger =
+            InternalLoggerFactory.CreateLogger<QueryCompilerContextFactory>();
         private static readonly IQueryableCombine _enumerableQueryableCombine;
         private static readonly IQueryableCombine _allQueryableCombine;
         private static readonly IQueryableCombine _constantQueryableCombine;
@@ -32,10 +34,6 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _whereQueryableCombine = new WhereQueryableCombine();
         }
 
-        public QueryCompilerContextFactory(ILogger<QueryCompilerContextFactory> logger)
-        {
-            _logger = logger;
-        }
 
         public IQueryCompilerContext Create(IPrepareParseResult prepareParseResult)
         {

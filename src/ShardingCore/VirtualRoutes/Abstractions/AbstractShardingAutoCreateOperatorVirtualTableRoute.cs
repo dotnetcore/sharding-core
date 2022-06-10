@@ -15,6 +15,7 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Logger;
 using ShardingCore.TableCreator;
 
 namespace ShardingCore.VirtualRoutes.Abstractions
@@ -22,13 +23,9 @@ namespace ShardingCore.VirtualRoutes.Abstractions
     [ExcludeFromCodeCoverage]
     public abstract class AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey> : AbstractShardingOperatorVirtualTableRoute<TEntity, TKey>, IJob where TEntity : class
     {
-        private readonly ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>> _logger;
+        private static readonly ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>> _logger =
+            InternalLoggerFactory.CreateLogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>();
 
-        protected AbstractShardingAutoCreateOperatorVirtualTableRoute()
-        {
-            _logger = ShardingContainer
-                .GetService<ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>>();
-        }
         /// <summary>
         /// 不可以设置一样
         /// </summary>
