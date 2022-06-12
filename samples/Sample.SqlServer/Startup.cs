@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
@@ -25,12 +26,14 @@ namespace Sample.SqlServer
     }
     public class Startup
     {
+
         //public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
         //{
         //    builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
         //});
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+    
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -131,6 +134,7 @@ namespace Sample.SqlServer
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             var startNew = Stopwatch.StartNew();
             startNew.Start();

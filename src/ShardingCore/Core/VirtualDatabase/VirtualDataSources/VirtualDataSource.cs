@@ -53,7 +53,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 throw new ArgumentOutOfRangeException(nameof(configurationParams.MaxQueryConnectionsLimit));
             ConfigurationParams = configurationParams;
             _physicDataSourcePool = new PhysicDataSourcePool();
-            //Ìí¼ÓÊı¾İÔ´
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
             AddPhysicDataSource(new DefaultPhysicDataSource(ConfigurationParams.DefaultDataSourceName, ConfigurationParams.DefaultConnectionString, true));
             foreach (var extraDataSource in ConfigurationParams.ExtraDataSources)
             {
@@ -136,7 +136,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         }
 
         /// <summary>
-        /// »ñÈ¡Ä¬ÈÏµÄÊı¾İÔ´ĞÅÏ¢
+        /// è·å–é»˜è®¤æ•°æ®æº
         /// </summary>
         /// <returns></returns>
         public IPhysicDataSource GetDefaultDataSource()
@@ -144,7 +144,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return GetPhysicDataSource(DefaultDataSourceName);
         }
         /// <summary>
-        /// »ñÈ¡ÎïÀíÊı¾İÔ´
+        /// è·å–ç‰©ç†æ•°æ®æº
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <returns></returns>
@@ -159,7 +159,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return dataSource;
         }
         /// <summary>
-        /// »ñÈ¡ËùÓĞµÄÊı¾İÔ´Ãû³Æ
+        /// è·å–æ‰€æœ‰çš„æ•°æ®æºåç§°
         /// </summary>
         /// <returns></returns>
         public List<string> GetAllDataSourceNames()
@@ -168,7 +168,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         }
 
         /// <summary>
-        /// »ñÈ¡Êı¾İÔ´
+        /// æ ¹æ®æ•°æ®æºåç§°è·å–é“¾æ¥å­—ç¬¦ä¸²
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <returns></returns>
@@ -181,11 +181,11 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         }
 
         /// <summary>
-        /// Ìí¼ÓÊı¾İÔ´
+        /// æ·»åŠ ç‰©ç†æ•°æ®æº
         /// </summary>
         /// <param name="physicDataSource"></param>
         /// <returns></returns>
-        /// <exception cref="ShardingCoreInvalidOperationException">ÖØ¸´Ìí¼ÓÄ¬ÈÏÊı¾İÔ´</exception>
+        /// <exception cref="ShardingCoreInvalidOperationException">ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´</exception>
         public bool AddPhysicDataSource(IPhysicDataSource physicDataSource)
         {
             if (physicDataSource.IsDefault)
@@ -201,7 +201,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return _physicDataSourcePool.TryAdd(physicDataSource);
         }
         /// <summary>
-        /// ÊÇ·ñÊÇÄ¬ÈÏÊı¾İÔ´
+        /// åˆ¤æ–­æ•°æ®æºåç§°æ˜¯å¦æ˜¯é»˜è®¤çš„æ•°æ®æº
         /// </summary>
         /// <param name="dataSourceName"></param>
         /// <returns></returns>
@@ -210,7 +210,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             return DefaultDataSourceName == dataSourceName;
         }
         /// <summary>
-        /// ¼ì²éÊÇ·ñÅäÖÃÄ¬ÈÏÊı¾İÔ´ºÍÄ¬ÈÏÁ´½Ó×Ö·û´®
+        /// æ£€æŸ¥è™šæ‹Ÿæ•°æ®æºæ˜¯å¦åŒ…å«é»˜è®¤å€¼
         /// </summary>
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public void CheckVirtualDataSource()

@@ -43,6 +43,7 @@ namespace Sample.MySql
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
+                    o.CreateDataBaseOnlyOnStart = true;
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
                     o.IgnoreCreateTableError = false;
@@ -62,11 +63,12 @@ namespace Sample.MySql
                 {
                     op.ConfigId = "c1";
                     op.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3306;database=dbxxxx;userid=root;password=L6yBtV6qNENrwBy7;");
+                        "server=127.0.0.1;port=3306;database=dbxxxx;userid=root;password=root;");
 
                     //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
                     op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
                 }).EnsureConfig();
+            services.AddSingleton<AAAAA>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,5 +90,10 @@ namespace Sample.MySql
             });
             app.DbSeed();
         }
+    }
+
+    public class AAAAA
+    {
+        
     }
 }

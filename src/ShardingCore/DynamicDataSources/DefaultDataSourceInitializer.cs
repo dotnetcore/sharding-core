@@ -19,8 +19,8 @@ using System.Threading;
 
 namespace ShardingCore.DynamicDataSources
 {
-
-    public class DataSourceInitializer<TShardingDbContext> : IDataSourceInitializer<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceInitializer<TShardingDbContext> : IDataSourceInitializer<TShardingDbContext>
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
@@ -29,6 +29,7 @@ namespace ShardingCore.DynamicDataSources
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
         private readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger;
+
         public DataSourceInitializer(
             IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
             IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
@@ -46,7 +47,8 @@ namespace ShardingCore.DynamicDataSources
             _logger = logger;
         }
 
-        public void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString, bool isOnStart)
+        public void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName,
+            string connectionString, bool isOnStart)
         {
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
@@ -55,13 +57,15 @@ namespace ShardingCore.DynamicDataSources
                     using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
                     if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
                         EnsureCreated(virtualDataSource, context, dataSourceName);
-                    else if(_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
+                    else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
                     {
                         EnsureCreateDataBaseOnly(context, dataSourceName);
                     }
+
                     var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
                     ////获取数据库存在的所有的表
-                    var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ?? new HashSet<string>();
+                    var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ??
+                                      new HashSet<string>();
                     foreach (var entity in context.Model.GetEntityTypes())
                     {
                         var entityType = entity.ClrType;
@@ -95,7 +99,8 @@ namespace ShardingCore.DynamicDataSources
             }
         }
 
-        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables, bool isOnStart)
+        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables,
+            bool isOnStart)
         {
             var entityMetadata = virtualTable.EntityMetadata;
             foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
@@ -126,6 +131,7 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
+
         private bool NeedCreateTable(EntityMetadata entityMetadata)
         {
             if (entityMetadata.AutoCreateTable.HasValue)
@@ -138,6 +144,7 @@ namespace ShardingCore.DynamicDataSources
                         return entityMetadata.AutoCreateDataSourceTable.Value;
                 }
             }
+
             if (entityMetadata.AutoCreateDataSourceTable.HasValue)
             {
                 if (entityMetadata.AutoCreateDataSourceTable.Value)
@@ -151,11 +158,14 @@ namespace ShardingCore.DynamicDataSources
 
             return _entityConfigOptions.CreateShardingTableOnStart.GetValueOrDefault();
         }
-        private void EnsureCreated(IVirtualDataSource<TShardingDbContext> virtualDataSource, DbContext context, string dataSourceName)
+
+        private void EnsureCreated(IVirtualDataSource<TShardingDbContext> virtualDataSource, DbContext context,
+            string dataSourceName)
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
+                var dbContext =
+                    shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
 
                 var isDefault = virtualDataSource.IsDefault(dataSourceName);
 
@@ -177,6 +187,7 @@ namespace ShardingCore.DynamicDataSources
                     {
                         dbContext.RemoveDbContextAllRelationModelThatIsNoSharding();
                     }
+
                     dbContext.Database.EnsureCreated();
                     dbContext.RemoveModelCache();
                 }
@@ -186,33 +197,17 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
-        private void EnsureCreateDataBaseOnly( DbContext context, string dataSourceName)
+
+        private void EnsureCreateDataBaseOnly(DbContext context, string dataSourceName)
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
+                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false,
+                    _routeTailFactory.Create(string.Empty, false));
 
-
-                var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
-
-                var acquire = Monitor.TryEnter(modelCacheSyncObject, TimeSpan.FromSeconds(3));
-                if (!acquire)
-                {
-                    throw new ShardingCoreException("cant get modelCacheSyncObject lock");
-                }
-
-                try
-                {
-                    dbContext.RemoveDbContextAllRelationModel();
-                    dbContext.Database.EnsureCreated();
-                    dbContext.RemoveModelCache();
-                }
-                finally
-                {
-                    Monitor.Exit(modelCacheSyncObject);
-                }
+                dbContext.RemoveDbContextAllRelationModel();
+                dbContext.Database.EnsureCreated();
             }
         }
-
     }
 }
