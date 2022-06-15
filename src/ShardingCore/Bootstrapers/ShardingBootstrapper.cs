@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Logger;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 
 namespace ShardingCore.Bootstrapers
@@ -22,14 +23,15 @@ namespace ShardingCore.Bootstrapers
         private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider,ILogger<ShardingBootstrapper> logger,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
+        public ShardingBootstrapper(IServiceProvider serviceProvider,ILoggerFactory loggerFactory,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
         {
-            _logger = logger;
-            _dbContextTypeCollectors = dbContextTypeCollectors;
             ShardingContainer.SetServices(serviceProvider);
+            InternalLoggerFactory.DefaultFactory = loggerFactory;
+            _logger = InternalLoggerFactory.DefaultFactory .CreateLogger<ShardingBootstrapper>();
+            _dbContextTypeCollectors = dbContextTypeCollectors;
         }
         /// <summary>
-        /// ∆Ù∂Ø
+        /// ÂêØÂä®
         /// </summary>
         public void Start()
         {

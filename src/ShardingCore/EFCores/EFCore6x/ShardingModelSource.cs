@@ -27,7 +27,6 @@ namespace ShardingCore.EFCores
         public ShardingModelSource(ModelSourceDependencies dependencies) : base(dependencies)
         {
             Check.NotNull(dependencies, nameof(dependencies));
-            Console.WriteLine($"ShardingModelSource:{Guid.NewGuid()}");
             Dependencies = dependencies;
         }
 

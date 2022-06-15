@@ -87,17 +87,17 @@ namespace ShardingCore.Helpers
             var declaredConstructors = contextType.GetTypeInfo().DeclaredConstructors.ToList();
             if (declaredConstructors.Count != 1)
             {
-                throw new ArgumentException($"dbcontext : {contextType} declared constructor count more {contextType}");
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor count more {contextType},if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface");
             }
             if (declaredConstructors[0].GetParameters().Length != 1)
             {
-                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters more ");
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters more ,if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface");
             }
 
             var paramType = declaredConstructors[0].GetParameters()[0].ParameterType;
             if (paramType != typeof(ShardingDbContextOptions) && paramType != typeof(DbContextOptions) && paramType != typeof(DbContextOptions<TContext>))
             {
-                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters should use {typeof(ShardingDbContextOptions)} or {typeof(DbContextOptions)} or {typeof(DbContextOptions<TContext>)} ");
+                throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters should use {typeof(ShardingDbContextOptions)} or {typeof(DbContextOptions)} or {typeof(DbContextOptions<TContext>)},if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface ");
             }
 
             //if (!contextType.IsShardingDbContext())
