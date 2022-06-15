@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
-using ShardingCore.Bootstrapers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Bootstrappers;
 
 namespace Sample.MySql
 {

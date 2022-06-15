@@ -1,36 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
-using ShardingCore.Core.VirtualDatabase;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Jobs;
-using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
-using ShardingCore.TableCreator;
-using ShardingCore.Utils;
 
 /*
 * @Author: xjm
@@ -39,7 +19,7 @@ using ShardingCore.Utils;
 * @Ver: 1.0
 * @Email: 326308290@qq.com
 */
-namespace ShardingCore.Bootstrapers
+namespace ShardingCore.Bootstrappers
 {
     /// <summary>
     /// 分片具体DbContext初始化器

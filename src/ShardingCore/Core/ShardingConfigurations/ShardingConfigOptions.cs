@@ -144,7 +144,8 @@ namespace ShardingCore.Core.ShardingConfigurations
             ExecutorDbContextConfigure= executorDbContextConfigure ?? throw new ArgumentNullException(nameof(executorDbContextConfigure));
         }
         /// <summary>
-        /// 仅外部DbContext生效
+        /// 仅外部DbContext生效,如果是独立调用AddDbContext和AddShardingConfigure不一定生效
+        /// 会在AddShardingDbContext里面自动赋值
         /// </summary>
         /// <param name="shellDbContextConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>

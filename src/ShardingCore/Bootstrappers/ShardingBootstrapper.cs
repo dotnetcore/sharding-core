@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
@@ -9,7 +8,7 @@ using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 
-namespace ShardingCore.Bootstrapers
+namespace ShardingCore.Bootstrappers
 {
     /*
     * @Author: xjm

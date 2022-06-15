@@ -74,7 +74,16 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         /// <returns></returns>
         public IServiceCollection EnsureConfig(ShardingConfigurationStrategyEnum configurationStrategy = ShardingConfigurationStrategyEnum.ThrowIfNull)
         {
-            return DoEnsureConfig(false, configurationStrategy);
+            return DoEnsureConfig(false,false, configurationStrategy);
+        }
+        /// <summary>
+        /// 单配置确认 自动初始化不需要在手动<code>IShardingBootstrapper.Start()</code>
+        /// </summary>
+        /// <param name="configurationStrategy"></param>
+        /// <returns></returns>
+        public IServiceCollection EnsureConfigWithAutoStart(ShardingConfigurationStrategyEnum configurationStrategy = ShardingConfigurationStrategyEnum.ThrowIfNull)
+        {
+            return DoEnsureConfig(false,true, configurationStrategy);
         }
         /// <summary>
         /// 多配置确认
@@ -83,10 +92,20 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         /// <returns></returns>
         public IServiceCollection EnsureMultiConfig(ShardingConfigurationStrategyEnum configurationStrategy= ShardingConfigurationStrategyEnum.ThrowIfNull)
         {
-            return DoEnsureConfig(true, configurationStrategy);
+            return DoEnsureConfig(true,false, configurationStrategy);
+        }
+        /// <summary>
+        /// 多配置确认 自动初始化不需要在手动<code>IShardingBootstrapper.Start()</code>
+        /// </summary>
+        /// <param name="configurationStrategy"></param>
+        /// <returns></returns>
+        public IServiceCollection EnsureMultiConfigWithAutoStart(ShardingConfigurationStrategyEnum configurationStrategy= ShardingConfigurationStrategyEnum.ThrowIfNull)
+        {
+            return DoEnsureConfig(true,true, configurationStrategy);
         }
 
         private IServiceCollection DoEnsureConfig(bool isMultiConfig,
+            bool autoStart,
             ShardingConfigurationStrategyEnum configurationStrategy)
         {
             if (ShardingCoreConfigBuilder.ShardingConfigOptions.IsEmpty())
@@ -106,6 +125,10 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
 
             services.AddSingleton(sp => CreateShardingConfigurationOptions(isMultiConfig, configurationStrategy));
             services.AddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor<TShardingDbContext>>();
+            if (autoStart)
+            {
+                
+            }
 
             services.AddInternalShardingCore<TShardingDbContext>();
             return services;

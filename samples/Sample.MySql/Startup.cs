@@ -46,7 +46,7 @@ namespace Sample.MySql
                     o.CreateDataBaseOnlyOnStart = true;
                     o.CreateShardingTableOnStart = true;
                     o.EnsureCreatedWithOutShardingTable = true;
-                    o.IgnoreCreateTableError = false;
+                    o.IgnoreCreateTableError = true;
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.UseShardingQuery((conStr, builder) =>
@@ -74,12 +74,12 @@ namespace Sample.MySql
                     //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
                     op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
                 }).EnsureConfig();
-            services.AddSingleton<AAAAA>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            Console.WriteLine("11111");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -96,10 +96,5 @@ namespace Sample.MySql
             });
             app.DbSeed();
         }
-    }
-
-    public class AAAAA
-    {
-        
     }
 }

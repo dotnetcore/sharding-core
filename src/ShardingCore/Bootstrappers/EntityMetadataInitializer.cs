@@ -1,4 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
@@ -15,11 +20,6 @@ using ShardingCore.Helpers;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Sharding.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 /*
 * @Author: xjm
@@ -27,7 +27,7 @@ using System.Reflection;
 * @Ver: 1.0
 * @Email: 326308290@qq.com
 */
-namespace ShardingCore.Bootstrapers
+namespace ShardingCore.Bootstrappers
 {
     /// <summary>
     /// 对象元数据初始化器
