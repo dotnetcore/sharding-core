@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
@@ -22,10 +23,10 @@ namespace ShardingCore.Bootstrappers
         private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider,ILoggerFactory loggerFactory,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
+        public ShardingBootstrapper(IServiceProvider serviceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
         {
             ShardingContainer.SetServices(serviceProvider);
-            InternalLoggerFactory.DefaultFactory = loggerFactory;
+            InternalLoggerFactory.DefaultFactory = serviceProvider.GetService<ILoggerFactory>();
             _logger = InternalLoggerFactory.DefaultFactory .CreateLogger<ShardingBootstrapper>();
             _dbContextTypeCollectors = dbContextTypeCollectors;
         }

@@ -202,11 +202,13 @@ namespace ShardingCore.DynamicDataSources
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext = shardingDbContext.GetDbContext(dataSourceName, false,
-                    _routeTailFactory.Create(string.Empty, false));
+                using (var dbContext = shardingDbContext.GetDbContext(dataSourceName, false,
+                           _routeTailFactory.Create(string.Empty, false)))
+                {
+                    dbContext.RemoveDbContextAllRelationModel();
+                    dbContext.Database.EnsureCreated();
+                }
 
-                dbContext.RemoveDbContextAllRelationModel();
-                dbContext.Database.EnsureCreated();
             }
         }
     }

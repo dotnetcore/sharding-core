@@ -53,7 +53,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 throw new ArgumentOutOfRangeException(nameof(configurationParams.MaxQueryConnectionsLimit));
             ConfigurationParams = configurationParams;
             _physicDataSourcePool = new PhysicDataSourcePool();
-            //��������Դ
+            //添加数据源
             AddPhysicDataSource(new DefaultPhysicDataSource(ConfigurationParams.DefaultDataSourceName, ConfigurationParams.DefaultConnectionString, true));
             foreach (var extraDataSource in ConfigurationParams.ExtraDataSources)
             {
