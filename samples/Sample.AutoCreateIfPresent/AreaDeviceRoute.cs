@@ -54,7 +54,6 @@ namespace Sample.AutoCreateIfPresent
 
                 using (var dataTable = connection.GetSchema(Tables))
                 {
-                    var serializeObject = JsonConvert.SerializeObject(dataTable);
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         var schema = dataTable.Rows[i][TABLE_SCHEMA];
