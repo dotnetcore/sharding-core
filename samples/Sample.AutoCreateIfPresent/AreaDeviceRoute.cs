@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using MySqlConnector;
+using Newtonsoft.Json;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
@@ -53,6 +54,7 @@ namespace Sample.AutoCreateIfPresent
 
                 using (var dataTable = connection.GetSchema(Tables))
                 {
+                    var serializeObject = JsonConvert.SerializeObject(dataTable);
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         var schema = dataTable.Rows[i][TABLE_SCHEMA];
