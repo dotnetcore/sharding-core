@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 
 namespace Samples.AutoByDate.SqlServer
 {

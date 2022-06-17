@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore6x.NoShardingDbContexts;

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sample.MultiConfig;
 using Sample.MultiConfig.Middlewares;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.TableExists;
 
 var builder = WebApplication.CreateBuilder(args);

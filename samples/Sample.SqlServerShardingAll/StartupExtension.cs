@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServerShardingAll.Entities;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 
 namespace Sample.SqlServerShardingAll
 {

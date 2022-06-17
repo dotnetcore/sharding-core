@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sample.SqlServer3x.Domain.Entities;
 using Sample.SqlServer3x.Shardings;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.TableExists;
 

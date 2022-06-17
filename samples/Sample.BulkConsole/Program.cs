@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.TableExists;
 

@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Sample.Migrations.EFCores;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 
 namespace Sample.Migrations

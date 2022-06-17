@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServerShardingTable.Common;
 using Sample.SqlServerShardingTable.Entities;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 
 namespace Sample.SqlServerShardingTable
 {
