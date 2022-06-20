@@ -3,6 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Sample.AutoCreateIfPresent.Controllers;
 
+public class AA
+{
+    public string Id { get; set; }
+    public DateTime Time { get; set; }
+}
 [ApiController]
 [Route("[controller]/[action]")]
 public class TestController : ControllerBase
@@ -23,6 +28,14 @@ public class TestController : ControllerBase
 
     public async Task<IActionResult> Query()
     {
+        var aas = new List<AA>();
+        var ids = new []{"雪花id1","雪花id2"};
+        var time1 = new DateTime(2021,1,1);
+        var time2 = new DateTime(2022,1,1);
+        var enumerable = aas.Where(o=>ids.Contains(o.Id)&&o.Time>=time1&&o.Time<=time2);
+        var enumerable1 = aas.Where(o=>o.Id=="雪花id1"||o.Id=="雪花id2");
+        var enumerable2 = aas.Where(o=>o.Id=="雪花id1"&&o.Id=="雪花id2");
+
         var list =await _defaultDbContext.Set<OrderByHour>().ToListAsync();
         return Ok(list);
     }

@@ -69,7 +69,7 @@ namespace Sample.MySql
                 {
                     op.ConfigId = "c1";
                     op.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3306;database=dbxxxx;userid=root;password=root;");
+                        "server=127.0.0.1;port=3307;database=dbxxxx;userid=root;password=root;");
 
                     //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
                     op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());

@@ -92,20 +92,23 @@ namespace ShardingCore.VirtualRoutes.Abstractions
                     dataSources.Add(virtualDataSource.DefaultDataSourceName);
                 }
                 _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
-                foreach (var dataSource in dataSources)
+                using (virtualDataSourceManager.CreateScope(virtualDataSource.ConfigId))
                 {
-                    try
+                    foreach (var dataSource in dataSources)
                     {
-                        _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                        tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
-                        _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    }
-                    catch (Exception e)
-                    {
-                        //ignore
-                        _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                        if (DoLogError)
-                            _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                        try
+                        {
+                            _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                            tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
+                            _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                        }
+                        catch (Exception e)
+                        {
+                            //ignore
+                            _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                            if (DoLogError)
+                                _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                        }
                     }
                 }
             }
