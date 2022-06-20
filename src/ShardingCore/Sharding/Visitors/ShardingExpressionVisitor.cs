@@ -53,11 +53,20 @@ namespace ShardingCore.Core.Internal.Visitors
                     );
 
                 case MemberExpression e when e.Member is PropertyInfo property:
-                    return property.GetValue(
-                        GetExpressionValue(
-                            e.Expression
-                        )??throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
-                    );
+                {
+                    if (e.Expression == null&&property.DeclaringType==typeof(DateTime)&&property.Name==nameof(DateTime.Now))
+                    {
+                        return DateTime.Now;
+                    }
+                    else
+                    {
+                        return property.GetValue(
+                            GetExpressionValue(
+                                e.Expression
+                            )??throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
+                        ); 
+                    }
+                }
 
                 case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
                     {
@@ -87,14 +96,18 @@ namespace ShardingCore.Core.Internal.Visitors
 
 
                 case MethodCallExpression e:
+                {
+                    var expressionValue = GetExpressionValue(e.Object);
+                    
                     return e.Method.Invoke(
-                        GetExpressionValue(e.Object),
+                        expressionValue,
                         e.Arguments
                             .Select(
                                 a => GetExpressionValue(a)
                             )
                             .ToArray()
                     );
+                }
                 case UnaryExpression e when e.NodeType == ExpressionType.Convert:
                 {
                     return GetExpressionValue(e.Operand);
