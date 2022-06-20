@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sample.NoShardingMultiLevel;
 using ShardingCore;
-using ShardingCore.Bootstrapers;
+using ShardingCore.Bootstrappers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
 
