@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingDataSource.Entities;
+using ShardingCore.Helpers;
 
 namespace Sample.SqlServerShardingDataSource.Controllers
 {
@@ -21,8 +22,9 @@ namespace Sample.SqlServerShardingDataSource.Controllers
         /// 动态追加分库
         /// </summary>
         /// <returns></returns>
-        //public  IActionResult Queryabc()
+        //public IActionResult Queryabc()
         //{
+        //    DynamicShardingHelper.DynamicAppendDataSource();
         //    DbContextHelper.CreateSubDb("X", "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceDBX;Integrated Security=True;");
         //    return Ok();
         //}

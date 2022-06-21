@@ -15,6 +15,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
@@ -144,6 +145,7 @@ namespace Sample.SqlServer
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            DynamicShardingHelper.DynamicAppendDataSource<DefaultShardingDbContext>("c1","B", "Data Source=localhost;Initial Catalog=ShardingCoreDBXAABB;Integrated Security=True;");
             app.DbSeed();
         }
     }

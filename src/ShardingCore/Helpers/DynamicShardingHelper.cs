@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
@@ -57,6 +58,7 @@ namespace ShardingCore.Helpers
         public static void DynamicAppendDataSource<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
+            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
             defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
         }
         /// <summary>
@@ -72,6 +74,7 @@ namespace ShardingCore.Helpers
             var virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>();
 
             var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource(configId);
+            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
             defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
         }
 
