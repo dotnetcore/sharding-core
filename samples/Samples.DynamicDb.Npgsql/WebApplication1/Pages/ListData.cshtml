@@ -1,0 +1,23 @@
+﻿@page
+@model ListDataModel
+@{
+    ViewData["title"] = "数据列表";
+}
+
+@if (Model.StudentList != null)
+{
+    @foreach (var item in Model.StudentList)
+    {
+        <div>@item.Id：@item.Name</div>
+    }
+}
+
+<hr />
+
+@if (Model.TestModelList != null)
+{
+    @foreach (var item in Model.TestModelList)
+    {
+        <div>@item.Id, @item.CreationTime.ToString("yyyy-MM-dd HH:mm:ss:fffffff")</div>
+    }
+}

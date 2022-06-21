@@ -1,0 +1,30 @@
+﻿@page
+@model DbKeyManModel
+@{
+    ViewData["title"] = "分库key管理";
+}
+
+<a asp-page="CreateDbKey">新增分库key</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col" width="360">Id</th>
+            <th scope="col">Key</th>
+            <th scope="col" width="300">Date</th>
+        </tr>
+    </thead>
+    @if (Model.DbKeyList != null)
+    {
+        <tbody>
+            @foreach (var item in Model.DbKeyList)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <th scope="row">@item.Key</th>
+                    <td>@item.CreationDate.ToString("yyyy-MM-dd HH:mm:ss:fffffff")</td>
+                </tr>
+            }
+        </tbody>
+    }
+</table>
