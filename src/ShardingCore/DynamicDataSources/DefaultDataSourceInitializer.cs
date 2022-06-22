@@ -54,42 +54,44 @@ namespace ShardingCore.DynamicDataSources
             {
                 using (_virtualDataSourceManager.CreateScope(virtualDataSource.ConfigId))
                 {
-                    using var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>();
-                    if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
-                        EnsureCreated(virtualDataSource, context, dataSourceName);
-                    else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
+                    using (var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>())
                     {
-                        EnsureCreateDataBaseOnly(context, dataSourceName);
-                    }
-
-                    var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
-                    ////获取数据库存在的所有的表
-                    var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ??
-                                      new HashSet<string>();
-                    foreach (var entity in context.Model.GetEntityTypes())
-                    {
-                        var entityType = entity.ClrType;
-                        if (virtualDataSource.IsDefault(dataSourceName))
+                        if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
+                            EnsureCreated(virtualDataSource, context, dataSourceName);
+                        else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
                         {
-                            if (_entityMetadataManager.IsShardingTable(entityType))
-                            {
-                                var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
-                                //创建表
-                                CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
-                            }
+                            EnsureCreateDataBaseOnly(context, dataSourceName);
                         }
-                        else
+
+                        var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
+                        ////获取数据库存在的所有的表
+                        var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ??
+                                          new HashSet<string>();
+                        foreach (var entity in context.Model.GetEntityTypes())
                         {
-                            if (_entityMetadataManager.IsShardingDataSource(entityType))
+                            var entityType = entity.ClrType;
+                            if (virtualDataSource.IsDefault(dataSourceName))
                             {
-                                var virtualDataSourceRoute = virtualDataSource.GetRoute(entityType);
-                                if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
+                                if (_entityMetadataManager.IsShardingTable(entityType))
                                 {
-                                    if (_entityMetadataManager.IsShardingTable(entityType))
+                                    var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
+                                    //创建表
+                                    CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
+                                }
+                            }
+                            else
+                            {
+                                if (_entityMetadataManager.IsShardingDataSource(entityType))
+                                {
+                                    var virtualDataSourceRoute = virtualDataSource.GetRoute(entityType);
+                                    if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
                                     {
-                                        var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
-                                        //创建表
-                                        CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
+                                        if (_entityMetadataManager.IsShardingTable(entityType))
+                                        {
+                                            var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
+                                            //创建表
+                                            CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
+                                        }
                                     }
                                 }
                             }
@@ -164,21 +166,12 @@ namespace ShardingCore.DynamicDataSources
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                var dbContext =
-                    shardingDbContext.GetDbContext(dataSourceName, false, _routeTailFactory.Create(string.Empty));
-
-                var isDefault = virtualDataSource.IsDefault(dataSourceName);
-
-                var modelCacheSyncObject = dbContext.GetModelCacheSyncObject();
-
-                var acquire = Monitor.TryEnter(modelCacheSyncObject, TimeSpan.FromSeconds(3));
-                if (!acquire)
+                using (var dbContext =
+                       shardingDbContext.GetDbContext(dataSourceName, false,
+                           _routeTailFactory.Create(string.Empty, false)))
                 {
-                    throw new ShardingCoreException("cant get modelCacheSyncObject lock");
-                }
+                    var isDefault = virtualDataSource.IsDefault(dataSourceName);
 
-                try
-                {
                     if (isDefault)
                     {
                         dbContext.RemoveDbContextRelationModelThatIsShardingTable();
@@ -189,11 +182,6 @@ namespace ShardingCore.DynamicDataSources
                     }
 
                     dbContext.Database.EnsureCreated();
-                    dbContext.RemoveModelCache();
-                }
-                finally
-                {
-                    Monitor.Exit(modelCacheSyncObject);
                 }
             }
         }
@@ -208,7 +196,6 @@ namespace ShardingCore.DynamicDataSources
                     dbContext.RemoveDbContextAllRelationModel();
                     dbContext.Database.EnsureCreated();
                 }
-
             }
         }
     }
