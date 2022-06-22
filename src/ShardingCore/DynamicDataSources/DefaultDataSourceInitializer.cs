@@ -167,7 +167,7 @@ namespace ShardingCore.DynamicDataSources
             if (context is IShardingDbContext shardingDbContext)
             {
                 using (var dbContext =
-                       shardingDbContext.GetDbContext(dataSourceName, true,
+                       shardingDbContext.GetDbContext(dataSourceName, false,
                            _routeTailFactory.Create(string.Empty, false)))
                 {
                     var isDefault = virtualDataSource.IsDefault(dataSourceName);
@@ -190,7 +190,7 @@ namespace ShardingCore.DynamicDataSources
         {
             if (context is IShardingDbContext shardingDbContext)
             {
-                using (var dbContext = shardingDbContext.GetDbContext(dataSourceName, true,
+                using (var dbContext = shardingDbContext.GetDbContext(dataSourceName, false,
                            _routeTailFactory.Create(string.Empty, false)))
                 {
                     dbContext.RemoveDbContextAllRelationModel();

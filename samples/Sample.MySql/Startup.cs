@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MySqlConnector;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Shardings;
 using ShardingCore;
+using ShardingCore.Helpers;
 using ShardingCore.TableExists;
 
 namespace Sample.MySql
@@ -49,6 +51,7 @@ namespace Sample.MySql
                     o.IgnoreCreateTableError = true;
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version())
@@ -67,9 +70,9 @@ namespace Sample.MySql
                 })
                 .AddConfig(op =>
                 {
-                    op.ConfigId = "c1";
+                    op.ConfigId = "c0";
                     op.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3307;database=dbxxxx;userid=root;password=root;");
+                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
 
                     //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
                     op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
@@ -94,6 +97,16 @@ namespace Sample.MySql
             {
                 endpoints.MapControllers();
             });
+            // for (int i = 1; i < 500; i++)
+            // {
+            //     using (var conn = new MySqlConnection(
+            //                $"server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;"))
+            //     {
+            //         conn.Open();
+            //     }
+            //     // DynamicShardingHelper.DynamicAppendDataSource<DefaultShardingDbContext>($"c0",$"ds{i}",$"server=127.0.0.1;port=3306;database=dbdbd{i};userid=root;password=root;");
+            //     
+            // }
             app.DbSeed();
         }
     }
