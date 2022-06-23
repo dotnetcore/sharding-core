@@ -33,6 +33,8 @@
 
 如果本地未生成库时，请在 tool 项目目录下，使用 ef tool 命令来做数据库的初始迁移(包含分库分表)，需要将 WebApplication1/bin/net 6.0 目录下的 muitDbConfig.json 拷贝到 WebApplication1.Migrations.Tool/bin/net 6.0 目录下，以供 tool 项目使用，当然也可以利用其他持久化方法。如果本地已经存在完整的库(包含分库)，则可直接运行 webapp 项目
 
+本示例采用的是 postgresql 引擎，默认的最大链接数是 100，如果分库数量大于 100 时，运行时会报 pgsql 53300 异常，超出最大链接数，需要修改引擎配置。max_connection，根据自己需要自行调整。
+
 初始化后的库结构如下：
 
 ![02](images/02.png)
