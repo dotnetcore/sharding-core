@@ -1,0 +1,40 @@
+﻿@page
+@model BatchCreateDbKeyModel
+@{
+    ViewData["title"] = "批量增加分库key";
+}
+
+<form asp-page="BatchCreateDbKey" method="post">
+    <div class="mb-3 row">
+        <label asp-for="CreateModel.Len" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="CreateModel.Len" placeholder="编号长度，左侧自动补零" class="form-control" required />
+            <div id="emailHelp" class="form-text">编号长度，编号长度不够左侧自动补零.</div>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label asp-for="CreateModel.StarNum" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="CreateModel.StarNum" class="form-control" placeholder="分库key，必填" required />
+            <div id="emailHelp" class="form-text">起始编号，数值型</div>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label asp-for="CreateModel.EndNum" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="CreateModel.EndNum" class="form-control" required />
+            <div id="emailHelp" class="form-text">结束编号，数值型.</div>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <div class="offset-sm-2">
+            例如：长度为3，起始为1，结束为5，则生成的编号为：001，002，003，004，005
+        </div>
+    </div>
+    <div class="row">
+        <div class="offset-sm-2">
+            <button type="submit" class="btn btn-primary">批量新增</button>
+            <a asp-page="DbKeyMan" class="btn btn-secondary">返回</a>
+        </div>
+    </div>
+</form>
