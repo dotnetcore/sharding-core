@@ -49,7 +49,7 @@ namespace ShardingCore.DynamicDataSources
         }
 
         public void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName,
-            string connectionString, bool isOnStart)
+            string connectionString, bool isOnStart, bool? needCreateDatabase=null, bool? needCreateTable = null)
         {
             using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
             {
@@ -57,9 +57,11 @@ namespace ShardingCore.DynamicDataSources
                 {
                     using (var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>())
                     {
-                        if (_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)
+                        var createDatabase = !needCreateDatabase.HasValue || needCreateDatabase.Value;
+
+                        if ((_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)&&createDatabase)
                             EnsureCreated(virtualDataSource, context, dataSourceName);
-                        else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault())
+                        else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault()&& createDatabase)
                         {
                             EnsureCreateDataBaseOnly(context, dataSourceName);
                         }
@@ -77,7 +79,7 @@ namespace ShardingCore.DynamicDataSources
                                 {
                                     var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
                                     //创建表
-                                    CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
+                                    CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart, needCreateTable);
                                 }
                             }
                             else
@@ -91,7 +93,7 @@ namespace ShardingCore.DynamicDataSources
                                         {
                                             var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
                                             //创建表
-                                            CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart);
+                                            CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart,needCreateTable);
                                         }
                                     }
                                 }
@@ -103,13 +105,13 @@ namespace ShardingCore.DynamicDataSources
         }
 
         private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables,
-            bool isOnStart)
+            bool isOnStart,bool? needCreateTable)
         {
             var entityMetadata = virtualTable.EntityMetadata;
             foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
             {
                 var defaultPhysicTable = new DefaultPhysicTable(virtualTable, tail);
-                if (NeedCreateTable(entityMetadata) || !isOnStart)
+                if ((NeedCreateTable(entityMetadata) || !isOnStart)&&(!needCreateTable.HasValue|| needCreateTable.Value))
                 {
                     try
                     {

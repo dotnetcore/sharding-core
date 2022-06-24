@@ -18,6 +18,8 @@ namespace ShardingCore.DynamicDataSources
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
         /// <param name="isOnStart">当前是否是启动时被调用</param>
-        void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource,string dataSourceName, string connectionString,bool isOnStart);
+        /// <param name="needCreateDatabase">当前是否是启动时被调用</param>
+        /// <param name="needCreateTable">当前是否是启动时被调用</param>
+        void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString, bool isOnStart, bool? needCreateDatabase = null, bool? needCreateTable = null);
     }
 }

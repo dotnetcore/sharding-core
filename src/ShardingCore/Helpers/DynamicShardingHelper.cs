@@ -55,11 +55,13 @@ namespace ShardingCore.Helpers
         /// <param name="virtualDataSource"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
-        public static void DynamicAppendDataSource<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+        /// <param name="createDatabase"></param>
+        /// <param name="createTable"></param>
+        public static void DynamicAppendDataSource<TShardingDbContext>(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName, string connectionString,bool? createDatabase=null,bool? createTable=null) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
             virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
-            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
+            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false,createDatabase,createTable);
         }
         /// <summary>
         /// 动态添加数据源
@@ -68,14 +70,16 @@ namespace ShardingCore.Helpers
         /// <param name="configId"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
-        public static void DynamicAppendDataSource<TShardingDbContext>(string configId, string dataSourceName, string connectionString) where TShardingDbContext : DbContext, IShardingDbContext
+        /// <param name="createDatabase"></param>
+        /// <param name="createTable"></param>
+        public static void DynamicAppendDataSource<TShardingDbContext>(string configId, string dataSourceName, string connectionString, bool? createDatabase = null, bool? createTable = null) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var defaultDataSourceInitializer = ShardingContainer.GetService<IDataSourceInitializer<TShardingDbContext>>();
             var virtualDataSourceManager = ShardingContainer.GetService<IVirtualDataSourceManager<TShardingDbContext>>();
 
             var virtualDataSource = virtualDataSourceManager.GetVirtualDataSource(configId);
             virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
-            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false);
+            defaultDataSourceInitializer.InitConfigure(virtualDataSource, dataSourceName, connectionString, false, createDatabase, createTable);
         }
 
         /// <summary>
