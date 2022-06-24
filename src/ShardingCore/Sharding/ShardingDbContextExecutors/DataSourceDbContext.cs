@@ -17,6 +17,7 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
+using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingDbContextExecutors
@@ -28,25 +29,34 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext
+        where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private static readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger =
+            InternalLoggerFactory.CreateLogger<DataSourceDbContext<TShardingDbContext>>();
+
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
+
         /// <summary>
         /// 当前是否是默认的dbcontext 也就是不分片的dbcontext
         /// </summary>
         public bool IsDefault { get; }
+
         /// <summary>
         /// 当前同库有多少dbcontext了
         /// </summary>
         public int DbContextCount => _dataSourceDbContexts.Count;
+
         /// <summary>
         /// dbcontext 创建接口
         /// </summary>
         private readonly IDbContextCreator<TShardingDbContext> _dbContextCreator;
+
         /// <summary>
         /// 实际的链接字符串管理者 用来提供查询和插入dbcontext的创建链接的获取
         /// </summary>
         private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
+
         /// <summary>
         /// 当前的数据源是什么默认单数据源可以支持多数据源配置
         /// </summary>
@@ -56,6 +66,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// 数据源名称
         /// </summary>
         public string DataSourceName { get; }
+
         /// <summary>
         /// 数据源排序默认提交将未分片的数据库最先提交
         /// </summary>
@@ -66,21 +77,23 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// 是否开启了事务
         /// </summary>
         private bool _isBeginTransaction => _shardingShellDbContext.Database.CurrentTransaction != null;
+
         /// <summary>
         /// shell dbcontext最外面的壳
         /// </summary>
         private readonly DbContext _shardingShellDbContext;
+
         /// <summary>
         /// 数据库事务
         /// </summary>
-        private IDbContextTransaction _shardingContextTransaction => _shardingShellDbContext?.Database?.CurrentTransaction;
+        private IDbContextTransaction _shardingContextTransaction =>
+            _shardingShellDbContext?.Database?.CurrentTransaction;
 
-
-        private readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger;
         /// <summary>
         /// 同库下公用一个db context options
         /// </summary>
         private DbContextOptions<TShardingDbContext> _dbContextOptions;
+
         /// <summary>
         /// 是否触发了并发如果是的话就报错
         /// </summary>
@@ -108,12 +121,13 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingShellDbContext = shardingShellDbContext;
-            _virtualDataSource = (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingShellDbContext).GetVirtualDataSource();
+            _virtualDataSource =
+                (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingShellDbContext)
+                .GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
-            _logger = ShardingContainer.GetService<ILogger<DataSourceDbContext<TShardingDbContext>>>();
-
         }
+
         /// <summary>
         /// 创建共享的数据源配置用来做事务 不支持并发后期发现直接报错
         /// </summary>
@@ -124,12 +138,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 return _dbContextOptions;
             }
+
             //是否触发并发了
             var acquired = oneByOne.Start();
             if (!acquired)
             {
                 throw new ShardingCoreException("cant parallel create CreateShareDbContextOptionsBuilder");
             }
+
             try
             {
                 //先创建dbcontext option builder
@@ -168,7 +184,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 oneByOne.Stop();
             }
-
         }
 
         public static DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
@@ -193,10 +208,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
-                dbContext = _dbContextCreator.CreateDbContext(_shardingShellDbContext,CreateShareDbContextOptionsBuilder(), routeTail);
+                dbContext = _dbContextCreator.CreateDbContext(_shardingShellDbContext,
+                    CreateShareDbContextOptionsBuilder(), routeTail);
                 _dataSourceDbContexts.Add(cacheKey, dbContext);
                 ShardingDbTransaction();
             }
+
             return dbContext;
         }
 
@@ -208,6 +225,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 JoinCurrentTransaction();
             }
         }
+
         /// <summary>
         /// 加入到当前事务
         /// </summary>
@@ -246,6 +264,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
             }
         }
+
         /// <summary>
         /// 通知事务自动管理是否要清理还是开启还是加入事务
         /// </summary>
@@ -261,6 +280,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 JoinCurrentTransaction();
             }
         }
+
         /// <summary>
         /// 清理事务
         /// </summary>
@@ -288,15 +308,16 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             return i;
         }
+
         /// <summary>
         /// 异步提交
         /// </summary>
         /// <param name="acceptAllChangesOnSuccess"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-
             int i = 0;
             foreach (var dataSourceDbContext in _dataSourceDbContexts)
             {
@@ -305,6 +326,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             return i;
         }
+
         /// <summary>
         /// 获取当前的后缀数据库字典数据
         /// </summary>
@@ -313,6 +335,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             return _dataSourceDbContexts;
         }
+
         /// <summary>
         /// 回滚数据
         /// </summary>
@@ -329,6 +352,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 _logger.LogError(e, "rollback error.");
             }
         }
+
         /// <summary>
         /// 提交数据
         /// </summary>
@@ -349,7 +373,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 #if !EFCORE2
-
         public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -366,7 +389,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-        public async Task CommitAsync(int dataSourceCount, CancellationToken cancellationToken = new CancellationToken())
+        public async Task CommitAsync(int dataSourceCount, CancellationToken cancellationToken =
+ new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsDefault)
@@ -393,7 +417,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 #if !EFCORE2
-
         public async ValueTask DisposeAsync()
         {
             foreach (var dataSourceDbContext in _dataSourceDbContexts)

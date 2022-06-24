@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
+using ShardingCore.Logger;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
@@ -29,12 +30,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
     */
     public class DefaultShardingQueryExecutor : IShardingQueryExecutor
     {
-        private readonly ILogger<DefaultShardingQueryExecutor> _logger;
+        private static readonly ILogger<DefaultShardingQueryExecutor> _logger=InternalLoggerFactory.CreateLogger<DefaultShardingQueryExecutor>();
 
-        public DefaultShardingQueryExecutor(ILogger<DefaultShardingQueryExecutor> logger)
-        {
-            _logger = logger;
-        }
 
         public TResult Execute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {

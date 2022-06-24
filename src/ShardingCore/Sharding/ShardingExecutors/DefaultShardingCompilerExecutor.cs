@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Extensions;
+using ShardingCore.Logger;
 using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.ShardingExtractParameters;
@@ -17,15 +18,14 @@ namespace ShardingCore.Sharding.ShardingExecutors
     /// </summary>
     public class DefaultShardingCompilerExecutor: IShardingCompilerExecutor
     {
-        private readonly ILogger<DefaultShardingCompilerExecutor> _logger;
+        private static readonly ILogger<DefaultShardingCompilerExecutor> _logger=InternalLoggerFactory.CreateLogger<DefaultShardingCompilerExecutor>();
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
         private readonly IPrepareParser _prepareParser;
 
-        public DefaultShardingCompilerExecutor(ILogger<DefaultShardingCompilerExecutor> logger,
+        public DefaultShardingCompilerExecutor(
             IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory,IPrepareParser prepareParser)
         {
-            _logger = logger;
             _shardingTrackQueryExecutor = shardingTrackQueryExecutor;
             _queryCompilerContextFactory = queryCompilerContextFactory;
             _prepareParser = prepareParser;

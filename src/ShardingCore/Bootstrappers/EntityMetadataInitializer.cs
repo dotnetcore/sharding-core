@@ -19,6 +19,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
+using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 
 /*
@@ -36,6 +37,7 @@ namespace ShardingCore.Bootstrappers
     /// <typeparam name="TEntity"></typeparam>
     public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
     {
+        private static readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger=InternalLoggerFactory.CreateLogger<EntityMetadataInitializer<TShardingDbContext,TEntity>>();
         private const string QueryFilter = "QueryFilter";
         private readonly IEntityType _entityType;
         private readonly string _virtualTableName;
@@ -45,15 +47,13 @@ namespace ShardingCore.Bootstrappers
         private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _virtualDataSourceRouteManager;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger;
 
         public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams,
             IShardingEntityConfigOptions<TShardingDbContext> shardingEntityConfigOptions,
             IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
             IVirtualDataSourceRouteManager<TShardingDbContext> virtualDataSourceRouteManager,
             IVirtualTableManager<TShardingDbContext> virtualTableManager,
-            IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
-            ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> logger
+            IEntityMetadataManager<TShardingDbContext> entityMetadataManager
             )
         {
             _entityType = entityMetadataEnsureParams.EntityType;
@@ -64,7 +64,6 @@ namespace ShardingCore.Bootstrappers
             _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
-            _logger = logger;
         }
         /// <summary>
         /// 初始化

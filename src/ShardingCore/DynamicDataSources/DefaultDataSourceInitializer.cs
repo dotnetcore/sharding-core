@@ -16,27 +16,29 @@ using ShardingCore.TableCreator;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ShardingCore.Logger;
 
 namespace ShardingCore.DynamicDataSources
 {
     public class DataSourceInitializer<TShardingDbContext> : IDataSourceInitializer<TShardingDbContext>
         where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private static readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger =
+            InternalLoggerFactory.CreateLogger<DataSourceInitializer<TShardingDbContext>>();
+
         private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
         private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
         private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
-        private readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger;
 
         public DataSourceInitializer(
             IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
             IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
             IRouteTailFactory routeTailFactory, IVirtualTableManager<TShardingDbContext> virtualTableManager,
             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
-            IShardingTableCreator<TShardingDbContext> shardingTableCreator,
-            ILogger<DataSourceInitializer<TShardingDbContext>> logger)
+            IShardingTableCreator<TShardingDbContext> shardingTableCreator)
         {
             _entityConfigOptions = entityConfigOptions;
             _virtualDataSourceManager = virtualDataSourceManager;
@@ -44,7 +46,6 @@ namespace ShardingCore.DynamicDataSources
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
             _tableCreator = shardingTableCreator;
-            _logger = logger;
         }
 
         public void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName,

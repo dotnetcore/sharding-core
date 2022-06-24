@@ -62,7 +62,19 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 if (typeof(IOrderedQueryable).IsAssignableFrom(node.Type))
                 {
-                    var expression = (((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as MemberExpression);
+                    MemberExpression expression =null;
+                    var orderbody = ((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body;
+                    if(orderbody is MemberExpression orderMemberExpression)
+                    {
+                        expression = orderMemberExpression;
+                    } 
+                    else if (orderbody.NodeType == ExpressionType.Convert&&orderbody is UnaryExpression orderUnaryExpression)
+                    {
+                        if(orderUnaryExpression.Operand is MemberExpression orderMemberConvertExpression)
+                        {
+                            expression = orderMemberConvertExpression;
+                        }
+                    }
                     if (expression == null)
                         throw new NotSupportedException("sharding order not support ");
                     List<string> properties = new List<string>();
