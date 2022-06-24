@@ -16,7 +16,7 @@ namespace WebApplication1.Pages
         private readonly AbstaractShardingDbContext db;
 
         [BindProperty]
-        public TestModelKey NewModel { get; set; }
+        public string Key { get; set; }
 
         public CreateDbKeyModel(AbstaractShardingDbContext db)
         {
@@ -25,24 +25,22 @@ namespace WebApplication1.Pages
 
         public void OnGet()
         {
-            NewModel = new TestModelKey();
+            Key = "";
         }
 
         public IActionResult OnPost()
         {
-            NewModel.Id = Guid.NewGuid();
-            NewModel.CreationDate = DateTime.Now;
-            db.TestModelKeys.Add(NewModel);
+            db.TestModelKeys.Add(new TestModelKey { Key = Key });
             db.SaveChanges();
 
             // 读取并写入到配置
             var dblist = JsonFileHelper.Read<List<string>>(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName);
-            dblist.Add(NewModel.Key);
+            dblist.Add(Key);
             dblist.Sort();
             JsonFileHelper.Save(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName, dblist);
 
             // 动态新增数据源
-            DynamicShardingHelper.DynamicAppendDataSource<AbstaractShardingDbContext>("c1", NewModel.Key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{NewModel.Key};");
+            DynamicShardingHelper.DynamicAppendDataSource<AbstaractShardingDbContext>("c1", Key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{Key};");
 
             return RedirectToPage("DbKeyMan");
         }
