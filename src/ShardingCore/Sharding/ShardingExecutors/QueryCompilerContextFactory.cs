@@ -9,6 +9,7 @@ using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.Parsers.Abstractions;
@@ -47,8 +48,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
             var queryableCombine = GetQueryableCombine(queryCompilerContext);
             _logger.LogDebug($"queryable combine:{queryableCombine.GetType()}");
-            var dataSourceRouteRuleEngineFactory = (IDataSourceRouteRuleEngineFactory)ShardingContainer.GetService(typeof(IDataSourceRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-            var tableRouteRuleEngineFactory = (ITableRouteRuleEngineFactory)ShardingContainer.GetService(typeof(ITableRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
+            var dataSourceRouteRuleEngineFactory = (IDataSourceRouteRuleEngineFactory)ShardingRuntimeContext.GetInstance().GetService(typeof(IDataSourceRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
+            var tableRouteRuleEngineFactory = (ITableRouteRuleEngineFactory)ShardingRuntimeContext.GetInstance().GetService(typeof(ITableRouteRuleEngineFactory<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
             _logger.LogLazyDebug(() => $"queryable combine before:{queryCompilerContext.GetQueryExpression().ShardingPrint()}");
             var queryCombineResult = queryableCombine.Combine(queryCompilerContext);
             _logger.LogLazyDebug(() => $"queryable combine after:{queryCombineResult.GetCombineQueryable().ShardingPrint()}");

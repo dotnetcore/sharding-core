@@ -10,7 +10,7 @@ namespace ShardingCore.Jobs.Abstaractions
     * @Date: Wednesday, 06 January 2021 13:10:13
     * @Email: 326308290@qq.com
     */
-    internal interface IJobManager
+    public interface IJobManager
     {
         void AddJob(JobEntry  jobEntry);
         bool HasAnyJob();

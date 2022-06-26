@@ -107,10 +107,10 @@ namespace ShardingCore.Core.VirtualTables
             return _physicTables.TryAdd(physicTable, null);
         }
 
-        public string GetVirtualTableName()
-        {
-            return EntityMetadata.VirtualTableName;
-        }
+        // public string GetVirtualTableName()
+        // {
+        //     return EntityMetadata.VirtualTableName;
+        // }
 
         IVirtualTableRoute IVirtualTable.GetVirtualRoute()
         {

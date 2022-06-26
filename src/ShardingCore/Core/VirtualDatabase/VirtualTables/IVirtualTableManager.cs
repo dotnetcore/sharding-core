@@ -36,20 +36,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         IVirtualTable TryGetVirtualTable(Type shardingEntityType);
 
         /// <summary>
-        /// 获取虚拟表 get virtual table by actual table name
-        /// </summary>
-        /// <param name="virtualTableName"></param>
-        /// <returns></returns>
-        IVirtualTable GetVirtualTable(string virtualTableName);
-
-        /// <summary>
-        /// 尝试获取虚拟表没有返回null
-        /// </summary>
-        /// <param name="virtualTableName"></param>
-        /// <returns></returns>
-        IVirtualTable TryGetVirtualTable(string virtualTableName);
-
-        /// <summary>
         /// 获取所有的虚拟表 get all virtual table
         /// </summary>
         /// <returns></returns>

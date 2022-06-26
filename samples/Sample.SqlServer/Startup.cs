@@ -142,6 +142,8 @@ namespace Sample.SqlServer
             app.UseShardingCore();
             startNew.Stop();
             Console.WriteLine($"UseShardingCore:" + startNew.ElapsedMilliseconds + "ms");
+
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

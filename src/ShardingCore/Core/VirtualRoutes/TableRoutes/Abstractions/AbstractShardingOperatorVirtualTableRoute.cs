@@ -67,11 +67,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             var physicTables = allPhysicTables.Where(o => o.Tail== shardingKeyToTail).ToList();
             if (physicTables.IsEmpty())
             {
-                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all tails ->[{string.Join(",", allPhysicTables.Select(o=>o.FullName))}]");
+                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all tails ->[{string.Join(",", allPhysicTables.Select(o=>o.EntityType))}]");
             }
 
             if (physicTables.Count > 1)
-                throw new ShardingCoreException($"more than one route match table:{string.Join(",", physicTables.Select(o => $"[{o.FullName}]"))}");
+                throw new ShardingCoreException($"more than one route match table:{string.Join(",", physicTables.Select(o => $"[{o.EntityType}]"))}");
             return physicTables[0];
         }
 

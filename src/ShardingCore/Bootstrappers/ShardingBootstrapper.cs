@@ -20,15 +20,17 @@ namespace ShardingCore.Bootstrappers
     public class ShardingBootstrapper : IShardingBootstrapper
     {
         private readonly ILogger<ShardingBootstrapper> _logger;
+        private readonly IServiceProvider _internalServiceProvider;
         private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
+        private readonly IJobManager _jobManager;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
+        public ShardingBootstrapper(IServiceProvider internalServiceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors,IJobManager jobManager)
         {
-            ShardingContainer.SetServices(serviceProvider);
-            InternalLoggerFactory.DefaultFactory = serviceProvider.GetService<ILoggerFactory>();
             _logger = InternalLoggerFactory.DefaultFactory .CreateLogger<ShardingBootstrapper>();
+            _internalServiceProvider = internalServiceProvider;
             _dbContextTypeCollectors = dbContextTypeCollectors;
+            _jobManager = jobManager;
         }
         /// <summary>
         /// 启动
@@ -40,18 +42,17 @@ namespace ShardingCore.Bootstrappers
             _logger.LogDebug("sharding core starting......");
             foreach (var dbContextTypeCollector in _dbContextTypeCollectors)
             {
-                var instance = (IShardingDbContextBootstrapper)ShardingContainer.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(dbContextTypeCollector.ShardingDbContextType));
+                var instance = (IShardingDbContextBootstrapper)ActivatorUtilities.CreateInstance(_internalServiceProvider,typeof(ShardingDbContextBootstrapper<>).GetGenericType0(dbContextTypeCollector.ShardingDbContextType));
                 _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  start init......");
-                instance.Init();
+                instance.Initialize();
                 _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  complete init");
             }
 
-            var jobManager = ShardingContainer.GetService<IJobManager>();
-            if (jobManager != null && jobManager.HasAnyJob())
+            if (_jobManager != null && _jobManager.HasAnyJob())
             {
                 Task.Factory.StartNew(async () =>
                 {
-                    await ShardingContainer.GetService<JobRunnerService>().StartAsync();
+                    await _internalServiceProvider.GetRequiredService<JobRunnerService>().StartAsync();
                 }, TaskCreationOptions.LongRunning);
             }
         }

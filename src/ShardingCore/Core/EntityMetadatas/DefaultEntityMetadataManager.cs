@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.EntityMetadatas
@@ -71,6 +73,11 @@ namespace ShardingCore.Core.EntityMetadatas
         public bool IsSharding(Type entityType)
         {
             return _caches.ContainsKey(entityType);
+        }
+
+        public List<Type> GetAllShardingEntities()
+        {
+            return _caches.Keys.ToList();
         }
     }
 }

@@ -23,28 +23,29 @@ namespace ShardingCore.Core.PhysicTables
         public DefaultPhysicTable(IVirtualTable virtualTable, string tail)
         {
             VirtualTable = virtualTable;
-            OriginalName = virtualTable.GetVirtualTableName();
+            // OriginalName = virtualTable.GetVirtualTableName();
             Tail = tail;
             EntityMetadata = VirtualTable.EntityMetadata;
             EntityType = EntityMetadata.EntityType;
+            TableSeparator = EntityMetadata.TableSeparator;
         }
 
         /// <summary>
         /// 元数据对象
         /// </summary>
         public EntityMetadata EntityMetadata { get; }
-        /// <summary>
-        /// 全表名称
-        /// </summary>
-        public string FullName => $"{OriginalName}{TableSeparator}{Tail}";
-        /// <summary>
-        /// 原始表名
-        /// </summary>
-        public string OriginalName { get; }
+        // /// <summary>
+        // /// 全表名称
+        // /// </summary>
+        // public string FullName => $"{OriginalName}{TableSeparator}{Tail}";
+        // /// <summary>
+        // /// 原始表名
+        // /// </summary>
+        // public string OriginalName { get; }
         /// <summary>
         /// 分表的表名和后置的连接器默认为下划线"_" 可以为空
         /// </summary>
-        public string TableSeparator => EntityMetadata.TableSeparator;
+        public string TableSeparator { get; }
         /// <summary>
         /// 分表后缀
         /// </summary>
@@ -59,7 +60,7 @@ namespace ShardingCore.Core.PhysicTables
         public IVirtualTable VirtualTable { get; }
         protected bool Equals(DefaultPhysicTable other)
         {
-            return OriginalName == other.OriginalName && Tail == other.Tail && Equals(EntityType, other.EntityType);
+            return Tail == other.Tail && EntityType == other.EntityType;
         }
 
         public override bool Equals(object obj)
@@ -74,7 +75,7 @@ namespace ShardingCore.Core.PhysicTables
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(OriginalName, Tail, VirtualTable);
+            return HashCode.Combine(TableSeparator, Tail, VirtualTable);
         }
 #endif
 
@@ -84,7 +85,7 @@ namespace ShardingCore.Core.PhysicTables
         {
             unchecked
             {
-                var hashCode = (OriginalName != null ? OriginalName.GetHashCode() : 0);
+                var hashCode = (TableSeparator != null ? TableSeparator.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Tail != null ? Tail.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (VirtualTable != null ? VirtualTable.GetHashCode() : 0);
                 return hashCode;

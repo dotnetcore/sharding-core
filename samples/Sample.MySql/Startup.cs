@@ -89,6 +89,19 @@ namespace Sample.MySql
             }
 
             app.UseShardingCore();
+            
+            
+            using (var serviceScope = app.ApplicationServices.CreateScope())
+            {
+                var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            }
+
+            Console.WriteLine("------------------");
+            using (var serviceScope = app.ApplicationServices.CreateScope())
+            {
+                var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            }
+            Console.WriteLine("------------------");
             app.UseRouting();
 
             app.UseAuthorization();

@@ -48,8 +48,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             //}
 
 
-            EntityConfigOptions =
-                ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
+            EntityConfigOptions =ShardingRuntimeContext.GetInstance().GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
 
         }
         public virtual IPaginationConfiguration<TEntity> CreatePaginationConfiguration()

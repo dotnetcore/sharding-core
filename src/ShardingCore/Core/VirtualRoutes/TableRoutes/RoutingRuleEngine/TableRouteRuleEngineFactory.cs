@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.Abstractions;
 
@@ -31,14 +32,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        private TableRouteRuleContext CreateContext(IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
+        private TableRouteRuleContext CreateContext(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
-            return new TableRouteRuleContext(queryable,queryEntities);
+            return new TableRouteRuleContext(dataSourceRouteResult,queryable,queryEntities);
         }
-
-        public IEnumerable<TableRouteResult> Route(IQueryable queryable,Dictionary<Type,IQueryable> queryEntities)
+        public IEnumerable<TableRouteResult> Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
-            var ruleContext = CreateContext(queryable, queryEntities);
+            var ruleContext = CreateContext(dataSourceRouteResult,queryable, queryEntities);
             return Route(ruleContext);
         }
 

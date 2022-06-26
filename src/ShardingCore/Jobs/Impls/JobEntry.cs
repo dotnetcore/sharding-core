@@ -13,7 +13,7 @@ namespace ShardingCore.Jobs.Impls
 * @Date: Wednesday, 06 January 2021 13:13:23
 * @Email: 326308290@qq.com
 */
-    internal class JobEntry
+    public sealed class JobEntry
     {
         /// <summary>
         /// 保证多线程只有一个清理操作

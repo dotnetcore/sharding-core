@@ -17,12 +17,18 @@ namespace ShardingCore.EFCores.OptionsExtensions
 #if EFCORE6
     public class ShardingWrapOptionsExtension : IDbContextOptionsExtension
     {
+        public ShardingWrapOptionsExtension()
+        {
+            Console.WriteLine("ShardingWrapOptionsExtension ctor");
+        }
         public void ApplyServices(IServiceCollection services)
         {
+            Console.WriteLine("ShardingWrapOptionsExtension ApplyServices");
         }
 
         public void Validate(IDbContextOptions options)
         {
+            Console.WriteLine("ShardingWrapOptionsExtension Validate");
         }
 
 

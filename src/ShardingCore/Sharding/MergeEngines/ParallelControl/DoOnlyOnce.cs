@@ -17,6 +17,8 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControl
         
         public bool IsUnDo()
         {
+            if (Status == Did)
+                return false;
             return Interlocked.CompareExchange(ref Status, Did, UnDo) == UnDo;
         }
     }

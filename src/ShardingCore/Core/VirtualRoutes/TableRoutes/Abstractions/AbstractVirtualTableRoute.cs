@@ -27,8 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                 throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
 
-            EntityConfigOptions =
-                ShardingContainer.GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
+            EntityConfigOptions =ShardingRuntimeContext.GetInstance().GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
         }
 
 

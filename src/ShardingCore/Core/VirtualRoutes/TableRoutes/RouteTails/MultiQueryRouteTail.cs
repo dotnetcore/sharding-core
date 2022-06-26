@@ -28,7 +28,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
             _tableRouteResult = tableRouteResult;
             _modelCacheKey = RANDOM_MODEL_CACHE_KEY+Guid.NewGuid().ToString("n");
             _entityTypes = tableRouteResult.ReplaceTables.Select(o=>o.EntityType).ToHashSet();
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(tableRouteResult.ShardingDbContextType));
+            var entityMetadataManager = (IEntityMetadataManager)ShardingRuntimeContext.GetInstance().GetService(typeof(IEntityMetadataManager<>).GetGenericType0(tableRouteResult.ShardingDbContextType));
             _isShardingTableQuery = _entityTypes.Any(o => entityMetadataManager.IsShardingTable(o));
         }
         public string GetRouteTailIdentity()

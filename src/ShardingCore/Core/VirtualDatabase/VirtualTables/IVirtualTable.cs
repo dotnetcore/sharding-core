@@ -59,11 +59,11 @@ namespace ShardingCore.Core.VirtualTables
         /// <param name="physicTable"></param>
         /// <returns>添加成功</returns>
         bool AddPhysicTable(IPhysicTable physicTable);
-        /// <summary>
-        /// 获取原始表名 get original table name
-        /// </summary>
-        /// <returns></returns>
-        string GetVirtualTableName();
+        // /// <summary>
+        // /// 获取原始表名 get original table name
+        // /// </summary>
+        // /// <returns></returns>
+        // string GetVirtualTableName();
         /// <summary>
         /// 获取当前虚拟表的路由 get this virtual table route
         /// </summary>

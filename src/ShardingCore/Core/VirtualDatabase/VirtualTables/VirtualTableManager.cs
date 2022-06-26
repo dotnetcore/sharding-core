@@ -29,7 +29,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         /// {entityType,virtualTableType}
         /// </summary>
         private readonly ConcurrentDictionary<Type, IVirtualTable> _shardingVirtualTables = new ConcurrentDictionary<Type, IVirtualTable>();
-        private readonly ConcurrentDictionary<string, IVirtualTable> _shardingVirtualTaleVirtualTables = new ConcurrentDictionary<string, IVirtualTable>();
         public VirtualTableManager(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
@@ -38,7 +37,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         public bool AddVirtualTable(IVirtualTable virtualTable)
         {
             var result = _shardingVirtualTables.TryAdd(virtualTable.EntityMetadata.EntityType, virtualTable);
-            _shardingVirtualTaleVirtualTables.TryAdd(virtualTable.GetVirtualTableName(), virtualTable);
             return result;
         }
         /// <summary>
@@ -63,21 +61,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
                 return null;
             return virtualTable;
         }
-
-        public IVirtualTable GetVirtualTable(string virtualTableName)
-        {
-            if (!_shardingVirtualTaleVirtualTables.TryGetValue(virtualTableName, out var virtualTable))
-                throw new ShardingCoreException($"virtual table not found virtual table name: {virtualTableName}");
-            return virtualTable;
-        }
-
-        public IVirtualTable TryGetVirtualTable(string virtualTableName)
-        {
-            if (!_shardingVirtualTaleVirtualTables.TryGetValue(virtualTableName, out var virtualTable))
-                return null;
-            return virtualTable;
-        }
-
         public ISet<IVirtualTable> GetAllVirtualTables()
         {
             return _shardingVirtualTables.Select(o => o.Value).ToHashSet();

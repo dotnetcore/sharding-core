@@ -19,14 +19,14 @@ namespace ShardingCore.Core.PhysicTables
         /// 对象信息
         /// </summary>
         EntityMetadata EntityMetadata { get; }
-        /// <summary>
-        /// 表全称
-        /// </summary>
-        string FullName { get; }
-        /// <summary>
-        /// 原表名称
-        /// </summary>
-        string OriginalName { get; }
+        // /// <summary>
+        // /// 表全称
+        // /// </summary>
+        // string FullName { get; }
+        // /// <summary>
+        // /// 原表名称
+        // /// </summary>
+        // string OriginalName { get; }
         /// <summary>
         /// 尾巴前缀 tail prefix
         /// </summary>

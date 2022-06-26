@@ -13,14 +13,10 @@ namespace ShardingCore.Core.EntityMetadatas
     /// </summary>
     public class EntityMetadata
     {
-        public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties,LambdaExpression queryFilterExpression)
+        public EntityMetadata(Type entityType, Type shardingDbContextType)
         {
             EntityType = entityType;
-            VirtualTableName = virtualTableName;
             ShardingDbContextType = shardingDbContextType;
-            PrimaryKeyProperties = primaryKeyProperties;
-            QueryFilterExpression = queryFilterExpression;
-            IsSingleKey= PrimaryKeyProperties.Count == 1;
             ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
             ShardingTableProperties = new Dictionary<string, PropertyInfo>();
         }
@@ -28,26 +24,9 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表类型 sharding entity type
         /// </summary>
         public Type EntityType { get; }
-        /// <summary>
-        /// 分表的原表名 original table name in db exclude tail
-        /// </summary>
-        public string VirtualTableName { get; }
+ 
 
         public Type ShardingDbContextType { get; }
-
-        /// <summary>
-        /// 主键
-        /// </summary>
-        public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; }
-        /**
-         * efcore query filter
-         */
-        public LambdaExpression QueryFilterExpression { get; }
-
-        /// <summary>
-        /// 是否单主键
-        /// </summary>
-        public bool IsSingleKey { get; }
 
         /// <summary>
         /// 是否多数据源
@@ -179,7 +158,7 @@ namespace ShardingCore.Core.EntityMetadatas
         /// </summary>
         public void CheckGenericMetadata()
         {
-            if (null == EntityType || null == PrimaryKeyProperties || null == VirtualTableName ||
+            if (null == EntityType ||
                 (!IsMultiTableMapping && !IsMultiDataSourceMapping))
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure");
