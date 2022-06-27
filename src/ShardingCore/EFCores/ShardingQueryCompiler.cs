@@ -23,11 +23,11 @@ namespace ShardingCore.EFCores
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
 
-        public ShardingQueryCompiler(ICurrentDbContext currentContext)
+        public ShardingQueryCompiler(ICurrentDbContext currentContext,IShardingRuntimeContext shardingRuntimeContext)
         {
             _shardingDbContext = currentContext.Context as IShardingDbContext ??
                                  throw new ShardingCoreException("db context operator is not IShardingDbContext");
-            _shardingCompilerExecutor = ShardingRuntimeContext.GetInstance().GetService<IShardingCompilerExecutor>();
+            _shardingCompilerExecutor = shardingRuntimeContext.GetService<IShardingCompilerExecutor>();
         }
 
         public TResult Execute<TResult>(Expression query)

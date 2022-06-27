@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core;
 
 namespace ShardingCore.EFCores.OptionsExtensions
 {
@@ -17,12 +18,16 @@ namespace ShardingCore.EFCores.OptionsExtensions
 #if EFCORE6
     public class ShardingWrapOptionsExtension : IDbContextOptionsExtension
     {
-        public ShardingWrapOptionsExtension()
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+
+        public ShardingWrapOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
             Console.WriteLine("ShardingWrapOptionsExtension ctor");
         }
         public void ApplyServices(IServiceCollection services)
         {
+            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
             Console.WriteLine("ShardingWrapOptionsExtension ApplyServices");
         }
 
