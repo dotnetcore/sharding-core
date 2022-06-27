@@ -13,7 +13,4 @@ namespace ShardingCore.TableExists.Abstractions
         ISet<string> GetExistTables(string dataSourceName);
         ISet<string> GetExistTables(IShardingDbContext shardingDbContext, string dataSourceName);
     }
-    public interface ITableEnsureManager<TShardingDbContext>: ITableEnsureManager where TShardingDbContext : DbContext, IShardingDbContext
-    {
-    }
 }

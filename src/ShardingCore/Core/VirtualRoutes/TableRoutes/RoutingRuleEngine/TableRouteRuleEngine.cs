@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.ShardingDatabaseProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
@@ -19,15 +20,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:51:59
 * @Email: 326308290@qq.com
 */
-    public class TableRouteRuleEngine<TShardingDbContext> : ITableRouteRuleEngine<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+    public class TableRouteRuleEngine : ITableRouteRuleEngine
     {
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IShardingDatabaseProvider _shardingDatabaseProvider;
 
-        public TableRouteRuleEngine(IVirtualTableManager<TShardingDbContext> virtualTableManager,IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public TableRouteRuleEngine(IVirtualTableManager virtualTableManager,IEntityMetadataManager entityMetadataManager,IShardingDatabaseProvider shardingDatabaseProvider)
         {
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
+            _shardingDatabaseProvider = shardingDatabaseProvider;
         }
 
         public IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext)
@@ -57,7 +60,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                 }
             }
 
-            return routeMaps.Select(o => o.Value).Cartesian().Select(o => new TableRouteResult(o,typeof(TShardingDbContext)));
+            return routeMaps.Select(o => o.Value).Cartesian().Select(o => new TableRouteResult(o,_shardingDatabaseProvider.GetShardingDbContextType()));
         }
     }
 }

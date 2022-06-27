@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
@@ -30,12 +31,14 @@ namespace ShardingCore.EFCores
         where TEntity : class
     {
         private readonly IShardingDbContext _context;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
 #if EFCORE5 || EFCORE6
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
             _context = (IShardingDbContext)context;
+            _shardingRuntimeContext=context.GetService<IShardingRuntimeContext>();
         }
 #endif
 #if EFCORE2 || EFCORE3
@@ -68,9 +71,7 @@ namespace ShardingCore.EFCores
             {
                 if (null == _virtualTableManager)
                 {
-                    _virtualTableManager =
-                        (IVirtualTableManager) ShardingContainer.GetService(
-                            typeof(IVirtualTableManager<>).GetGenericType0(_context.GetType()));
+                    _virtualTableManager = _shardingRuntimeContext.GetVirtualTableManager();
                 }
 
                 return _virtualTableManager;
@@ -85,9 +86,7 @@ namespace ShardingCore.EFCores
             {
                 if (null == _entityMetadataManager)
                 {
-                    _entityMetadataManager =
-                        (IEntityMetadataManager) ShardingContainer.GetService(
-                            typeof(IEntityMetadataManager<>).GetGenericType0(_context.GetType()));
+                    _entityMetadataManager =_shardingRuntimeContext.GetEntityMetadataManager();
                 }
 
                 return _entityMetadataManager;
@@ -399,24 +398,30 @@ namespace ShardingCore.EFCores
             if (keyValues.Length == 1)
             {
                 var entityMetadata = EntityMetadataManager.TryGet(typeof(TEntity));
+               
                 //单key字段
-                if (null != entityMetadata&& entityMetadata.IsSingleKey)
-                {
-                    var isShardingDataSource = entityMetadata.IsShardingDataSource();
-                    var shardingDataSourceFieldIsKey = entityMetadata.ShardingDataSourceFieldIsKey();
-                    if (isShardingDataSource && !shardingDataSourceFieldIsKey)
-                        return null;
-                    var isShardingTable = entityMetadata.IsShardingTable();
-                    var shardingTableFieldIsKey = entityMetadata.ShardingTableFieldIsKey();
-                    if (isShardingTable && !shardingTableFieldIsKey)
-                        return null;
-                    var primaryKeyValue = keyValues[0];
-                    if (primaryKeyValue != null)
+                if (null != entityMetadata)
+                { 
+                    var shardingRuntimeModel = _shardingRuntimeContext.GetOrCreateShardingRuntimeModel((DbContext)_context);
+                    var shardingEntityType = shardingRuntimeModel.GetShardingEntityType(typeof(TEntity));
+                    if(shardingEntityType!=null&&shardingEntityType.IsSingleKey)
                     {
-                        var dataSourceName = GetDataSourceName(primaryKeyValue);
-                        var tableTail = VirtualTableManager.GetTableTail<TEntity>(primaryKeyValue);
-                        var routeTail = ShardingContainer.GetService<IRouteTailFactory>().Create(tableTail);
-                        return _context.GetDbContext(dataSourceName, false, routeTail);
+                        var isShardingDataSource = entityMetadata.IsShardingDataSource();
+                        var shardingDataSourceFieldIsKey = entityMetadata.ShardingDataSourceFieldIsKey();
+                        if (isShardingDataSource && !shardingDataSourceFieldIsKey)
+                            return null;
+                        var isShardingTable = entityMetadata.IsShardingTable();
+                        var shardingTableFieldIsKey = entityMetadata.ShardingTableFieldIsKey();
+                        if (isShardingTable && !shardingTableFieldIsKey)
+                            return null;
+                        var primaryKeyValue = keyValues[0];
+                        if (primaryKeyValue != null)
+                        {
+                            var dataSourceName = GetDataSourceName(primaryKeyValue);
+                            var tableTail = VirtualTableManager.GetTableTail<TEntity>(primaryKeyValue);
+                            var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);;
+                            return _context.GetDbContext(dataSourceName, false, routeTail);
+                        }
                     }
                 }
             }

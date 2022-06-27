@@ -21,15 +21,15 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
     /// <summary>
     /// 同一个数据库下的虚拟表管理者
     /// </summary>
-    public class VirtualTableManager<TShardingDbContext> : IVirtualTableManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualTableManager : IVirtualTableManager
     {
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
 
         /// <summary>
         /// {entityType,virtualTableType}
         /// </summary>
         private readonly ConcurrentDictionary<Type, IVirtualTable> _shardingVirtualTables = new ConcurrentDictionary<Type, IVirtualTable>();
-        public VirtualTableManager(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public VirtualTableManager(IEntityMetadataManager entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
         }

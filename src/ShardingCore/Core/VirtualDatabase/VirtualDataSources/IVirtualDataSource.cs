@@ -129,12 +129,4 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         IDictionary<string, string> GetDataSources();
     }
-    /// <summary>
-    /// 虚拟数据源 连接所有的实际数据源
-    /// </summary>
-    public interface IVirtualDataSource<TShardingDbContext> : IVirtualDataSource
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-        IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity:class;
-    }
 }

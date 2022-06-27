@@ -19,7 +19,4 @@ namespace ShardingCore.Core.TrackerManagers
         bool EntityUseTrack(Type entityType);
         bool IsDbContextModel(Type entityType);
     }
-    public interface ITrackerManager<TShardingDbContext>: ITrackerManager where TShardingDbContext:DbContext,IShardingDbContext
-    {
-    }
 }

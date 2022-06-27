@@ -18,11 +18,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     /// <summary>
     /// 表路由规则引擎工厂
     /// </summary>
-    public class TableRouteRuleEngineFactory<TShardingDbContext> : ITableRouteRuleEngineFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class TableRouteRuleEngineFactory : ITableRouteRuleEngineFactory
     {
-        private readonly ITableRouteRuleEngine<TShardingDbContext> _tableRouteRuleEngine;
+        private readonly ITableRouteRuleEngine _tableRouteRuleEngine;
 
-        public TableRouteRuleEngineFactory(ITableRouteRuleEngine<TShardingDbContext> tableRouteRuleEngine)
+        public TableRouteRuleEngineFactory(ITableRouteRuleEngine tableRouteRuleEngine)
         {
             _tableRouteRuleEngine = tableRouteRuleEngine;
         }

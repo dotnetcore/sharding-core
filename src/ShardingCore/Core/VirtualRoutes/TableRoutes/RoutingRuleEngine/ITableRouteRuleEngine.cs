@@ -12,8 +12,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Email: 326308290@qq.com
 */
 
-    public interface ITableRouteRuleEngine<TShardingDbContext> 
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public interface ITableRouteRuleEngine
     {
         IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext);
     }

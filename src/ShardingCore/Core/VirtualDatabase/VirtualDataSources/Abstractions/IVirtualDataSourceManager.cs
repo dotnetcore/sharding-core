@@ -25,16 +25,8 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <param name="configId"></param>
         /// <returns></returns>
         VirtualDataSourceScope CreateScope(string configId);
-
-    }
-
-    public interface IVirtualDataSourceManager<TShardingDbContext> : IVirtualDataSourceManager
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-        IVirtualDataSource<TShardingDbContext> GetCurrentVirtualDataSource();
-        IVirtualDataSource<TShardingDbContext> GetVirtualDataSource(string configId);
-        List<IVirtualDataSource<TShardingDbContext>> GetAllVirtualDataSources();
-        bool AddVirtualDataSource(IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams);
+        bool AddVirtualDataSource(IVirtualDataSourceConfigurationParams configurationParams);
         void SetDefaultIfMultiConfiguration();
+
     }
 }

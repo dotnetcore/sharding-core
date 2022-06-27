@@ -16,18 +16,18 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
-    public class VirtualDataSourceManager<TShardingDbContext> : IVirtualDataSourceManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualDataSourceManager : IVirtualDataSourceManager 
     {
-        private readonly IShardingConfigurationOptions<TShardingDbContext> _options;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _virtualDataSourceRouteManager;
+        private readonly IShardingConfigurationOptions _options;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
         private readonly IVirtualDataSourceAccessor _virtualDataSourceAccessor;
 
         private readonly ConcurrentDictionary<string, IVirtualDataSource> _virtualDataSources = new();
 
         private string _defaultConfigId;
         private IVirtualDataSource _defaultVirtualDataSource;
-        public VirtualDataSourceManager(IServiceProvider serviceProvider, IShardingConfigurationOptions<TShardingDbContext> options, IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IVirtualDataSourceRouteManager<TShardingDbContext> virtualDataSourceRouteManager, IVirtualDataSourceAccessor virtualDataSourceAccessor)
+        public VirtualDataSourceManager(IServiceProvider serviceProvider, IShardingConfigurationOptions options, IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager virtualDataSourceRouteManager, IVirtualDataSourceAccessor virtualDataSourceAccessor)
         {
 
             _options = options;
@@ -37,19 +37,19 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (allShardingGlobalConfigOptions.IsEmpty())
                 throw new ArgumentException($"sharding virtual data source is empty");
             _virtualDataSourceAccessor = virtualDataSourceAccessor;
-            if (options is ShardingMultiConfigurationOptions<TShardingDbContext> shardingMultiConfigurationOptions)
+            if (options is ShardingMultiConfigurationOptions shardingMultiConfigurationOptions)
             {
                 IsMultiShardingConfiguration = true;
                 ShardingConfigurationStrategy = shardingMultiConfigurationOptions.ShardingConfigurationStrategy;
             }
-            else if (options is ShardingSingleConfigurationOptions<TShardingDbContext> shardingSingleConfigurationOptions)
+            else if (options is ShardingSingleConfigurationOptions shardingSingleConfigurationOptions)
             {
                 IsMultiShardingConfiguration = false;
                 ShardingConfigurationStrategy = shardingSingleConfigurationOptions.ShardingConfigurationStrategy;
             }
             foreach (var shardingGlobalConfigOption in allShardingGlobalConfigOptions)
             {
-                var simpleVirtualDataSourceConfigurationParams = new SimpleVirtualDataSourceConfigurationParams<TShardingDbContext>(serviceProvider, shardingGlobalConfigOption);
+                var simpleVirtualDataSourceConfigurationParams = new SimpleVirtualDataSourceConfigurationParams(serviceProvider, shardingGlobalConfigOption);
                 AddVirtualDataSource(simpleVirtualDataSourceConfigurationParams);
             }
             if (!IsMultiShardingConfiguration)
@@ -92,12 +92,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                         $"unknown {nameof(ShardingConfigurationStrategyEnum)}:[{ShardingConfigurationStrategy}]");
             }
         }
-
-        IVirtualDataSource<TShardingDbContext> IVirtualDataSourceManager<TShardingDbContext>.GetVirtualDataSource(string configId)
-        {
-            return (IVirtualDataSource<TShardingDbContext>)GetVirtualDataSource(configId);
-        }
-
         public IVirtualDataSource GetVirtualDataSource(string configId)
         {
             var hasValue = _virtualDataSources.TryGetValue(configId, out var virtualDataSource);
@@ -116,21 +110,16 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             }
         }
 
-        List<IVirtualDataSource<TShardingDbContext>> IVirtualDataSourceManager<TShardingDbContext>.GetAllVirtualDataSources()
-        {
-            return GetAllVirtualDataSources().Select(o => (IVirtualDataSource<TShardingDbContext>)o).ToList();
-        }
-
         public bool ContansConfigId(string configId)
         {
             return _virtualDataSources.ContainsKey(configId);
         }
 
-        public bool AddVirtualDataSource(IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams)
+        public bool AddVirtualDataSource(IVirtualDataSourceConfigurationParams configurationParams)
         {
             if (!IsMultiShardingConfiguration&&_virtualDataSources.IsNotEmpty())
                 throw new NotSupportedException("not support multi sharding configuration");
-            var dataSource = new VirtualDataSource<TShardingDbContext>(_entityMetadataManager, _virtualDataSourceRouteManager, configurationParams);
+            var dataSource = new VirtualDataSource(_entityMetadataManager, _virtualDataSourceRouteManager, configurationParams);
             dataSource.CheckVirtualDataSource();
             return _virtualDataSources.TryAdd(dataSource.ConfigId, dataSource);
         }
@@ -147,12 +136,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 }
             }
         }
-
-        IVirtualDataSource<TShardingDbContext> IVirtualDataSourceManager<TShardingDbContext>.GetCurrentVirtualDataSource()
-        {
-            return (IVirtualDataSource<TShardingDbContext>)GetCurrentVirtualDataSource();
-        }
-
         public List<IVirtualDataSource> GetAllVirtualDataSources()
         {
             if (!IsMultiShardingConfiguration)

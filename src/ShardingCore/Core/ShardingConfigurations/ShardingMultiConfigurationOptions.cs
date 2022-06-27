@@ -8,14 +8,14 @@ using System.Linq;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingMultiConfigurationOptions<TShardingDbContext> : IShardingConfigurationOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingMultiConfigurationOptions : IShardingConfigurationOptions
     {
         public ShardingConfigurationStrategyEnum ShardingConfigurationStrategy { get; set; } =
             ShardingConfigurationStrategyEnum.ThrowIfNull;
 
-        private Dictionary<string, ShardingConfigOptions<TShardingDbContext>> _shardingGlobalConfigOptions = new ();
+        private Dictionary<string, ShardingConfigOptions> _shardingGlobalConfigOptions = new ();
 
-        public void AddShardingGlobalConfigOptions(ShardingConfigOptions<TShardingDbContext> shardingConfigOptions)
+        public void AddShardingGlobalConfigOptions(ShardingConfigOptions shardingConfigOptions)
         {
             if (_shardingGlobalConfigOptions.ContainsKey(shardingConfigOptions.ConfigId))
                 throw new ShardingCoreInvalidOperationException($"repeat add config id:[{shardingConfigOptions.ConfigId}]");
@@ -23,7 +23,7 @@ namespace ShardingCore.Core.ShardingConfigurations
             _shardingGlobalConfigOptions.Add(shardingConfigOptions.ConfigId, shardingConfigOptions);
         }
 
-        public ShardingConfigOptions<TShardingDbContext>[] GetAllShardingGlobalConfigOptions()
+        public ShardingConfigOptions[] GetAllShardingGlobalConfigOptions()
         {
             return _shardingGlobalConfigOptions.Values.ToArray();
         }

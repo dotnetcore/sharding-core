@@ -17,11 +17,10 @@ using ShardingCore.Core.ShardingConfigurations.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
-    public class SimpleVirtualDataSourceConfigurationParams<TShardingDbContext>: AbstractVirtualDataSourceConfigurationParams<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class SimpleVirtualDataSourceConfigurationParams: AbstractVirtualDataSourceConfigurationParams
     {
-        private readonly ShardingConfigOptions<TShardingDbContext> _options;
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _shardingEntityConfigOptions;
+        private readonly ShardingConfigOptions _options;
+        private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
         public override string ConfigId { get; }
         public override int Priority { get; }
         public override int MaxQueryConnectionsLimit { get; }
@@ -37,9 +36,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override IShardingComparer ShardingComparer { get; }
         public override ITableEnsureManager TableEnsureManager { get; }
 
-        public SimpleVirtualDataSourceConfigurationParams(IServiceProvider serviceProvider,ShardingConfigOptions<TShardingDbContext> options)
+        public SimpleVirtualDataSourceConfigurationParams(IServiceProvider serviceProvider,ShardingConfigOptions options)
         {
-            _shardingEntityConfigOptions = serviceProvider.GetService<IShardingEntityConfigOptions<TShardingDbContext>>();
+            _shardingEntityConfigOptions = serviceProvider.GetService<IShardingEntityConfigOptions>();
             _options = options;
             ConfigId = options.ConfigId;
             Priority = options.Priority;
@@ -51,7 +50,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             ShardingComparer = options.ReplaceShardingComparerFactory?.Invoke(serviceProvider) ??
                                new CSharpLanguageShardingComparer();
             TableEnsureManager = options.TableEnsureManagerFactory?.Invoke(serviceProvider) ??
-                                 new EmptyTableEnsureManager<TShardingDbContext>();
+                                 new EmptyTableEnsureManager();
             if (options.ShardingReadWriteSeparationOptions != null)
             {
                 if (options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure != null)

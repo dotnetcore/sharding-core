@@ -11,7 +11,7 @@ using System.Data.Common;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingConfigOptions
     {
         /// <summary>
         /// 配置id,如果是单配置可以用guid代替,如果是多配置该属性表示每个配置的id

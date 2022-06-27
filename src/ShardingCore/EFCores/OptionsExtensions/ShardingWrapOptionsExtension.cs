@@ -23,17 +23,14 @@ namespace ShardingCore.EFCores.OptionsExtensions
         public ShardingWrapOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
-            Console.WriteLine("ShardingWrapOptionsExtension ctor");
         }
         public void ApplyServices(IServiceCollection services)
         {
             services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
-            Console.WriteLine("ShardingWrapOptionsExtension ApplyServices");
         }
 
         public void Validate(IDbContextOptions options)
         {
-            Console.WriteLine("ShardingWrapOptionsExtension Validate");
         }
 
 

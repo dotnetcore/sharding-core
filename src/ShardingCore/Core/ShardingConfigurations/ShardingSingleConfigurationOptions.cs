@@ -6,21 +6,21 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingSingleConfigurationOptions<TShardingDbContext> : IShardingConfigurationOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingSingleConfigurationOptions : IShardingConfigurationOptions
     {
 
-        private ShardingConfigOptions<TShardingDbContext> _shardingConfigOptions;
+        private ShardingConfigOptions _shardingConfigOptions;
         public ShardingConfigurationStrategyEnum ShardingConfigurationStrategy { get; set; } =
             ShardingConfigurationStrategyEnum.ThrowIfNull;
 
-        public void AddShardingGlobalConfigOptions(ShardingConfigOptions<TShardingDbContext> shardingConfigOptions)
+        public void AddShardingGlobalConfigOptions(ShardingConfigOptions shardingConfigOptions)
         {
             if (_shardingConfigOptions != null)
-                throw new ShardingCoreInvalidOperationException($"repeat add {nameof(ShardingConfigOptions<TShardingDbContext>)}");
+                throw new ShardingCoreInvalidOperationException($"repeat add {nameof(ShardingConfigOptions)}");
             _shardingConfigOptions= shardingConfigOptions;
         }
 
-        public ShardingConfigOptions<TShardingDbContext>[] GetAllShardingGlobalConfigOptions()
+        public ShardingConfigOptions[] GetAllShardingGlobalConfigOptions()
         {
             return new[] { _shardingConfigOptions };
         }

@@ -3,10 +3,10 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations.Abstractions
 {
-    public interface IShardingConfigurationOptions<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+    public interface IShardingConfigurationOptions
     {
-        public void AddShardingGlobalConfigOptions(ShardingConfigOptions<TShardingDbContext> shardingConfigOptions);
+        public void AddShardingGlobalConfigOptions(ShardingConfigOptions shardingConfigOptions);
 
-        public ShardingConfigOptions<TShardingDbContext>[] GetAllShardingGlobalConfigOptions();
+        public ShardingConfigOptions[] GetAllShardingGlobalConfigOptions();
     }
 }

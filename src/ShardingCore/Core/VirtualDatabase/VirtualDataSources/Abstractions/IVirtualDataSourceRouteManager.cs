@@ -27,11 +27,4 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <exception cref="ShardingCoreInvalidOperationException">对象未配置分库</exception>
         bool AddVirtualDataSourceRoute(IVirtualDataSourceRoute virtualDataSourceRoute);
     }
-
-    public interface IVirtualDataSourceRouteManager<TShardingDbContext> : IVirtualDataSourceRouteManager
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-        IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity:class;
-
-    }
 }

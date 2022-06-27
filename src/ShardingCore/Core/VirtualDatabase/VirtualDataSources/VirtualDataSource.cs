@@ -28,13 +28,13 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     * @Date: Friday, 05 February 2021 15:21:04
     * @Email: 326308290@qq.com
     */
-    public class VirtualDataSource<TShardingDbContext> : IVirtualDataSource<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualDataSource : IVirtualDataSource
     {
         public IVirtualDataSourceConfigurationParams ConfigurationParams { get; }
         public IConnectionStringManager ConnectionStringManager { get; }
 
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _dataSourceRouteManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IVirtualDataSourceRouteManager _dataSourceRouteManager;
 
         private readonly IPhysicDataSourcePool _physicDataSourcePool;
 
@@ -44,7 +44,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public string DefaultConnectionString { get; private set; }
         public bool UseReadWriteSeparation { get; }
 
-        public VirtualDataSource(IEntityMetadataManager<TShardingDbContext> entityMetadataManager, IVirtualDataSourceRouteManager<TShardingDbContext> dataSourceRouteManager, IVirtualDataSourceConfigurationParams<TShardingDbContext> configurationParams)
+        public VirtualDataSource(IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager dataSourceRouteManager, IVirtualDataSourceConfigurationParams configurationParams)
         {
             Check.NotNull(configurationParams, nameof(configurationParams));
             Check.NotNull(configurationParams.ExtraDataSources, nameof(configurationParams.ExtraDataSources));
@@ -97,11 +97,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
             return _dataSourceRouteManager.GetRoute(entityType);
-        }
-
-        public IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity : class
-        {
-            return _dataSourceRouteManager.GetRoute<TEntity>();
         }
 
         public List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig)
@@ -227,7 +222,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder);
-            doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            doUseDbContextOptionsBuilder.UseInnerDbContextSharding();
             ConfigurationParams.UseExecutorDbContextOptionBuilder(dbContextOptionsBuilder);
             return doUseDbContextOptionsBuilder;
         }
@@ -236,7 +231,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             var doUseDbContextOptionsBuilder = ConfigurationParams.UseDbContextOptionsBuilder(dbConnection, dbContextOptionsBuilder);
-            doUseDbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            doUseDbContextOptionsBuilder.UseInnerDbContextSharding();
             ConfigurationParams.UseExecutorDbContextOptionBuilder(dbContextOptionsBuilder);
             return doUseDbContextOptionsBuilder;
         }

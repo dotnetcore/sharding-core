@@ -18,8 +18,7 @@ using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
-    public abstract class AbstractVirtualDataSourceConfigurationParams<TShardingDbContext>:IVirtualDataSourceConfigurationParams<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public abstract class AbstractVirtualDataSourceConfigurationParams:IVirtualDataSourceConfigurationParams
     {
         public abstract string ConfigId { get; }
         public abstract int Priority { get; }
@@ -36,7 +35,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
 
         public virtual ITableEnsureManager TableEnsureManager { get; } =
-            new EmptyTableEnsureManager<TShardingDbContext>();
+            new EmptyTableEnsureManager();
 
 
 

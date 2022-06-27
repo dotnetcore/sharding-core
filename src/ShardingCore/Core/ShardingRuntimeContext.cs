@@ -22,12 +22,14 @@ namespace ShardingCore.Core
         private object INIT_LOCK = new object();
         private IServiceCollection _serviceMap = new ServiceCollection();
 
-        private IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
         private IServiceProvider _applicationServiceProvider;
 
 
         private ShardingRuntimeContext()
         {
+            _serviceProvider = _serviceMap.BuildServiceProvider();
+            _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
         }
 
         private static readonly ShardingRuntimeContext _instance = new ShardingRuntimeContext();

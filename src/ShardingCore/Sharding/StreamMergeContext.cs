@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 
 
@@ -81,7 +82,7 @@ namespace ShardingCore.Sharding
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult,
-            IRouteTailFactory routeTailFactory)
+            IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingEntityConfigOptions shardingEntityConfigOptions)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
             ParseResult = parseResult;
@@ -89,8 +90,8 @@ namespace ShardingCore.Sharding
             OptimizeResult = optimizeResult;
             _routeTailFactory = routeTailFactory;
             QueryEntities= MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
-            _trackerManager = ShardingContainer.GetTrackerManager(mergeQueryCompilerContext.GetShardingDbContextType());
-            _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
+            _trackerManager =trackerManager;
+            _shardingEntityConfigOptions = shardingEntityConfigOptions;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             Orders = parseResult.GetOrderByContext().PropertyOrders.ToArray();
             Skip = parseResult.GetPaginationContext().Skip;

@@ -89,10 +89,4 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// <returns></returns>
         bool UseReadWriteSeparation();
     }
-
-    public interface IVirtualDataSourceConfigurationParams<TShardingDbContext> : IVirtualDataSourceConfigurationParams
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
-    }
 }

@@ -16,13 +16,12 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
-    public class VirtualDataSourceRouteManager<TShardingDbContext> : IVirtualDataSourceRouteManager<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualDataSourceRouteManager : IVirtualDataSourceRouteManager
     {
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
 
-        public VirtualDataSourceRouteManager(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public VirtualDataSourceRouteManager(IEntityMetadataManager entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
         }

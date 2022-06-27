@@ -21,9 +21,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     */
     public class DataSourceRouteRuleEngine<TShardingDbContext> : IDataSourceRouteRuleEngine<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
 
-        public DataSourceRouteRuleEngine(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public DataSourceRouteRuleEngine(IEntityMetadataManager entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
         }

@@ -28,6 +28,7 @@ using ShardingCore.TableCreator;
 using System;
 using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Bootstrappers;
+using ShardingCore.Core;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingConfigurations;
@@ -163,22 +164,22 @@ namespace ShardingCore
         }
 
 
-        private static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)
+        private static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
         {
-            var extension = optionsBuilder.CreateOrGetExtension();
+            var extension = optionsBuilder.CreateOrGetExtension(shardingRuntimeContext);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             return optionsBuilder;
         }
 
-        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder)
+        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
             => optionsBuilder.Options.FindExtension<ShardingWrapOptionsExtension>() ??
-               new ShardingWrapOptionsExtension();
+               new ShardingWrapOptionsExtension(shardingRuntimeContext);
 
-        public static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        public static DbContextOptionsBuilder UseInnerDbContextSharding(this DbContextOptionsBuilder optionsBuilder)
         {
             return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKeyFactory>()
                 .ReplaceService<IModelSource,ShardingModelSource>()
-                .ReplaceService<IModelCustomizer, ShardingModelCustomizer<TShardingDbContext>>();
+                .ReplaceService<IModelCustomizer, ShardingModelCustomizer>();
         }
 
 

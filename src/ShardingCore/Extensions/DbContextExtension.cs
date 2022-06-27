@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.EFCores;
+using ShardingCore.Exceptions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions
@@ -40,7 +41,8 @@ namespace ShardingCore.Extensions
 
             var contextModel = dbContext.Model as Model;
 #endif
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(dbContext.GetType()));
+            var shardingRuntimeContext = dbContext.GetRequireService<IShardingRuntimeContext>();
+            var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if EFCORE6
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
@@ -116,7 +118,8 @@ namespace ShardingCore.Extensions
 
             var contextModel = dbContext.Model as Model;
 #endif
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(dbContext.GetType()));
+            var shardingRuntimeContext = dbContext.GetRequireService<IShardingRuntimeContext>();
+            var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if EFCORE6
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
@@ -321,6 +324,17 @@ namespace ShardingCore.Extensions
             //sp.Stop();
             //Console.WriteLine($"ChangeTracker.FirstOrDefault:{sp.ElapsedMilliseconds}毫秒");
             //return entry?.Entity;
+        }
+
+        public static TService GetRequireService<TService>(this DbContext dbContext) where TService:class
+        {
+            var service = dbContext.GetService<TService>();
+            if (service == null)
+            {
+                throw new ShardingCoreInvalidOperationException($"cant resolve:[{typeof(TService)}]");
+            }
+
+            return service;
         }
 
     }

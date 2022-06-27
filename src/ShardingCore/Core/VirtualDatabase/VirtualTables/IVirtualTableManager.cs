@@ -57,11 +57,4 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualTables
         /// <param name="physicTable"></param>
         bool AddPhysicTable(Type shardingEntityType, IPhysicTable physicTable);
     }
-    /// <summary>
-    /// 虚拟表管理者 virtual table manager
-    /// </summary>
-    public interface IVirtualTableManager<TShardingDbContext> : IVirtualTableManager where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
-    }
 }
