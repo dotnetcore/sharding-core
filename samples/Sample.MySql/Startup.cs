@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,6 +10,7 @@ using MySqlConnector;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Shardings;
 using ShardingCore;
+using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.TableExists;
 
@@ -41,7 +43,7 @@ namespace Sample.MySql
             //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
-
+            // services.AddSingleton<IShardingRuntimeContext, ShardingRuntimeContext>();
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
@@ -89,6 +91,19 @@ namespace Sample.MySql
             }
 
             app.UseShardingCore();
+
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var dbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     var shardingRuntimeContext = dbContext.GetService<IShardingRuntimeContext>();
+            //     Console.WriteLine("123");
+            // }
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var dbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     var shardingRuntimeContext = dbContext.GetService<IShardingRuntimeContext>();
+            //     Console.WriteLine("1231");
+            // }
             app.UseRouting();
 
             app.UseAuthorization();

@@ -88,7 +88,7 @@ namespace ShardingCore
         {
             var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager<TShardingDbContext>>().GetCurrentVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
-            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();//serviceProvider.GetRequiredService<IShardingRuntimeContext>()
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
@@ -155,7 +155,8 @@ namespace ShardingCore
         }
         public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return optionsBuilder.UseShardingWrapMark()
+            //,IShardingRuntimeContext shardingRuntimeContext
+            return optionsBuilder.UseShardingWrapMark()//shardingRuntimeContext
                 .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IDbContextTransactionManager, ShardingRelationalTransactionManager<TShardingDbContext>>()
@@ -165,14 +166,15 @@ namespace ShardingCore
 
         private static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)
         {
-            var extension = optionsBuilder.CreateOrGetExtension();
+            //IShardingRuntimeContext shardingRuntimeContext
+            var extension = optionsBuilder.CreateOrGetExtension();//shardingRuntimeContext
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             return optionsBuilder;
         }
 
-        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder)
+        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder)//,IShardingRuntimeContext shardingRuntimeContext
             => optionsBuilder.Options.FindExtension<ShardingWrapOptionsExtension>() ??
-               new ShardingWrapOptionsExtension();
+               new ShardingWrapOptionsExtension();//shardingRuntimeContext
 
         public static DbContextOptionsBuilder UseInnerDbContextSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
