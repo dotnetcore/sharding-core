@@ -15,7 +15,7 @@ using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingEntityConfigOptions<TShardingDbContext> : IShardingEntityConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingEntityConfigOptions : IShardingEntityConfigOptions
     {
         private readonly IDictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly IDictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();

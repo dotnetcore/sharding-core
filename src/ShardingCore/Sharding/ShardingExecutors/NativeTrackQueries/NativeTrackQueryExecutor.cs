@@ -14,19 +14,20 @@ namespace ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries
     public class NativeTrackQueryExecutor : INativeTrackQueryExecutor
     {
         private readonly IQueryTracker _queryTracker;
-        public NativeTrackQueryExecutor(IQueryTracker queryTracker)
+        private readonly ITrackerManager _trackerManager;
+
+        public NativeTrackQueryExecutor(IQueryTracker queryTracker,ITrackerManager trackerManager)
         {
             _queryTracker = queryTracker;
+            _trackerManager = trackerManager;
         }
         public TResult Track<TResult>(IQueryCompilerContext queryCompilerContext, TResult resultTask)
         {
 
             if (resultTask != null)
             {
-                var trackerManager =
-                    (ITrackerManager)ShardingContainer.GetService(
-                        typeof(ITrackerManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
-                if (trackerManager.EntityUseTrack(resultTask.GetType()))
+               
+                if (_trackerManager.EntityUseTrack(resultTask.GetType()))
                 {
                     var trackedEntity = _queryTracker.Track(resultTask, queryCompilerContext.GetShardingDbContext());
                     if (trackedEntity != null)

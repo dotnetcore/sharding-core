@@ -15,12 +15,9 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     */
     public interface IShardingReadWriteManager
     {
-        ShardingReadWriteContext GetCurrent<TShardingDbContext>()
-            where TShardingDbContext : DbContext, IShardingDbContext;
 
-        ShardingReadWriteContext GetCurrent(Type shardingDbContextType);
+        ShardingReadWriteContext GetCurrent();
 
-        ShardingReadWriteScope<TShardingDbContext> CreateScope<TShardingDbContext>()
-            where TShardingDbContext : DbContext, IShardingDbContext;
+        ShardingReadWriteScope CreateScope();
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -49,7 +50,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
                 {
                     if (UseUnionAllMerge())
                     {
-                        var customerDatabaseSqlSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
+                        var customerDatabaseSqlSupportManager = GetStreamMergeContext().ShardingRuntimeContext.GetUnionAllMergeManager();
                         using (customerDatabaseSqlSupportManager.CreateScope(
                                    ((UnSupportSqlRouteUnit)dataSourceSqlExecutorUnit.SqlExecutorGroups[0].Groups[0]
                                        .RouteUnit).TableRouteResults))

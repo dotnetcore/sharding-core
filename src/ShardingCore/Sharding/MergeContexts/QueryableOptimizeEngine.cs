@@ -4,8 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.Internal.Visitors.Selects;
+using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.ShardingExecutors;
@@ -15,6 +17,12 @@ namespace ShardingCore.Sharding.MergeContexts
 {
     public sealed class QueryableOptimizeEngine: IQueryableOptimizeEngine
     {
+        private readonly IVirtualTableManager _virtualTableManager;
+
+        public QueryableOptimizeEngine(IVirtualTableManager virtualTableManager)
+        {
+            _virtualTableManager = virtualTableManager;
+        }
         public IOptimizeResult Optimize(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult,
             IQueryable rewriteQueryable)
         {
@@ -27,8 +35,7 @@ namespace ShardingCore.Sharding.MergeContexts
             if (mergeQueryCompilerContext.IsSingleShardingEntityQuery() && mergeQueryCompilerContext.IsCrossTable() && !mergeQueryCompilerContext.UseUnionAllMerge())
             {
                 var singleShardingEntityType = mergeQueryCompilerContext.GetSingleShardingEntityType();
-                var virtualTableManager = ShardingContainer.GetVirtualTableManager(mergeQueryCompilerContext.GetShardingDbContextType());
-                var virtualTable = virtualTableManager.GetVirtualTable(singleShardingEntityType);
+                var virtualTable = _virtualTableManager.GetVirtualTable(singleShardingEntityType);
                 if (virtualTable.EnableEntityQuery)
                 {
                     if (virtualTable.EntityQueryMetadata.DefaultTailComparer != null)

@@ -36,6 +36,7 @@ namespace ShardingCore.Sharding
 #endif
     {
         public IMergeQueryCompilerContext MergeQueryCompilerContext { get; }
+        public IShardingRuntimeContext ShardingRuntimeContext{ get; }
         public IParseResult ParseResult { get; }
         public IQueryable RewriteQueryable { get; }
         public IOptimizeResult OptimizeResult { get; }
@@ -85,6 +86,8 @@ namespace ShardingCore.Sharding
             IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingEntityConfigOptions shardingEntityConfigOptions)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
+            ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext())
+                .GetRequireService<IShardingRuntimeContext>();
             ParseResult = parseResult;
             RewriteQueryable = rewriteQueryable;
             OptimizeResult = optimizeResult;

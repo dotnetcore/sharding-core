@@ -19,7 +19,7 @@ namespace ShardingCore.ShardingExecutors
     {
         private readonly ShardingRouteScope _shardingRouteScope;
         private readonly bool _hasCustomerQuery;
-        public CustomerQueryScope(IPrepareParseResult prepareParseResult)
+        public CustomerQueryScope(IPrepareParseResult prepareParseResult,IShardingRouteManager shardingRouteManager)
         {
             _hasCustomerQuery = prepareParseResult.HasCustomerQuery();
             if (_hasCustomerQuery)
@@ -27,7 +27,6 @@ namespace ShardingCore.ShardingExecutors
                 var asRoute = prepareParseResult.GetAsRoute();
                 if ( asRoute!= null)
                 {
-                    var shardingRouteManager = ShardingContainer.GetService<IShardingRouteManager>();
                     _shardingRouteScope = shardingRouteManager.CreateScope();
                     asRoute.Invoke(shardingRouteManager.Current);
                 }

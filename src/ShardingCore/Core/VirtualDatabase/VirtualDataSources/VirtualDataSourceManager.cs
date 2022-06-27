@@ -13,6 +13,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Common;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
@@ -22,12 +23,13 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
         private readonly IVirtualDataSourceAccessor _virtualDataSourceAccessor;
+        private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
 
         private readonly ConcurrentDictionary<string, IVirtualDataSource> _virtualDataSources = new();
 
         private string _defaultConfigId;
         private IVirtualDataSource _defaultVirtualDataSource;
-        public VirtualDataSourceManager(IServiceProvider serviceProvider, IShardingConfigurationOptions options, IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager virtualDataSourceRouteManager, IVirtualDataSourceAccessor virtualDataSourceAccessor)
+        public VirtualDataSourceManager(IServiceProvider serviceProvider, IShardingConfigurationOptions options, IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager virtualDataSourceRouteManager, IVirtualDataSourceAccessor virtualDataSourceAccessor,IReadWriteConnectorFactory readWriteConnectorFactory)
         {
 
             _options = options;
@@ -37,6 +39,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (allShardingGlobalConfigOptions.IsEmpty())
                 throw new ArgumentException($"sharding virtual data source is empty");
             _virtualDataSourceAccessor = virtualDataSourceAccessor;
+            _readWriteConnectorFactory = readWriteConnectorFactory;
             if (options is ShardingMultiConfigurationOptions shardingMultiConfigurationOptions)
             {
                 IsMultiShardingConfiguration = true;
@@ -119,7 +122,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             if (!IsMultiShardingConfiguration&&_virtualDataSources.IsNotEmpty())
                 throw new NotSupportedException("not support multi sharding configuration");
-            var dataSource = new VirtualDataSource(_entityMetadataManager, _virtualDataSourceRouteManager, configurationParams);
+            var dataSource = new VirtualDataSource(_entityMetadataManager, _virtualDataSourceRouteManager, configurationParams,_readWriteConnectorFactory);
             dataSource.CheckVirtualDataSource();
             return _virtualDataSources.TryAdd(dataSource.ConfigId, dataSource);
         }

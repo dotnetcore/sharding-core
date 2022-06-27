@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         private readonly IShardingPageManager _shardingPageManager;
         public CountAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
-            _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
+            _shardingPageManager =streamMergeContext.ShardingRuntimeContext.GetShardingPageManager();
         }
 
         protected override int DoMergeResult(List<RouteQueryResult<int>> resultList)

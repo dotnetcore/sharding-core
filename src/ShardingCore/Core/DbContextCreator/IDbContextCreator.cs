@@ -26,10 +26,4 @@ namespace ShardingCore.Core.DbContextCreator
         /// <returns></returns>
         public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions);
     }
-
-    public interface IDbContextCreator<TShardingDbContext> : IDbContextCreator
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
-    }
 }

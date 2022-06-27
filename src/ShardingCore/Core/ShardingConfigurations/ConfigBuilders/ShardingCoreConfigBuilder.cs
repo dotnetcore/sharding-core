@@ -20,27 +20,26 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingCoreConfigBuilder<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingCoreConfigBuilder
     {
         public IServiceCollection Services { get; }
 
 
-        public List<ShardingConfigOptions<TShardingDbContext>> ShardingConfigOptions { get; }
-        public ShardingEntityConfigOptions<TShardingDbContext> ShardingEntityConfigOptions { get; }
+        public List<ShardingConfigOptions> ShardingConfigOptions { get; }
+        public ShardingEntityConfigOptions ShardingEntityConfigOptions { get; }
 
 
         public ShardingCoreConfigBuilder(IServiceCollection services)
         {
             Services = services;
-            ShardingConfigOptions = new List<ShardingConfigOptions<TShardingDbContext>>();
-            ShardingEntityConfigOptions = new ShardingEntityConfigOptions<TShardingDbContext>();
+            ShardingConfigOptions = new List<ShardingConfigOptions>();
+            ShardingEntityConfigOptions = new ShardingEntityConfigOptions();
         }
 
-        public ShardingConfigBuilder<TShardingDbContext> AddEntityConfig(Action<ShardingEntityConfigOptions<TShardingDbContext>> entityConfigure)
+        public ShardingConfigBuilder AddEntityConfig(Action<ShardingEntityConfigOptions> entityConfigure)
         {
             entityConfigure?.Invoke(ShardingEntityConfigOptions);
-            return new ShardingConfigBuilder<TShardingDbContext>(this);
+            return new ShardingConfigBuilder(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{

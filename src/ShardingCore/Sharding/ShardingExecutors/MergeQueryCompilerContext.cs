@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -22,6 +23,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
     {
 
         private readonly IParallelTableManager _parallelTableManager;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly IQueryCompilerContext _queryCompilerContext;
         private readonly QueryCombineResult _queryCombineResult;
         private readonly DataSourceRouteResult _dataSourceRouteResult;
@@ -44,11 +46,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
-        private MergeQueryCompilerContext(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult, IEnumerable<TableRouteResult> tableRouteResults)
+        private MergeQueryCompilerContext(IShardingRuntimeContext shardingRuntimeContext,IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult, IEnumerable<TableRouteResult> tableRouteResults)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
             _queryCompilerContext = queryCompilerContext;
             _queryCombineResult = queryCombineResult;
-            _parallelTableManager = (IParallelTableManager)ShardingContainer.GetService(typeof(IParallelTableManager<>).GetGenericType0(queryCompilerContext.GetShardingDbContextType()));
+            _parallelTableManager = _shardingRuntimeContext.GetParallelTableManager();
             _dataSourceRouteResult = dataSourceRouteResult;
             _tableRouteResults = GetTableRouteResults(tableRouteResults).ToArray();
             _isCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
@@ -73,7 +76,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult,IEnumerable<TableRouteResult> tableRouteResults)
         {
-            return new MergeQueryCompilerContext(queryCompilerContext, queryCombineResult,dataSourceRouteResult, tableRouteResults);
+            var shardingDbContext = queryCompilerContext.GetShardingDbContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
+            return new MergeQueryCompilerContext(shardingRuntimeContext,queryCompilerContext, queryCombineResult,dataSourceRouteResult, tableRouteResults);
         }
         public Dictionary<Type,IQueryable> GetQueryEntities()
         {
@@ -154,7 +159,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     if (hasQueryCompilerExecutor.Value)
                     {
                         //要么本次查询不追踪如果需要追踪不可以存在跨tails
-                        var routeTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
+                        var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
                         var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults[0]));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }

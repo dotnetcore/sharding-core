@@ -19,12 +19,11 @@ using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
 {
-    public class ShardingConfigBuilder<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingConfigBuilder
     {
-        public ShardingCoreConfigBuilder<TShardingDbContext> ShardingCoreConfigBuilder { get; }
+        public ShardingCoreConfigBuilder ShardingCoreConfigBuilder { get; }
 
-        public ShardingConfigBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
+        public ShardingConfigBuilder(ShardingCoreConfigBuilder shardingCoreConfigBuilder)
         {
             ShardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
@@ -37,19 +36,19 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ShardingCoreConfigException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public ShardingConfigBuilder<TShardingDbContext> AddConfig(Action<ShardingConfigOptions<TShardingDbContext>> shardingGlobalConfigOptionsConfigure)
+        public ShardingConfigBuilder AddConfig(Action<ShardingConfigOptions> shardingGlobalConfigOptionsConfigure)
         {
-            var shardingGlobalConfigOptions = new ShardingConfigOptions<TShardingDbContext>();
+            var shardingGlobalConfigOptions = new ShardingConfigOptions();
             shardingGlobalConfigOptionsConfigure?.Invoke(shardingGlobalConfigOptions);
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.ConfigId))
                 throw new ArgumentNullException(nameof(shardingGlobalConfigOptions.ConfigId));
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.DefaultDataSourceName))
                 throw new ArgumentNullException(
-                    $"{nameof(shardingGlobalConfigOptions.DefaultDataSourceName)} plz call {nameof(ShardingConfigOptions<TShardingDbContext>.AddDefaultDataSource)}");
+                    $"{nameof(shardingGlobalConfigOptions.DefaultDataSourceName)} plz call {nameof(ShardingConfigOptions.AddDefaultDataSource)}");
             
             if (string.IsNullOrWhiteSpace(shardingGlobalConfigOptions.DefaultConnectionString))
                 throw new ArgumentNullException(
-                    $"{nameof(shardingGlobalConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingConfigOptions<TShardingDbContext>.AddDefaultDataSource)}");
+                    $"{nameof(shardingGlobalConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingConfigOptions.AddDefaultDataSource)}");
 
             if (shardingGlobalConfigOptions.ConnectionStringConfigure is null&& ShardingCoreConfigBuilder.ShardingEntityConfigOptions.ConnectionStringConfigure is null)
                 throw new ArgumentNullException($"plz call {nameof(shardingGlobalConfigOptions.UseShardingQuery)}");

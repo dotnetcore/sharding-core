@@ -24,7 +24,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         private readonly IShardingPageManager _shardingPageManager;
         public LongCountAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
-            _shardingPageManager= ShardingContainer.GetService<IShardingPageManager>();
+            _shardingPageManager=streamMergeContext.ShardingRuntimeContext.GetShardingPageManager();
         }
 
         protected override long DoMergeResult(List<RouteQueryResult<long>> resultList)

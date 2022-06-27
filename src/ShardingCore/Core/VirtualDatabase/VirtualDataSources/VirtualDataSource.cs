@@ -18,6 +18,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Utils;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
@@ -44,7 +45,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public string DefaultConnectionString { get; private set; }
         public bool UseReadWriteSeparation { get; }
 
-        public VirtualDataSource(IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager dataSourceRouteManager, IVirtualDataSourceConfigurationParams configurationParams)
+        public VirtualDataSource(IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager dataSourceRouteManager, IVirtualDataSourceConfigurationParams configurationParams,IReadWriteConnectorFactory readWriteConnectorFactory)
         {
             Check.NotNull(configurationParams, nameof(configurationParams));
             Check.NotNull(configurationParams.ExtraDataSources, nameof(configurationParams.ExtraDataSources));
@@ -65,7 +66,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             if (UseReadWriteSeparation)
             {
                 CheckReadWriteSeparation();
-                ConnectionStringManager = new ReadWriteConnectionStringManager(this);
+                ConnectionStringManager = new ReadWriteConnectionStringManager(this,readWriteConnectorFactory);
             }
             else
             {

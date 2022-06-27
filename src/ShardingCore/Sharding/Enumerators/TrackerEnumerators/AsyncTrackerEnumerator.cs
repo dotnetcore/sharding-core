@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -24,9 +26,10 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
         public AsyncTrackerEnumerator(IShardingDbContext shardingDbContext, IAsyncEnumerator<T> asyncEnumerator)
         {
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
             _shardingDbContext = shardingDbContext;
             _asyncEnumerator = asyncEnumerator;
-            _queryTrack = ShardingContainer.GetService<IQueryTracker>();
+            _queryTrack = shardingRuntimeContext.GetQueryTracker();
         }
         public ValueTask DisposeAsync()
         {

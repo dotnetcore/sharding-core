@@ -22,12 +22,11 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         private readonly IVirtualDataSource _virtualDataSource;
 
 
-        public ReadWriteConnectionStringManager(IVirtualDataSource virtualDataSource)
+        public ReadWriteConnectionStringManager(IVirtualDataSource virtualDataSource,IReadWriteConnectorFactory readWriteConnectorFactory)
         {
             _virtualDataSource = virtualDataSource;
-            var readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
             var readWriteConnectors = virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o=> readWriteConnectorFactory.CreateConnector(virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key,o.Value));
-            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
+            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(),readWriteConnectorFactory);
         }
         public string GetConnectionString(string dataSourceName)
         {

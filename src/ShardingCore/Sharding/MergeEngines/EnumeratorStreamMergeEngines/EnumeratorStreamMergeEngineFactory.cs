@@ -33,14 +33,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
     {
         private readonly StreamMergeContext _streamMergeContext;
         private readonly IShardingPageManager _shardingPageManager;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
         private EnumeratorStreamMergeEngineFactory(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
-            _shardingPageManager = ShardingContainer.GetService<IShardingPageManager>();
-            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-            _entityMetadataManager = ShardingContainer.GetService<IEntityMetadataManager<TShardingDbContext>>();
+            _shardingPageManager = streamMergeContext.ShardingRuntimeContext.GetShardingPageManager();
+            _virtualTableManager =streamMergeContext.ShardingRuntimeContext.GetVirtualTableManager();
+            _entityMetadataManager = streamMergeContext.ShardingRuntimeContext.GetEntityMetadataManager();
         }
 
         public static EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity> Create(StreamMergeContext streamMergeContext)

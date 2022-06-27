@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
 
         private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
         private readonly ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
-        public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors, ReadStrategyEnum readStrategy)
+        public ReadWriteShardingConnectionStringResolver(IEnumerable<IReadWriteConnector> connectors, ReadStrategyEnum readStrategy,IReadWriteConnectorFactory readWriteConnectorFactory)
         {
             _readStrategy = readStrategy;
             var enumerator = connectors.GetEnumerator();
@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
                     _connectors.TryAdd(currentConnector.DataSourceName, currentConnector);
             }
 
-            _readWriteConnectorFactory = ShardingContainer.GetService<IReadWriteConnectorFactory>();
+            _readWriteConnectorFactory = readWriteConnectorFactory;
         }
 
         public bool ContainsReadWriteDataSourceName(string dataSourceName)

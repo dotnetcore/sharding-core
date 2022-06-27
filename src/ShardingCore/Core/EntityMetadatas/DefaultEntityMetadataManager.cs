@@ -12,8 +12,7 @@ namespace ShardingCore.Core.EntityMetadatas
     /// <summary>
     /// 默认分片对象元数据管理者实现
     /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
-    public class DefaultEntityMetadataManager<TShardingDbContext> : IEntityMetadataManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches =new ();
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
