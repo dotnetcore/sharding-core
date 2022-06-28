@@ -27,7 +27,7 @@ namespace ShardingCore.EFCores
         {
             _shardingDbContext = currentContext.Context as IShardingDbContext ??
                                  throw new ShardingCoreException("db context operator is not IShardingDbContext");
-            _shardingCompilerExecutor = shardingRuntimeContext.GetService<IShardingCompilerExecutor>();
+            _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
         }
 
         public TResult Execute<TResult>(Expression query)

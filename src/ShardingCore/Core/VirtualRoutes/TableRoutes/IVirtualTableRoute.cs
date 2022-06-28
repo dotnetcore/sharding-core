@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Sharding.EntityQueryConfigurations;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes
@@ -25,25 +27,25 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <summary>
         /// 根据查询条件路由返回物理表
         /// </summary>
-        /// <param name="allPhysicTables"></param>
+        /// <param name="dataSourceRouteResult"></param>
         /// <param name="queryable"></param>
         /// <param name="isQuery"></param>
         /// <returns></returns>
-        List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables,IQueryable queryable,bool isQuery);
+        List<ShardingRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult,IQueryable queryable,bool isQuery);
 
         /// <summary>
         /// 根据值进行路由
         /// </summary>
-        /// <param name="allPhysicTables"></param>
+        /// <param name="dataSourceRouteResult"></param>
         /// <param name="shardingKey"></param>
         /// <returns></returns>
-        IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey);
+        ShardingRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
         /// <summary>
         /// 获取所有的目前数据库存在的尾巴,仅启动时调用
         /// get all tails in the db
         /// </summary>
         /// <returns></returns>
-        List<string> GetAllTails();
+        List<string> GetTails();
 
     }
 

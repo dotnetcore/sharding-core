@@ -19,11 +19,11 @@ using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
 {
-    public class ShardingConfigBuilder
+    public class ShardingConfigBuilder<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
-        public ShardingCoreConfigBuilder ShardingCoreConfigBuilder { get; }
+        public ShardingCoreConfigBuilder<TShardingDbContext> ShardingCoreConfigBuilder { get; }
 
-        public ShardingConfigBuilder(ShardingCoreConfigBuilder shardingCoreConfigBuilder)
+        public ShardingConfigBuilder(ShardingCoreConfigBuilder<TShardingDbContext> shardingCoreConfigBuilder)
         {
             ShardingCoreConfigBuilder = shardingCoreConfigBuilder;
         }
@@ -36,7 +36,7 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ShardingCoreConfigException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public ShardingConfigBuilder AddConfig(Action<ShardingConfigOptions> shardingGlobalConfigOptionsConfigure)
+        public ShardingConfigBuilder<TShardingDbContext> AddConfig(Action<ShardingConfigOptions> shardingGlobalConfigOptionsConfigure)
         {
             var shardingGlobalConfigOptions = new ShardingConfigOptions();
             shardingGlobalConfigOptionsConfigure?.Invoke(shardingGlobalConfigOptions);

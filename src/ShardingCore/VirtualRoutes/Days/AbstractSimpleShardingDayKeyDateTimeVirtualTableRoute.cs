@@ -26,7 +26,7 @@ namespace ShardingCore.VirtualRoutes.Days
         /// 然后会在启动的时候添加到 <see cref="IVirtualTable{TEntity}.AddPhysicTable(IPhysicTable physicTable)"/>
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             var beginTime = GetBeginTime().Date;
          

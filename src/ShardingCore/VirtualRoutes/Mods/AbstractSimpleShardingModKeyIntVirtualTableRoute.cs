@@ -43,7 +43,7 @@ namespace ShardingCore.VirtualRoutes.Mods
             return Math.Abs(shardingKeyInt % Mod).ToString().PadLeft(TailLength,PaddingChar);
         }
 
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }

@@ -55,7 +55,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         /// 获取对应类型在数据库中的所有后缀
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }

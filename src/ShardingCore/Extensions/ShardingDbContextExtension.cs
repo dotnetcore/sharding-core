@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using ShardingCore.Core;
 using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -24,6 +25,11 @@ namespace ShardingCore.Extensions
         {
             var dbContext = (DbContext)shardingDbContext;
             return dbContext.GetService<IDbContextServices>().ContextOptions.FindExtension<UnionAllMergeOptionsExtension>() is not null;
+        }
+
+        public static IShardingRuntimeContext GetShardingRuntimeContext(this IShardingDbContext shardingDbContext)
+        {
+            return ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
         }
     }
 }

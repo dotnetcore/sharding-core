@@ -20,7 +20,7 @@ namespace ShardingCore.Core.DbContextCreator
     /// Author: xjm
     /// Created: 2022/4/2 21:15:09
     /// Email: 326308290@qq.com
-    public class ActivatorDbContextCreator<TShardingDbContext>: IDbContextCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ActivatorDbContextCreator<TShardingDbContext>: IDbContextCreator where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly Func<ShardingDbContextOptions, DbContext> _creator;
         public ActivatorDbContextCreator()

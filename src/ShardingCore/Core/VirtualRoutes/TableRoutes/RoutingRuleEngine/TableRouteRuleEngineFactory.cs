@@ -6,6 +6,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -36,13 +37,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             return new TableRouteRuleContext(dataSourceRouteResult,queryable,queryEntities);
         }
-        public IEnumerable<TableRouteResult> Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
+        public ISqlRouteUnit[] Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
             var ruleContext = CreateContext(dataSourceRouteResult,queryable, queryEntities);
             return Route(ruleContext);
         }
 
-        private IEnumerable<TableRouteResult> Route(TableRouteRuleContext ruleContext)
+        private ISqlRouteUnit[] Route(TableRouteRuleContext ruleContext)
         {
             return _tableRouteRuleEngine.Route(ruleContext);
         }

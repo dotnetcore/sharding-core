@@ -6,7 +6,9 @@ using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Sharding.EntityQueryConfigurations;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {
@@ -43,24 +45,24 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <summary>
         /// 根据表达式路由
         /// </summary>
-        /// <param name="allPhysicTables"></param>
+        /// <param name="dataSourceRouteResult"></param>
         /// <param name="queryable"></param>
         /// <param name="isQuery"></param>
         /// <returns></returns>
-        public abstract List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable,bool isQuery);
+        public abstract List<ShardingRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery);
         
         /// <summary>
         /// 根据值路由
         /// </summary>
-        /// <param name="allPhysicTables"></param>
+        /// <param name="dataSourceRouteResult"></param>
         /// <param name="shardingKey"></param>
         /// <returns></returns>
-        public abstract IPhysicTable RouteWithValue(List<IPhysicTable> allPhysicTables, object shardingKey);
+        public abstract ShardingRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
         /// <summary>
         /// 返回数据库现有的尾巴
         /// </summary>
         /// <returns></returns>
-        public abstract List<string> GetAllTails();
+        public abstract List<string> GetTails();
 
         /// <summary>
         /// 配置分表的一些信息

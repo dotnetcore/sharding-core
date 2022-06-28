@@ -20,7 +20,7 @@ namespace ShardingCore.DIExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingCoreConfigBuilder
+    public class ShardingCoreConfigBuilder<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
     {
         public IServiceCollection Services { get; }
 

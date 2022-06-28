@@ -100,7 +100,7 @@ namespace ShardingCore.DynamicDataSources
 
         private void InitVirtualTable(IVirtualTable virtualTable)
         {
-            foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
+            foreach (var tail in virtualTable.GetVirtualRoute().GetTails())
             {
                 var defaultPhysicTable = new DefaultPhysicTable(virtualTable, tail);
                 virtualTable.AddPhysicTable(defaultPhysicTable);

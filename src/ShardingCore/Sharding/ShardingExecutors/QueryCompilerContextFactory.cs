@@ -55,7 +55,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _logger.LogLazyDebug(() => $"queryable combine after:{queryCombineResult.GetCombineQueryable().ShardingPrint()}");
             var dataSourceRouteResult = dataSourceRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable(), prepareParseResult.GetShardingDbContext(), prepareParseResult.GetQueryEntities());
             _logger.LogLazyDebug(() => $"{dataSourceRouteResult}");
-            var routeResults = tableRouteRuleEngineFactory.Route(queryCombineResult.GetCombineQueryable(), prepareParseResult.GetQueryEntities()).ToArray();
+            var routeResults = tableRouteRuleEngineFactory.Route(dataSourceRouteResult,queryCombineResult.GetCombineQueryable(), prepareParseResult.GetQueryEntities()).ToArray();
             _logger.LogLazyDebug(() => $"table route results:{string.Join(","+Environment.NewLine,routeResults.Select(o=>o.GetPrintInfo()))}");
             var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, dataSourceRouteResult,
                 routeResults);

@@ -5,8 +5,10 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Sharding.EntityQueryConfigurations;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualTables
@@ -49,9 +51,10 @@ namespace ShardingCore.Core.VirtualTables
         /// <summary>
         /// 路由到具体的物理表 which physic table route
         /// </summary>
+        /// <param name="dataSourceRouteResult"></param>
         /// <param name="tableRouteConfig"></param>
         /// <returns></returns>
-        List<IPhysicTable> RouteTo(ShardingTableRouteConfig tableRouteConfig);
+        List<ISqlRouteUnit> RouteTo(DataSourceRouteResult dataSourceRouteResult,ShardingTableRouteConfig tableRouteConfig);
 
         /// <summary>
         /// 添加物理表 add physic table

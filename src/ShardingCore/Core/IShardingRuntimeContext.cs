@@ -9,6 +9,7 @@ using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
@@ -17,6 +18,7 @@ namespace ShardingCore.Core
     
     public interface IShardingRuntimeContext
     {
+        IShardingCompilerExecutor GetShardingCompilerExecutor();
         IShardingReadWriteManager GetShardingReadWriteManager();
         ITrackerManager GetTrackerManager();
         IParallelTableManager GetParallelTableManager();

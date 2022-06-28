@@ -6,10 +6,12 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.ShardingDatabaseProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
@@ -22,20 +24,22 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 */
     public class TableRouteRuleEngine : ITableRouteRuleEngine
     {
+        private readonly ITableRouteManager _tableRouteManager;
         private readonly IVirtualTableManager _virtualTableManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IShardingDatabaseProvider _shardingDatabaseProvider;
 
-        public TableRouteRuleEngine(IVirtualTableManager virtualTableManager,IEntityMetadataManager entityMetadataManager,IShardingDatabaseProvider shardingDatabaseProvider)
+        public TableRouteRuleEngine(ITableRouteManager tableRouteManager,IVirtualTableManager virtualTableManager,IEntityMetadataManager entityMetadataManager,IShardingDatabaseProvider shardingDatabaseProvider)
         {
+            _tableRouteManager = tableRouteManager;
             _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
             _shardingDatabaseProvider = shardingDatabaseProvider;
         }
 
-        public IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext)
+        public ShardingRouteUnit[] Route(TableRouteRuleContext tableRouteRuleContext)
         {
-            Dictionary<IVirtualTable, ISet<IPhysicTable>> routeMaps = new Dictionary<IVirtualTable, ISet<IPhysicTable>>();
+            Dictionary<Type, ISet<ShardingRouteUnit>> routeMaps = new Dictionary<Type, ISet<ShardingRouteUnit>>();
             var queryEntities = tableRouteRuleContext.QueryEntities;
 
 
@@ -44,18 +48,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                 var shardingEntity = shardingEntityKv.Key;
                 if (!_entityMetadataManager.IsShardingTable(shardingEntity))
                     continue;
-                var virtualTable = _virtualTableManager.GetVirtualTable(shardingEntity);
+                var virtualTableRoute = _tableRouteManager.GetRoute(shardingEntity);
+                var shardingRouteUnits = virtualTableRoute.RouteWithPredicate(tableRouteRuleContext.DataSourceRouteResult,(shardingEntityKv.Value ?? tableRouteRuleContext.Queryable),true);
 
-                var physicTables = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingEntityKv.Value ?? tableRouteRuleContext.Queryable));
-                if (!routeMaps.ContainsKey(virtualTable))
+                if (!routeMaps.ContainsKey(shardingEntity))
                 {
-                    routeMaps.Add(virtualTable, physicTables.ToHashSet());
+                    routeMaps.Add(shardingEntity, shardingRouteUnits.ToHashSet());
                 }
                 else
                 {
-                    foreach (var physicTable in physicTables)
+                    foreach (var shardingRouteUnit in shardingRouteUnits)
                     {
-                        routeMaps[virtualTable].Add(physicTable);
+                        routeMaps[shardingEntity].Add(shardingRouteUnit);
                     }
                 }
             }

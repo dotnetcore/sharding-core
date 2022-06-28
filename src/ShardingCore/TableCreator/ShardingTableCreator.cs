@@ -20,58 +20,55 @@ namespace ShardingCore.TableCreator
     * @Date: Monday, 21 December 2020 11:23:22
     * @Email: 326308290@qq.com
     */
-    public class ShardingTableCreator<TShardingDbContext> : IShardingTableCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingTableCreator : IShardingTableCreator
     {
-        private static readonly ILogger<ShardingTableCreator<TShardingDbContext>> _logger =
-            InternalLoggerFactory.CreateLogger<ShardingTableCreator<TShardingDbContext>>();
+        private static readonly ILogger<ShardingTableCreator> _logger =
+            InternalLoggerFactory.CreateLogger<ShardingTableCreator>();
+
         private readonly IServiceProvider _serviceProvider;
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
+        private readonly IShardingEntityConfigOptions _entityConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(IServiceProvider serviceProvider, IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions, IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(IServiceProvider serviceProvider,
+            IShardingEntityConfigOptions entityConfigOptions, IRouteTailFactory routeTailFactory)
         {
             _serviceProvider = serviceProvider;
             _entityConfigOptions = entityConfigOptions;
             _routeTailFactory = routeTailFactory;
         }
 
-        public void CreateTable<T>(string dataSourceName, string tail) where T : class
+        public void CreateTable<T>(IShardingDbContext shardingDbContext, string dataSourceName, string tail)
+            where T : class
         {
-            CreateTable(dataSourceName, typeof(T), tail);
+            CreateTable(shardingDbContext, dataSourceName, typeof(T), tail);
         }
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="shardingDbContext"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
-        public void CreateTable(string dataSourceName, Type shardingEntityType, string tail)
+        public void CreateTable(IShardingDbContext shardingDbContext, string dataSourceName, Type shardingEntityType,
+            string tail)
         {
-            using (var serviceScope = _serviceProvider.CreateScope())
+            using (var context = shardingDbContext.GetDbContext(dataSourceName, false,
+                       _routeTailFactory.Create(tail, false)))
             {
-                using (var dbContext = serviceScope.ServiceProvider.GetService<TShardingDbContext>())
+                context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
+                var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+                try
                 {
-                    
-                    var shardingDbContext = (IShardingDbContext)dbContext;
-                    using (var context = shardingDbContext.GetDbContext(dataSourceName, false,
-                               _routeTailFactory.Create(tail, false)))
+                    databaseCreator.CreateTables();
+                }
+                catch (Exception ex)
+                {
+                    if (!_entityConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                     {
-                        context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);
-                        var databaseCreator = context.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-                        try
-                        {
-                            databaseCreator.CreateTables();
-                        }
-                        catch (Exception ex)
-                        {
-                            if (!_entityConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
-                            {
-                                _logger.LogWarning(ex,
-                                    $"create table error entity name:[{shardingEntityType.Name}].");
-                                throw new ShardingCoreException($" create table error :{ex.Message}", ex);
-                            }
-                        }
+                        _logger.LogWarning(ex,
+                            $"create table error entity name:[{shardingEntityType.Name}].");
+                        throw new ShardingCoreException($" create table error :{ex.Message}", ex);
                     }
                 }
             }

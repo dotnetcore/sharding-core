@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -14,6 +15,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
     public interface ITableRouteRuleEngine
     {
-        IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext);
+        ShardingRouteUnit[] Route(TableRouteRuleContext tableRouteRuleContext);
     }
 }

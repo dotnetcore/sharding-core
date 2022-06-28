@@ -1,5 +1,6 @@
 using Sample.MySql.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.PhysicTables;
 using ShardingCore.VirtualRoutes.Mods;
 
 namespace Sample.MySql.Shardings
@@ -20,5 +21,6 @@ namespace Sample.MySql.Shardings
         {
             
         }
+
     }
 }

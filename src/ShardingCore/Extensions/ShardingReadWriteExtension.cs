@@ -83,12 +83,11 @@ namespace ShardingCore.Extensions
         {
             if (shardingDbContext is ISupportShardingReadWrite shardingReadWrite)
             {
-                var shardingDbContextType = shardingDbContext.GetType();
                 if (shardingDbContext.IsUseReadWriteSeparation())
                 {
-                    var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
+                    var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
                     var shardingReadWriteManager =shardingRuntimeContext.GetService<IShardingReadWriteManager>();
-                    var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(shardingDbContextType);
+                    var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
                     if (shardingReadWriteContext != null)
                     {
                         if (shardingReadWriteContext.DefaultPriority > shardingReadWrite.ReadWriteSeparationPriority)

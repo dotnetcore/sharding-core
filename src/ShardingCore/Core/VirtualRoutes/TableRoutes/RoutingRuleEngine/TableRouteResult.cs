@@ -15,21 +15,22 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 */
     public class TableRouteResult:IPrint
     {
-        public TableRouteResult(IEnumerable<IPhysicTable> replaceTables, Type shardingDbContextType)
+        public TableRouteResult(List<IPhysicTable> replaceTables)
         {
-            ShardingDbContextType = shardingDbContextType;
             ReplaceTables = replaceTables.ToHashSet();
             HasDifferentTail = ReplaceTables.IsNotEmpty() && ReplaceTables.GroupBy(o => o.Tail).Count() != 1;
+        }
+        public TableRouteResult(IPhysicTable replaceTable):this(new List<IPhysicTable>(){replaceTable})
+        {
         }
         
         public ISet<IPhysicTable> ReplaceTables { get; }
 
         public bool HasDifferentTail { get; }
 
-        public Type ShardingDbContextType { get; }
         protected bool Equals(TableRouteResult other)
         {
-            return Equals(ReplaceTables, other.ReplaceTables) && Equals(ShardingDbContextType, other.ShardingDbContextType);
+            return ReplaceTables.SequenceEqual(other.ReplaceTables);
         }
 
         public override bool Equals(object obj)
@@ -48,7 +49,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ReplaceTables, ShardingDbContextType);
+            return HashCode.Combine(ReplaceTables);
         }
 
 #endif

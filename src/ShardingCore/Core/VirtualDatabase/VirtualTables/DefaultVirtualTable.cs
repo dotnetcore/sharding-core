@@ -13,7 +13,9 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Sharding.EntityQueryConfigurations;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualTables
 {
@@ -79,7 +81,7 @@ namespace ShardingCore.Core.VirtualTables
             return _physicTables.Keys.ToList();
         }
 
-        public List<IPhysicTable> RouteTo(ShardingTableRouteConfig tableRouteConfig)
+        public List<ISqlRouteUnit> RouteTo(DataSourceRouteResult dataSourceRouteResult,ShardingTableRouteConfig tableRouteConfig)
         {
             var route = _virtualTableRoute;
             if (tableRouteConfig.UseQueryable())
