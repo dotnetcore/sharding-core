@@ -25,8 +25,8 @@ namespace ShardingCore.VirtualRoutes.Weeks
         public abstract DateTime GetBeginTime();
         public override List<string> GetAllTails()
         {
-            var beginTime = GetBeginTime().Date;
-         
+            var beginTime = ShardingCoreHelper.GetCurrentMonday(GetBeginTime()).Date;
+
             var tails=new List<string>();
             //提前创建表
             var nowTimeStamp = DateTime.Now.Date;
