@@ -8,11 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
@@ -26,8 +28,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly IQueryCompilerContext _queryCompilerContext;
         private readonly QueryCombineResult _queryCombineResult;
-        private readonly DataSourceRouteResult _dataSourceRouteResult;
-        private readonly TableRouteResult[] _tableRouteResults;
+        private readonly ShardingRouteResult _shardingRouteResult;
 
         /// <summary>
         /// 本次查询跨库
@@ -46,39 +47,39 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
-        private MergeQueryCompilerContext(IShardingRuntimeContext shardingRuntimeContext,IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult, IEnumerable<TableRouteResult> tableRouteResults)
+        private MergeQueryCompilerContext(IShardingRuntimeContext shardingRuntimeContext,IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult,  ShardingRouteResult shardingRouteResult)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
             _queryCompilerContext = queryCompilerContext;
             _queryCombineResult = queryCombineResult;
+            _shardingRouteResult = shardingRouteResult;
             _parallelTableManager = _shardingRuntimeContext.GetParallelTableManager();
-            _dataSourceRouteResult = dataSourceRouteResult;
-            _tableRouteResults = GetTableRouteResults(tableRouteResults).ToArray();
-            _isCrossDataSource = dataSourceRouteResult.IntersectDataSources.Count > 1;
-            _isCrossTable = _tableRouteResults.Count() > 1;
-            _existCrossTableTails = _tableRouteResults.Any(o => o.HasDifferentTail);
+            // _tableRouteResults = GetTableRouteResults(sqlRouteUnits).ToArray();
+            _isCrossDataSource = shardingRouteResult.IsCrossDataSource;
+            _isCrossTable = shardingRouteResult.IsCrossTable;
+            _existCrossTableTails = shardingRouteResult.ExistCrossTableTails;
         }
+        //
+        // private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
+        // {
+        //     var routeResults = tableRouteResults as TableRouteResult[] ?? tableRouteResults.ToArray();
+        //     if (_queryCompilerContext.GetQueryEntities().Count > 1&& routeResults.Length>0)
+        //     {
+        //         var entityMetadataManager = _queryCompilerContext.GetEntityMetadataManager();
+        //         var queryShardingTables = _queryCompilerContext.GetQueryEntities().Keys.Where(o => entityMetadataManager.IsShardingTable(o)).ToArray();
+        //         if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
+        //         {
+        //             return routeResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
+        //         }
+        //     }
+        //     return routeResults;
+        // }
 
-        private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
-        {
-            var routeResults = tableRouteResults as TableRouteResult[] ?? tableRouteResults.ToArray();
-            if (_queryCompilerContext.GetQueryEntities().Count > 1&& routeResults.Length>0)
-            {
-                var entityMetadataManager = _queryCompilerContext.GetEntityMetadataManager();
-                var queryShardingTables = _queryCompilerContext.GetQueryEntities().Keys.Where(o => entityMetadataManager.IsShardingTable(o)).ToArray();
-                if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
-                {
-                    return routeResults.Where(o => o.ReplaceTables.Select(p => p.Tail).ToHashSet().Count == 1);
-                }
-            }
-            return routeResults;
-        }
-
-        public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, DataSourceRouteResult dataSourceRouteResult,IEnumerable<TableRouteResult> tableRouteResults)
+        public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, ShardingRouteResult shardingRouteResult)
         {
             var shardingDbContext = queryCompilerContext.GetShardingDbContext();
             var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
-            return new MergeQueryCompilerContext(shardingRuntimeContext,queryCompilerContext, queryCombineResult,dataSourceRouteResult, tableRouteResults);
+            return new MergeQueryCompilerContext(shardingRuntimeContext,queryCompilerContext, queryCombineResult,shardingRouteResult);
         }
         public Dictionary<Type,IQueryable> GetQueryEntities()
         {
@@ -149,7 +150,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         {
             if (!hasQueryCompilerExecutor.HasValue)
             {
-                if (_dataSourceRouteResult.IntersectDataSources.IsEmpty() || _tableRouteResults.IsEmpty())
+                if(_shardingRouteResult.IsEmpty)
                 {
                     hasQueryCompilerExecutor = false;
                 }
@@ -190,7 +191,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// <returns></returns>
         private bool IsSingleQuery()
         {
-            return !_isCrossDataSource&&!_isCrossTable;
+            return _shardingRouteResult.RouteUnits.Count==1;//&& !_isCrossDataSource&&!_isCrossTable;
         }
 
         public bool IsCrossTable()

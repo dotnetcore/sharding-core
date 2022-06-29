@@ -7,7 +7,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 
 namespace ShardingCore.Sharding.MergeEngines.Common.Abstractions
 {
-    internal interface ISqlRouteUnit
+    public interface ISqlRouteUnit
     {
         string DataSourceName { get; }
         TableRouteResult TableRouteResult { get; }

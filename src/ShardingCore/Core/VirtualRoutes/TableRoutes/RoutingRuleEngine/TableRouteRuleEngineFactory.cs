@@ -37,13 +37,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             return new TableRouteRuleContext(dataSourceRouteResult,queryable,queryEntities);
         }
-        public ISqlRouteUnit[] Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
+        public ShardingRouteResult Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
             var ruleContext = CreateContext(dataSourceRouteResult,queryable, queryEntities);
             return Route(ruleContext);
         }
 
-        private ISqlRouteUnit[] Route(TableRouteRuleContext ruleContext)
+        private ShardingRouteResult Route(TableRouteRuleContext ruleContext)
         {
             return _tableRouteRuleEngine.Route(ruleContext);
         }

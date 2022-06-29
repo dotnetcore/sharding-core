@@ -36,7 +36,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             var sqlRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>
                 GetTails()
                     .Where(o=>filter(FormatTableRouteWithDataSource(dataSourceName,o)))
-                    .Select(tail=>new ShardingRouteUnit(dataSourceName,tail))
+                    .Select(tail=>new ShardingRouteUnit(dataSourceName,tail,typeof(TEntity)))
             ).ToList();
 
             return sqlRouteUnits;
@@ -88,7 +88,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 
             if (filterTails.Count > 1)
                 throw new ShardingCoreException($"more than one route match table:{string.Join(",", filterTails)}");
-            return new ShardingRouteUnit(dataSourceRouteResult.IntersectDataSources.First(), filterTails[0]);
+            return new ShardingRouteUnit(dataSourceRouteResult.IntersectDataSources.First(), filterTails[0],typeof(TEntity));
         }
 
     }

@@ -64,7 +64,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (filterTails.IsEmpty()||filterTails.Count!=mustTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustTails)}]");
-                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail))).ToList();
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
                         return shardingRouteUnits;
                     }
 
@@ -74,7 +74,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (filterTails.IsEmpty()||filterTails.Count!=hintTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
-                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail))).ToList();
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
                         return GetFilterTableTails(dataSourceRouteResult, shardingRouteUnits);
                     }
                 }

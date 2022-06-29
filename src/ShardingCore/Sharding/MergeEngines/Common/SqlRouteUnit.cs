@@ -8,7 +8,7 @@ using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Common
 {
-    internal  class SqlRouteUnit: ISqlRouteUnit
+    public  class SqlRouteUnit: ISqlRouteUnit
     {
 
         public SqlRouteUnit(string dataSourceName, TableRouteResult tableRouteResult)
@@ -19,5 +19,9 @@ namespace ShardingCore.Sharding.MergeEngines.Common
 
         public string DataSourceName { get; }
         public TableRouteResult TableRouteResult { get; }
+        public override string ToString()
+        {
+            return $"{nameof(DataSourceName)}:{DataSourceName},{nameof(TableRouteResult)}:{TableRouteResult}";
+        }
     }
 }

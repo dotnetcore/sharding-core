@@ -13,20 +13,22 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:18:09
 * @Email: 326308290@qq.com
 */
-    public class TableRouteResult:IPrint
+    public class TableRouteResult
     {
-        public TableRouteResult(List<IPhysicTable> replaceTables)
+        public TableRouteResult(List<ShardingRouteUnit> replaceTables)
         {
             ReplaceTables = replaceTables.ToHashSet();
             HasDifferentTail = ReplaceTables.IsNotEmpty() && ReplaceTables.GroupBy(o => o.Tail).Count() != 1;
+            IsEmpty = replaceTables.Count == 0;
         }
-        public TableRouteResult(IPhysicTable replaceTable):this(new List<IPhysicTable>(){replaceTable})
+        public TableRouteResult(ShardingRouteUnit replaceTable):this(new List<ShardingRouteUnit>(){replaceTable})
         {
         }
         
-        public ISet<IPhysicTable> ReplaceTables { get; }
+        public ISet<ShardingRouteUnit> ReplaceTables { get; }
 
         public bool HasDifferentTail { get; }
+        public bool IsEmpty { get; }
 
         protected bool Equals(TableRouteResult other)
         {
@@ -40,7 +42,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             if (obj.GetType() != this.GetType()) return false;
             return Equals((TableRouteResult)obj);
         }
-        public string GetPrintInfo()
+
+        public override string ToString()
         {
             return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.EntityType))}])";
         }

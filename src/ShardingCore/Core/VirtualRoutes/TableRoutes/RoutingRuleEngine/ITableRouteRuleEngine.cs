@@ -15,6 +15,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
     public interface ITableRouteRuleEngine
     {
-        ShardingRouteUnit[] Route(TableRouteRuleContext tableRouteRuleContext);
+        ShardingRouteResult Route(TableRouteRuleContext tableRouteRuleContext);
     }
 }
