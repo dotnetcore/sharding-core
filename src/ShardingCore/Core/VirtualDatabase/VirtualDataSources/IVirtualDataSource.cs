@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 

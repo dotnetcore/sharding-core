@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {

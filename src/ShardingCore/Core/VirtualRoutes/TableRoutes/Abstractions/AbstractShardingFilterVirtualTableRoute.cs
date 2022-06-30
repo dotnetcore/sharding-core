@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 {

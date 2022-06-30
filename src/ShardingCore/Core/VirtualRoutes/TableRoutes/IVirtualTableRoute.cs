@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Sharding.EntityQueryConfigurations;
-using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes
@@ -46,6 +44,24 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// </summary>
         /// <returns></returns>
         List<string> GetTails();
+           
+         /// <summary>
+         /// 分页配置
+         /// </summary>
+          PaginationMetadata PaginationMetadata { get; }
+
+         /// <summary>
+         /// 是否启用智能分页
+         /// </summary>
+          bool EnablePagination => PaginationMetadata != null;
+         /// <summary>
+         /// 查询配置
+         /// </summary>
+          EntityQueryMetadata EntityQueryMetadata { get; }
+         /// <summary>
+         /// 是否启用表达式分片配置
+         /// </summary>
+          bool EnableEntityQuery => EntityQueryMetadata != null;
 
     }
 

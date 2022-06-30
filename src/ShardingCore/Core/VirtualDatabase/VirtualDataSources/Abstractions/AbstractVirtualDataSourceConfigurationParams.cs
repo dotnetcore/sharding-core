@@ -6,15 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
@@ -33,11 +27,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public virtual int? ReadWriteDefaultPriority { get; }
         public virtual ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
-
-        public virtual ITableEnsureManager TableEnsureManager { get; } =
-            new EmptyTableEnsureManager();
-
-
 
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
             DbContextOptionsBuilder dbContextOptionsBuilder);

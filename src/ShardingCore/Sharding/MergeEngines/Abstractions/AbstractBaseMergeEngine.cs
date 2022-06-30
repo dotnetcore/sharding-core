@@ -76,17 +76,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         /// <returns></returns>
         protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
         {
-            var streamMergeContext = GetStreamMergeContext();
-            return streamMergeContext.DataSourceRouteResult.IntersectDataSources.SelectMany(
-                dataSourceName =>
-                {
-                    if (UseUnionAllMerge())
-                    {
-                        return new []{ (ISqlRouteUnit)new UnSupportSqlRouteUnit(dataSourceName, streamMergeContext.TableRouteResults) };
-                    }
-                    return streamMergeContext.TableRouteResults.Select(routeResult =>
-                        (ISqlRouteUnit)new SqlRouteUnit(dataSourceName, routeResult));
-                });
+            var useUnionAllMerge = UseUnionAllMerge();
+            if (useUnionAllMerge)
+            {
+                return GetStreamMergeContext().ShardingRouteResult.RouteUnits.GroupBy(o=>o.DataSourceName).Select(o=>new UnSupportSqlRouteUnit(o.Key,o.Select(g=>g.TableRouteResult).ToList()));
+            }
+            return GetStreamMergeContext().ShardingRouteResult.RouteUnits;
+           
         }
         protected virtual IEnumerable<IGrouping<string, ISqlRouteUnit>> AggregateQueryByDataSourceName(IEnumerable<ISqlRouteUnit> sqlRouteUnits)
         {

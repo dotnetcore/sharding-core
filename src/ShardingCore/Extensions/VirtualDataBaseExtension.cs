@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
-using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Extensions
 {
@@ -72,17 +67,17 @@ namespace ShardingCore.Extensions
 
 
 
-        public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,
+        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,
             TEntity entity) where TEntity : class
         {
-            var physicTable = virtualTableManager.GetVirtualTable(entity.GetType()).RouteTo(new ShardingTableRouteConfig(shardingTable: entity))[0];
-            return physicTable.Tail;
+            var shardingRouteUnit = tableRouteManager.RouteTo(entity.GetType(),new ShardingTableRouteConfig(shardingTable: entity))[0];
+            return shardingRouteUnit.Tail;
         }
-        public static string GetTableTail<TEntity>(this IVirtualTableManager virtualTableManager,
+        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,
             object shardingKeyValue) where TEntity : class
         {
-            var physicTable = virtualTableManager.GetVirtualTable(typeof(TEntity)).RouteTo(new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];
-            return physicTable.Tail;
+            var shardingRouteUnit = tableRouteManager.RouteTo(typeof(TEntity),new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];
+            return shardingRouteUnit.Tail;
         }
         public static bool IsVirtualDataSourceRoute(this Type routeType)
         {

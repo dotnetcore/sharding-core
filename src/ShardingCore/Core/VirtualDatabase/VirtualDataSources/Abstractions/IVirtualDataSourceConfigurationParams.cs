@@ -4,7 +4,6 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using System.Collections.Generic;
 using System.Data.Common;
-using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
@@ -55,10 +54,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// 不能为空 should not null
         /// </summary>
         IShardingComparer ShardingComparer { get; }
-        /// <summary>
-        /// 表确认管理者
-        /// </summary>
-        ITableEnsureManager TableEnsureManager { get; }
         /// <summary>
         /// 如何根据connectionString 配置 DbContextOptionsBuilder
         /// </summary>

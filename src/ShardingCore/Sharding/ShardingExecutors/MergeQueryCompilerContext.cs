@@ -161,7 +161,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     {
                         //要么本次查询不追踪如果需要追踪不可以存在跨tails
                         var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
-                        var dbContext = GetShardingDbContext().GetDbContext(_dataSourceRouteResult.IntersectDataSources.First(), IsParallelQuery(), routeTailFactory.Create(_tableRouteResults[0]));
+                        var sqlRouteUnit = _shardingRouteResult.RouteUnits.First();
+                        var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, IsParallelQuery(), routeTailFactory.Create(sqlRouteUnit.TableRouteResult));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }
                 }
@@ -176,15 +177,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCombineResult;
         }
 
-        public TableRouteResult[] GetTableRouteResults()
+        public ShardingRouteResult GetShardingRouteResult()
         {
-            return _tableRouteResults;
+            return _shardingRouteResult;
         }
 
-        public DataSourceRouteResult GetDataSourceRouteResult()
-        {
-            return _dataSourceRouteResult;
-        }
         /// <summary>
         /// 既不可以跨库也不可以跨表,所有的分表都必须是相同后缀才可以
         /// </summary>

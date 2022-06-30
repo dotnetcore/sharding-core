@@ -22,14 +22,14 @@ namespace ShardingCore.Sharding
         public DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             SameConnectionDbContextOptionsCreator(dbConnection, dbContextOptionsBuilder);
-            dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            dbContextOptionsBuilder.UseInnerDbContextSharding();
             return dbContextOptionsBuilder;
         }
 
         public DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString, DbContextOptionsBuilder dbContextOptionsBuilder)
         {
             DefaultQueryDbContextOptionsCreator(connectionString, dbContextOptionsBuilder);
-            dbContextOptionsBuilder.UseInnerDbContextSharding<TShardingDbContext>();
+            dbContextOptionsBuilder.UseInnerDbContextSharding();
             return dbContextOptionsBuilder;
         }
     }

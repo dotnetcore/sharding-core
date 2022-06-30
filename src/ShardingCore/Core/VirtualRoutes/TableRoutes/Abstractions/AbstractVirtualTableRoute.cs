@@ -1,5 +1,4 @@
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
@@ -23,13 +22,30 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
         public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
+
+        public PaginationMetadata PaginationMetadata { get; private set; }
+        public EntityQueryMetadata EntityQueryMetadata { get;  private set; }
         public virtual void Initialize(EntityMetadata entityMetadata)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
-
             EntityConfigOptions =ShardingRuntimeContext.GetInstance().GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
+            var paginationConfiguration = CreatePaginationConfiguration();
+             if (paginationConfiguration!=null)
+             {
+                 PaginationMetadata = new PaginationMetadata();
+                 var paginationBuilder = new PaginationBuilder<T>(PaginationMetadata);
+                 paginationConfiguration.Configure(paginationBuilder);
+             }
+
+             var entityQueryConfiguration = CreateEntityQueryConfiguration();
+             if (entityQueryConfiguration != null)
+             {
+                 EntityQueryMetadata = new EntityQueryMetadata();
+                 var entityQueryBuilder = new EntityQueryBuilder<T>(EntityQueryMetadata);
+                 entityQueryConfiguration.Configure(entityQueryBuilder);
+             }
         }
 
 

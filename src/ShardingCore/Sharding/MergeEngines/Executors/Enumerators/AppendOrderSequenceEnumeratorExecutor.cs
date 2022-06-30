@@ -36,8 +36,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
         {
             var streamMergeContext = GetStreamMergeContext();
             var connectionMode = streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
-            var sequenceResult = sqlExecutorUnit.RouteUnit.As<SqlSequenceRouteUnit>().SequenceResult;
-            var shardingDbContext = streamMergeContext.CreateDbContext(sequenceResult.DSName, sequenceResult.TableRouteResult, connectionMode);
+            var sqlSequenceRouteUnit = sqlExecutorUnit.RouteUnit.As<SqlSequenceRouteUnit>();
+            var sequenceResult = sqlSequenceRouteUnit.SequenceResult;
+            var shardingDbContext = streamMergeContext.CreateDbContext(sqlSequenceRouteUnit, connectionMode);
             var newQueryable = _noPaginationQueryable
                 .Skip(sequenceResult.Skip)
                 .Take(sequenceResult.Take)

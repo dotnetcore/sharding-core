@@ -67,7 +67,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 _logger.LogDebug($"table route results:{shardingRouteResult}");
             }
-            var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, sqlRouteUnits);
+            var mergeCombineCompilerContext = MergeQueryCompilerContext.Create(queryCompilerContext, queryCombineResult, shardingRouteResult);
             return mergeCombineCompilerContext;
         }
 

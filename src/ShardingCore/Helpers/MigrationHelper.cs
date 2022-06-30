@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -63,10 +62,9 @@ namespace ShardingCore.Helpers
             //https://github.com/dotnet/efcore/tree/b970bf29a46521f40862a01db9e276e6448d3cb0/src/EFCore.Relational/Migrations/Operations
             //ColumnOperation仅替换Table
             //其余其余都是将Name和Table使用分表名替换
-            var virtualTableManager = shardingRuntimeContext.GetVirtualTableManager();
-            var allVirtualTables = virtualTableManager.GetAllVirtualTables();
-            var shardingRuntimeModel = shardingRuntimeContext.GetShardingRuntimeModel();
-            var existsShardingTables = allVirtualTables.ToDictionary(o => o.EntityMetadata.VirtualTableName, o => o.GetAllPhysicTables().Select(p=>p.FullName).ToList());
+            var tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
+            var tableRoutes = tableRouteManager.GetRoutes();
+            var existsShardingTables = tableRoutes.ToDictionary(o => o.EntityMetadata.LogicTableName, o => o.GetTails().Select(p=>$"{o.EntityMetadata.LogicTableName}{o.EntityMetadata.TableSeparator}{p}").ToList());
             //Dictionary<string, List<string>> _existsShardingTables
             //    = Cache.ServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
             List<string> resList = new List<string>();

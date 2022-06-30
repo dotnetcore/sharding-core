@@ -10,13 +10,11 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -48,14 +46,14 @@ namespace ShardingCore.Bootstrappers
         private readonly Type _shardingEntityType;
         private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
         private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
-        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IJobManager _jobManager;
 
         public EntityMetadataInitializer(
             IShardingEntityConfigOptions shardingEntityConfigOptions,
             IVirtualDataSourceRouteManager virtualDataSourceRouteManager,
-            IVirtualTableManager virtualTableManager,
+            ITableRouteManager tableRouteManager,
             IEntityMetadataManager entityMetadataManager,
             IJobManager jobManager
             )
@@ -66,7 +64,7 @@ namespace ShardingCore.Bootstrappers
             // _queryFilterExpression = entityMetadataEnsureParams.EntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as Expression<Func<TEntity, bool>>;
             _shardingEntityConfigOptions = shardingEntityConfigOptions;
             _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
-            _virtualTableManager = virtualTableManager;
+            _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
             _jobManager = jobManager;
         }
@@ -122,9 +120,7 @@ namespace ShardingCore.Bootstrappers
                     createEntityMetadataTableConfiguration.Configure(entityMetadataTableBuilder);
                 }
                 //创建虚拟表
-                var virtualTable = CreateVirtualTable(virtualTableRoute,entityMetadata);
-                InitVirtualTable(virtualTable);
-                _virtualTableManager.AddVirtualTable(virtualTable);
+                _tableRouteManager.AddRoute(virtualTableRoute);
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckShardingTableMetadata();
                 //添加任务
@@ -148,19 +144,6 @@ namespace ShardingCore.Bootstrappers
         {
             var instance = ShardingRuntimeContext.GetInstance().CreateInstance(virtualRouteType);
             return (IVirtualTableRoute<TEntity>)instance;
-        }
-
-        private IVirtualTable<TEntity> CreateVirtualTable(IVirtualTableRoute<TEntity> virtualTableRoute,EntityMetadata entityMetadata)
-        {
-            return new DefaultVirtualTable<TEntity>(virtualTableRoute, entityMetadata);
-        }
-        private void InitVirtualTable(IVirtualTable virtualTable)
-        {
-            foreach (var tail in virtualTable.GetVirtualRoute().GetTails())
-            {
-                var defaultPhysicTable = new DefaultPhysicTable(virtualTable, tail);
-                virtualTable.AddPhysicTable(defaultPhysicTable);
-            }
         }
     }
 }

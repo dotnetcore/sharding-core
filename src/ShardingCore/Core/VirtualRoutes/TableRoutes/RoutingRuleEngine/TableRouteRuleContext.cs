@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
-using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {

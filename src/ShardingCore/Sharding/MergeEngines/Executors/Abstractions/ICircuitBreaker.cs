@@ -14,11 +14,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
         /// <typeparam name="TResult"></typeparam>
         /// <param name="results"></param>
         /// <returns></returns>
-        bool IsTrip<TResult>(IEnumerable<TResult> results);
+        bool Terminated<TResult>(IEnumerable<TResult> results);
         /// <summary>
         /// 跳闸
         /// </summary>
-        void Trip();
+        void Terminated0();
 
         void Register(Action afterTrip);
 

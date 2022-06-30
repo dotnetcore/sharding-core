@@ -7,7 +7,7 @@ using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
@@ -25,13 +25,12 @@ namespace ShardingCore.Core
         IDbContextCreator GetDbContextCreator();
         IEntityMetadataManager GetEntityMetadataManager();
         IVirtualDataSourceManager GetVirtualDataSourceManager();
-        IVirtualTableManager GetVirtualTableManager();
+        ITableRouteManager GetTableRouteManager();
         IRouteTailFactory GetRouteTailFactory();
         IQueryTracker GetQueryTracker();
         IUnionAllMergeManager GetUnionAllMergeManager();
         IShardingPageManager GetShardingPageManager();
-        IShardingRuntimeModel GetShardingRuntimeModel();
-        IShardingRuntimeModel GetOrCreateShardingRuntimeModel(DbContext dbContext);
+        void GetOrCreateShardingRuntimeModel(DbContext dbContext);
         object GetService(Type serviceType);
         TService GetService<TService>();
     }

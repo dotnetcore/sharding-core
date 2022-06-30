@@ -37,9 +37,7 @@ namespace ShardingCore.Sharding
             var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
             if (wrapOptionsExtension != null)
             {
-                ShardingDbContextExecutor =
-                    (IShardingDbContextExecutor)Activator.CreateInstance(
-                        typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()),this);
+                ShardingDbContextExecutor = new ShardingDbContextExecutor(this);
             }
 
             IsExecutor = wrapOptionsExtension == null;

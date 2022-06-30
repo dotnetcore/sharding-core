@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Extensions;
 
 

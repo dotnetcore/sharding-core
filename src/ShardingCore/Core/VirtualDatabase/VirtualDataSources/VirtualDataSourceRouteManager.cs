@@ -33,9 +33,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
-            if (!_entityMetadataManager.IsShardingDataSource(entityType))
-                throw new ShardingCoreInvalidOperationException(
-                    $"entity type :[{entityType.FullName}] not configure sharding data source");
+            // if (!_entityMetadataManager.IsShardingDataSource(entityType))
+            //     throw new ShardingCoreInvalidOperationException(
+            //         $"entity type :[{entityType.FullName}] not configure sharding data source");
 
             if (!_dataSourceVirtualRoutes.TryGetValue(entityType, out var dataSourceVirtualRoute))
                 throw new ShardingCoreInvalidOperationException(

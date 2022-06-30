@@ -8,12 +8,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
         {
         }
 
-        protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool OrderConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
             return false;
         }
 
-        protected override bool RandomConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool RandomConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
             return false;
         }

@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,7 +31,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override int? ReadWriteDefaultPriority { get; }
         public override ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         public override IShardingComparer ShardingComparer { get; }
-        public override ITableEnsureManager TableEnsureManager { get; }
 
         public SimpleVirtualDataSourceConfigurationParams(IServiceProvider serviceProvider,ShardingConfigOptions options)
         {
@@ -49,8 +45,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             ExtraDataSources = options.DataSourcesConfigure?.Invoke(serviceProvider)??new ConcurrentDictionary<string, string>();
             ShardingComparer = options.ReplaceShardingComparerFactory?.Invoke(serviceProvider) ??
                                new CSharpLanguageShardingComparer();
-            TableEnsureManager = options.TableEnsureManagerFactory?.Invoke(serviceProvider) ??
-                                 new EmptyTableEnsureManager();
+
             if (options.ShardingReadWriteSeparationOptions != null)
             {
                 if (options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure != null)

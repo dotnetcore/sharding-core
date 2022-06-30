@@ -1,16 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.ShardingDatabaseProviders;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
@@ -26,17 +19,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     public class TableRouteRuleEngine : ITableRouteRuleEngine
     {
         private readonly ITableRouteManager _tableRouteManager;
-        private readonly IVirtualTableManager _virtualTableManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
-        private readonly IShardingDatabaseProvider _shardingDatabaseProvider;
 
-        public TableRouteRuleEngine(ITableRouteManager tableRouteManager, IVirtualTableManager virtualTableManager,
-            IEntityMetadataManager entityMetadataManager, IShardingDatabaseProvider shardingDatabaseProvider)
+        public TableRouteRuleEngine(ITableRouteManager tableRouteManager, 
+            IEntityMetadataManager entityMetadataManager)
         {
             _tableRouteManager = tableRouteManager;
-            _virtualTableManager = virtualTableManager;
             _entityMetadataManager = entityMetadataManager;
-            _shardingDatabaseProvider = shardingDatabaseProvider;
         }
 
         public ShardingRouteResult Route(TableRouteRuleContext tableRouteRuleContext)

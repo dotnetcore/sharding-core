@@ -34,11 +34,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
         public override IStreamMergeAsyncEnumerator<TEntity>[] GetRouteQueryStreamMergeAsyncEnumerators(bool async, CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var dataSourceName = GetStreamMergeContext().DataSourceRouteResult.IntersectDataSources.First();
-            var routeResult = GetStreamMergeContext().TableRouteResults[0];
-            var shardingDbContext = GetStreamMergeContext().CreateDbContext(dataSourceName, routeResult, ConnectionModeEnum.MEMORY_STRICTLY);
-            var newQueryable = (IQueryable<TEntity>)GetStreamMergeContext().GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
-            var enumeratorParallelExecutor = new SingleQueryEnumeratorExecutor<TEntity>(GetStreamMergeContext());
+            var streamMergeContext = GetStreamMergeContext();
+            var shardingRouteResult = streamMergeContext.ShardingRouteResult;
+            var sqlRouteUnit = shardingRouteResult.RouteUnits.First();
+            var shardingDbContext = streamMergeContext.CreateDbContext(sqlRouteUnit, ConnectionModeEnum.MEMORY_STRICTLY);
+            var newQueryable = (IQueryable<TEntity>)streamMergeContext.GetOriginalQueryable().ReplaceDbContextQueryable(shardingDbContext);
+            var enumeratorParallelExecutor = new SingleQueryEnumeratorExecutor<TEntity>(streamMergeContext);
             if (async)
             {
                 var asyncEnumerator = enumeratorParallelExecutor.GetAsyncEnumerator0(newQueryable).WaitAndUnwrapException();

@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 

@@ -1,4 +1,3 @@
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;

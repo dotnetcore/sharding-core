@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
@@ -12,7 +15,7 @@ namespace ShardingCore.Core.EntityMetadatas
     /// 分表或者分库对象的元数据信息记录对象在ShardingCore框架下的一些简单的信息
     /// </summary>
     public class EntityMetadata
-    {
+    {private const string QueryFilter = "QueryFilter";
         public EntityMetadata(Type entityType, Type shardingDbContextType)
         {
             EntityType = entityType;
@@ -24,7 +27,6 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表类型 sharding entity type
         /// </summary>
         public Type EntityType { get; }
- 
 
         public Type ShardingDbContextType { get; }
 
@@ -70,6 +72,36 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表隔离器 table sharding tail prefix
         /// </summary>
         public string TableSeparator { get; private set; } = "_";
+        
+        /// <summary>
+        /// 逻辑表名
+        /// </summary>
+        public string LogicTableName { get; private set; }
+        /// <summary>
+        /// 主键
+        /// </summary>
+        public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; private set; }
+        /**
+         * efcore query filter
+         */
+        public LambdaExpression QueryFilterExpression { get; private set; }
+
+        /// <summary>
+        /// 是否单主键
+        /// </summary>
+        public bool IsSingleKey { get; private set; }
+
+        public void SetEntityModel(IEntityType dbEntityType)
+        {
+            LogicTableName = dbEntityType.GetTableName();
+            QueryFilterExpression= dbEntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as LambdaExpression;
+            PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
+                                   new List<PropertyInfo>();
+            IsSingleKey=PrimaryKeyProperties.Count == 1;
+        }
+        
+        
+        
         /// <summary>
         /// 设置分库字段
         /// </summary>

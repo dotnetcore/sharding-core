@@ -18,6 +18,9 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         {
             IntersectDataSources = intersectDataSources;
         }
+        public DataSourceRouteResult(string dataSource):this(new HashSet<string>(){dataSource})
+        {
+        }
         /// <summary>
         /// 交集
         /// </summary>

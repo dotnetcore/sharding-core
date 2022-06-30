@@ -6,14 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.DbContextCreator;
-using ShardingCore.Exceptions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -37,7 +35,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IVirtualDataSource _virtualDataSource;
-        private readonly IVirtualTableManager _virtualTableManager;
+        private readonly ITableRouteManager _tableRouteManager;
         private readonly IDbContextCreator _dbContextCreator;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ActualConnectionStringManager _actualConnectionStringManager;
@@ -60,10 +58,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public ShardingDbContextExecutor(DbContext shardingDbContext)
         {
             _shardingDbContext = shardingDbContext;
+            //初始化
             var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
             var virtualDataSourceManager = shardingRuntimeContext.GetVirtualDataSourceManager();
             _virtualDataSource = virtualDataSourceManager.GetCurrentVirtualDataSource();
-            _virtualTableManager = shardingRuntimeContext.GetVirtualTableManager();
+            _tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
             _dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
             _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             _routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
@@ -133,7 +133,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             if (!_entityMetadataManager.IsShardingTable(entity.GetType()))
                 return string.Empty;
-            return _virtualTableManager.GetTableTail(entity);
+            return _tableRouteManager.GetTableTail(entity);
         }
 
         #endregion

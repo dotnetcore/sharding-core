@@ -100,7 +100,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                     }
                 }
                 
-                if (IsCancelled()|| circuitBreaker.IsTrip(result))
+                if (IsCancelled()|| circuitBreaker.Terminated(result))
                     break;
             }
 

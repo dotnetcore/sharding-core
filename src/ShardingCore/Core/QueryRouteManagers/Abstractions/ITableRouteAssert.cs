@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
-using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.QueryRouteManagers.Abstractions
 {
