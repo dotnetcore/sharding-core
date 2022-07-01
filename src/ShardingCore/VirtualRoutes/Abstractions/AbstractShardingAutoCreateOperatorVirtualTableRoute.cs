@@ -26,7 +26,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// 不可以设置一样
         /// </summary>
         public virtual string JobName =>
-            $"{EntityMetadata?.ShardingDbContextType?.Name}:{EntityMetadata?.EntityType?.Name}";
+            $"{GetType().Name}:{EntityMetadata?.EntityType?.Name}";
 
         /// <summary>
         /// 是否需要自动创建按时间分表的路由

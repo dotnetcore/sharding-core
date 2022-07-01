@@ -1,12 +1,12 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 
 namespace ShardingCore.EFCores.OptionsExtensions
 {
+
+
     /*
     * @Author: xjm
     * @Description:
@@ -16,14 +16,17 @@ namespace ShardingCore.EFCores.OptionsExtensions
     */
 
 #if EFCORE6
-    public class ShardingWrapOptionsExtension : IDbContextOptionsExtension
+    public class ShardingOptionsExtension : IDbContextOptionsExtension
     {
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ShardingWrapOptionsExtension()
+        public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
         }
         public void ApplyServices(IServiceCollection services)
         {
+            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
         }
 
         public void Validate(IDbContextOptions options)
@@ -48,16 +51,23 @@ namespace ShardingCore.EFCores.OptionsExtensions
             }
 
             public override bool IsDatabaseProvider => false;
-            public override string LogFragment => "ShardingWrapOptionsExtension";
+            public override string LogFragment => "ShardingOptionsExtension";
         }
     }
 #endif
 #if EFCORE3 || EFCORE5
 
-     public class ShardingWrapOptionsExtension: IDbContextOptionsExtension
+     public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+
+        public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
+        {
+            _shardingRuntimeContext = shardingRuntimeContext;
+        }
         public void ApplyServices(IServiceCollection services)
         {
+            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
         }
 
         public void Validate(IDbContextOptions options)
@@ -76,27 +86,33 @@ namespace ShardingCore.EFCores.OptionsExtensions
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo) { }
 
             public override bool IsDatabaseProvider => false;
-            public override string LogFragment => "ShardingWrapOptionsExtension";
+            public override string LogFragment => "ShardingOptionsExtension";
         }
     }
 
 #endif
 #if EFCORE2
 
-    public class ShardingWrapOptionsExtension: IDbContextOptionsExtension
+    public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+
+        public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
+        {
+            _shardingRuntimeContext = shardingRuntimeContext;
+        }
         public bool ApplyServices(IServiceCollection services)
         {
-            return false;
+            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
+            return true;
         }
-
         public long GetServiceProviderHashCode() => 0;
 
         public void Validate(IDbContextOptions options)
         {
         }
 
-        public string LogFragment => "ShardingWrapOptionsExtension";
+        public string LogFragment => "ShardingOptionsExtension";
     }
 #endif
 }

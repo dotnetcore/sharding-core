@@ -1,16 +1,9 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MySqlConnector;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Shardings;
 using ShardingCore;
-using ShardingCore.Helpers;
-using ShardingCore.TableExists;
+using ShardingCore.Core;
+using ShardingCore.Extensions;
 
 namespace Sample.MySql
 {
@@ -42,41 +35,72 @@ namespace Sample.MySql
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
 
-            services.AddShardingDbContext<DefaultShardingDbContext>()
-                .AddEntityConfig(o =>
-                {
-                    o.CreateDataBaseOnlyOnStart = true;
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
-                    o.IgnoreCreateTableError = true;
-                    o.AddShardingTableRoute<SysUserLogByMonthRoute>();
-                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                    o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
-                    o.UseShardingQuery((conStr, builder) =>
+            services.AddSingleton<IShardingRuntimeContext>(sp =>
+            {
+                return new ShardingRuntimeBuilder<DefaultShardingDbContext>()
+                    .UseRouteConfig(o =>
                     {
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version())
-                                ,b=>b.EnableRetryOnFailure()
-                            )
-                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
-                        //builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
-                    });
-                    o.UseShardingTransaction((connection, builder) =>
-                    {
-                        builder.UseMySql(connection, new MySqlServerVersion(new Version())
-                                ,b=>b.EnableRetryOnFailure()
+                        o.AddShardingTableRoute<SysUserLogByMonthRoute>();
+                        o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                        // o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
+                    }).UseConfig(o =>
+                    { 
+                        o.UseShardingQuery((conStr,builder)=>
+                        {
+                            builder.UseMySql(conStr, new MySqlServerVersion(new Version())
+                                    // ,b=>b.EnableRetryOnFailure()
                                 )
-                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
-                    });
-                })
-                .AddConfig(op =>
-                {
-                    op.ConfigId = "c0";
-                    op.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                        });
+                        o.UseShardingTransaction((connection, builder) =>
+                        {
+                            builder.UseMySql(connection, new MySqlServerVersion(new Version())
+                                    // ,b=>b.EnableRetryOnFailure()
+                                )
+                                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                        });
+                        o.AddDefaultDataSource("ds0",
+                            "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
 
-                    //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
-                    op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
-                }).EnsureConfig();
+                    })
+                    .Build(sp);
+            });
+            services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension.UseDefaultSharding<DefaultShardingDbContext>);
+            // services.AddShardingDbContext<DefaultShardingDbContext>()
+            //     .AddEntityConfig(o =>
+            //     {
+            //         o.CreateDataBaseOnlyOnStart = true;
+            //         o.CreateShardingTableOnStart = true;
+            //         o.EnsureCreatedWithOutShardingTable = true;
+            //         o.IgnoreCreateTableError = true;
+            //         o.AddShardingTableRoute<SysUserLogByMonthRoute>();
+            //         o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+            //         o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
+            //         o.UseShardingQuery((conStr, builder) =>
+            //         {
+            //             builder.UseMySql(conStr, new MySqlServerVersion(new Version())
+            //                     ,b=>b.EnableRetryOnFailure()
+            //                 )
+            //                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+            //             //builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
+            //         });
+            //         o.UseShardingTransaction((connection, builder) =>
+            //         {
+            //             builder.UseMySql(connection, new MySqlServerVersion(new Version())
+            //                     ,b=>b.EnableRetryOnFailure()
+            //                     )
+            //                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+            //         });
+            //     })
+            //     .AddConfig(op =>
+            //     {
+            //         op.ConfigId = "c0";
+            //         op.AddDefaultDataSource("ds0",
+            //             "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+            //
+            //         //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
+            //         op.ReplaceTableEnsureManager(sp=>new MySqlTableEnsureManager<DefaultShardingDbContext>());
+            //     }).EnsureConfig();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,20 +112,20 @@ namespace Sample.MySql
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseShardingCore();
-            
-            
-            using (var serviceScope = app.ApplicationServices.CreateScope())
-            {
-                var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
-            }
-
-            Console.WriteLine("------------------");
-            using (var serviceScope = app.ApplicationServices.CreateScope())
-            {
-                var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
-            }
-            Console.WriteLine("------------------");
+            // app.UseShardingCore();
+            //
+            //
+            // using (var serviceScope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            // }
+            //
+            // Console.WriteLine("------------------");
+            // using (var serviceScope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            // }
+            // Console.WriteLine("------------------");
             app.UseRouting();
 
             app.UseAuthorization();

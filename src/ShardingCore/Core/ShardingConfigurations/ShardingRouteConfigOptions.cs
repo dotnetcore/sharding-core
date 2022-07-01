@@ -50,15 +50,6 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// 忽略建表时的错误
         /// </summary>
         public bool? IgnoreCreateTableError { get; set; } = false;
-        /// <summary>
-        /// 添加分表路由
-        /// </summary>
-        /// <typeparam name="TRoute"></typeparam>
-        public void AddShardingDataSourceRoute<TRoute>() where TRoute : IVirtualDataSourceRoute
-        {
-            var routeType = typeof(TRoute);
-            AddShardingDataSourceRoute(routeType);
-        }
 
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
 
@@ -79,15 +70,6 @@ namespace ShardingCore.Core.ShardingConfigurations
             {
                 _virtualDataSourceRoutes.Add(shardingEntityType, routeType);
             }
-        }
-        /// <summary>
-        /// 添加分表路由
-        /// </summary>
-        /// <typeparam name="TRoute"></typeparam>
-        public void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute
-        {
-            var routeType = typeof(TRoute);
-            AddShardingTableRoute(routeType);
         }
         public void AddShardingTableRoute(Type routeType)
         {

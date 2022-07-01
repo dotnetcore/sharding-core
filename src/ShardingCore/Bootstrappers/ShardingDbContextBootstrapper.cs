@@ -35,8 +35,7 @@ namespace ShardingCore.Bootstrappers
     /// <summary>
     /// 分片具体DbContext初始化器
     /// </summary>
-    public class ShardingDbContextBootstrapper<TShardingDbContext> : IShardingDbContextBootstrapper
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingDbContextBootstrapper: IShardingDbContextBootstrapper
     {
         private readonly IShardingProvider _shardingProvider;
         private readonly IShardingRouteConfigOptions _routeConfigOptions;
@@ -44,8 +43,6 @@ namespace ShardingCore.Bootstrappers
         private readonly IParallelTableManager _parallelTableManager;
 
 
-        // private readonly ITrackerManager<TShardingDbContext> _trackerManager;
-        private readonly Type _shardingDbContextType;
 
         public ShardingDbContextBootstrapper(
             IShardingProvider shardingProvider,
@@ -54,7 +51,6 @@ namespace ShardingCore.Bootstrappers
             IParallelTableManager parallelTableManager
         )
         {
-            _shardingDbContextType = typeof(TShardingDbContext);
             _shardingProvider = shardingProvider;
             _routeConfigOptions = routeConfigOptions;
             _entityMetadataManager = entityMetadataManager;
@@ -78,7 +74,7 @@ namespace ShardingCore.Bootstrappers
             foreach (var entityType in shardingEntities)
             {
                 var entityMetadataInitializerType =
-                    typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
+                    typeof(EntityMetadataInitializer<>).GetGenericType0(entityType);
 
                 var entityMetadataInitializer =(IEntityMetadataInitializer)_shardingProvider.CreateInstance(entityMetadataInitializerType);
                 entityMetadataInitializer.Initialize();

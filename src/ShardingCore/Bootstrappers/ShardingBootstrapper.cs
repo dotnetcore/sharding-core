@@ -22,15 +22,15 @@ namespace ShardingCore.Bootstrappers
     {
         private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IShardingProvider _shardingProvider;
-        private readonly IDbContextTypeCollector _dbContextTypeCollector;
+        private readonly IShardingDbContextBootstrapper _shardingDbContextBootstrapper;
         private readonly IJobManager _jobManager;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IShardingProvider shardingProvider,IDbContextTypeCollector dbContextTypeCollector,IJobManager jobManager)
+        public ShardingBootstrapper(IShardingProvider shardingProvider,IShardingDbContextBootstrapper shardingDbContextBootstrapper,IJobManager jobManager)
         {
             _logger = InternalLoggerFactory.DefaultFactory.CreateLogger<ShardingBootstrapper>();
             _shardingProvider = shardingProvider;
-            _dbContextTypeCollector = dbContextTypeCollector;
+            _shardingDbContextBootstrapper = shardingDbContextBootstrapper;
             _jobManager = jobManager;
         }
         /// <summary>
@@ -42,11 +42,8 @@ namespace ShardingCore.Bootstrappers
                 return;
             _logger.LogDebug("sharding core starting......");
 
-            var instanceType = typeof(ShardingDbContextBootstrapper<>).GetGenericType0(_dbContextTypeCollector.ShardingDbContextType);
-            var instance = (IShardingDbContextBootstrapper)_shardingProvider.CreateInstance(instanceType);
-            _logger.LogDebug($"{_dbContextTypeCollector.ShardingDbContextType}  start init......");
-            instance.Initialize();
-            _logger.LogDebug($"{_dbContextTypeCollector.ShardingDbContextType}  complete init");
+            _shardingDbContextBootstrapper.Initialize();
+            _logger.LogDebug($"sharding core  complete init");
 
             if (_jobManager != null && _jobManager.HasAnyJob())
             {
@@ -55,6 +52,7 @@ namespace ShardingCore.Bootstrappers
                     await _shardingProvider.GetRequiredService<JobRunnerService>().StartAsync();
                 }, TaskCreationOptions.LongRunning);
             }
+            _logger.LogDebug("sharding core running......");
         }
 
     }

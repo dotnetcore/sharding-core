@@ -14,8 +14,7 @@ namespace ShardingCore.CommonTest
         private readonly List<string> _allDataSources;
         public ShardingDataSourceMod()
         { 
-            var entityMetadata = new EntityMetadata(typeof(TestEntity), nameof(TestEntity), typeof(ShardingDataSourceMod),
-                new ReadOnlyCollection<PropertyInfo>(typeof(TestEntity).GetProperties().ToList()), null);
+            var entityMetadata = new EntityMetadata(typeof(TestEntity));
             var entityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TestEntity>.CreateEntityMetadataDataSourceBuilder(entityMetadata);
             entityMetadataDataSourceBuilder.ShardingProperty(o => o.Id);
             entityMetadata.CheckShardingDataSourceMetadata();

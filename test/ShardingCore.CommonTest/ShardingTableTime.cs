@@ -15,8 +15,7 @@ namespace ShardingCore.CommonTest
         private readonly List<string> _allTables;
         public ShardingTableTime()
         { 
-            var entityMetadata = new EntityMetadata(typeof(TestTimeEntity), nameof(TestTimeEntity), typeof(ShardingDataSourceMod),
-                new ReadOnlyCollection<PropertyInfo>(typeof(TestTimeEntity).GetProperties().ToList()), null);
+            var entityMetadata = new EntityMetadata(typeof(TestTimeEntity));
             var entityMetadataTableBuilder = EntityMetadataTableBuilder<TestTimeEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
             entityMetadataTableBuilder.ShardingProperty(o => o.Time);
             entityMetadata.CheckShardingTableMetadata();

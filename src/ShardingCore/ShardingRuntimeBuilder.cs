@@ -67,7 +67,7 @@ namespace ShardingCore
             shardingRuntimeContext.UseLogfactory(loggerFactory);
             shardingRuntimeContext.AddServiceConfig(services =>
             {
-                services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
+                // services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
                 services.AddSingleton<IShardingRouteConfigOptions>(sp => _shardingRouteConfigOptions);
 
                 services.AddSingleton(sp => _shardingConfigOptions);

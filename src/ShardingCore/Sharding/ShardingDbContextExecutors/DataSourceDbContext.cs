@@ -82,6 +82,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// shell dbcontext最外面的壳
         /// </summary>
         private readonly DbContext _shardingShellDbContext;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
         /// <summary>
         /// 数据库事务
@@ -118,11 +119,13 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             IDbContextCreator dbContextCreator,
             ActualConnectionStringManager actualConnectionStringManager)
         {
+            var shardingDbContext = (IShardingDbContext)shardingShellDbContext;
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingShellDbContext = shardingShellDbContext;
+            _shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             DbContextType = shardingShellDbContext.GetType();
-            _virtualDataSource =((IShardingDbContext)shardingShellDbContext)
+            _virtualDataSource =shardingDbContext
                 .GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
@@ -149,7 +152,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             try
             {
                 //先创建dbcontext option builder
-                var dbContextOptionsBuilder = CreateDbContextOptionBuilder(DbContextType);
+                var dbContextOptionsBuilder = CreateDbContextOptionBuilder(DbContextType).UseShardingOptions(_shardingRuntimeContext);
 
                 if (IsDefault)
                 {

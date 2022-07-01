@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding
     * @Date: Thursday, 28 January 2021 16:52:43
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+    public class StreamMergeContextFactory : IStreamMergeContextFactory
     {
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IQueryableParseEngine _queryableParseEngine;

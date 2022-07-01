@@ -18,14 +18,14 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     /// <summary>
     /// 分库路由引擎工程
     /// </summary>
-    public class DataSourceRouteRuleEngineFactory<TShardingDbContext>: IDataSourceRouteRuleEngineFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceRouteRuleEngineFactory: IDataSourceRouteRuleEngineFactory
     {
-        private readonly IDataSourceRouteRuleEngine<TShardingDbContext> _dataSourceRouteRuleEngine;
+        private readonly IDataSourceRouteRuleEngine _dataSourceRouteRuleEngine;
         /// <summary>
         /// ctor
         /// </summary>
         /// <param name="dataSourceRouteRuleEngine"></param>
-        public DataSourceRouteRuleEngineFactory(IDataSourceRouteRuleEngine<TShardingDbContext> dataSourceRouteRuleEngine)
+        public DataSourceRouteRuleEngineFactory(IDataSourceRouteRuleEngine dataSourceRouteRuleEngine)
         {
             _dataSourceRouteRuleEngine = dataSourceRouteRuleEngine;
         }

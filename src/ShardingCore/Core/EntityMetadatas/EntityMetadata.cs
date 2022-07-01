@@ -16,10 +16,9 @@ namespace ShardingCore.Core.EntityMetadatas
     /// </summary>
     public class EntityMetadata
     {private const string QueryFilter = "QueryFilter";
-        public EntityMetadata(Type entityType, Type shardingDbContextType)
+        public EntityMetadata(Type entityType)
         {
             EntityType = entityType;
-            ShardingDbContextType = shardingDbContextType;
             ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
             ShardingTableProperties = new Dictionary<string, PropertyInfo>();
         }
@@ -27,8 +26,6 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表类型 sharding entity type
         /// </summary>
         public Type EntityType { get; }
-
-        public Type ShardingDbContextType { get; }
 
         /// <summary>
         /// 是否多数据源

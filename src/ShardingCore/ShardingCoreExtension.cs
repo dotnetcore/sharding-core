@@ -16,7 +16,6 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
-using ShardingCore.DIExtensions;
 using ShardingCore.EFCores;
 using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Jobs;
@@ -25,6 +24,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
+using System.Diagnostics;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.DbContextCreator;
@@ -32,6 +32,8 @@ using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.UnionAllMergeShardingProviders;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.Parsers;
@@ -51,48 +53,60 @@ namespace ShardingCore
     * @Date: Thursday, 28 January 2021 13:32:18
     * @Email: 326308290@qq.com
     */
-    public static class DIExtension
+    public static class ShardingCoreExtension
     {
-        /// <summary>
-        /// 添加ShardingCore配置和EntityFrameworkCore的<![CDATA[services.AddDbContext<TShardingDbContext>]]>
-        /// </summary>
-        /// <typeparam name="TShardingDbContext"></typeparam>
-        /// <param name="services"></param>
-        /// <param name="contextLifetime"></param>
-        /// <param name="optionsLifetime"></param>
-        /// <returns></returns>
-        /// <exception cref="NotSupportedException"></exception>
-        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
-            ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
-            ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            if (contextLifetime == ServiceLifetime.Singleton)
-                throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
-            if (optionsLifetime == ServiceLifetime.Singleton)
-                throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
-            services.AddDbContext<TShardingDbContext>(UseDefaultSharding<TShardingDbContext>, contextLifetime, optionsLifetime);
-            return services.AddShardingConfigure<TShardingDbContext>();
-        }
-
-        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(this IServiceCollection services)
-            where TShardingDbContext : DbContext, IShardingDbContext
-        {
-            //ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
-            return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
-        }
+        // /// <summary>
+        // /// 添加ShardingCore配置和EntityFrameworkCore的<![CDATA[services.AddDbContext<TShardingDbContext>]]>
+        // /// </summary>
+        // /// <typeparam name="TShardingDbContext"></typeparam>
+        // /// <param name="services"></param>
+        // /// <param name="contextLifetime"></param>
+        // /// <param name="optionsLifetime"></param>
+        // /// <returns></returns>
+        // /// <exception cref="NotSupportedException"></exception>
+        // public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
+        //     ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
+        //     ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+        //     where TShardingDbContext : DbContext, IShardingDbContext
+        // {
+        //     if (contextLifetime == ServiceLifetime.Singleton)
+        //         throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+        //     if (optionsLifetime == ServiceLifetime.Singleton)
+        //         throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+        //     services.AddDbContext<TShardingDbContext>(UseDefaultSharding<TShardingDbContext>, contextLifetime, optionsLifetime);
+        //     return services.AddShardingConfigure<TShardingDbContext>();
+        // }
+        //
+        // public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(this IServiceCollection services)
+        //     where TShardingDbContext : DbContext, IShardingDbContext
+        // {
+        //     //ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
+        //     return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
+        // }
 
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            // Stopwatch sp=Stopwatch.StartNew();
+            // for (int i = 0; i < 100000; i++)
+            // {
+            //     
+            //     var virtualDataSource1 = shardingRuntimeContext.GetVirtualDataSource();
+            //     
+            // }
+            // sp.Stop();
+            // Console.WriteLine(sp.ElapsedMilliseconds);
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
-            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>(shardingRuntimeContext);
+            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder)
+                .UseSharding<TShardingDbContext>(shardingRuntimeContext);
             
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
+            services.TryAddSingleton<ITableRouteManager, TableRouteManager>();
+            services.TryAddSingleton<IShardingDbContextBootstrapper, ShardingDbContextBootstrapper>();
             services.TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
             services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
@@ -100,13 +114,13 @@ namespace ShardingCore
 
             // services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();
             services.TryAddSingleton<ITrackerManager, TrackerManager>();
-            services.TryAddSingleton<IStreamMergeContextFactory<TShardingDbContext>, StreamMergeContextFactory<TShardingDbContext>>();
+            services.TryAddSingleton<IStreamMergeContextFactory, StreamMergeContextFactory>();
             services.TryAddSingleton<IShardingTableCreator, ShardingTableCreator>();
             //虚拟数据源管理
             services.TryAddSingleton<IVirtualDataSource, VirtualDataSource>();
             services.TryAddSingleton<IVirtualDataSourceRouteManager, VirtualDataSourceRouteManager>();
-            services.TryAddSingleton<IDataSourceRouteRuleEngine<TShardingDbContext>, DataSourceRouteRuleEngine<TShardingDbContext>>();
-            services.TryAddSingleton<IDataSourceRouteRuleEngineFactory<TShardingDbContext>, DataSourceRouteRuleEngineFactory<TShardingDbContext>>();
+            services.TryAddSingleton<IDataSourceRouteRuleEngine, DataSourceRouteRuleEngine>();
+            services.TryAddSingleton<IDataSourceRouteRuleEngineFactory, DataSourceRouteRuleEngineFactory>();
             //读写分离链接创建工厂
             services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor>();
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
@@ -155,24 +169,33 @@ namespace ShardingCore
         }
         public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return optionsBuilder.UseShardingWrapMark(shardingRuntimeContext)
+            return optionsBuilder.UseShardingWrapMark().UseShardingOptions(shardingRuntimeContext)
                 .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IDbContextTransactionManager, ShardingRelationalTransactionManager<TShardingDbContext>>()
                 .ReplaceService<IRelationalTransactionFactory, ShardingRelationalTransactionFactory<TShardingDbContext>>();
         }
-
-
-        private static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
+        public static DbContextOptionsBuilder UseShardingOptions(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
         {
-            var extension = optionsBuilder.CreateOrGetExtension(shardingRuntimeContext);
-            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+            var shardingOptionsExtension = optionsBuilder.CreateOrGetShardingOptionsExtension(shardingRuntimeContext);
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(shardingOptionsExtension);
             return optionsBuilder;
         }
 
-        private static ShardingWrapOptionsExtension CreateOrGetExtension(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
+
+        private static DbContextOptionsBuilder UseShardingWrapMark(this DbContextOptionsBuilder optionsBuilder)
+        {
+            var shardingWrapExtension = optionsBuilder.CreateOrGetShardingWrapExtension();
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(shardingWrapExtension);
+            return optionsBuilder;
+        }
+
+        private static ShardingWrapOptionsExtension CreateOrGetShardingWrapExtension(this DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.Options.FindExtension<ShardingWrapOptionsExtension>() ??
-               new ShardingWrapOptionsExtension(shardingRuntimeContext);
+               new ShardingWrapOptionsExtension();
+        private static ShardingOptionsExtension CreateOrGetShardingOptionsExtension(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext)
+            => optionsBuilder.Options.FindExtension<ShardingOptionsExtension>() ??
+               new ShardingOptionsExtension(shardingRuntimeContext);
 
         public static DbContextOptionsBuilder UseInnerDbContextSharding(this DbContextOptionsBuilder optionsBuilder)
         {

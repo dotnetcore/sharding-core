@@ -34,6 +34,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
          
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IDbContextCreator _dbContextCreator;
@@ -59,14 +60,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             _shardingDbContext = shardingDbContext;
             //初始化
-            var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
-            shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
-            _virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
-            _tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
-            _dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
-            _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
-            _routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
-            var shardingReadWriteManager = shardingRuntimeContext.GetShardingReadWriteManager();
+            _shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            _shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
+            _dbContextCreator = _shardingRuntimeContext.GetDbContextCreator();
+            _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
+            _routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
+            var shardingReadWriteManager = _shardingRuntimeContext.GetShardingReadWriteManager();
             _actualConnectionStringManager = new ActualConnectionStringManager(shardingReadWriteManager,_virtualDataSource);
         }
 
@@ -104,7 +105,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             var dbContextOptionBuilder = DataSourceDbContext.CreateDbContextOptionBuilder(_shardingDbContext.GetType());
             var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName, false);
-            _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
+            _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder).UseShardingOptions(_shardingRuntimeContext);
             return dbContextOptionBuilder.Options;
         }
 

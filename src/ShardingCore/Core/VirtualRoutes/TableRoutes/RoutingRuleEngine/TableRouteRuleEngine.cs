@@ -89,6 +89,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     if (tableRouteResults.IsNotEmpty())
                     {
                         dataSourceCount++;
+                        if (tableRouteResults.Count > 1)
+                        {
+                            isCrossTable = true;
+                        }
                         foreach (var tableRouteResult in tableRouteResults)
                         {
                             if (tableRouteResult.ReplaceTables.Count > 1)

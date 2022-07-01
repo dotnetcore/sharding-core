@@ -54,9 +54,9 @@ namespace ShardingCore.Core
             {
                 if (isInited)
                     return;
+                isInited = true;
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
-                isInited = true;
             }
         }
 
@@ -126,6 +126,7 @@ namespace ShardingCore.Core
             lock (INIT_MODEL)
             {
                 if(isInitModeled) return;
+                isInitModeled = true;
                 var entityMetadataManager = GetService<IEntityMetadataManager>();
                 var entityTypes = dbContext.Model.GetEntityTypes();
                 foreach (var entityType in entityTypes)
@@ -152,7 +153,7 @@ namespace ShardingCore.Core
         }
         private void CheckIfNotBuild()
         {
-            if (isInited)
+            if (!isInited)
                 throw new InvalidOperationException("sharding runtime not init");
         }
         

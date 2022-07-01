@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
@@ -36,9 +29,9 @@ namespace ShardingCore.Bootstrappers
     /// </summary>
     /// <typeparam name="TShardingDbContext"></typeparam>
     /// <typeparam name="TEntity"></typeparam>
-    public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
+    public class EntityMetadataInitializer<TEntity>: IEntityMetadataInitializer where TEntity:class
     {
-        private static readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger=InternalLoggerFactory.CreateLogger<EntityMetadataInitializer<TShardingDbContext,TEntity>>();
+        private static readonly ILogger<EntityMetadataInitializer<TEntity>> _logger=InternalLoggerFactory.CreateLogger<EntityMetadataInitializer<TEntity>>();
         // private const string QueryFilter = "QueryFilter";
         // private readonly IEntityType _entityType;
         // private readonly string _virtualTableName;
@@ -80,7 +73,7 @@ namespace ShardingCore.Bootstrappers
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public void Initialize()
         {
-            var entityMetadata = new EntityMetadata(_shardingEntityType, typeof(TShardingDbContext));
+            var entityMetadata = new EntityMetadata(_shardingEntityType);
             if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
                 throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {_shardingEntityType.FullName}");
             //设置标签
@@ -105,9 +98,6 @@ namespace ShardingCore.Bootstrappers
             }
             if (_shardingRouteConfigOptions.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
             {
-                if (!typeof(TShardingDbContext).IsShardingTableDbContext())
-                    throw new ShardingCoreInvalidOperationException(
-                        $"{typeof(TShardingDbContext)} is not impl {nameof(IShardingTableDbContext)},not support sharding table");
                 var entityMetadataTableBuilder = EntityMetadataTableBuilder<TEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
                 //配置属性分表信息
                 EntityMetadataHelper.Configure(entityMetadataTableBuilder);
