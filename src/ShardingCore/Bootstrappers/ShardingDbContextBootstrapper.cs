@@ -4,13 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
-using ShardingCore.Core.TrackerManagers;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -43,37 +39,29 @@ namespace ShardingCore.Bootstrappers
         where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly IServiceProvider _internalServiceProvider;
-        private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IParallelTableManager<TShardingDbContext> _parallelTableManager;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
+        private readonly IShardingEntityConfigOptions _entityConfigOptions;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IParallelTableManager _parallelTableManager;
+        private readonly IVirtualDataSource _virtualDataSource;
 
-        private readonly IDataSourceInitializer<TShardingDbContext> _dataSourceInitializer;
 
         // private readonly ITrackerManager<TShardingDbContext> _trackerManager;
         private readonly Type _shardingDbContextType;
 
         public ShardingDbContextBootstrapper(
             IServiceProvider internalServiceProvider,
-            IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
-            IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
-            IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
-            IParallelTableManager<TShardingDbContext> parallelTableManager,
-            IVirtualTableManager<TShardingDbContext> virtualTableManager,
-            IDataSourceInitializer<TShardingDbContext> dataSourceInitializer
-            // ITrackerManager<TShardingDbContext> trackerManager
+            IShardingEntityConfigOptions entityConfigOptions,
+            IEntityMetadataManager entityMetadataManager,
+            IParallelTableManager parallelTableManager,
+            IVirtualDataSource virtualDataSource
         )
         {
             _shardingDbContextType = typeof(TShardingDbContext);
             _internalServiceProvider = internalServiceProvider;
-            _virtualDataSourceManager = virtualDataSourceManager;
             _entityConfigOptions = entityConfigOptions;
             _entityMetadataManager = entityMetadataManager;
             _parallelTableManager = parallelTableManager;
-            _virtualTableManager = virtualTableManager;
-            _dataSourceInitializer = dataSourceInitializer;
-            // _trackerManager = trackerManager;
+            _virtualDataSource = virtualDataSource;
         }
 
         /// <summary>
@@ -88,21 +76,17 @@ namespace ShardingCore.Bootstrappers
 
         private void InitializeEntityMetadata()
         {
-            var configId = _virtualDataSourceManager.GetAllVirtualDataSources().First().ConfigId;
-            using (_virtualDataSourceManager.CreateScope(configId))
+            var shardingEntities = _entityConfigOptions.GetShardingTableRouteTypes()
+                .Concat(_entityConfigOptions.GetShardingDataSourceRouteTypes()).ToHashSet();
+            foreach (var entityType in shardingEntities)
             {
-                var shardingEntities = _entityConfigOptions.GetShardingTableRouteTypes()
-                    .Concat(_entityConfigOptions.GetShardingDataSourceRouteTypes()).ToHashSet();
-                foreach (var entityType in shardingEntities)
-                {
-                    var entityMetadataInitializerType =
-                        typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
+                var entityMetadataInitializerType =
+                    typeof(EntityMetadataInitializer<,>).GetGenericType1(_shardingDbContextType, entityType);
 
-                    var entityMetadataInitializer =
-                        (IEntityMetadataInitializer)ActivatorUtilities.CreateInstance(_internalServiceProvider,entityMetadataInitializerType);
-                    entityMetadataInitializer.Initialize();
+                var entityMetadataInitializer =
+                    (IEntityMetadataInitializer)ActivatorUtilities.CreateInstance(_internalServiceProvider,entityMetadataInitializerType);
+                entityMetadataInitializer.Initialize();
                     
-                }
             }
         }
 

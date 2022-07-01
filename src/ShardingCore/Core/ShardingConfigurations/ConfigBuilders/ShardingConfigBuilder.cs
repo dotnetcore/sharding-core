@@ -119,7 +119,7 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
 
             var services = ShardingCoreConfigBuilder.Services;
             services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
-            services.AddSingleton<IShardingEntityConfigOptions<TShardingDbContext>>(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
+            services.AddSingleton<IShardingEntityConfigOptions>(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
             services.AddSingleton(sp => ShardingCoreConfigBuilder.ShardingEntityConfigOptions);
 
             services.AddSingleton(sp => CreateShardingConfigurationOptions(isMultiConfig, configurationStrategy));
@@ -133,20 +133,20 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             return services;
         }
 
-        private IShardingConfigurationOptions<TShardingDbContext> CreateShardingConfigurationOptions(bool isMultiConfig,
+        private IShardingConfigurationOptions CreateShardingConfigurationOptions(bool isMultiConfig,
                 ShardingConfigurationStrategyEnum configurationStrategy)
         {
-            IShardingConfigurationOptions<TShardingDbContext> shardingConfigurationOptions;
+            IShardingConfigurationOptions shardingConfigurationOptions;
             if (!isMultiConfig)
             {
-                shardingConfigurationOptions = new ShardingSingleConfigurationOptions<TShardingDbContext>
+                shardingConfigurationOptions = new ShardingSingleConfigurationOptions
                 {
                     ShardingConfigurationStrategy = configurationStrategy
                 };
             }
             else
             {
-                shardingConfigurationOptions = new ShardingMultiConfigurationOptions<TShardingDbContext>
+                shardingConfigurationOptions = new ShardingMultiConfigurationOptions
                 {
                     ShardingConfigurationStrategy = configurationStrategy
                 };

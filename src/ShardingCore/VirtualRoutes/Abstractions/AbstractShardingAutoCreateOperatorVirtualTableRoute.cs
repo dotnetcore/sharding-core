@@ -7,11 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs.Abstaractions;
@@ -60,58 +56,58 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         protected abstract string ConvertNowToTail(DateTime now);
         public virtual Task ExecuteAsync()
         {
-            var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualTable = virtualTableManager.GetVirtualTable(typeof(TEntity));
-            _logger.LogDebug($"get {typeof(TEntity).Name}'s virtualTable ");
-            if (virtualTable == null)
-            {
-                _logger.LogDebug($" {typeof(TEntity).Name}'s virtualTable  is null");
-                return Task.CompletedTask;
-            }
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var virtualDataSourceManager = (IVirtualDataSourceManager)ShardingContainer.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
-            var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
-            var now = DateTime.Now.AddMinutes(IncrementMinutes);
-            var tail = ConvertNowToTail(now);
-//必须先执行AddPhysicTable在进行CreateTable
-            virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
-            foreach (var virtualDataSource in allVirtualDataSources)
-            {
-                ISet<string> dataSources = new HashSet<string>();
-                if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
-                {
-                    var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(TEntity));
-                    foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
-                    {
-                        dataSources.Add(dataSourceName);
-                    }
-                }
-                else
-                {
-                    dataSources.Add(virtualDataSource.DefaultDataSourceName);
-                }
-                _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
-                using (virtualDataSourceManager.CreateScope(virtualDataSource.ConfigId))
-                {
-                    foreach (var dataSource in dataSources)
-                    {
-                        try
-                        {
-                            _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                            tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
-                            _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                        }
-                        catch (Exception e)
-                        {
-                            //ignore
-                            _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                            if (DoLogError)
-                                _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
-                        }
-                    }
-                }
-            }
+//             var virtualTableManager = (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+//             var virtualTable = virtualTableManager.GetVirtualTable(typeof(TEntity));
+//             _logger.LogDebug($"get {typeof(TEntity).Name}'s virtualTable ");
+//             if (virtualTable == null)
+//             {
+//                 _logger.LogDebug($" {typeof(TEntity).Name}'s virtualTable  is null");
+//                 return Task.CompletedTask;
+//             }
+//             var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+//             var tableCreator = (IShardingTableCreator)ShardingContainer.GetService(typeof(IShardingTableCreator<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+//             var virtualDataSourceManager = (IVirtualDataSourceManager)ShardingContainer.GetService(typeof(IVirtualDataSourceManager<>).GetGenericType0(EntityMetadata.ShardingDbContextType));
+//             var allVirtualDataSources = virtualDataSourceManager.GetAllVirtualDataSources();
+//             var now = DateTime.Now.AddMinutes(IncrementMinutes);
+//             var tail = ConvertNowToTail(now);
+// //必须先执行AddPhysicTable在进行CreateTable
+//             virtualTableManager.AddPhysicTable(virtualTable, new DefaultPhysicTable(virtualTable, tail));
+//             foreach (var virtualDataSource in allVirtualDataSources)
+//             {
+//                 ISet<string> dataSources = new HashSet<string>();
+//                 if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
+//                 {
+//                     var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(TEntity));
+//                     foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
+//                     {
+//                         dataSources.Add(dataSourceName);
+//                     }
+//                 }
+//                 else
+//                 {
+//                     dataSources.Add(virtualDataSource.DefaultDataSourceName);
+//                 }
+//                 _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
+//                 using (virtualDataSourceManager.CreateScope(virtualDataSource.ConfigId))
+//                 {
+//                     foreach (var dataSource in dataSources)
+//                     {
+//                         try
+//                         {
+//                             _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+//                             tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
+//                             _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+//                         }
+//                         catch (Exception e)
+//                         {
+//                             //ignore
+//                             _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+//                             if (DoLogError)
+//                                 _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+//                         }
+//                     }
+//                 }
+//             }
 
             return Task.CompletedTask;
         }

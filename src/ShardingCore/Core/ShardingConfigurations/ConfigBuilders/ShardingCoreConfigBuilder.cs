@@ -36,10 +36,10 @@ namespace ShardingCore.DIExtensions
             ShardingEntityConfigOptions = new ShardingEntityConfigOptions();
         }
 
-        public ShardingConfigBuilder AddEntityConfig(Action<ShardingEntityConfigOptions> entityConfigure)
+        public ShardingConfigBuilder<TShardingDbContext> AddEntityConfig(Action<ShardingEntityConfigOptions> entityConfigure)
         {
             entityConfigure?.Invoke(ShardingEntityConfigOptions);
-            return new ShardingConfigBuilder(this);
+            return new ShardingConfigBuilder<TShardingDbContext>(this);
         }
         //public ShardingCoreConfigBuilder<TShardingDbContext, TActualDbContext> AddDefaultDataSource(string dataSourceName, string connectionString)
         //{

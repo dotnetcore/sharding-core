@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,14 +23,13 @@ namespace ShardingCore.Core
         private object INIT_LOCK = new object();
         private IServiceCollection _serviceMap = new ServiceCollection();
 
-        private readonly IServiceProvider _serviceProvider;
+        private  IServiceProvider _serviceProvider;
         private IServiceProvider _applicationServiceProvider;
 
 
         private ShardingRuntimeContext()
         {
             _serviceProvider = _serviceMap.BuildServiceProvider();
-            _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
         }
 
         private static readonly ShardingRuntimeContext _instance = new ShardingRuntimeContext();
@@ -44,36 +44,6 @@ namespace ShardingCore.Core
 
         public void Initialize()
         {
-            // var shardingRuntimeModelCacheFactory = _serviceProvider.GetRequiredService<IShardingRuntimeModelCacheFactory>();
-            // var cacheKey = shardingRuntimeModelCacheFactory.GetCacheKey(dbContext.GetType());
-            // var memoryCache = _serviceProvider.GetRequiredService<IMemoryCache>();
-            // if (!memoryCache.TryGetValue(cacheKey, out IShardingRuntimeModel model))
-            // {
-            //     
-            //     // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
-            //     var acquire = Monitor.TryEnter(INIT_LOCK, TimeSpan.FromSeconds(waitSeconds));
-            //     if (!acquire)
-            //     {
-            //         throw new ShardingCoreInvalidOperationException("cache model timeout");
-            //     }
-            //     try
-            //     {
-            //         if (!cache.TryGetValue(cacheKey, out model))
-            //         {
-            //             model = CreateModel(
-            //                 context, modelCreationDependencies.ConventionSetBuilder, modelCreationDependencies.ModelDependencies);
-            //
-            //             model = modelCreationDependencies.ModelRuntimeInitializer.Initialize(
-            //                 model, designTime, modelCreationDependencies.ValidationLogger);
-            //
-            //             model = cache.Set(cacheKey, model, new MemoryCacheEntryOptions { Size = size, Priority = priority });
-            //         }
-            //     }
-            //     finally
-            //     {
-            //         Monitor.Exit(_syncObject);
-            //     }
-            // }
             if (isInited)
             {
                 return;
@@ -81,11 +51,9 @@ namespace ShardingCore.Core
 
             lock (INIT_LOCK)
             {
-
                 if (isInited)
                 {
                     return;
-
                 }
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
@@ -168,15 +136,15 @@ namespace ShardingCore.Core
           {
               return GetService<IShardingRouteManager>();
           }
-          
-         public  IShardingEntityConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
-             where TShardingDbContext : DbContext, IShardingDbContext
-         {
-             return (IShardingEntityConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
-         }
-         public  IShardingEntityConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
-         {
-             return (IShardingEntityConfigOptions)GetService(typeof(IShardingEntityConfigOptions<>).GetGenericType0(shardingDbContextType));
-         }
+         //  
+         // public  IShardingEntityConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
+         //     where TShardingDbContext : DbContext, IShardingDbContext
+         // {
+         //     return (IShardingEntityConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
+         // }
+         // public  IShardingEntityConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
+         // {
+         //     return (IShardingEntityConfigOptions)GetService(typeof(IShardingEntityConfigOptions<>).GetGenericType0(shardingDbContextType));
+         // }
     }
 }

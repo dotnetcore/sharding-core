@@ -18,13 +18,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
     public class VirtualDataSourceRouteManager : IVirtualDataSourceRouteManager
     {
-        private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
-
-        public VirtualDataSourceRouteManager(IEntityMetadataManager entityMetadataManager)
-        {
-            _entityMetadataManager = entityMetadataManager;
-        }
 
         public IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity : class
         {

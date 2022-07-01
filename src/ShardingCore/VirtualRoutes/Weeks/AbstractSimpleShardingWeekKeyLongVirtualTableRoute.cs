@@ -1,15 +1,8 @@
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Extensions;
 using ShardingCore.Helpers;
-using ShardingCore.TableCreator;
 using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace ShardingCore.VirtualRoutes.Weeks
 {

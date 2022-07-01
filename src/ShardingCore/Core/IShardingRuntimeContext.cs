@@ -1,11 +1,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
@@ -24,13 +26,20 @@ namespace ShardingCore.Core
         IParallelTableManager GetParallelTableManager();
         IDbContextCreator GetDbContextCreator();
         IEntityMetadataManager GetEntityMetadataManager();
-        IVirtualDataSourceManager GetVirtualDataSourceManager();
+        // IVirtualDataSourceManager GetVirtualDataSourceManager();
+        IVirtualDataSource GetVirtualDataSource();
         ITableRouteManager GetTableRouteManager();
         IRouteTailFactory GetRouteTailFactory();
         IQueryTracker GetQueryTracker();
         IUnionAllMergeManager GetUnionAllMergeManager();
         IShardingPageManager GetShardingPageManager();
+        
         void GetOrCreateShardingRuntimeModel(DbContext dbContext);
+
+         void UseLogfactory(ILoggerFactory loggerFactory);
+
+         void WithApplicationServiceProvider(IServiceProvider applicationServiceProvider);
+         void Initialize();
         object GetService(Type serviceType);
         TService GetService<TService>();
     }

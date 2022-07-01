@@ -12,7 +12,6 @@ using ShardingCore.Core.ShardingPage;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
@@ -26,16 +25,13 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingQueryExecutors;
 using ShardingCore.TableCreator;
 using System;
-using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
-using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.UnionAllMergeShardingProviders;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.Parsers;
@@ -44,7 +40,6 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
 using ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries;
-using ShardingCore.TableExists;
 
 namespace ShardingCore
 {
@@ -87,41 +82,44 @@ namespace ShardingCore
 
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager<TShardingDbContext>>().GetCurrentVirtualDataSource();
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            shardingRuntimeContext.WithApplicationServiceProvider(serviceProvider);
+            var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager>().GetCurrentVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
             var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+            
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
             //虚拟数据源管理者
-            services.TryAddSingleton<IVirtualDataSourceManager<TShardingDbContext>, VirtualDataSourceManager<TShardingDbContext>>();
+            services.TryAddSingleton<IVirtualDataSourceManager, VirtualDataSourceManager>();
             services.TryAddSingleton<IVirtualDataSourceAccessor, VirtualDataSourceAccessor>();
             //分表dbcontext创建
-            services.TryAddSingleton<IDbContextCreator<TShardingDbContext>, ActivatorDbContextCreator<TShardingDbContext>>();
+            services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
 
 
-            services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();
-            services.TryAddSingleton<ITrackerManager<TShardingDbContext>, TrackerManager<TShardingDbContext>>();
+            // services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();
+            services.TryAddSingleton<ITrackerManager, TrackerManager>();
             services.TryAddSingleton<IStreamMergeContextFactory<TShardingDbContext>, StreamMergeContextFactory<TShardingDbContext>>();
-            services.TryAddSingleton<IShardingTableCreator<TShardingDbContext>, ShardingTableCreator<TShardingDbContext>>();
+            services.TryAddSingleton<IShardingTableCreator, ShardingTableCreator>();
             //虚拟数据源管理
-            services.TryAddSingleton<IVirtualDataSourceRouteManager<TShardingDbContext>, VirtualDataSourceRouteManager<TShardingDbContext>>();
+            services.TryAddSingleton<IVirtualDataSourceRouteManager, VirtualDataSourceRouteManager>();
             services.TryAddSingleton<IDataSourceRouteRuleEngine<TShardingDbContext>, DataSourceRouteRuleEngine<TShardingDbContext>>();
             services.TryAddSingleton<IDataSourceRouteRuleEngineFactory<TShardingDbContext>, DataSourceRouteRuleEngineFactory<TShardingDbContext>>();
             //读写分离链接创建工厂
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //虚拟表管理
-            services.TryAddSingleton<IVirtualTableManager<TShardingDbContext>, VirtualTableManager<TShardingDbContext>>();
+            // services.TryAddSingleton<IVirtualTableManager<TShardingDbContext>, VirtualTableManager<TShardingDbContext>>();
             //分表分库对象元信息管理
-            services.TryAddSingleton<IEntityMetadataManager<TShardingDbContext>, DefaultEntityMetadataManager<TShardingDbContext>>();
+            services.TryAddSingleton<IEntityMetadataManager, DefaultEntityMetadataManager>();
 
             //分表引擎
-            services.TryAddSingleton<ITableRouteRuleEngineFactory<TShardingDbContext>, TableRouteRuleEngineFactory<TShardingDbContext>>();
-            services.TryAddSingleton<ITableRouteRuleEngine<TShardingDbContext>, TableRouteRuleEngine<TShardingDbContext>>();
+            services.TryAddSingleton<ITableRouteRuleEngineFactory, TableRouteRuleEngineFactory>();
+            services.TryAddSingleton<ITableRouteRuleEngine, TableRouteRuleEngine>();
             //分表引擎工程
-            services.TryAddSingleton<IParallelTableManager<TShardingDbContext>, ParallelTableManager<TShardingDbContext>>();
+            services.TryAddSingleton<IParallelTableManager, ParallelTableManager>();
             services.TryAddSingleton<IRouteTailFactory, RouteTailFactory>();
             services.TryAddSingleton<IShardingCompilerExecutor, DefaultShardingCompilerExecutor>();
             services.TryAddSingleton<IQueryCompilerContextFactory, QueryCompilerContextFactory>();
@@ -154,9 +152,9 @@ namespace ShardingCore
             services.TryAddShardingJob();
             return services;
         }
-        public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(this DbContextOptionsBuilder optionsBuilder,IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            return optionsBuilder.UseShardingWrapMark()
+            return optionsBuilder.UseShardingWrapMark(shardingRuntimeContext)
                 .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IDbContextTransactionManager, ShardingRelationalTransactionManager<TShardingDbContext>>()

@@ -21,15 +21,15 @@ namespace ShardingCore.Bootstrappers
     {
         private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IServiceProvider _internalServiceProvider;
-        private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
+        private readonly IDbContextTypeCollector _dbContextTypeCollector;
         private readonly IJobManager _jobManager;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingBootstrapper(IServiceProvider internalServiceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors,IJobManager jobManager)
+        public ShardingBootstrapper(IServiceProvider internalServiceProvider,IDbContextTypeCollector dbContextTypeCollector,IJobManager jobManager)
         {
             _logger = InternalLoggerFactory.DefaultFactory .CreateLogger<ShardingBootstrapper>();
             _internalServiceProvider = internalServiceProvider;
-            _dbContextTypeCollectors = dbContextTypeCollectors;
+            _dbContextTypeCollector = dbContextTypeCollector;
             _jobManager = jobManager;
         }
         /// <summary>
@@ -40,13 +40,11 @@ namespace ShardingCore.Bootstrappers
             if (!_doOnlyOnce.IsUnDo())
                 return;
             _logger.LogDebug("sharding core starting......");
-            foreach (var dbContextTypeCollector in _dbContextTypeCollectors)
-            {
-                var instance = (IShardingDbContextBootstrapper)ActivatorUtilities.CreateInstance(_internalServiceProvider,typeof(ShardingDbContextBootstrapper<>).GetGenericType0(dbContextTypeCollector.ShardingDbContextType));
-                _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  start init......");
-                instance.Initialize();
-                _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  complete init");
-            }
+          
+            var instance = (IShardingDbContextBootstrapper)ActivatorUtilities.CreateInstance(_internalServiceProvider,typeof(ShardingDbContextBootstrapper<>).GetGenericType0(_dbContextTypeCollector.ShardingDbContextType));
+            _logger.LogDebug($"{_dbContextTypeCollector.ShardingDbContextType}  start init......");
+            instance.Initialize();
+            _logger.LogDebug($"{_dbContextTypeCollector.ShardingDbContextType}  complete init");
 
             if (_jobManager != null && _jobManager.HasAnyJob())
             {

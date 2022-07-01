@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -164,15 +161,15 @@ namespace ShardingCore.Core.ShardingConfigurations
             ReplaceShardingComparerFactory = newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
         }
 
-        public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =
-            sp => new EmptyTableEnsureManager<TShardingDbContext>();
-
-        public void ReplaceTableEnsureManager(
-            Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> tableEnsureManagerConfigure)
-        {
-            TableEnsureManagerFactory = tableEnsureManagerConfigure ??
-                                        throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
-        }
+        // public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =
+        //     sp => new EmptyTableEnsureManager<TShardingDbContext>();
+        //
+        // public void ReplaceTableEnsureManager(
+        //     Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> tableEnsureManagerConfigure)
+        // {
+        //     TableEnsureManagerFactory = tableEnsureManagerConfigure ??
+        //                                 throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
+        // }
 
 
     }
