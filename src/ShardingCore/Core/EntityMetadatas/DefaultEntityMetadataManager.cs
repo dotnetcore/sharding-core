@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -77,6 +78,16 @@ namespace ShardingCore.Core.EntityMetadatas
         public List<Type> GetAllShardingEntities()
         {
             return _caches.Keys.ToList();
+        }
+
+        public bool TryInitModel(IEntityType efEntityType)
+        {
+            if (_caches.TryGetValue(efEntityType.ClrType,out var  metadata))
+            {
+                metadata.SetEntityModel(efEntityType);
+                return true;
+            }
+                return false;
         }
     }
 }

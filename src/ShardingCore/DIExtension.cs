@@ -38,6 +38,8 @@ using ShardingCore.Sharding.Parsers;
 using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.Sharding.ShardingComparision;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
 using ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries;
 
@@ -83,18 +85,15 @@ namespace ShardingCore
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            shardingRuntimeContext.WithApplicationServiceProvider(serviceProvider);
-            var virtualDataSource = serviceProvider.GetRequiredService<IVirtualDataSourceManager>().GetCurrentVirtualDataSource();
+            var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
-            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>();
+            var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder).UseSharding<TShardingDbContext>(shardingRuntimeContext);
             
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            //虚拟数据源管理者
-            services.TryAddSingleton<IVirtualDataSourceManager, VirtualDataSourceManager>();
-            services.TryAddSingleton<IVirtualDataSourceAccessor, VirtualDataSourceAccessor>();
+            services.TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
             services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
 
@@ -104,10 +103,12 @@ namespace ShardingCore
             services.TryAddSingleton<IStreamMergeContextFactory<TShardingDbContext>, StreamMergeContextFactory<TShardingDbContext>>();
             services.TryAddSingleton<IShardingTableCreator, ShardingTableCreator>();
             //虚拟数据源管理
+            services.TryAddSingleton<IVirtualDataSource, VirtualDataSource>();
             services.TryAddSingleton<IVirtualDataSourceRouteManager, VirtualDataSourceRouteManager>();
             services.TryAddSingleton<IDataSourceRouteRuleEngine<TShardingDbContext>, DataSourceRouteRuleEngine<TShardingDbContext>>();
             services.TryAddSingleton<IDataSourceRouteRuleEngineFactory<TShardingDbContext>, DataSourceRouteRuleEngineFactory<TShardingDbContext>>();
             //读写分离链接创建工厂
+            services.TryAddSingleton<IShardingReadWriteAccessor, ShardingReadWriteAccessor>();
             services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //虚拟表管理
@@ -124,7 +125,6 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingCompilerExecutor, DefaultShardingCompilerExecutor>();
             services.TryAddSingleton<IQueryCompilerContextFactory, QueryCompilerContextFactory>();
             services.TryAddSingleton<IShardingQueryExecutor, DefaultShardingQueryExecutor>();
-            services.TryAddSingleton<IReadWriteConnectorFactory, ReadWriteConnectorFactory>();
 
             //
             services.TryAddSingleton<IPrepareParser, DefaultPrepareParser>();
@@ -147,6 +147,7 @@ namespace ShardingCore
             services.TryAddSingleton<INativeTrackQueryExecutor, NativeTrackQueryExecutor>();
             //读写分离手动指定
             services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
+            services.TryAddSingleton<IShardingComparer, CSharpLanguageShardingComparer>();
 
 
             services.TryAddShardingJob();

@@ -6,6 +6,7 @@ using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.EntityQueryConfigurations;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
@@ -21,16 +22,19 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     {
 
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
-        public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
+        // public IShardingRouteConfigOptions RouteConfigOptions { get; private set; }
 
         public PaginationMetadata PaginationMetadata { get; private set; }
         public EntityQueryMetadata EntityQueryMetadata { get;  private set; }
-        public virtual void Initialize(EntityMetadata entityMetadata)
+        public IShardingProvider RouteShardingProvider { get;  private set;}
+
+        public virtual void Initialize(EntityMetadata entityMetadata,IShardingProvider shardingProvider)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
+            RouteShardingProvider = shardingProvider;
             EntityMetadata = entityMetadata;
-            EntityConfigOptions =ShardingRuntimeContext.GetInstance().GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
+            // RouteConfigOptions =shardingProvider.GetService<IShardingRouteConfigOptions>();
             var paginationConfiguration = CreatePaginationConfiguration();
              if (paginationConfiguration!=null)
              {

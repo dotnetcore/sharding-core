@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Sharding.ShardingComparision;
-using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -10,14 +8,6 @@ namespace ShardingCore.Core.ShardingConfigurations
 {
     public class ShardingConfigOptions
     {
-        /// <summary>
-        /// 配置id,如果是单配置可以用guid代替,如果是多配置该属性表示每个配置的id
-        /// </summary>
-        public string ConfigId { get; set; }
-        /// <summary>
-        /// 优先级多个配置之间的优先级
-        /// </summary>
-        public int Priority { get; set; }
         /// <summary>
         /// 全局配置最大的查询连接数限制,默认系统逻辑处理器<code>Environment.ProcessorCount</code>
         /// </summary>
@@ -49,13 +39,13 @@ namespace ShardingCore.Core.ShardingConfigurations
             DefaultDataSourceName= dataSourceName?? throw new ArgumentNullException(nameof(dataSourceName));
             DefaultConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
-        public Func<IServiceProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
+        public Func<IShardingProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
         /// <summary>
         /// 添加额外数据源
         /// </summary>
         /// <param name="extraDataSourceConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddExtraDataSource(Func<IServiceProvider, IDictionary<string, string>> extraDataSourceConfigure)
+        public void AddExtraDataSource(Func<IShardingProvider, IDictionary<string, string>> extraDataSourceConfigure)
         {
             DataSourcesConfigure= extraDataSourceConfigure ?? throw new ArgumentNullException(nameof(extraDataSourceConfigure));
         }
@@ -69,7 +59,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <param name="readConnStringGetStrategy">LatestFirstTime:DbContext缓存,LatestEveryTime:每次都是最新</param>
         /// <exception cref="ArgumentNullException"></exception>
         public void AddReadWriteSeparation(
-            Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
+            Func<IShardingProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
             int defaultPriority = 10,
@@ -83,7 +73,7 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
         public void AddReadWriteNodeSeparation(
-            Func<IServiceProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
+            Func<IShardingProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
             int defaultPriority = 10,
@@ -149,16 +139,6 @@ namespace ShardingCore.Core.ShardingConfigurations
         public void UseShellDbContextConfigure(Action<DbContextOptionsBuilder> shellDbContextConfigure)
         {
             ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
-        }
-        public Func<IServiceProvider, IShardingComparer> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer();
-        /// <summary>
-        /// 替换默认的比较器
-        /// </summary>
-        /// <param name="newShardingComparerFactory"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
-        {
-            ReplaceShardingComparerFactory = newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
         }
 
         // public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =

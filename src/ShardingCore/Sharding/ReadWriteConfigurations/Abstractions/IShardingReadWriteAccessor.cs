@@ -13,7 +13,6 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations.Abstractions
     */
     public interface IShardingReadWriteAccessor
     {
-        Type ShardingDbContextType { get;}
         ShardingReadWriteContext ShardingReadWriteContext { get; set; }
     }
 }

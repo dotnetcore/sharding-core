@@ -26,14 +26,14 @@ namespace ShardingCore.TableCreator
             InternalLoggerFactory.CreateLogger<ShardingTableCreator>();
 
         private readonly IServiceProvider _serviceProvider;
-        private readonly IShardingEntityConfigOptions _entityConfigOptions;
+        private readonly IShardingRouteConfigOptions _routeConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
 
         public ShardingTableCreator(IServiceProvider serviceProvider,
-            IShardingEntityConfigOptions entityConfigOptions, IRouteTailFactory routeTailFactory)
+            IShardingRouteConfigOptions routeConfigOptions, IRouteTailFactory routeTailFactory)
         {
             _serviceProvider = serviceProvider;
-            _entityConfigOptions = entityConfigOptions;
+            _routeConfigOptions = routeConfigOptions;
             _routeTailFactory = routeTailFactory;
         }
 
@@ -64,7 +64,7 @@ namespace ShardingCore.TableCreator
                 }
                 catch (Exception ex)
                 {
-                    if (!_entityConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                    if (!_routeConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                     {
                         _logger.LogWarning(ex,
                             $"create table error entity name:[{shardingEntityType.Name}].");

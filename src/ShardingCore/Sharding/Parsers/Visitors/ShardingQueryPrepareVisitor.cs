@@ -42,7 +42,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
         public ShardingQueryPrepareVisitor(IShardingDbContext shardingDbContext)
         {
             _shardingDbContext = shardingDbContext;
-            _trackerManager = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>()
+            _trackerManager =shardingDbContext.GetShardingRuntimeContext()
                 .GetTrackerManager();
         }
         public ShardingPrepareResult GetShardingPrepareResult()

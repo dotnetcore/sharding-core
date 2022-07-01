@@ -25,25 +25,25 @@ namespace ShardingCore.Sharding
         private readonly IQueryableRewriteEngine _queryableRewriteEngine;
         private readonly IQueryableOptimizeEngine _queryableOptimizeEngine;
         private readonly ITrackerManager _trackerManager;
-        private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
+        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
 
         public StreamMergeContextFactory(IRouteTailFactory routeTailFactory
             , IQueryableParseEngine queryableParseEngine, IQueryableRewriteEngine queryableRewriteEngine, IQueryableOptimizeEngine queryableOptimizeEngine,
-            ITrackerManager trackerManager,IShardingEntityConfigOptions shardingEntityConfigOptions)
+            ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
         {
             _routeTailFactory = routeTailFactory;
             _queryableParseEngine = queryableParseEngine;
             _queryableRewriteEngine = queryableRewriteEngine;
             _queryableOptimizeEngine = queryableOptimizeEngine;
             _trackerManager = trackerManager;
-            _shardingEntityConfigOptions = shardingEntityConfigOptions;
+            _shardingRouteConfigOptions = shardingRouteConfigOptions;
         }
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
             var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
-            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory,_trackerManager,_shardingEntityConfigOptions);
+            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
         }
     }
 }

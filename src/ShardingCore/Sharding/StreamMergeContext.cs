@@ -70,7 +70,7 @@ namespace ShardingCore.Sharding
         public bool IsCrossTable => MergeQueryCompilerContext.IsCrossTable();
 
         private readonly ITrackerManager _trackerManager;
-        private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
+        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
 
@@ -84,7 +84,7 @@ namespace ShardingCore.Sharding
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult,
-            IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingEntityConfigOptions shardingEntityConfigOptions)
+            IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
             ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext())
@@ -95,7 +95,7 @@ namespace ShardingCore.Sharding
             _routeTailFactory = routeTailFactory;
             QueryEntities= MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
             _trackerManager =trackerManager;
-            _shardingEntityConfigOptions = shardingEntityConfigOptions;
+            _shardingRouteConfigOptions = shardingRouteConfigOptions;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             Orders = parseResult.GetOrderByContext().PropertyOrders.ToArray();
             Skip = parseResult.GetPaginationContext().Skip;
@@ -265,7 +265,7 @@ namespace ShardingCore.Sharding
 
         public IShardingComparer GetShardingComparer()
         {
-            return GetShardingDbContext().GetVirtualDataSource().ConfigurationParams.ShardingComparer;
+            return GetShardingDbContext().GetShardingRuntimeContext().GetRequiredService<IShardingComparer>();
         }
 
         public TResult PreperExecute<TResult>(Func<TResult> emptyFunc)
@@ -296,7 +296,7 @@ namespace ShardingCore.Sharding
 
         private bool ThrowIfQueryRouteNotMatch()
         {
-            return _shardingEntityConfigOptions.ThrowIfQueryRouteNotMatch;
+            return _shardingRouteConfigOptions.ThrowIfQueryRouteNotMatch;
         }
 
         public bool UseUnionAllMerge()

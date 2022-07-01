@@ -21,14 +21,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
     public interface IVirtualDataSource
     {
         /// <summary>
-        /// 配置id
-        /// </summary>
-        string ConfigId { get; }
-        /// <summary>
-        /// 当前配置的优先级
-        /// </summary>
-        int Priority { get; }
-        /// <summary>
         /// 数据源配置
         /// </summary>
         IVirtualDataSourceConfigurationParams ConfigurationParams { get; }

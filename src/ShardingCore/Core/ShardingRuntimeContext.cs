@@ -6,35 +6,38 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrappers;
+using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using ShardingCore.Core.ShardingPage.Abstractions;
+using ShardingCore.Core.TrackerManagers;
+using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
+using ShardingCore.Sharding.ParallelTables;
+using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 
 namespace ShardingCore.Core
 {
-    public sealed class ShardingRuntimeContext
+    public sealed class ShardingRuntimeContext:IShardingRuntimeContext
     {
         private bool isInited = false;
         private object INIT_LOCK = new object();
+        private bool isInitModeled = false;
+        private object INIT_MODEL = new object();
         private IServiceCollection _serviceMap = new ServiceCollection();
 
         private  IServiceProvider _serviceProvider;
         private IServiceProvider _applicationServiceProvider;
-
-
-        private ShardingRuntimeContext()
-        {
-            _serviceProvider = _serviceMap.BuildServiceProvider();
-        }
-
-        private static readonly ShardingRuntimeContext _instance = new ShardingRuntimeContext();
-        public static ShardingRuntimeContext GetInstance() => _instance;
-
 
         public void AddServiceConfig(Action<IServiceCollection> configure)
         {
@@ -45,19 +48,90 @@ namespace ShardingCore.Core
         public void Initialize()
         {
             if (isInited)
-            {
                 return;
-            }
 
             lock (INIT_LOCK)
             {
                 if (isInited)
-                {
                     return;
-                }
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
                 isInited = true;
+            }
+        }
+
+        public IShardingCompilerExecutor GetShardingCompilerExecutor()
+        {
+            return GetRequiredService<IShardingCompilerExecutor>();
+        }
+
+        public IShardingReadWriteManager GetShardingReadWriteManager()
+        {
+            return GetRequiredService<IShardingReadWriteManager>();
+        }
+
+        public ITrackerManager GetTrackerManager()
+        {
+            return GetRequiredService<ITrackerManager>();
+        }
+
+        public IParallelTableManager GetParallelTableManager()
+        {
+            return GetRequiredService<IParallelTableManager>();
+        }
+
+        public IDbContextCreator GetDbContextCreator()
+        {
+            return GetRequiredService<IDbContextCreator>();
+        }
+
+        public IEntityMetadataManager GetEntityMetadataManager()
+        {
+            return GetRequiredService<IEntityMetadataManager>();
+        }
+
+        public IVirtualDataSource GetVirtualDataSource()
+        {
+            return GetRequiredService<IVirtualDataSource>();
+        }
+
+        public ITableRouteManager GetTableRouteManager()
+        {
+            return GetRequiredService<ITableRouteManager>();
+        }
+
+        public IRouteTailFactory GetRouteTailFactory()
+        {
+            return GetRequiredService<IRouteTailFactory>();
+        }
+
+        public IQueryTracker GetQueryTracker()
+        {
+            return GetRequiredService<IQueryTracker>();
+        }
+
+        public IUnionAllMergeManager GetUnionAllMergeManager()
+        {
+            return GetRequiredService<IUnionAllMergeManager>();
+        }
+
+        public IShardingPageManager GetShardingPageManager()
+        {
+            return GetRequiredService<IShardingPageManager>();
+        }
+
+        public void GetOrCreateShardingRuntimeModel(DbContext dbContext)
+        {
+            if (isInitModeled) return;
+            lock (INIT_MODEL)
+            {
+                if(isInitModeled) return;
+                var entityMetadataManager = GetService<IEntityMetadataManager>();
+                var entityTypes = dbContext.Model.GetEntityTypes();
+                foreach (var entityType in entityTypes)
+                {
+                    entityMetadataManager.TryInitModel(entityType);
+                }
             }
         }
 
@@ -66,7 +140,7 @@ namespace ShardingCore.Core
             InternalLoggerFactory.DefaultFactory = loggerFactory;
         }
 
-        public void WithApplicationServiceProvider(IServiceProvider applicationServiceProvider)
+        public void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider)
         {
             _applicationServiceProvider = applicationServiceProvider;
         }
@@ -82,30 +156,6 @@ namespace ShardingCore.Core
                 throw new InvalidOperationException("sharding runtime not init");
         }
         
-        
-          /// <summary>
-         /// 创建一个没有依赖注入的对象,但是对象的构造函数参数是已经可以通过依赖注入获取的
-         /// </summary>
-         /// <param name="serviceType"></param>
-         /// <returns></returns>
-         /// <exception cref="ArgumentException"></exception>
-         public  object CreateInstance(Type serviceType)
-         {
-             var constructors
-                 = serviceType.GetTypeInfo().DeclaredConstructors
-                     .Where(c => !c.IsStatic && c.IsPublic)
-                     .ToArray();
-
-             if (constructors.Length != 1)
-             {
-                 throw new ArgumentException(
-                     $"type :[{serviceType}] found more than one  declared constructor ");
-             }
-             var @params = constructors[0].GetParameters().Select(x => GetRequiredService(x.ParameterType))
-                 .ToArray();
-             return Activator.CreateInstance(serviceType, @params);
-         }
-
           public object GetService(Type serviceType)
           {
               CheckIfNotBuild();
@@ -117,34 +167,31 @@ namespace ShardingCore.Core
               CheckIfNotBuild();
               return _serviceProvider.GetService<TService>();
           }
-          private object GetRequiredService(Type serviceType)
-          {
-              var service = _serviceProvider?.GetService(serviceType);
-              if (service == null)
-              {
-                  service= _applicationServiceProvider?.GetService(serviceType);
-              }
 
-              if (service == null)
-              {
-                  throw new ShardingCoreInvalidOperationException($"cant unable resolve service:[{serviceType}]");
-              }
-              return service;
+          public object GetRequiredService(Type serviceType)
+          {
+              CheckIfNotBuild();
+              return _serviceProvider.GetRequiredService(serviceType);
           }
 
+          public TService GetRequiredService<TService>()
+          {
+              CheckIfNotBuild();
+              return _serviceProvider.GetRequiredService<TService>();
+          }
           public IShardingRouteManager GetShardingRouteManager()
           {
-              return GetService<IShardingRouteManager>();
+              return GetRequiredService<IShardingRouteManager>();
           }
          //  
-         // public  IShardingEntityConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
+         // public  IShardingRouteConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
          //     where TShardingDbContext : DbContext, IShardingDbContext
          // {
-         //     return (IShardingEntityConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
+         //     return (IShardingRouteConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
          // }
-         // public  IShardingEntityConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
+         // public  IShardingRouteConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
          // {
-         //     return (IShardingEntityConfigOptions)GetService(typeof(IShardingEntityConfigOptions<>).GetGenericType0(shardingDbContextType));
+         //     return (IShardingRouteConfigOptions)GetService(typeof(IShardingRouteConfigOptions<>).GetGenericType0(shardingDbContextType));
          // }
     }
 }

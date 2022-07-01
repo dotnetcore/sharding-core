@@ -14,8 +14,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
     public abstract class AbstractVirtualDataSourceConfigurationParams:IVirtualDataSourceConfigurationParams
     {
-        public abstract string ConfigId { get; }
-        public abstract int Priority { get; }
         public virtual int MaxQueryConnectionsLimit { get; } = Environment.ProcessorCount;
         public virtual ConnectionModeEnum ConnectionMode { get; } = ConnectionModeEnum.SYSTEM_AUTO;
         public abstract string DefaultDataSourceName { get; }
@@ -26,7 +24,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public virtual bool? ReadWriteDefaultEnable { get; }
         public virtual int? ReadWriteDefaultPriority { get; }
         public virtual ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
-        public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
 
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
             DbContextOptionsBuilder dbContextOptionsBuilder);

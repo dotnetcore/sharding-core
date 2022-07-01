@@ -38,9 +38,11 @@ namespace ShardingCore.Core
 
          void UseLogfactory(ILoggerFactory loggerFactory);
 
-         void WithApplicationServiceProvider(IServiceProvider applicationServiceProvider);
+         void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider);
          void Initialize();
         object GetService(Type serviceType);
         TService GetService<TService>();
+        object GetRequiredService(Type serviceType);
+        TService GetRequiredService<TService>();
     }
 }

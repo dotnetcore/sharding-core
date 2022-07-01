@@ -5,6 +5,7 @@ using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.EntityQueryConfigurations;
 
 namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
@@ -19,7 +20,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     {
         public EntityMetadata EntityMetadata { get; private set; }
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
-        public IShardingEntityConfigOptions EntityConfigOptions { get; private set; }
+        // public IShardingRouteConfigOptions RouteConfigOptions { get; private set; }
 
         public new PaginationMetadata PaginationMetadata { get; protected set; }
         public bool EnablePagination => PaginationMetadata != null;
@@ -27,11 +28,15 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         //public new EntityQueryMetadata EntityQueryMetadata { get; protected set; }
         //public bool EnableEntityQuery => EnableEntityQuery != null;
 
-        public void Initialize(EntityMetadata entityMetadata)
+        public IShardingProvider RouteShardingProvider { get; private set;}
+
+        public void Initialize(EntityMetadata entityMetadata,IShardingProvider shardingProvider)
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
             EntityMetadata = entityMetadata;
+
+            // RouteConfigOptions = shardingProvider.GetService<IShardingRouteConfigOptions>();
             var paginationConfiguration = CreatePaginationConfiguration();
             if (paginationConfiguration != null)
             {
@@ -39,17 +44,13 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
                 var paginationBuilder = new PaginationBuilder<TEntity>(PaginationMetadata);
                 paginationConfiguration.Configure(paginationBuilder);
             }
-            //var entityQueryConfiguration = CreateEntityQueryConfiguration();
-            //if (entityQueryConfiguration != null)
-            //{
-            //    EntityQueryMetadata = new EntityQueryMetadata();
-            //    var entityQueryBuilder= new EntityQueryBuilder<TEntity>(EntityQueryMetadata);
-            //    entityQueryConfiguration.Configure(entityQueryBuilder);
-            //}
-
-
-            EntityConfigOptions =ShardingRuntimeContext.GetInstance().GetRequiredShardingEntityConfigOption(entityMetadata.ShardingDbContextType);
-
+            // var entityQueryConfiguration = CreateEntityQueryConfiguration();
+            // if (entityQueryConfiguration != null)
+            // {
+            //     EntityQueryMetadata = new EntityQueryMetadata();
+            //     var entityQueryBuilder= new EntityQueryBuilder<TEntity>(EntityQueryMetadata);
+            //     entityQueryConfiguration.Configure(entityQueryBuilder);
+            // }
         }
         public virtual IPaginationConfiguration<TEntity> CreatePaginationConfiguration()
         {

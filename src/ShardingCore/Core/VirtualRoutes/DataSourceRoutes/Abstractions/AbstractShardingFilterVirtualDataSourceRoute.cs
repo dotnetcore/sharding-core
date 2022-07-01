@@ -22,7 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     public abstract class AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> : AbstractVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
 
-        public ShardingRouteContext CurrentShardingRouteContext =>ShardingRuntimeContext.GetInstance().GetShardingRouteManager().Current;
+        public ShardingRouteContext CurrentShardingRouteContext =>RouteShardingProvider.GetRequiredService<IShardingRouteManager>().Current;
         /// <summary>
         /// 启用提示路由
         /// </summary>

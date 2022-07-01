@@ -141,14 +141,14 @@
 //         //{
 //         //    return (IShardingConfigOption)ServiceProvider.GetService(typeof(IShardingConfigOption<>).GetGenericType0(shardingDbContextType));
 //         //}
-//         public static IShardingEntityConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
+//         public static IShardingRouteConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
 //             where TShardingDbContext : DbContext, IShardingDbContext
 //         {
-//             return (IShardingEntityConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
+//             return (IShardingRouteConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
 //         }
-//         public static IShardingEntityConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
+//         public static IShardingRouteConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
 //         {
-//             return (IShardingEntityConfigOptions)ServiceProvider.GetService(typeof(IShardingEntityConfigOptions<>).GetGenericType0(shardingDbContextType));
+//             return (IShardingRouteConfigOptions)ServiceProvider.GetService(typeof(IShardingRouteConfigOptions<>).GetGenericType0(shardingDbContextType));
 //         }
 //
 //         public static IVirtualDataSourceManager<TShardingDbContext> GetRequiredVirtualDataSourceManager<TShardingDbContext>()

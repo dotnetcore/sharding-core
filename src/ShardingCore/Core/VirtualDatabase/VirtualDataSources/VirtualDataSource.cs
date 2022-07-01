@@ -37,9 +37,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         private readonly IVirtualDataSourceRouteManager _dataSourceRouteManager;
 
         private readonly IPhysicDataSourcePool _physicDataSourcePool;
-
-        public string ConfigId => ConfigurationParams.ConfigId;
-        public int Priority => ConfigurationParams.Priority;
         public string DefaultDataSourceName { get; private set; }
         public string DefaultConnectionString { get; private set; }
         public bool UseReadWriteSeparation { get; }
@@ -48,7 +45,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         {
             Check.NotNull(configurationParams, nameof(configurationParams));
             Check.NotNull(configurationParams.ExtraDataSources, nameof(configurationParams.ExtraDataSources));
-            Check.NotNull(configurationParams.ShardingComparer, nameof(configurationParams.ShardingComparer));
             if(configurationParams.MaxQueryConnectionsLimit<=0)
                 throw new ArgumentOutOfRangeException(nameof(configurationParams.MaxQueryConnectionsLimit));
             ConfigurationParams = configurationParams;

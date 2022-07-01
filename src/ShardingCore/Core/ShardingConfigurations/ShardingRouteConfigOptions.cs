@@ -15,37 +15,37 @@ using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingEntityConfigOptions : IShardingEntityConfigOptions
+    public class ShardingRouteConfigOptions : IShardingRouteConfigOptions
     {
         private readonly IDictionary<Type, Type> _virtualDataSourceRoutes = new Dictionary<Type, Type>();
         private readonly IDictionary<Type, Type> _virtualTableRoutes = new Dictionary<Type, Type>();
         private readonly ISet<ParallelTableGroupNode> _parallelTables = new HashSet<ParallelTableGroupNode>();
 
-        /// <summary>
-        /// 如果数据库不存在就创建并且创建表除了分表的
-        /// </summary>
-        public bool EnsureCreatedWithOutShardingTable { get; set; }
-
-        /// <summary>
-        /// 是否需要在启动时创建分表
-        /// </summary>
-        public bool? CreateShardingTableOnStart { get; set; }
-        /// <summary>
-        /// 是否在启动时创建数据库
-        /// </summary>
-        public bool? CreateDataBaseOnlyOnStart { get; set; }
-        /// <summary>
-        /// 当查询遇到没有路由被命中时是否抛出错误
-        /// </summary>
-        public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
-        ///// <summary>
-        ///// 全局启用分表路由表达式缓存,仅缓存单个表达式
-        ///// </summary>
-        //public bool? EnableTableRouteCompileCache { get; set; }
-        ///// <summary>
-        ///// 全局启用分库路由表达式缓存,仅缓存单个表达式
-        ///// </summary>
-        //public bool? EnableDataSourceRouteCompileCache { get; set; }
+        // /// <summary>
+        // /// 如果数据库不存在就创建并且创建表除了分表的
+        // /// </summary>
+        // public bool EnsureCreatedWithOutShardingTable { get; set; }
+        //
+        // /// <summary>
+        // /// 是否需要在启动时创建分表
+        // /// </summary>
+        // public bool? CreateShardingTableOnStart { get; set; }
+        // /// <summary>
+        // /// 是否在启动时创建数据库
+        // /// </summary>
+        // public bool? CreateDataBaseOnlyOnStart { get; set; }
+        // /// <summary>
+        // /// 当查询遇到没有路由被命中时是否抛出错误
+        // /// </summary>
+        // public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
+        // ///// <summary>
+        // ///// 全局启用分表路由表达式缓存,仅缓存单个表达式
+        // ///// </summary>
+        // //public bool? EnableTableRouteCompileCache { get; set; }
+        // ///// <summary>
+        // ///// 全局启用分库路由表达式缓存,仅缓存单个表达式
+        // ///// </summary>
+        // //public bool? EnableDataSourceRouteCompileCache { get; set; }
         /// <summary>
         /// 忽略建表时的错误
         /// </summary>
@@ -59,6 +59,9 @@ namespace ShardingCore.Core.ShardingConfigurations
             var routeType = typeof(TRoute);
             AddShardingDataSourceRoute(routeType);
         }
+
+        public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
+
         public void AddShardingDataSourceRoute(Type routeType)
         {
             if (!routeType.IsVirtualDataSourceRoute())
@@ -151,48 +154,25 @@ namespace ShardingCore.Core.ShardingConfigurations
         {
             return _parallelTables;
         }
-        /// <summary>
-        /// 多个DbContext事务传播委托
-        /// </summary>
-        public Action<DbConnection, DbContextOptionsBuilder> ConnectionConfigure { get; private set; }
-        /// <summary>
-        /// 初始DbContext的创建委托
-        /// </summary>
-        public Action<string, DbContextOptionsBuilder> ConnectionStringConfigure { get; private set; }
-        /// <summary>
-        /// 仅内部DbContext生效的配置委托
-        /// </summary>
-        public Action<DbContextOptionsBuilder> ExecutorDbContextConfigure { get; private set; }
-        public Action<DbContextOptionsBuilder> ShellDbContextConfigure { get; private set; }
-
-
-        /// <summary>
-        /// 如何使用字符串创建DbContext
-        /// </summary>
-        public void UseShardingQuery(Action<string, DbContextOptionsBuilder> queryConfigure)
-        {
-            ConnectionStringConfigure = queryConfigure ?? throw new ArgumentNullException(nameof(queryConfigure));
-        }
-        /// <summary>
-        /// 如何传递事务到其他DbContext
-        /// </summary>
-        public void UseShardingTransaction(Action<DbConnection, DbContextOptionsBuilder> transactionConfigure)
-        {
-            ConnectionConfigure = transactionConfigure ?? throw new ArgumentNullException(nameof(transactionConfigure));
-        }
-        /// <summary>
-        /// 仅内部真实DbContext配置的方法
-        /// </summary>
-        /// <param name="executorDbContextConfigure"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void UseExecutorDbContextConfigure(Action<DbContextOptionsBuilder> executorDbContextConfigure)
-        {
-            ExecutorDbContextConfigure = executorDbContextConfigure ?? throw new ArgumentNullException(nameof(executorDbContextConfigure));
-        }
-
-        public void UseShellDbContextConfigure(Action<DbContextOptionsBuilder> shellDbContextConfigure)
-        {
-            ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
-        }
+        // /// <summary>
+        // /// 仅内部DbContext生效的配置委托
+        // /// </summary>
+        // public Action<DbContextOptionsBuilder> ExecutorDbContextConfigure { get; private set; }
+        // public Action<DbContextOptionsBuilder> ShellDbContextConfigure { get; private set; }
+        //
+        // /// <summary>
+        // /// 仅内部真实DbContext配置的方法
+        // /// </summary>
+        // /// <param name="executorDbContextConfigure"></param>
+        // /// <exception cref="ArgumentNullException"></exception>
+        // public void UseExecutorDbContextConfigure(Action<DbContextOptionsBuilder> executorDbContextConfigure)
+        // {
+        //     ExecutorDbContextConfigure = executorDbContextConfigure ?? throw new ArgumentNullException(nameof(executorDbContextConfigure));
+        // }
+        //
+        // public void UseShellDbContextConfigure(Action<DbContextOptionsBuilder> shellDbContextConfigure)
+        // {
+        //     ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
+        // }
     }
 }

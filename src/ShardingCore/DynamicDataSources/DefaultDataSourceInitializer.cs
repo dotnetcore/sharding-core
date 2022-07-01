@@ -26,7 +26,7 @@
 //         private static readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger =
 //             InternalLoggerFactory.CreateLogger<DataSourceInitializer<TShardingDbContext>>();
 //
-//         private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
+//         private readonly IShardingRouteConfigOptions<TShardingDbContext> _routeConfigOptions;
 //         private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
 //         private readonly IRouteTailFactory _routeTailFactory;
 //         private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
@@ -34,13 +34,13 @@
 //         private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
 //
 //         public DataSourceInitializer(
-//             IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
+//             IShardingRouteConfigOptions<TShardingDbContext> routeConfigOptions,
 //             IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
 //             IRouteTailFactory routeTailFactory, IVirtualTableManager<TShardingDbContext> virtualTableManager,
 //             IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
 //             IShardingTableCreator<TShardingDbContext> shardingTableCreator)
 //         {
-//             _entityConfigOptions = entityConfigOptions;
+//             _routeConfigOptions = routeConfigOptions;
 //             _virtualDataSourceManager = virtualDataSourceManager;
 //             _routeTailFactory = routeTailFactory;
 //             _virtualTableManager = virtualTableManager;
@@ -54,9 +54,9 @@
 //                 {
 //                     // var createDatabase = !needCreateDatabase.HasValue || needCreateDatabase.Value;
 //                         //
-//                         // if ((_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)&&createDatabase)
+//                         // if ((_routeConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)&&createDatabase)
 //                         //     EnsureCreated(virtualDataSource, context, dataSourceName);
-//                         // else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault()&& createDatabase)
+//                         // else if (_routeConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault()&& createDatabase)
 //                         // {
 //                         //     EnsureCreateDataBaseOnly(context, dataSourceName);
 //                         // }
@@ -131,7 +131,7 @@
 //         //         }
 //         //     }
 //         //
-//         //     return _entityConfigOptions.CreateShardingTableOnStart.GetValueOrDefault();
+//         //     return _routeConfigOptions.CreateShardingTableOnStart.GetValueOrDefault();
 //         // }
 //         //
 //         // private void EnsureCreated(IVirtualDataSource<TShardingDbContext> virtualDataSource, DbContext context,

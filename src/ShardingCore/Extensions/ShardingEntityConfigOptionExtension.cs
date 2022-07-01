@@ -5,22 +5,22 @@ namespace ShardingCore.Extensions
 {
     public static class ShardingEntityConfigOptionExtension
     {
-        public static bool TryGetVirtualTableRoute<TEntity>(this IShardingEntityConfigOptions shardingEntityConfigOptions, out Type virtualTableRouteType) where TEntity:class
+        public static bool TryGetVirtualTableRoute<TEntity>(this IShardingRouteConfigOptions shardingRouteConfigOptions, out Type virtualTableRouteType) where TEntity:class
         {
-            if (shardingEntityConfigOptions.HasVirtualTableRoute(typeof(TEntity)))
+            if (shardingRouteConfigOptions.HasVirtualTableRoute(typeof(TEntity)))
             {
-                virtualTableRouteType = shardingEntityConfigOptions.GetVirtualTableRouteType(typeof(TEntity));
+                virtualTableRouteType = shardingRouteConfigOptions.GetVirtualTableRouteType(typeof(TEntity));
                 return virtualTableRouteType != null;
             }
 
             virtualTableRouteType = null;
             return false;
         }
-        public static bool TryGetVirtualDataSourceRoute<TEntity>(this IShardingEntityConfigOptions shardingEntityConfigOptions,out Type virtualDataSourceRouteType) where TEntity:class
+        public static bool TryGetVirtualDataSourceRoute<TEntity>(this IShardingRouteConfigOptions shardingRouteConfigOptions,out Type virtualDataSourceRouteType) where TEntity:class
         {
-            if (shardingEntityConfigOptions.HasVirtualDataSourceRoute(typeof(TEntity)))
+            if (shardingRouteConfigOptions.HasVirtualDataSourceRoute(typeof(TEntity)))
             {
-                virtualDataSourceRouteType = shardingEntityConfigOptions.GetVirtualDataSourceRouteType(typeof(TEntity));
+                virtualDataSourceRouteType = shardingRouteConfigOptions.GetVirtualDataSourceRouteType(typeof(TEntity));
                 return virtualDataSourceRouteType != null;
             }
 
