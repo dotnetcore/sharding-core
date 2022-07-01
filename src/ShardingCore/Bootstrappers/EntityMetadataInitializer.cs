@@ -27,42 +27,31 @@ namespace ShardingCore.Bootstrappers
     /// <summary>
     /// 对象元数据初始化器
     /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
     /// <typeparam name="TEntity"></typeparam>
     public class EntityMetadataInitializer<TEntity>: IEntityMetadataInitializer where TEntity:class
     {
         private static readonly ILogger<EntityMetadataInitializer<TEntity>> _logger=InternalLoggerFactory.CreateLogger<EntityMetadataInitializer<TEntity>>();
-        // private const string QueryFilter = "QueryFilter";
-        // private readonly IEntityType _entityType;
-        // private readonly string _virtualTableName;
-        // private readonly Expression<Func<TEntity,bool>> _queryFilterExpression;
         private readonly Type _shardingEntityType;
         private readonly IShardingProvider _shardingProvider;
         private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
         private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
-        private readonly IJobManager _jobManager;
 
         public EntityMetadataInitializer(
             IShardingProvider shardingProvider,
             IShardingRouteConfigOptions shardingRouteConfigOptions,
             IVirtualDataSourceRouteManager virtualDataSourceRouteManager,
             ITableRouteManager tableRouteManager,
-            IEntityMetadataManager entityMetadataManager,
-            IJobManager jobManager
+            IEntityMetadataManager entityMetadataManager
             )
         {
             _shardingEntityType = typeof(TEntity);
-            // _entityType = entityMetadataEnsureParams.EntityType;
-            // _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
-            // _queryFilterExpression = entityMetadataEnsureParams.EntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as Expression<Func<TEntity, bool>>;
             _shardingProvider = shardingProvider;
             _shardingRouteConfigOptions = shardingRouteConfigOptions;
             _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
             _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
-            _jobManager = jobManager;
         }
         /// <summary>
         /// 初始化
@@ -117,10 +106,10 @@ namespace ShardingCore.Bootstrappers
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckShardingTableMetadata();
                 //添加任务
-                if (virtualTableRoute is IJob routeJob && routeJob.AutoCreateTableByTime())
+                if (virtualTableRoute is IJob routeJob)
                 {
                     var jobEntry = JobEntryFactory.Create(routeJob);
-                    _jobManager.AddJob(jobEntry);
+                    _shardingProvider.GetRequiredService<IJobManager>().AddJob(jobEntry);
                 }
             }
             entityMetadata.CheckGenericMetadata();

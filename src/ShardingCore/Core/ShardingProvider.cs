@@ -29,5 +29,24 @@ namespace ShardingCore.Core
             }
             return service;
         }
+        public  TService GetService<TService>()
+        {
+            return (TService)GetService(typeof(TService));
+        }
+        public  object GetRequiredService(Type serviceType)
+        {
+            var service = GetService(serviceType);
+            if (service == null)
+            {
+                throw new ArgumentNullException($"cant resolve {serviceType.FullName}");
+            }
+
+            return service;
+        }
+
+        public  TService GetRequiredService<TService>()
+        {
+            return (TService)GetRequiredService(typeof(TService));
+        }
     }
 }

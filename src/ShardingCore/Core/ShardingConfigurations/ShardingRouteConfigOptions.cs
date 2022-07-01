@@ -53,6 +53,15 @@ namespace ShardingCore.Core.ShardingConfigurations
 
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
 
+        /// <summary>
+        /// 添加分库路由
+        /// </summary>
+        /// <typeparam name="TRoute"></typeparam>
+        public  void AddShardingDataSourceRoute<TRoute>() where TRoute : IVirtualDataSourceRoute
+        {
+            var routeType = typeof(TRoute);
+            AddShardingDataSourceRoute(routeType);
+        }
         public void AddShardingDataSourceRoute(Type routeType)
         {
             if (!routeType.IsVirtualDataSourceRoute())
@@ -70,6 +79,15 @@ namespace ShardingCore.Core.ShardingConfigurations
             {
                 _virtualDataSourceRoutes.Add(shardingEntityType, routeType);
             }
+        }
+        /// <summary>
+        /// 添加分表路由
+        /// </summary>
+        /// <typeparam name="TRoute"></typeparam>
+        public  void AddShardingTableRoute<TRoute>() where TRoute : IVirtualTableRoute
+        {
+            var routeType = typeof(TRoute);
+            AddShardingTableRoute(routeType);
         }
         public void AddShardingTableRoute(Type routeType)
         {
@@ -136,6 +154,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         {
             return _parallelTables;
         }
+
         // /// <summary>
         // /// 仅内部DbContext生效的配置委托
         // /// </summary>
@@ -156,5 +175,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         // {
         //     ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
         // }
+        
+        
     }
 }

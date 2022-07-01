@@ -47,21 +47,13 @@ namespace Sample.MySql
                     { 
                         o.UseShardingQuery((conStr,builder)=>
                         {
-                            builder.UseMySql(conStr, new MySqlServerVersion(new Version())
-                                    // ,b=>b.EnableRetryOnFailure()
-                                )
-                                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                            builder.UseMySql(conStr, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                         });
                         o.UseShardingTransaction((connection, builder) =>
                         {
-                            builder.UseMySql(connection, new MySqlServerVersion(new Version())
-                                    // ,b=>b.EnableRetryOnFailure()
-                                )
-                                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                            builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                         });
-                        o.AddDefaultDataSource("ds0",
-                            "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
-
+                        o.AddDefaultDataSource("ds0","server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     })
                     .Build(sp);
             });
@@ -111,21 +103,6 @@ namespace Sample.MySql
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            // app.UseShardingCore();
-            //
-            //
-            // using (var serviceScope = app.ApplicationServices.CreateScope())
-            // {
-            //     var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
-            // }
-            //
-            // Console.WriteLine("------------------");
-            // using (var serviceScope = app.ApplicationServices.CreateScope())
-            // {
-            //     var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
-            // }
-            // Console.WriteLine("------------------");
             app.UseRouting();
 
             app.UseAuthorization();

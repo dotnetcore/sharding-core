@@ -151,6 +151,26 @@ namespace ShardingCore.Core.ShardingConfigurations
         //                                 throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
         // }
 
+        public void CheckArguments()
+        {
+            if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
+                throw new ArgumentNullException(
+                    $"{nameof(DefaultDataSourceName)} plz call {nameof(AddDefaultDataSource)}");
+            
+            if (string.IsNullOrWhiteSpace(DefaultConnectionString))
+                throw new ArgumentNullException(
+                    $"{nameof(DefaultConnectionString)} plz call {nameof(AddDefaultDataSource)}");
+
+            if (ConnectionStringConfigure is null)
+                throw new ArgumentNullException($"plz call {nameof(UseShardingQuery)}");
+            if (ConnectionConfigure is null )
+                throw new ArgumentNullException(
+                    $"plz call {nameof(UseShardingTransaction)}");
+
+            if (MaxQueryConnectionsLimit <= 0)
+                throw new ArgumentException(
+                    $"{nameof(MaxQueryConnectionsLimit)} should greater than and equal 1");
+        }
 
     }
 }

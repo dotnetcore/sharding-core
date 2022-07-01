@@ -56,7 +56,7 @@ namespace ShardingCore.Core
                     return;
                 isInited = true;
                 _serviceProvider = _serviceMap.BuildServiceProvider();
-                _serviceProvider.GetRequiredService<IShardingBootstrapper>().Start();
+                _serviceProvider.GetRequiredService<IShardingBootstrapper>().Initialize();
             }
         }
 

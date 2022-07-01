@@ -29,6 +29,7 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
+using ShardingCore.Core.ShardingConfigurations.ConfigBuilders;
 using ShardingCore.Core.UnionAllMergeShardingProviders;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
@@ -55,34 +56,34 @@ namespace ShardingCore
     */
     public static class ShardingCoreExtension
     {
-        // /// <summary>
-        // /// 添加ShardingCore配置和EntityFrameworkCore的<![CDATA[services.AddDbContext<TShardingDbContext>]]>
-        // /// </summary>
-        // /// <typeparam name="TShardingDbContext"></typeparam>
-        // /// <param name="services"></param>
-        // /// <param name="contextLifetime"></param>
-        // /// <param name="optionsLifetime"></param>
-        // /// <returns></returns>
-        // /// <exception cref="NotSupportedException"></exception>
-        // public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
-        //     ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
-        //     ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-        //     where TShardingDbContext : DbContext, IShardingDbContext
-        // {
-        //     if (contextLifetime == ServiceLifetime.Singleton)
-        //         throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
-        //     if (optionsLifetime == ServiceLifetime.Singleton)
-        //         throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
-        //     services.AddDbContext<TShardingDbContext>(UseDefaultSharding<TShardingDbContext>, contextLifetime, optionsLifetime);
-        //     return services.AddShardingConfigure<TShardingDbContext>();
-        // }
-        //
-        // public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(this IServiceCollection services)
-        //     where TShardingDbContext : DbContext, IShardingDbContext
-        // {
-        //     //ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
-        //     return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
-        // }
+        /// <summary>
+        /// 添加ShardingCore配置和EntityFrameworkCore的<![CDATA[services.AddDbContext<TShardingDbContext>]]>
+        /// </summary>
+        /// <typeparam name="TShardingDbContext"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="contextLifetime"></param>
+        /// <param name="optionsLifetime"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingDbContext<TShardingDbContext>(this IServiceCollection services,
+            ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
+            ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            if (contextLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+            if (optionsLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+            services.AddDbContext<TShardingDbContext>(UseDefaultSharding<TShardingDbContext>, contextLifetime, optionsLifetime);
+            return services.AddShardingConfigure<TShardingDbContext>();
+        }
+        
+        public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(this IServiceCollection services)
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            //ShardingCoreHelper.CheckContextConstructors<TShardingDbContext>();
+            return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
+        }
 
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
@@ -106,10 +107,10 @@ namespace ShardingCore
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
             services.TryAddSingleton<ITableRouteManager, TableRouteManager>();
-            services.TryAddSingleton<IShardingDbContextBootstrapper, ShardingDbContextBootstrapper>();
             services.TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
             services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
+
 
 
             // services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();

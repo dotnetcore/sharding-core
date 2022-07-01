@@ -11,44 +11,42 @@ namespace ShardingCore
 {
     public class ShardingRuntimeBuilder<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-        private IShardingRouteConfigOptions _shardingRouteConfigOptions = new ShardingRouteConfigOptions();
-        private ShardingConfigOptions _shardingConfigOptions = new ShardingConfigOptions();
-        public ShardingRuntimeBuilder()
-        {
-            
-        }
-
+     
+        private Action<IShardingProvider, IShardingRouteConfigOptions> _shardingRouteConfigOptionsConfigure;
         public ShardingRuntimeBuilder<TShardingDbContext> UseRouteConfig(Action<IShardingRouteConfigOptions> configure)
         {
             if (configure == null)
                 throw new ArgumentNullException($"{nameof(configure)}");
-            configure.Invoke(_shardingRouteConfigOptions);
+            Action<IShardingProvider, IShardingRouteConfigOptions> fullConfigure = (sp, options) =>
+            {
+                configure.Invoke(options);
+            };
+            return UseRouteConfig(fullConfigure);
+        }
+
+        public ShardingRuntimeBuilder<TShardingDbContext> UseRouteConfig(Action<IShardingProvider,IShardingRouteConfigOptions> configure)
+        {
+            _shardingRouteConfigOptionsConfigure = configure ?? throw new ArgumentNullException($"{nameof(configure)}");
             return this;
         }
 
+        private Action<IShardingProvider, ShardingConfigOptions> _shardingConfigOptionsConfigure;
         public ShardingRuntimeBuilder<TShardingDbContext> UseConfig(Action<ShardingConfigOptions> configure)
         {
             if (configure == null)
                 throw new ArgumentNullException($"{nameof(configure)}");
-            configure.Invoke(_shardingConfigOptions);
-            if (string.IsNullOrWhiteSpace(_shardingConfigOptions.DefaultDataSourceName))
-                throw new ArgumentNullException(
-                    $"{nameof(_shardingConfigOptions.DefaultDataSourceName)} plz call {nameof(ShardingConfigOptions.AddDefaultDataSource)}");
-            
-            if (string.IsNullOrWhiteSpace(_shardingConfigOptions.DefaultConnectionString))
-                throw new ArgumentNullException(
-                    $"{nameof(_shardingConfigOptions.DefaultConnectionString)} plz call {nameof(ShardingConfigOptions.AddDefaultDataSource)}");
+            Action<IShardingProvider, ShardingConfigOptions> fullConfigure = (sp, options) =>
+            {
+                configure.Invoke(options);
+            };
+            return  UseConfig(fullConfigure);
+        }
 
-            if (_shardingConfigOptions.ConnectionStringConfigure is null)
-                throw new ArgumentNullException($"plz call {nameof(_shardingConfigOptions.UseShardingQuery)}");
-            if (_shardingConfigOptions.ConnectionConfigure is null )
-                throw new ArgumentNullException(
-                    $"plz call {nameof(_shardingConfigOptions.UseShardingTransaction)}");
-
-            if (_shardingConfigOptions.MaxQueryConnectionsLimit <= 0)
-                throw new ArgumentException(
-                    $"{nameof(_shardingConfigOptions.MaxQueryConnectionsLimit)} should greater than and equal 1");
-
+        public ShardingRuntimeBuilder<TShardingDbContext> UseConfig(Action<IShardingProvider,ShardingConfigOptions> configure)
+        {
+            if (configure == null)
+                throw new ArgumentNullException($"{nameof(configure)}");
+            _shardingConfigOptionsConfigure = configure;
             return this;
         }
 
@@ -68,9 +66,22 @@ namespace ShardingCore
             shardingRuntimeContext.AddServiceConfig(services =>
             {
                 // services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
-                services.AddSingleton<IShardingRouteConfigOptions>(sp => _shardingRouteConfigOptions);
+                services.AddSingleton<IShardingRouteConfigOptions>(sp =>
+                {
+                    var shardingProvider = sp.GetRequiredService<IShardingProvider>();
+                    var shardingRouteConfigOptions = new ShardingRouteConfigOptions();
+                    _shardingRouteConfigOptionsConfigure?.Invoke(shardingProvider,shardingRouteConfigOptions);
+                    return shardingRouteConfigOptions;
+                });
 
-                services.AddSingleton(sp => _shardingConfigOptions);
+                services.AddSingleton(sp =>
+                {
+                    var shardingProvider = sp.GetRequiredService<IShardingProvider>();
+                    var shardingConfigOptions = new ShardingConfigOptions();
+                    _shardingConfigOptionsConfigure?.Invoke(shardingProvider,shardingConfigOptions);
+                    shardingConfigOptions.CheckArguments();
+                    return shardingConfigOptions;
+                });
                 services.AddSingleton<IShardingProvider>(sp => new ShardingProvider(sp,appServiceProvider));
                 services.AddInternalShardingCore<TShardingDbContext>();
             });

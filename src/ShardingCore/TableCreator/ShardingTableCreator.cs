@@ -25,14 +25,11 @@ namespace ShardingCore.TableCreator
         private static readonly ILogger<ShardingTableCreator> _logger =
             InternalLoggerFactory.CreateLogger<ShardingTableCreator>();
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly IShardingRouteConfigOptions _routeConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
 
-        public ShardingTableCreator(IServiceProvider serviceProvider,
-            IShardingRouteConfigOptions routeConfigOptions, IRouteTailFactory routeTailFactory)
+        public ShardingTableCreator(IShardingRouteConfigOptions routeConfigOptions, IRouteTailFactory routeTailFactory)
         {
-            _serviceProvider = serviceProvider;
             _routeConfigOptions = routeConfigOptions;
             _routeTailFactory = routeTailFactory;
         }

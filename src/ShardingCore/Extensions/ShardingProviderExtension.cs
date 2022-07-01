@@ -33,25 +33,6 @@ namespace ShardingCore.Extensions
             return Activator.CreateInstance(serviceType, @params);
         }
 
-        public static object GetRequiredService(this IShardingProvider shardingProvider,Type serviceType)
-        {
-            var service = shardingProvider.GetService(serviceType);
-            if (service == null)
-            {
-                throw new ArgumentNullException($"cant resolve {serviceType.FullName}");
-            }
 
-            return service;
-        }
-
-        public static TService GetService<TService>(this IShardingProvider shardingProvider)
-        {
-            return (TService)shardingProvider.GetService(typeof(TService));
-        }
-
-        public static TService GetRequiredService<TService>(this IShardingProvider shardingProvider)
-        {
-            return (TService)shardingProvider.GetRequiredService(typeof(TService));
-        }
     }
 }
