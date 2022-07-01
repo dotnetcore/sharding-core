@@ -2,6 +2,7 @@
 using Sample.SqlServer.DbContexts;
 using ShardingCore;
 using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 
 namespace Sample.SqlServer
 {

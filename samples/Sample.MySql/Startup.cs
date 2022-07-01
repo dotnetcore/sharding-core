@@ -3,6 +3,7 @@ using Sample.MySql.DbContexts;
 using Sample.MySql.Shardings;
 using ShardingCore;
 using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Extensions;
 
 namespace Sample.MySql

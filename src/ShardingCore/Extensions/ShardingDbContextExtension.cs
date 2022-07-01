@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Sharding.Abstractions;
 

@@ -51,13 +51,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
             return _tableRoutes.TryAdd(route.EntityMetadata.EntityType, route);
         }
 
-        public List<ShardingRouteUnit> RouteTo(Type entityType, ShardingTableRouteConfig shardingTableRouteConfig)
+        public List<TableRouteUnit> RouteTo(Type entityType, ShardingTableRouteConfig shardingTableRouteConfig)
         {
+            
             var dataSourceRouteResult = new DataSourceRouteResult(_virtualDataSource.DefaultDataSourceName);
             return RouteTo(entityType, dataSourceRouteResult, shardingTableRouteConfig);
         }
 
-        public List<ShardingRouteUnit> RouteTo(Type entityType, DataSourceRouteResult dataSourceRouteResult,
+        public List<TableRouteUnit> RouteTo(Type entityType, DataSourceRouteResult dataSourceRouteResult,
             ShardingTableRouteConfig tableRouteConfig)
         {
             var route = GetRoute(entityType);
@@ -84,7 +85,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
             if (shardingKeyValue == null)
                 throw new ShardingCoreException(" route entity queryable or sharding key value is null ");
             var shardingRouteUnit = route.RouteWithValue(dataSourceRouteResult, shardingKeyValue);
-            return new List<ShardingRouteUnit>(1) { shardingRouteUnit };
+            return new List<TableRouteUnit>(1) { shardingRouteUnit };
         }
     }
 }

@@ -30,8 +30,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
         public ShardingRouteResult Route(TableRouteRuleContext tableRouteRuleContext)
         {
-            Dictionary<string /*dataSourceName*/, Dictionary<Type /*entityType*/, ISet<ShardingRouteUnit>>> routeMaps =
-                new Dictionary<string, Dictionary<Type, ISet<ShardingRouteUnit>>>();
+            Dictionary<string /*dataSourceName*/, Dictionary<Type /*entityType*/, ISet<TableRouteUnit>>> routeMaps =
+                new Dictionary<string, Dictionary<Type, ISet<TableRouteUnit>>>();
             var queryEntities = tableRouteRuleContext.QueryEntities;
 
 
@@ -51,15 +51,15 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     if (!routeMaps.ContainsKey(dataSourceName))
                     {
                         routeMaps.Add(dataSourceName,
-                            new Dictionary<Type, ISet<ShardingRouteUnit>>()
-                                { { shardingEntity, new HashSet<ShardingRouteUnit>() { shardingRouteUnit } } });
+                            new Dictionary<Type, ISet<TableRouteUnit>>()
+                                { { shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit } } });
                     }
                     else
                     {
                         var routeMap = routeMaps[dataSourceName];
                         if (!routeMap.ContainsKey(shardingEntity))
                         {
-                            routeMap.Add(shardingEntity, new HashSet<ShardingRouteUnit>() { shardingRouteUnit });
+                            routeMap.Add(shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit });
                         }
                         else
                         {

@@ -14,17 +14,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 */
     public class TableRouteResult
     {
-        public TableRouteResult(List<ShardingRouteUnit> replaceTables)
+        public TableRouteResult(List<TableRouteUnit> replaceTables)
         {
             ReplaceTables = replaceTables.ToHashSet();
             HasDifferentTail = ReplaceTables.IsNotEmpty() && ReplaceTables.GroupBy(o => o.Tail).Count() != 1;
             IsEmpty = replaceTables.Count == 0;
         }
-        public TableRouteResult(ShardingRouteUnit replaceTable):this(new List<ShardingRouteUnit>(){replaceTable})
+        public TableRouteResult(TableRouteUnit replaceTable):this(new List<TableRouteUnit>(){replaceTable})
         {
         }
         
-        public ISet<ShardingRouteUnit> ReplaceTables { get; }
+        public ISet<TableRouteUnit> ReplaceTables { get; }
 
         public bool HasDifferentTail { get; }
         public bool IsEmpty { get; }

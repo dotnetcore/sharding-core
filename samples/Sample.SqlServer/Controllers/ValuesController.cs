@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace Sample.SqlServer.Controllers

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Sharding.Parsers;
 using ShardingCore.Sharding.Parsers.Abstractions;
 

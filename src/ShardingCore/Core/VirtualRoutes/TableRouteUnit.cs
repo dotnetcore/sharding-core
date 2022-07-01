@@ -2,9 +2,9 @@ using System;
 
 namespace ShardingCore.Core.VirtualRoutes
 {
-    public sealed class ShardingRouteUnit
+    public sealed class TableRouteUnit
     {
-        public ShardingRouteUnit(string dataSourceName, string tail,Type entityType)
+        public TableRouteUnit(string dataSourceName, string tail,Type entityType)
         {
             DataSourceName = dataSourceName;
             Tail = tail;
@@ -15,14 +15,14 @@ namespace ShardingCore.Core.VirtualRoutes
         public string Tail { get;}
         public Type EntityType { get; }
 
-        private bool Equals(ShardingRouteUnit other)
+        private bool Equals(TableRouteUnit other)
         {
             return DataSourceName == other.DataSourceName && Tail == other.Tail && EntityType == other.EntityType;
         }
 
         public override bool Equals(object obj)
         {
-            return ReferenceEquals(this, obj) || obj is ShardingRouteUnit other && Equals(other);
+            return ReferenceEquals(this, obj) || obj is TableRouteUnit other && Equals(other);
         }
 
         public override int GetHashCode()

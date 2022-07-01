@@ -29,7 +29,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <param name="queryable"></param>
         /// <param name="isQuery"></param>
         /// <returns></returns>
-        List<ShardingRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult,IQueryable queryable,bool isQuery);
+        List<TableRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult,IQueryable queryable,bool isQuery);
 
         /// <summary>
         /// 根据值进行路由
@@ -37,7 +37,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <param name="dataSourceRouteResult"></param>
         /// <param name="shardingKey"></param>
         /// <returns></returns>
-        ShardingRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
+        TableRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
         /// <summary>
         /// 获取所有的目前数据库存在的尾巴,仅启动时调用
         /// get all tails in the db

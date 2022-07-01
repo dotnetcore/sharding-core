@@ -41,7 +41,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 路由数据源和表后缀连接符
         /// </summary>
         protected virtual string RouteSeparator => ".";
-        public override List<ShardingRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery)
+        public override List<TableRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery)
         {
             if (!isQuery)
             {
@@ -59,7 +59,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (filterTails.IsEmpty()||filterTails.Count!=mustTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustTails)}]");
-                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new TableRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
                         return shardingRouteUnits;
                     }
 
@@ -69,7 +69,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                         if (filterTails.IsEmpty()||filterTails.Count!=hintTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
-                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new ShardingRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new TableRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
                         return GetFilterTableTails(dataSourceRouteResult, shardingRouteUnits);
                     }
                 }
@@ -86,7 +86,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="dataSourceRouteResult"></param>
         /// <param name="shardingRouteUnits"></param>
         /// <returns></returns>
-        private List<ShardingRouteUnit> GetFilterTableTails(DataSourceRouteResult dataSourceRouteResult, List<ShardingRouteUnit> shardingRouteUnits)
+        private List<TableRouteUnit> GetFilterTableTails(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         {
             if (UseAssertRoute)
             {
@@ -106,7 +106,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                                            out ICollection<ITableRouteAssert> routeAsserts) &&
                                        routeAsserts.IsNotEmpty();
 
-        private void ProcessAssertRoutes(DataSourceRouteResult dataSourceRouteResult,List<ShardingRouteUnit> shardingRouteUnits)
+        private void ProcessAssertRoutes(DataSourceRouteResult dataSourceRouteResult,List<TableRouteUnit> shardingRouteUnits)
         {
             if (UseAssertRoute)
             {
@@ -120,7 +120,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             }
         }
 
-        protected abstract List<ShardingRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable);
+        protected abstract List<TableRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable);
         
         
         /// <summary>
@@ -129,7 +129,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="dataSourceRouteResult">所有的数据源</param>
         /// <param name="shardingRouteUnits">所有的物理表</param>
         /// <returns></returns>
-        protected virtual List<ShardingRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<ShardingRouteUnit> shardingRouteUnits)
+        protected virtual List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         {
             return shardingRouteUnits;
         }

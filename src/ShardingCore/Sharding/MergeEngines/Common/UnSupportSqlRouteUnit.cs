@@ -15,7 +15,7 @@ namespace ShardingCore.Sharding.MergeEngines.Common
             DataSourceName = dataSourceName;
             var routeResults = tableRouteResults;
             TableRouteResults = routeResults;
-            TableRouteResult = new TableRouteResult(new List<ShardingRouteUnit>(0));
+            TableRouteResult = new TableRouteResult(new List<TableRouteUnit>(0));
         }
 
         public string DataSourceName { get; }

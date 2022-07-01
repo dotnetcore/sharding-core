@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.EFCores;
 using ShardingCore.Exceptions;
 using ShardingCore.Utils;

@@ -69,7 +69,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="queryable"></param>
         /// <param name="isQuery"></param>
         /// <returns></returns>
-        public abstract List<ShardingRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery);
+        public abstract List<TableRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery);
         
         /// <summary>
         /// 根据值路由
@@ -77,7 +77,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="dataSourceRouteResult"></param>
         /// <param name="shardingKey"></param>
         /// <returns></returns>
-        public abstract ShardingRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
+        public abstract TableRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
         /// <summary>
         /// 返回数据库现有的尾巴
         /// </summary>

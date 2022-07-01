@@ -16,7 +16,7 @@ namespace ShardingCore.Core.QueryRouteManagers.Abstractions
     /// </summary>
     public interface ITableRouteAssert
     {
-        void Assert(DataSourceRouteResult dataSourceRouteResult,List<string> tails, List<ShardingRouteUnit> shardingRouteUnits);
+        void Assert(DataSourceRouteResult dataSourceRouteResult,List<string> tails, List<TableRouteUnit> shardingRouteUnits);
     }
 
     public interface ITableRouteAssert<T> : ITableRouteAssert where T : class

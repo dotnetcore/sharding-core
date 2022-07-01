@@ -8,14 +8,13 @@ using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
-namespace ShardingCore.Core
+namespace ShardingCore.Core.RuntimeContexts
 {
     
     public interface IShardingRuntimeContext

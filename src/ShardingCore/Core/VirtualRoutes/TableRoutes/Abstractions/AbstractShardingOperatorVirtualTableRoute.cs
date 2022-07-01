@@ -25,7 +25,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="allPhysicTables"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        protected override List<ShardingRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable)
+        protected override List<TableRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable)
         {
             //获取路由后缀表达式
             var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter,true);
@@ -35,7 +35,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             var sqlRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>
                 GetTails()
                     .Where(o=>filter(FormatTableRouteWithDataSource(dataSourceName,o)))
-                    .Select(tail=>new ShardingRouteUnit(dataSourceName,tail,typeof(TEntity)))
+                    .Select(tail=>new TableRouteUnit(dataSourceName,tail,typeof(TEntity)))
             ).ToList();
 
             return sqlRouteUnits;
@@ -71,7 +71,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             throw new NotImplementedException(shardingPropertyName);
         }
 
-        public override ShardingRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey)
+        public override TableRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey)
         {
             if (dataSourceRouteResult.IntersectDataSources.Count !=1)
             {
@@ -87,7 +87,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
 
             if (filterTails.Count > 1)
                 throw new ShardingCoreException($"more than one route match table:{string.Join(",", filterTails)}");
-            return new ShardingRouteUnit(dataSourceRouteResult.IntersectDataSources.First(), filterTails[0],typeof(TEntity));
+            return new TableRouteUnit(dataSourceRouteResult.IntersectDataSources.First(), filterTails[0],typeof(TEntity));
         }
 
     }
