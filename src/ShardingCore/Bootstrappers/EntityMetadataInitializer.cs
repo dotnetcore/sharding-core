@@ -70,7 +70,6 @@ namespace ShardingCore.Bootstrappers
             {
                 var creatEntityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TEntity>.CreateEntityMetadataDataSourceBuilder(entityMetadata);
                 //配置属性分库信息
-                EntityMetadataHelper.Configure(creatEntityMetadataDataSourceBuilder);
                 var dataSourceRoute = CreateVirtualDataSourceRoute(virtualDataSourceRouteType);
                 if (dataSourceRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
                 {
@@ -89,7 +88,6 @@ namespace ShardingCore.Bootstrappers
             {
                 var entityMetadataTableBuilder = EntityMetadataTableBuilder<TEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
                 //配置属性分表信息
-                EntityMetadataHelper.Configure(entityMetadataTableBuilder);
 
                 var virtualTableRoute = CreateVirtualTableRoute(virtualTableRouteType);
                 if (virtualTableRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
