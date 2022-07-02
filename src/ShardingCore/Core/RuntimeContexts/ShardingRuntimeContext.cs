@@ -13,6 +13,7 @@ using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
@@ -117,6 +118,11 @@ namespace ShardingCore.Core.RuntimeContexts
         public IShardingPageManager GetShardingPageManager()
         {
             return GetRequiredService<IShardingPageManager>();
+        }
+
+        public IDataSourceInitializer GetDataSourceInitializer()
+        {
+            return GetRequiredService<IDataSourceInitializer>();
         }
 
         public void GetOrCreateShardingRuntimeModel(DbContext dbContext)

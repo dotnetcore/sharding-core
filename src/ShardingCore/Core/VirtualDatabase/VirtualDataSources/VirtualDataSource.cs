@@ -142,7 +142,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// <exception cref="ShardingCoreNotFoundException"></exception>
         public IPhysicDataSource GetPhysicDataSource(string dataSourceName)
         {
-            Check.NotNull(dataSourceName, "data source name is null,plz confirm IShardingBootstrapper.Star()");
+            Check.NotNull(dataSourceName, $"data source name is null,plz confirm {dataSourceName} add in virtual data source");
             var dataSource = _physicDataSourcePool.TryGet(dataSourceName);
             if (null == dataSource)
                 throw new ShardingCoreNotFoundException($"data source:[{dataSourceName}]");

@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Sharding.Abstractions;
+﻿
 
 namespace ShardingCore.DynamicDataSources
 {
     public interface IDataSourceInitializer
     {
         /// <summary>
-        /// 
+        /// 动态初始化数据源仅创建
         /// </summary>
         /// <param name="dataSourceName"></param>
-        void InitConfigure( string dataSourceName);
+        /// <param name="createDatabase"></param>
+        /// <param name="createTable"></param>
+        void InitConfigure( string dataSourceName,bool createDatabase,bool createTable);
     }
 }
