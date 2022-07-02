@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     public class DataSourceDbContext : IDataSourceDbContext
     {
         private static readonly ILogger<DataSourceDbContext> _logger =
-            InternalLoggerFactory.CreateLogger<DataSourceDbContext>();
+            ShardingLoggerFactory.CreateLogger<DataSourceDbContext>();
 
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
 

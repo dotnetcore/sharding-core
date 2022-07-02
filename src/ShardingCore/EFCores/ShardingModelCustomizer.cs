@@ -28,7 +28,7 @@ namespace ShardingCore.EFCores
     public class ShardingModelCustomizer : ModelCustomizer
     {
         private static readonly ILogger<ShardingModelCustomizer> _logger =
-            InternalLoggerFactory.CreateLogger<ShardingModelCustomizer>();
+            ShardingLoggerFactory.CreateLogger<ShardingModelCustomizer>();
 
         public ShardingModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
         {

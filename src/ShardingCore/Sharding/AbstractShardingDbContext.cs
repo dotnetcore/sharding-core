@@ -381,13 +381,13 @@ namespace ShardingCore.Sharding
         //    entry.State = EntityState.Unchanged;
         //    genericDbContext.Entry(entry.Entity).State = entityState;
         //}
-        public override int SaveChanges()
-        {
-
-            if (IsExecutor)
-                return base.SaveChanges();
-            return this.SaveChanges(true);
-        }
+        // public override int SaveChanges()
+        // {
+        //
+        //     if (IsExecutor)
+        //         return base.SaveChanges();
+        //     return this.SaveChanges(true);
+        // }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
@@ -413,12 +413,12 @@ namespace ShardingCore.Sharding
         }
 
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (IsExecutor)
-                return base.SaveChangesAsync(cancellationToken);
-            return this.SaveChangesAsync(true, cancellationToken);
-        }
+        // public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        // {
+        //     if (IsExecutor)
+        //         return base.SaveChangesAsync(cancellationToken);
+        //     return this.SaveChangesAsync(true, cancellationToken);
+        // }
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {

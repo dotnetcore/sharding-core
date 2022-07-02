@@ -36,6 +36,7 @@ using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.Parsers;
@@ -109,6 +110,7 @@ namespace ShardingCore
         {
             services.TryAddSingleton<IShardingInitializer, ShardingInitializer>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+            services.TryAddSingleton<IDataSourceInitializer, DataSourceInitializer>();
             services.TryAddSingleton<ITableRouteManager, TableRouteManager>();
             services.TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建

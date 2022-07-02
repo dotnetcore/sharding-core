@@ -25,7 +25,7 @@ namespace ShardingCore.TableCreator
     public class ShardingTableCreator : IShardingTableCreator
     {
         private static readonly ILogger<ShardingTableCreator> _logger =
-            InternalLoggerFactory.CreateLogger<ShardingTableCreator>();
+            ShardingLoggerFactory.CreateLogger<ShardingTableCreator>();
 
         private readonly IShardingProvider _shardingProvider;
         private readonly IShardingRouteConfigOptions _routeConfigOptions;

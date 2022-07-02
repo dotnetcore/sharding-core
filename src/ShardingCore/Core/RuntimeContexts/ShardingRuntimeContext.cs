@@ -137,7 +137,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
         public void UseLogfactory(ILoggerFactory loggerFactory)
         {
-            InternalLoggerFactory.DefaultFactory = loggerFactory;
+            ShardingLoggerFactory.DefaultFactory = loggerFactory;
         }
 
         public void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider)

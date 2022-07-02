@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -14,7 +14,7 @@ namespace ShardingCore.Logger
     /// Author: xjm
     /// Created: 2022/5/18 10:02:25
     /// Email: 326308290@qq.com
-    public sealed class InternalLoggerFactory
+    public sealed class ShardingLoggerFactory
     {
         static ILoggerFactory _defaultFactory;
 

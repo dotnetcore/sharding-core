@@ -27,7 +27,7 @@ namespace ShardingCore.Bootstrappers
 
         public ShardingInitializer(IShardingProvider shardingProvider)
         {
-            _logger = InternalLoggerFactory.DefaultFactory.CreateLogger<ShardingBootstrapper>();
+            _logger = ShardingLoggerFactory.DefaultFactory.CreateLogger<ShardingBootstrapper>();
             _shardingProvider = shardingProvider;
             _routeConfigOptions = shardingProvider.GetRequiredService<IShardingRouteConfigOptions>();
             _entityMetadataManager = shardingProvider.GetRequiredService<IEntityMetadataManager>();

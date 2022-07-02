@@ -29,7 +29,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         private static readonly object APPEND_LOCK = new object();
 
         private static readonly ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>> _logger =
-            InternalLoggerFactory.CreateLogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>();
+            ShardingLoggerFactory.CreateLogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>();
 
         private readonly SafeReadAppendList<string> _tails = new SafeReadAppendList<string>();
 

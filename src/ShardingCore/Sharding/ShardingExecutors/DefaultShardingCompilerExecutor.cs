@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
     /// </summary>
     public class DefaultShardingCompilerExecutor: IShardingCompilerExecutor
     {
-        private static readonly ILogger<DefaultShardingCompilerExecutor> _logger=InternalLoggerFactory.CreateLogger<DefaultShardingCompilerExecutor>();
+        private static readonly ILogger<DefaultShardingCompilerExecutor> _logger=ShardingLoggerFactory.CreateLogger<DefaultShardingCompilerExecutor>();
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
         private readonly IPrepareParser _prepareParser;

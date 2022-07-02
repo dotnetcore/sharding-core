@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly ITableRouteRuleEngineFactory _tableRouteRuleEngineFactory;
 
         private static readonly ILogger<QueryCompilerContextFactory> _logger =
-            InternalLoggerFactory.CreateLogger<QueryCompilerContextFactory>();
+            ShardingLoggerFactory.CreateLogger<QueryCompilerContextFactory>();
         private static readonly IQueryableCombine _enumerableQueryableCombine;
         private static readonly IQueryableCombine _allQueryableCombine;
         private static readonly IQueryableCombine _constantQueryableCombine;

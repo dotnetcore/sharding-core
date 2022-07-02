@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Logger;
 
 namespace ShardingCore.Jobs
 {
@@ -18,8 +19,9 @@ namespace ShardingCore.Jobs
     [ExcludeFromCodeCoverage]
     internal class JobRunnerService
     {
+        private static readonly ILogger<JobRunnerService> _logger =
+            ShardingLoggerFactory.CreateLogger<JobRunnerService>();
         private readonly IJobManager _jobManager;
-        private readonly ILogger<JobRunnerService> _logger;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private const long DEFAULT_MILLIS = 1000L;
 
@@ -28,10 +30,9 @@ namespace ShardingCore.Jobs
         /// </summary>
         private const long MAX_DELAY_MILLIS = 30000L;
 
-        public JobRunnerService(IJobManager jobManager, ILogger<JobRunnerService> logger)
+        public JobRunnerService(IJobManager jobManager)
         {
             _jobManager = jobManager;
-            _logger = logger;
         }
 
         public async Task StartAsync()
