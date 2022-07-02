@@ -3,11 +3,15 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists.Abstractions;
 using System.Collections.Generic;
 using System.Data.Common;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.TableExists
 {
-    public  class SqlServerTableEnsureManager<TShardingDbContext> : AbstractTableEnsureManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public  class SqlServerTableEnsureManager : AbstractTableEnsureManager
     {
+        public SqlServerTableEnsureManager(IRouteTailFactory routeTailFactory) : base(routeTailFactory)
+        {
+        }
         private const string Tables = "Tables";
         private const string TABLE_NAME = "TABLE_NAME";
 
@@ -23,5 +27,6 @@ namespace ShardingCore.TableExists
             }
             return result;
         }
+
     }
 }

@@ -2,98 +2,101 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.Exceptions;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableCreator;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.ServiceProviders;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
+using ShardingCore.Exceptions;
+using ShardingCore.Extensions;
 using ShardingCore.Logger;
+using ShardingCore.Sharding.Abstractions;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.DynamicDataSources
 {
-    public class DataSourceInitializer<TShardingDbContext> : IDataSourceInitializer<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceInitializer : IDataSourceInitializer
     {
-        private static readonly ILogger<DataSourceInitializer<TShardingDbContext>> _logger =
-            InternalLoggerFactory.CreateLogger<DataSourceInitializer<TShardingDbContext>>();
+        private static readonly ILogger<DataSourceInitializer> _logger =
+            ShardingLoggerFactory.CreateLogger<DataSourceInitializer>();
 
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _entityConfigOptions;
-        private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
+        private readonly IShardingProvider _shardingProvider;
+        private readonly IDbContextCreator _dbContextCreator;
+        private readonly IShardingRouteConfigOptions _routeConfigOptions;
+        private readonly IVirtualDataSource _virtualDataSource;
         private readonly IRouteTailFactory _routeTailFactory;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
-        private readonly IShardingTableCreator<TShardingDbContext> _tableCreator;
+        private readonly ITableRouteManager _tableRouteManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IShardingTableCreator _tableCreator;
+        private readonly ITableEnsureManager _tableEnsureManager;
 
         public DataSourceInitializer(
-            IShardingEntityConfigOptions<TShardingDbContext> entityConfigOptions,
-            IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
-            IRouteTailFactory routeTailFactory, IVirtualTableManager<TShardingDbContext> virtualTableManager,
-            IEntityMetadataManager<TShardingDbContext> entityMetadataManager,
-            IShardingTableCreator<TShardingDbContext> shardingTableCreator)
+            IShardingProvider shardingProvider,
+            IDbContextCreator dbContextCreator,
+            IShardingRouteConfigOptions routeConfigOptions,
+            IVirtualDataSource virtualDataSource,
+            IRouteTailFactory routeTailFactory,
+            ITableRouteManager tableRouteManager,
+            IEntityMetadataManager entityMetadataManager,
+            IShardingTableCreator shardingTableCreator,
+            ITableEnsureManager tableEnsureManager)
         {
-            _entityConfigOptions = entityConfigOptions;
-            _virtualDataSourceManager = virtualDataSourceManager;
+            _shardingProvider = shardingProvider;
+            _dbContextCreator = dbContextCreator;
+            _routeConfigOptions = routeConfigOptions;
+            _virtualDataSource = virtualDataSource;
             _routeTailFactory = routeTailFactory;
-            _virtualTableManager = virtualTableManager;
+            _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
             _tableCreator = shardingTableCreator;
+            _tableEnsureManager = tableEnsureManager;
         }
 
-        public void InitConfigure(IVirtualDataSource<TShardingDbContext> virtualDataSource, string dataSourceName,
-            string connectionString, bool isOnStart, bool? needCreateDatabase=null, bool? needCreateTable = null)
+        public void InitConfigure(string dataSourceName,bool createDatabase,bool createTable)
         {
-            using (var serviceScope = ShardingContainer.ServiceProvider.CreateScope())
+            using (var shardingScope = _shardingProvider.CreateScope())
             {
-                using (_virtualDataSourceManager.CreateScope(virtualDataSource.ConfigId))
+                using (var shellDbContext = _dbContextCreator.GetShellDbContext(shardingScope.ServiceProvider))
                 {
-                    using (var context = serviceScope.ServiceProvider.GetService<TShardingDbContext>())
+                    var isDefault = _virtualDataSource.IsDefault(dataSourceName);
+                    if (createDatabase)
                     {
-                        var createDatabase = !needCreateDatabase.HasValue || needCreateDatabase.Value;
+                        EnsureCreated(isDefault,shellDbContext,dataSourceName);
+                    }
 
-                        if ((_entityConfigOptions.EnsureCreatedWithOutShardingTable || !isOnStart)&&createDatabase)
-                            EnsureCreated(virtualDataSource, context, dataSourceName);
-                        else if (_entityConfigOptions.CreateDataBaseOnlyOnStart.GetValueOrDefault()&& createDatabase)
+                    if (createTable)
+                    {
+                        var existTables = _tableEnsureManager.GetExistTables((IShardingDbContext)shellDbContext,dataSourceName);
+                        var allShardingEntities = _entityMetadataManager.GetAllShardingEntities();
+                        foreach (var entityType in allShardingEntities)
                         {
-                            EnsureCreateDataBaseOnly(context, dataSourceName);
-                        }
-
-                        var tableEnsureManager = virtualDataSource.ConfigurationParams.TableEnsureManager;
-                        ////获取数据库存在的所有的表
-                        var existTables = tableEnsureManager?.GetExistTables(context, dataSourceName) ??
-                                          new HashSet<string>();
-                        foreach (var entity in context.Model.GetEntityTypes())
-                        {
-                            var entityType = entity.ClrType;
-                            if (virtualDataSource.IsDefault(dataSourceName))
+                            //如果是默认数据源
+                            if (_virtualDataSource.IsDefault(dataSourceName))
                             {
                                 if (_entityMetadataManager.IsShardingTable(entityType))
                                 {
-                                    var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
-                                    //创建表
-                                    CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart, needCreateTable);
+                                    var virtualTableRoute = _tableRouteManager.GetRoute(entityType);
+                                    CreateDataTable(dataSourceName, virtualTableRoute, existTables);
                                 }
                             }
                             else
                             {
+                                //非默认数据源
                                 if (_entityMetadataManager.IsShardingDataSource(entityType))
                                 {
-                                    var virtualDataSourceRoute = virtualDataSource.GetRoute(entityType);
+                                    var virtualDataSourceRoute = _virtualDataSource.GetRoute(entityType);
                                     if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
                                     {
                                         if (_entityMetadataManager.IsShardingTable(entityType))
                                         {
-                                            var virtualTable = _virtualTableManager.GetVirtualTable(entityType);
-                                            //创建表
-                                            CreateDataTable(dataSourceName, virtualTable, existTables, isOnStart,needCreateTable);
+                                            var virtualTableRoute = _tableRouteManager.GetRoute(entityType);
+                                            CreateDataTable(dataSourceName, virtualTableRoute,existTables);
                                         }
                                     }
                                 }
@@ -103,68 +106,7 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
-
-        private void CreateDataTable(string dataSourceName, IVirtualTable virtualTable, ISet<string> existTables,
-            bool isOnStart,bool? needCreateTable)
-        {
-            var entityMetadata = virtualTable.EntityMetadata;
-            foreach (var tail in virtualTable.GetVirtualRoute().GetAllTails())
-            {
-                var defaultPhysicTable = new DefaultPhysicTable(virtualTable, tail);
-                if ((NeedCreateTable(entityMetadata) || !isOnStart)&&(!needCreateTable.HasValue|| needCreateTable.Value))
-                {
-                    try
-                    {
-                        //添加物理表
-                        virtualTable.AddPhysicTable(defaultPhysicTable);
-                        if (!existTables.Contains(defaultPhysicTable.FullName))
-                            _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!_entityConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
-                        {
-                            _logger.LogWarning(e,
-                                $"table :{virtualTable.GetVirtualTableName()}{entityMetadata.TableSeparator}{tail} will created.");
-                        }
-                    }
-                }
-                else
-                {
-                    //添加物理表
-                    virtualTable.AddPhysicTable(defaultPhysicTable);
-                }
-            }
-        }
-
-        private bool NeedCreateTable(EntityMetadata entityMetadata)
-        {
-            if (entityMetadata.AutoCreateTable.HasValue)
-            {
-                if (entityMetadata.AutoCreateTable.Value)
-                    return entityMetadata.AutoCreateTable.Value;
-                else
-                {
-                    if (entityMetadata.AutoCreateDataSourceTable.HasValue)
-                        return entityMetadata.AutoCreateDataSourceTable.Value;
-                }
-            }
-
-            if (entityMetadata.AutoCreateDataSourceTable.HasValue)
-            {
-                if (entityMetadata.AutoCreateDataSourceTable.Value)
-                    return entityMetadata.AutoCreateDataSourceTable.Value;
-                else
-                {
-                    if (entityMetadata.AutoCreateTable.HasValue)
-                        return entityMetadata.AutoCreateTable.Value;
-                }
-            }
-
-            return _entityConfigOptions.CreateShardingTableOnStart.GetValueOrDefault();
-        }
-
-        private void EnsureCreated(IVirtualDataSource<TShardingDbContext> virtualDataSource, DbContext context,
+        private void EnsureCreated(bool isDefault, DbContext context,
             string dataSourceName)
         {
             if (context is IShardingDbContext shardingDbContext)
@@ -173,8 +115,6 @@ namespace ShardingCore.DynamicDataSources
                        shardingDbContext.GetDbContext(dataSourceName, false,
                            _routeTailFactory.Create(string.Empty, false)))
                 {
-                    var isDefault = virtualDataSource.IsDefault(dataSourceName);
-
                     if (isDefault)
                     {
                         dbContext.RemoveDbContextRelationModelThatIsShardingTable();
@@ -183,23 +123,38 @@ namespace ShardingCore.DynamicDataSources
                     {
                         dbContext.RemoveDbContextAllRelationModelThatIsNoSharding();
                     }
-
+        
                     dbContext.Database.EnsureCreated();
                 }
             }
-        }
-
-        private void EnsureCreateDataBaseOnly(DbContext context, string dataSourceName)
-        {
-            if (context is IShardingDbContext shardingDbContext)
+            else
             {
-                using (var dbContext = shardingDbContext.GetDbContext(dataSourceName, false,
-                           _routeTailFactory.Create(string.Empty, false)))
+                throw new ShardingCoreInvalidOperationException(
+                    $"{nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)} db context type not impl {nameof(IShardingDbContext)}");
+            }
+        }
+        private void CreateDataTable(string dataSourceName, IVirtualTableRoute tableRoute, ISet<string> existTables)
+        {
+            var entityMetadata = tableRoute.EntityMetadata;
+            foreach (var tail in tableRoute.GetTails())
+            {
+                var physicTableName = $"{entityMetadata.LogicTableName}{entityMetadata.TableSeparator}{tail}";
+                try
                 {
-                    dbContext.RemoveDbContextAllRelationModel();
-                    dbContext.Database.EnsureCreated();
+                    //添加物理表
+                    if (!existTables.Contains(physicTableName))
+                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
+                }
+                catch (Exception e)
+                {
+                    if (!_routeConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                    {
+                        _logger.LogWarning(e,
+                            $"table :{physicTableName} will created.");
+                    }
                 }
             }
         }
+        
     }
 }

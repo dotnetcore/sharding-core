@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
@@ -11,16 +10,16 @@ namespace ShardingCore.Sharding.MergeEngines.Common
 {
     public class UnSupportSqlRouteUnit:ISqlRouteUnit
     {
-        public UnSupportSqlRouteUnit(string dataSourceName, IEnumerable<TableRouteResult> tableRouteResults)
+        public UnSupportSqlRouteUnit(string dataSourceName, List<TableRouteResult> tableRouteResults)
         {
             DataSourceName = dataSourceName;
-            var routeResults = tableRouteResults.ToArray();
+            var routeResults = tableRouteResults;
             TableRouteResults = routeResults;
-            TableRouteResult = new TableRouteResult(new List<IPhysicTable>(0), routeResults[0].ShardingDbContextType);
+            TableRouteResult = new TableRouteResult(new List<TableRouteUnit>(0));
         }
 
         public string DataSourceName { get; }
         public TableRouteResult TableRouteResult { get; }
-        public IEnumerable<TableRouteResult> TableRouteResults { get; }
+        public List<TableRouteResult> TableRouteResults { get; }
     }
 }

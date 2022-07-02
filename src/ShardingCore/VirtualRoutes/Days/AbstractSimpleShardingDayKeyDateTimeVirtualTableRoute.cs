@@ -2,9 +2,6 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Core.VirtualTables;
 
 namespace ShardingCore.VirtualRoutes.Days
 {
@@ -26,7 +23,7 @@ namespace ShardingCore.VirtualRoutes.Days
         /// 然后会在启动的时候添加到 <see cref="IVirtualTable{TEntity}.AddPhysicTable(IPhysicTable physicTable)"/>
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
          

@@ -15,7 +15,7 @@ namespace ShardingCore.Core.TrackerManagers
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class TrackerManager<TShardingDbContext>: ITrackerManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class TrackerManager: ITrackerManager
     {
         private readonly ConcurrentDictionary<Type,bool> _dbContextModels = new ();
 

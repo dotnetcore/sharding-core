@@ -19,11 +19,11 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DataSourceRouteRuleEngine<TShardingDbContext> : IDataSourceRouteRuleEngine<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceRouteRuleEngine: IDataSourceRouteRuleEngine
     {
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
 
-        public DataSourceRouteRuleEngine(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
+        public DataSourceRouteRuleEngine(IEntityMetadataManager entityMetadataManager)
         {
             _entityMetadataManager = entityMetadataManager;
         }

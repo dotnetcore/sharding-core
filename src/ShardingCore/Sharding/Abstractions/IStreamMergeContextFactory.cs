@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.Abstractions
         StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext);
     }
 
-    public  interface IStreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory where TShardingDbContext:DbContext,IShardingDbContext
-    {
-    }
+    // public  interface IStreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory where TShardingDbContext:DbContext,IShardingDbContext
+    // {
+    // }
 }

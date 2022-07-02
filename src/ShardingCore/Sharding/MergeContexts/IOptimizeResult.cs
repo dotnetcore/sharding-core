@@ -19,6 +19,5 @@ namespace ShardingCore.Sharding.MergeContexts
         bool IsSequenceQuery();
         bool SameWithTailComparer();
         IComparer<string> ShardingTailComparer();
-         bool CanTrip();
     }
 }

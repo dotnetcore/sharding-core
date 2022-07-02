@@ -24,7 +24,7 @@ namespace ShardingCore.VirtualRoutes.Years
         /// 返回这个对象在数据库里面的所有表后缀
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
          

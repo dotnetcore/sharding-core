@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions
             var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
-            var shardingDbContext = GetStreamMergeContext().CreateDbContext(dataSourceName, routeResult, connectionMode);
+            var shardingDbContext = GetStreamMergeContext().CreateDbContext(sqlExecutorUnit.RouteUnit, connectionMode);
             var newQueryable = GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
 

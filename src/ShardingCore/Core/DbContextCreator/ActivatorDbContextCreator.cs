@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 
@@ -20,7 +19,7 @@ namespace ShardingCore.Core.DbContextCreator
     /// Author: xjm
     /// Created: 2022/4/2 21:15:09
     /// Email: 326308290@qq.com
-    public class ActivatorDbContextCreator<TShardingDbContext>: IDbContextCreator<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ActivatorDbContextCreator<TShardingDbContext>: IDbContextCreator where TShardingDbContext : DbContext, IShardingDbContext
     {
         private readonly Func<ShardingDbContextOptions, DbContext> _creator;
         public ActivatorDbContextCreator()
@@ -34,7 +33,7 @@ namespace ShardingCore.Core.DbContextCreator
         /// <param name="shellDbContext"></param>
         /// <param name="shardingDbContextOptions"></param>
         /// <returns></returns>
-        public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)
+        public virtual DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions)
         {
             var dbContext = _creator(shardingDbContextOptions);
             if (dbContext is IShardingTableDbContext shardingTableDbContext)
@@ -43,6 +42,11 @@ namespace ShardingCore.Core.DbContextCreator
             }
             _ = dbContext.Model;
             return dbContext;
+        }
+
+        public virtual DbContext GetShellDbContext(IShardingProvider shardingProvider)
+        {
+            return shardingProvider.GetService<TShardingDbContext>();
         }
     }
 }

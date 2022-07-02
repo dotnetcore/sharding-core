@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
@@ -55,9 +58,9 @@ namespace ShardingCore.Extensions
         /// <param name="readOnly">是否是读数据源</param>
         private static void SetReadWriteSeparation(this ISupportShardingReadWrite supportShardingReadWrite, bool readOnly)
         {
-
-            var shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
-            var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(supportShardingReadWrite.GetType());
+            var shardingRuntimeContext = ((DbContext)supportShardingReadWrite).GetRequireService<IShardingRuntimeContext>();
+            var shardingReadWriteManager =shardingRuntimeContext.GetService<IShardingReadWriteManager>();
+            var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
             if (shardingReadWriteContext != null)
             {
                 if (shardingReadWriteContext.DefaultPriority > supportShardingReadWrite.ReadWriteSeparationPriority)
@@ -81,11 +84,11 @@ namespace ShardingCore.Extensions
         {
             if (shardingDbContext is ISupportShardingReadWrite shardingReadWrite)
             {
-                var shardingDbContextType = shardingDbContext.GetType();
                 if (shardingDbContext.IsUseReadWriteSeparation())
                 {
-                    var shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
-                    var shardingReadWriteContext = shardingReadWriteManager.GetCurrent(shardingDbContextType);
+                    var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+                    var shardingReadWriteManager =shardingRuntimeContext.GetService<IShardingReadWriteManager>();
+                    var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
                     if (shardingReadWriteContext != null)
                     {
                         if (shardingReadWriteContext.DefaultPriority > shardingReadWrite.ReadWriteSeparationPriority)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core;
 
 namespace ShardingCore.EFCores.OptionsExtensions
 {
@@ -13,40 +14,16 @@ namespace ShardingCore.EFCores.OptionsExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    // public interface IShardingRuntimeContext
-    // {
-    //    Guid id { get; }
-    //     void Say();
-    // }
 
-    // public class ShardingRuntimeContext : IShardingRuntimeContext
-    // {
-    //     public  Guid id { get; set; }=Guid.NewGuid();
-    //
-    //     public ShardingRuntimeContext()
-    //     {
-    //         Console.WriteLine("ShardingRuntimeContext:"+id);
-    //     }
-    //     public void Say()
-    //     {
-    //         Console.WriteLine(id);
-    //     }
-    // }
 #if EFCORE6
     public class ShardingWrapOptionsExtension : IDbContextOptionsExtension
     {
-        // private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        // public ShardingWrapOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
-        // {
-        //     // _shardingRuntimeContext = shardingRuntimeContext;
-        //     // Console.WriteLine("ShardingWrapOptionsExtension.ctor:"+shardingRuntimeContext.id);
-        // }
-        
+        public ShardingWrapOptionsExtension()
+        {
+        }
         public void ApplyServices(IServiceCollection services)
         {
-            // services.AddSingleton<IShardingRuntimeContext>(_shardingRuntimeContext);
-            // Console.WriteLine("ShardingWrapOptionsExtension.ctor:ApplyServices");
         }
 
         public void Validate(IDbContextOptions options)

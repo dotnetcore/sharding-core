@@ -3,6 +3,8 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.MergeContexts;
@@ -16,28 +18,32 @@ namespace ShardingCore.Sharding
     * @Date: Thursday, 28 January 2021 16:52:43
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContextFactory<TShardingDbContext> : IStreamMergeContextFactory<TShardingDbContext> where TShardingDbContext:DbContext,IShardingDbContext
+    public class StreamMergeContextFactory : IStreamMergeContextFactory
     {
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IQueryableParseEngine _queryableParseEngine;
         private readonly IQueryableRewriteEngine _queryableRewriteEngine;
         private readonly IQueryableOptimizeEngine _queryableOptimizeEngine;
+        private readonly ITrackerManager _trackerManager;
+        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
 
         public StreamMergeContextFactory(IRouteTailFactory routeTailFactory
-            , IQueryableParseEngine queryableParseEngine, IQueryableRewriteEngine queryableRewriteEngine, IQueryableOptimizeEngine queryableOptimizeEngine
-            )
+            , IQueryableParseEngine queryableParseEngine, IQueryableRewriteEngine queryableRewriteEngine, IQueryableOptimizeEngine queryableOptimizeEngine,
+            ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
         {
             _routeTailFactory = routeTailFactory;
             _queryableParseEngine = queryableParseEngine;
             _queryableRewriteEngine = queryableRewriteEngine;
             _queryableOptimizeEngine = queryableOptimizeEngine;
+            _trackerManager = trackerManager;
+            _shardingRouteConfigOptions = shardingRouteConfigOptions;
         }
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
             var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
-            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory);
+            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
         }
     }
 }

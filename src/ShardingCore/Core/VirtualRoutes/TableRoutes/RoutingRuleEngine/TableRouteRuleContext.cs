@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -15,12 +14,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     public class TableRouteRuleContext
     {
 
-        public TableRouteRuleContext(IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
+        public TableRouteRuleContext(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
+            DataSourceRouteResult = dataSourceRouteResult;
             Queryable = queryable;
             QueryEntities = queryEntities;
         }
 
+        public DataSourceRouteResult DataSourceRouteResult { get; }
         public IQueryable Queryable { get; }
         public Dictionary<Type, IQueryable> QueryEntities { get; }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Extensions;
 
 
@@ -13,23 +12,26 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Date: Thursday, 28 January 2021 10:18:09
 * @Email: 326308290@qq.com
 */
-    public class TableRouteResult:IPrint
+    public class TableRouteResult
     {
-        public TableRouteResult(IEnumerable<IPhysicTable> replaceTables, Type shardingDbContextType)
+        public TableRouteResult(List<TableRouteUnit> replaceTables)
         {
-            ShardingDbContextType = shardingDbContextType;
             ReplaceTables = replaceTables.ToHashSet();
             HasDifferentTail = ReplaceTables.IsNotEmpty() && ReplaceTables.GroupBy(o => o.Tail).Count() != 1;
+            IsEmpty = replaceTables.Count == 0;
+        }
+        public TableRouteResult(TableRouteUnit replaceTable):this(new List<TableRouteUnit>(){replaceTable})
+        {
         }
         
-        public ISet<IPhysicTable> ReplaceTables { get; }
+        public ISet<TableRouteUnit> ReplaceTables { get; }
 
         public bool HasDifferentTail { get; }
+        public bool IsEmpty { get; }
 
-        public Type ShardingDbContextType { get; }
         protected bool Equals(TableRouteResult other)
         {
-            return Equals(ReplaceTables, other.ReplaceTables) && Equals(ShardingDbContextType, other.ShardingDbContextType);
+            return Equals(ReplaceTables, other.ReplaceTables) && HasDifferentTail == other.HasDifferentTail && IsEmpty == other.IsEmpty;
         }
 
         public override bool Equals(object obj)
@@ -39,18 +41,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             if (obj.GetType() != this.GetType()) return false;
             return Equals((TableRouteResult)obj);
         }
-        public string GetPrintInfo()
+
+        public override string ToString()
         {
-            return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.FullName))}])";
+            return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.EntityType))}])";
         }
 
 #if !EFCORE2
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ReplaceTables, ShardingDbContextType);
+            return HashCode.Combine(ReplaceTables, HasDifferentTail, IsEmpty);
         }
-
 #endif
 
 #if EFCORE2
@@ -59,7 +61,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             unchecked
             {
-                return ((ReplaceTables != null ? ReplaceTables.GetHashCode() : 0) * 397) ^ (ShardingDbContextType != null ? ShardingDbContextType.GetHashCode() : 0);
+                var hashCode = (ReplaceTables != null ? ReplaceTables.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ HasDifferentTail.GetHashCode();
+                hashCode = (hashCode * 397) ^ IsEmpty.GetHashCode();
+                return hashCode;
             }
         }
 #endif

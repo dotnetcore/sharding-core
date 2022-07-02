@@ -1,29 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
-    public class SimpleVirtualDataSourceConfigurationParams<TShardingDbContext>: AbstractVirtualDataSourceConfigurationParams<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class SimpleVirtualDataSourceConfigurationParams: AbstractVirtualDataSourceConfigurationParams
     {
-        private readonly ShardingConfigOptions<TShardingDbContext> _options;
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _shardingEntityConfigOptions;
-        public override string ConfigId { get; }
-        public override int Priority { get; }
+        private readonly ShardingConfigOptions _options;
         public override int MaxQueryConnectionsLimit { get; }
         public override ConnectionModeEnum ConnectionMode { get; }
         public override string DefaultDataSourceName { get; }
@@ -34,29 +26,22 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override bool? ReadWriteDefaultEnable { get; }
         public override int? ReadWriteDefaultPriority { get; }
         public override ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
-        public override IShardingComparer ShardingComparer { get; }
-        public override ITableEnsureManager TableEnsureManager { get; }
 
-        public SimpleVirtualDataSourceConfigurationParams(IServiceProvider serviceProvider,ShardingConfigOptions<TShardingDbContext> options)
+        public SimpleVirtualDataSourceConfigurationParams(IShardingProvider shardingProvider,ShardingConfigOptions options)
         {
-            _shardingEntityConfigOptions = serviceProvider.GetService<IShardingEntityConfigOptions<TShardingDbContext>>();
             _options = options;
-            ConfigId = options.ConfigId;
-            Priority = options.Priority;
             MaxQueryConnectionsLimit = options.MaxQueryConnectionsLimit;
             ConnectionMode = options.ConnectionMode;
             DefaultDataSourceName = options.DefaultDataSourceName;
             DefaultConnectionString = options.DefaultConnectionString;
-            ExtraDataSources = options.DataSourcesConfigure?.Invoke(serviceProvider)??new ConcurrentDictionary<string, string>();
-            ShardingComparer = options.ReplaceShardingComparerFactory?.Invoke(serviceProvider) ??
-                               new CSharpLanguageShardingComparer();
-            TableEnsureManager = options.TableEnsureManagerFactory?.Invoke(serviceProvider) ??
-                                 new EmptyTableEnsureManager<TShardingDbContext>();
+            ExtraDataSources = options.DataSourcesConfigure?.Invoke(shardingProvider)??new ConcurrentDictionary<string, string>();
+          
+
             if (options.ShardingReadWriteSeparationOptions != null)
             {
                 if (options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure != null)
                 {
-                    var readConfig = options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure?.Invoke(serviceProvider);
+                    var readConfig = options.ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure?.Invoke(shardingProvider);
                     if (readConfig != null)
                     {
                         ReadWriteNodeSeparationConfigs = readConfig.ToDictionary(kv=>kv.Key,kv=>kv.Value.ToArray());
@@ -64,7 +49,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                 }
                 else
                 {
-                    var nodeConfig = options.ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure?.Invoke(serviceProvider);
+                    var nodeConfig = options.ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure?.Invoke(shardingProvider);
                     if (nodeConfig != null)
                     {
                         ReadWriteNodeSeparationConfigs = nodeConfig.ToDictionary(kv => kv.Key,
@@ -81,71 +66,43 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if(_options.ConnectionStringConfigure==null&&_shardingEntityConfigOptions.ConnectionStringConfigure==null)
+            if(_options.ConnectionStringConfigure==null)
             {
                 throw new InvalidOperationException($"unknown {nameof(UseDbContextOptionsBuilder)} by connection string");
             }
-            if (_options.ConnectionStringConfigure != null)
-            {
-                _options.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
-            }
-            else
-            {
-                _shardingEntityConfigOptions.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
-            }
+            _options.ConnectionStringConfigure.Invoke(connectionString, dbContextOptionsBuilder);
             return dbContextOptionsBuilder;
         }
 
         public override DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection,
             DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.ConnectionConfigure == null && _shardingEntityConfigOptions.ConnectionConfigure == null)
+            if (_options.ConnectionConfigure == null )
             {
                 throw new InvalidOperationException($"unknown {nameof(UseDbContextOptionsBuilder)} by connection");
             }
-            if (_options.ConnectionConfigure != null)
-            {
-                _options.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
-            }
-            else
-            {
-                _shardingEntityConfigOptions.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
-            }
+            _options.ConnectionConfigure.Invoke(dbConnection, dbContextOptionsBuilder);
             return dbContextOptionsBuilder;
         }
 
         public override void UseShellDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.ShellDbContextConfigure == null && _shardingEntityConfigOptions.ShellDbContextConfigure == null)
+            if (_options.ShellDbContextConfigure == null)
             {
                 return;
             }
 
-            if (_options.ShellDbContextConfigure != null)
-            {
-                _options.ShellDbContextConfigure.Invoke(dbContextOptionsBuilder);
-            }
-            else
-            {
-                _shardingEntityConfigOptions.ShellDbContextConfigure?.Invoke(dbContextOptionsBuilder);
-            }
+            _options.ShellDbContextConfigure.Invoke(dbContextOptionsBuilder);
         }
 
         public override void UseExecutorDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.ExecutorDbContextConfigure == null && _shardingEntityConfigOptions.ExecutorDbContextConfigure == null)
+            if (_options.ExecutorDbContextConfigure == null )
             {
                 return;
             }
 
-            if (_options.ExecutorDbContextConfigure != null)
-            {
-                _options.ExecutorDbContextConfigure.Invoke(dbContextOptionsBuilder);
-            }
-            else
-            {
-                _shardingEntityConfigOptions.ExecutorDbContextConfigure?.Invoke(dbContextOptionsBuilder);
-            }
+            _options.ExecutorDbContextConfigure.Invoke(dbContextOptionsBuilder);
         }
     }
 }

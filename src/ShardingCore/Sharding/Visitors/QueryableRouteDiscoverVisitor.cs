@@ -11,8 +11,6 @@ using Microsoft.EntityFrameworkCore.Query;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Visitors;

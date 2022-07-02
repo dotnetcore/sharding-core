@@ -21,25 +21,25 @@ namespace ShardingCore.VirtualRoutes.Mods
     public abstract class AbstractSimpleShardingModKeyStringVirtualTableRoute<TEntity>: AbstractShardingOperatorVirtualTableRoute<TEntity,string> where TEntity:class
     {
         protected readonly int Mod;
-        protected readonly int TailLength;
-        protected readonly char PaddingChar;
+        protected readonly int TailLength;    
+        /// <summary>
+        /// 当取模后不足tailLength左补什么参数
+        /// </summary>
+        protected virtual char PaddingChar=>'0';
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="tailLength">猴子长度</param>
         /// <param name="mod">取模被除数</param>
-        /// <param name="paddingChar">当取模后不足tailLength左补什么参数</param>
-        protected AbstractSimpleShardingModKeyStringVirtualTableRoute(int tailLength,int mod,char paddingChar='0')
+        protected AbstractSimpleShardingModKeyStringVirtualTableRoute(int tailLength,int mod)
         {
             if(tailLength<1)
                 throw new ArgumentException($"{nameof(tailLength)} less than 1 ");
             if (mod < 1)
                 throw new ArgumentException($"{nameof(mod)} less than 1 ");
-            if (string.IsNullOrWhiteSpace(paddingChar.ToString()))
-                throw new ArgumentException($"{nameof(paddingChar)} cant empty ");
             TailLength = tailLength;
             Mod = mod;
-            PaddingChar = paddingChar;
         }
         /// <summary>
         /// 如何将shardingkey转成对应的tail
@@ -55,7 +55,7 @@ namespace ShardingCore.VirtualRoutes.Mods
         /// 获取对应类型在数据库中的所有后缀
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             return Enumerable.Range(0, Mod).Select(o => o.ToString().PadLeft(TailLength, PaddingChar)).ToList();
         }

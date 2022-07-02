@@ -4,20 +4,11 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using System.Collections.Generic;
 using System.Data.Common;
-using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
     public interface IVirtualDataSourceConfigurationParams
     {
-        /// <summary>
-        /// 配置id
-        /// </summary>
-        string ConfigId { get; }
-        /// <summary>
-        /// 优先级
-        /// </summary>
-        int Priority { get; }
         /// <summary>
         /// 不能小于等于0 should greater than or equal  zero
         /// </summary>
@@ -52,14 +43,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// </summary>
         ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
         /// <summary>
-        /// 不能为空 should not null
-        /// </summary>
-        IShardingComparer ShardingComparer { get; }
-        /// <summary>
-        /// 表确认管理者
-        /// </summary>
-        ITableEnsureManager TableEnsureManager { get; }
-        /// <summary>
         /// 如何根据connectionString 配置 DbContextOptionsBuilder
         /// </summary>
         /// <param name="connectionString"></param>
@@ -88,11 +71,5 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         /// </summary>
         /// <returns></returns>
         bool UseReadWriteSeparation();
-    }
-
-    public interface IVirtualDataSourceConfigurationParams<TShardingDbContext> : IVirtualDataSourceConfigurationParams
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
     }
 }

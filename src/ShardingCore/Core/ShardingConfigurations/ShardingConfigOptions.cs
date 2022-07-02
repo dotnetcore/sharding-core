@@ -1,26 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ReadWriteConfigurations;
-using ShardingCore.Sharding.ShardingComparision;
-using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
-    public class ShardingConfigOptions<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingConfigOptions
     {
-        /// <summary>
-        /// 配置id,如果是单配置可以用guid代替,如果是多配置该属性表示每个配置的id
-        /// </summary>
-        public string ConfigId { get; set; }
-        /// <summary>
-        /// 优先级多个配置之间的优先级
-        /// </summary>
-        public int Priority { get; set; }
         /// <summary>
         /// 全局配置最大的查询连接数限制,默认系统逻辑处理器<code>Environment.ProcessorCount</code>
         /// </summary>
@@ -52,13 +40,13 @@ namespace ShardingCore.Core.ShardingConfigurations
             DefaultDataSourceName= dataSourceName?? throw new ArgumentNullException(nameof(dataSourceName));
             DefaultConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
-        public Func<IServiceProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
+        public Func<IShardingProvider, IDictionary<string, string>> DataSourcesConfigure { get; private set; }
         /// <summary>
         /// 添加额外数据源
         /// </summary>
         /// <param name="extraDataSourceConfigure"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddExtraDataSource(Func<IServiceProvider, IDictionary<string, string>> extraDataSourceConfigure)
+        public void AddExtraDataSource(Func<IShardingProvider, IDictionary<string, string>> extraDataSourceConfigure)
         {
             DataSourcesConfigure= extraDataSourceConfigure ?? throw new ArgumentNullException(nameof(extraDataSourceConfigure));
         }
@@ -72,7 +60,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <param name="readConnStringGetStrategy">LatestFirstTime:DbContext缓存,LatestEveryTime:每次都是最新</param>
         /// <exception cref="ArgumentNullException"></exception>
         public void AddReadWriteSeparation(
-            Func<IServiceProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
+            Func<IShardingProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
             int defaultPriority = 10,
@@ -86,7 +74,7 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
         public void AddReadWriteNodeSeparation(
-            Func<IServiceProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
+            Func<IShardingProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
             bool defaultEnable = false,
             int defaultPriority = 10,
@@ -153,27 +141,37 @@ namespace ShardingCore.Core.ShardingConfigurations
         {
             ShellDbContextConfigure = shellDbContextConfigure ?? throw new ArgumentNullException(nameof(shellDbContextConfigure));
         }
-        public Func<IServiceProvider, IShardingComparer> ReplaceShardingComparerFactory { get; private set; } = sp => new CSharpLanguageShardingComparer();
-        /// <summary>
-        /// 替换默认的比较器
-        /// </summary>
-        /// <param name="newShardingComparerFactory"></param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void ReplaceShardingComparer(Func<IServiceProvider, IShardingComparer> newShardingComparerFactory)
+
+        // public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =
+        //     sp => new EmptyTableEnsureManager<TShardingDbContext>();
+        //
+        // public void ReplaceTableEnsureManager(
+        //     Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> tableEnsureManagerConfigure)
+        // {
+        //     TableEnsureManagerFactory = tableEnsureManagerConfigure ??
+        //                                 throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
+        // }
+
+        public void CheckArguments()
         {
-            ReplaceShardingComparerFactory = newShardingComparerFactory ?? throw new ArgumentNullException(nameof(newShardingComparerFactory));
+            if (string.IsNullOrWhiteSpace(DefaultDataSourceName))
+                throw new ArgumentNullException(
+                    $"{nameof(DefaultDataSourceName)} plz call {nameof(AddDefaultDataSource)}");
+            
+            if (string.IsNullOrWhiteSpace(DefaultConnectionString))
+                throw new ArgumentNullException(
+                    $"{nameof(DefaultConnectionString)} plz call {nameof(AddDefaultDataSource)}");
+
+            if (ConnectionStringConfigure is null)
+                throw new ArgumentNullException($"plz call {nameof(UseShardingQuery)}");
+            if (ConnectionConfigure is null )
+                throw new ArgumentNullException(
+                    $"plz call {nameof(UseShardingTransaction)}");
+
+            if (MaxQueryConnectionsLimit <= 0)
+                throw new ArgumentException(
+                    $"{nameof(MaxQueryConnectionsLimit)} should greater than and equal 1");
         }
-
-        public Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> TableEnsureManagerFactory =
-            sp => new EmptyTableEnsureManager<TShardingDbContext>();
-
-        public void ReplaceTableEnsureManager(
-            Func<IServiceProvider, ITableEnsureManager<TShardingDbContext>> tableEnsureManagerConfigure)
-        {
-            TableEnsureManagerFactory = tableEnsureManagerConfigure ??
-                                        throw new ArgumentNullException(nameof(tableEnsureManagerConfigure));
-        }
-
 
     }
 }

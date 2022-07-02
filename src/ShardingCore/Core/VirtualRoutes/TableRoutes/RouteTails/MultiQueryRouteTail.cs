@@ -22,14 +22,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails
         private readonly ISet<Type> _entityTypes;
         private readonly bool _isShardingTableQuery;
 
-        public MultiQueryRouteTail(TableRouteResult tableRouteResult)
+        public MultiQueryRouteTail(TableRouteResult tableRouteResult,bool isShardingTableQuery)
         {
             if (tableRouteResult.ReplaceTables.IsEmpty() || tableRouteResult.ReplaceTables.Count <= 1) throw new ArgumentException("route result replace tables must greater than  1");
             _tableRouteResult = tableRouteResult;
             _modelCacheKey = RANDOM_MODEL_CACHE_KEY+Guid.NewGuid().ToString("n");
             _entityTypes = tableRouteResult.ReplaceTables.Select(o=>o.EntityType).ToHashSet();
-            var entityMetadataManager = (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(tableRouteResult.ShardingDbContextType));
-            _isShardingTableQuery = _entityTypes.Any(o => entityMetadataManager.IsShardingTable(o));
+            _isShardingTableQuery = isShardingTableQuery;
         }
         public string GetRouteTailIdentity()
         {

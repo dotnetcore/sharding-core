@@ -16,16 +16,9 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {
-    public class VirtualDataSourceRouteManager<TShardingDbContext> : IVirtualDataSourceRouteManager<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class VirtualDataSourceRouteManager : IVirtualDataSourceRouteManager
     {
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
         private readonly ConcurrentDictionary<Type, IVirtualDataSourceRoute> _dataSourceVirtualRoutes = new ConcurrentDictionary<Type, IVirtualDataSourceRoute>();
-
-        public VirtualDataSourceRouteManager(IEntityMetadataManager<TShardingDbContext> entityMetadataManager)
-        {
-            _entityMetadataManager = entityMetadataManager;
-        }
 
         public IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity : class
         {
@@ -34,9 +27,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
-            if (!_entityMetadataManager.IsShardingDataSource(entityType))
-                throw new ShardingCoreInvalidOperationException(
-                    $"entity type :[{entityType.FullName}] not configure sharding data source");
+            // if (!_entityMetadataManager.IsShardingDataSource(entityType))
+            //     throw new ShardingCoreInvalidOperationException(
+            //         $"entity type :[{entityType.FullName}] not configure sharding data source");
 
             if (!_dataSourceVirtualRoutes.TryGetValue(entityType, out var dataSourceVirtualRoute))
                 throw new ShardingCoreInvalidOperationException(

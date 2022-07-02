@@ -37,7 +37,7 @@
 //        {
 //            if (EnableRouteParseCompileCache.HasValue)
 //                return EnableRouteParseCompileCache.Value;
-//            return EntityConfigOptions.EnableTableRouteCompileCache.GetValueOrDefault();
+//            return RouteConfigOptions.EnableTableRouteCompileCache.GetValueOrDefault();
 //        }
 //        /// <summary>
 //        /// 对表达式进行缓存编译默认永久缓存单个参数表达式，且不包含orElse只包含单个AndAlso或者没有AndAlso的,

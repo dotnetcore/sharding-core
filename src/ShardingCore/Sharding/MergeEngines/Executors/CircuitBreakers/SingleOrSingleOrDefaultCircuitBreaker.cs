@@ -10,14 +10,14 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
         {
         }
 
-        protected override bool SeqConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool OrderConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
             return results
                 .Where(o => o is IRouteQueryResult routeQueryResult && routeQueryResult.HasQueryResult())
                 .Take(2).Count() > 1;
         }
 
-        protected override bool RandomConditionalTrip<TResult>(IEnumerable<TResult> results)
+        protected override bool RandomConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
             return results
                 .Where(o => o is IRouteQueryResult routeQueryResult && routeQueryResult.HasQueryResult())

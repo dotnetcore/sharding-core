@@ -11,7 +11,7 @@ namespace Sample.SqlServer.UnionAllMerge
 {
     public static class ShardingCoreSqlServerExtension
     {
-        public static void UseSqlServer<TShardingDbContext>(this ShardingConfigOptions<TShardingDbContext> option,Action<DbContextOptionsBuilder> builderConfigure=null) where  TShardingDbContext : DbContext, IShardingDbContext
+        public static void UseSqlServer(this ShardingConfigOptions option,Action<DbContextOptionsBuilder> builderConfigure=null)
         {
             option.UseShardingQuery((conStr, builder) =>
             {

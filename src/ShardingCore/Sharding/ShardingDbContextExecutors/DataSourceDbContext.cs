@@ -14,6 +14,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
@@ -29,14 +30,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class DataSourceDbContext<TShardingDbContext> : IDataSourceDbContext
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class DataSourceDbContext : IDataSourceDbContext
     {
-        private static readonly ILogger<DataSourceDbContext<TShardingDbContext>> _logger =
-            InternalLoggerFactory.CreateLogger<DataSourceDbContext<TShardingDbContext>>();
+        private static readonly ILogger<DataSourceDbContext> _logger =
+            ShardingLoggerFactory.CreateLogger<DataSourceDbContext>();
 
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
 
+        public Type DbContextType { get; }
         /// <summary>
         /// 当前是否是默认的dbcontext 也就是不分片的dbcontext
         /// </summary>
@@ -50,17 +51,17 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <summary>
         /// dbcontext 创建接口
         /// </summary>
-        private readonly IDbContextCreator<TShardingDbContext> _dbContextCreator;
+        private readonly IDbContextCreator _dbContextCreator;
 
         /// <summary>
         /// 实际的链接字符串管理者 用来提供查询和插入dbcontext的创建链接的获取
         /// </summary>
-        private readonly ActualConnectionStringManager<TShardingDbContext> _actualConnectionStringManager;
+        private readonly ActualConnectionStringManager _actualConnectionStringManager;
 
         /// <summary>
         /// 当前的数据源是什么默认单数据源可以支持多数据源配置
         /// </summary>
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSource _virtualDataSource;
 
         /// <summary>
         /// 数据源名称
@@ -82,6 +83,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// shell dbcontext最外面的壳
         /// </summary>
         private readonly DbContext _shardingShellDbContext;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
         /// <summary>
         /// 数据库事务
@@ -92,7 +94,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <summary>
         /// 同库下公用一个db context options
         /// </summary>
-        private DbContextOptions<TShardingDbContext> _dbContextOptions;
+        private DbContextOptions _dbContextOptions;
 
         /// <summary>
         /// 是否触发了并发如果是的话就报错
@@ -115,14 +117,16 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
             DbContext shardingShellDbContext,
-            IDbContextCreator<TShardingDbContext> dbContextCreator,
-            ActualConnectionStringManager<TShardingDbContext> actualConnectionStringManager)
+            IDbContextCreator dbContextCreator,
+            ActualConnectionStringManager actualConnectionStringManager)
         {
+            var shardingDbContext = (IShardingDbContext)shardingShellDbContext;
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingShellDbContext = shardingShellDbContext;
-            _virtualDataSource =
-                (IVirtualDataSource<TShardingDbContext>)((IShardingDbContext)shardingShellDbContext)
+            _shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            DbContextType = shardingShellDbContext.GetType();
+            _virtualDataSource =shardingDbContext
                 .GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
@@ -132,7 +136,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// 创建共享的数据源配置用来做事务 不支持并发后期发现直接报错
         /// </summary>
         /// <returns></returns>
-        private DbContextOptions<TShardingDbContext> CreateShareDbContextOptionsBuilder()
+        private DbContextOptions CreateShareDbContextOptionsBuilder()
         {
             if (_dbContextOptions != null)
             {
@@ -149,7 +153,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             try
             {
                 //先创建dbcontext option builder
-                var dbContextOptionsBuilder = CreateDbContextOptionBuilder();
+                var dbContextOptionsBuilder = CreateDbContextOptionBuilder(DbContextType).UseShardingOptions(_shardingRuntimeContext);
 
                 if (IsDefault)
                 {
@@ -186,11 +190,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 
-        public static DbContextOptionsBuilder<TShardingDbContext> CreateDbContextOptionBuilder()
+        public static DbContextOptionsBuilder CreateDbContextOptionBuilder(Type dbContextType)
         {
             Type type = typeof(DbContextOptionsBuilder<>);
-            type = type.MakeGenericType(typeof(TShardingDbContext));
-            return (DbContextOptionsBuilder<TShardingDbContext>)Activator.CreateInstance(type);
+            type = type.MakeGenericType(dbContextType);
+            return (DbContextOptionsBuilder)Activator.CreateInstance(type);
         }
 
         /// <summary>

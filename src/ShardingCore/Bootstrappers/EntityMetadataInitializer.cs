@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
+using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -33,36 +28,30 @@ namespace ShardingCore.Bootstrappers
     /// <summary>
     /// 对象元数据初始化器
     /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
     /// <typeparam name="TEntity"></typeparam>
-    public class EntityMetadataInitializer<TShardingDbContext,TEntity>: IEntityMetadataInitializer where TShardingDbContext:DbContext,IShardingDbContext where TEntity:class
+    public class EntityMetadataInitializer<TEntity>: IEntityMetadataInitializer where TEntity:class
     {
-        private static readonly ILogger<EntityMetadataInitializer<TShardingDbContext, TEntity>> _logger=InternalLoggerFactory.CreateLogger<EntityMetadataInitializer<TShardingDbContext,TEntity>>();
-        private const string QueryFilter = "QueryFilter";
-        private readonly IEntityType _entityType;
-        private readonly string _virtualTableName;
-        private readonly Expression<Func<TEntity,bool>> _queryFilterExpression;
-        private readonly IShardingEntityConfigOptions<TShardingDbContext> _shardingEntityConfigOptions;
-        private readonly IVirtualDataSourceManager<TShardingDbContext> _virtualDataSourceManager;
-        private readonly IVirtualDataSourceRouteManager<TShardingDbContext> _virtualDataSourceRouteManager;
-        private readonly IVirtualTableManager<TShardingDbContext> _virtualTableManager;
-        private readonly IEntityMetadataManager<TShardingDbContext> _entityMetadataManager;
+        private static readonly ILogger<EntityMetadataInitializer<TEntity>> _logger=ShardingLoggerFactory.CreateLogger<EntityMetadataInitializer<TEntity>>();
+        private readonly Type _shardingEntityType;
+        private readonly IShardingProvider _shardingProvider;
+        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
+        private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
+        private readonly ITableRouteManager _tableRouteManager;
+        private readonly IEntityMetadataManager _entityMetadataManager;
 
-        public EntityMetadataInitializer(EntityMetadataEnsureParams entityMetadataEnsureParams,
-            IShardingEntityConfigOptions<TShardingDbContext> shardingEntityConfigOptions,
-            IVirtualDataSourceManager<TShardingDbContext> virtualDataSourceManager,
-            IVirtualDataSourceRouteManager<TShardingDbContext> virtualDataSourceRouteManager,
-            IVirtualTableManager<TShardingDbContext> virtualTableManager,
-            IEntityMetadataManager<TShardingDbContext> entityMetadataManager
+        public EntityMetadataInitializer(
+            IShardingProvider shardingProvider,
+            IShardingRouteConfigOptions shardingRouteConfigOptions,
+            IVirtualDataSourceRouteManager virtualDataSourceRouteManager,
+            ITableRouteManager tableRouteManager,
+            IEntityMetadataManager entityMetadataManager
             )
         {
-            _entityType = entityMetadataEnsureParams.EntityType;
-            _virtualTableName = entityMetadataEnsureParams.VirtualTableName;
-            _queryFilterExpression = entityMetadataEnsureParams.EntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as Expression<Func<TEntity, bool>>;
-            _shardingEntityConfigOptions = shardingEntityConfigOptions;
-            _virtualDataSourceManager = virtualDataSourceManager;
+            _shardingEntityType = typeof(TEntity);
+            _shardingProvider = shardingProvider;
+            _shardingRouteConfigOptions = shardingRouteConfigOptions;
             _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
-            _virtualTableManager = virtualTableManager;
+            _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
         }
         /// <summary>
@@ -74,20 +63,18 @@ namespace ShardingCore.Bootstrappers
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
         public void Initialize()
         {
-            var shardingEntityType = _entityType.ClrType;
-            var entityMetadata = new EntityMetadata(shardingEntityType, _virtualTableName,typeof(TShardingDbContext),_entityType.FindPrimaryKey()?.Properties?.Select(o=>o.PropertyInfo)?.ToList()??new List<PropertyInfo>(),_queryFilterExpression);
+            var entityMetadata = new EntityMetadata(_shardingEntityType);
             if (!_entityMetadataManager.AddEntityMetadata(entityMetadata))
-                throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {shardingEntityType.FullName}");
+                throw new ShardingCoreInvalidOperationException($"repeat add entity metadata {_shardingEntityType.FullName}");
             //设置标签
-            if (_shardingEntityConfigOptions.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
+            if (_shardingRouteConfigOptions.TryGetVirtualDataSourceRoute<TEntity>(out var virtualDataSourceRouteType))
             {
                 var creatEntityMetadataDataSourceBuilder = EntityMetadataDataSourceBuilder<TEntity>.CreateEntityMetadataDataSourceBuilder(entityMetadata);
                 //配置属性分库信息
-                EntityMetadataHelper.Configure(creatEntityMetadataDataSourceBuilder);
-                var dataSourceRoute = CreateVirtualDataSourceRoute(virtualDataSourceRouteType, entityMetadata);
+                var dataSourceRoute = CreateVirtualDataSourceRoute(virtualDataSourceRouteType);
                 if (dataSourceRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
                 {
-                    entityMetadataAutoBindInitializer.Initialize(entityMetadata);
+                    entityMetadataAutoBindInitializer.Initialize(entityMetadata,_shardingProvider);
                 }
                 //配置分库信息
                 if(dataSourceRoute is IEntityMetadataDataSourceConfiguration<TEntity> entityMetadataDataSourceConfiguration)
@@ -98,19 +85,15 @@ namespace ShardingCore.Bootstrappers
                 entityMetadata.CheckShardingDataSourceMetadata();
 
             }
-            if (_shardingEntityConfigOptions.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
+            if (_shardingRouteConfigOptions.TryGetVirtualTableRoute<TEntity>(out var virtualTableRouteType))
             {
-                if (!typeof(TShardingDbContext).IsShardingTableDbContext())
-                    throw new ShardingCoreInvalidOperationException(
-                        $"{typeof(TShardingDbContext)} is not impl {nameof(IShardingTableDbContext)},not support sharding table");
                 var entityMetadataTableBuilder = EntityMetadataTableBuilder<TEntity>.CreateEntityMetadataTableBuilder(entityMetadata);
                 //配置属性分表信息
-                EntityMetadataHelper.Configure(entityMetadataTableBuilder);
 
-                var virtualTableRoute = CreateVirtualTableRoute(virtualTableRouteType, entityMetadata);
+                var virtualTableRoute = CreateVirtualTableRoute(virtualTableRouteType);
                 if (virtualTableRoute is IEntityMetadataAutoBindInitializer entityMetadataAutoBindInitializer)
                 {
-                    entityMetadataAutoBindInitializer.Initialize(entityMetadata);
+                    entityMetadataAutoBindInitializer.Initialize(entityMetadata,_shardingProvider);
                 }
                 //配置分表信息
                 if (virtualTableRoute is IEntityMetadataTableConfiguration<TEntity> createEntityMetadataTableConfiguration)
@@ -118,61 +101,30 @@ namespace ShardingCore.Bootstrappers
                     createEntityMetadataTableConfiguration.Configure(entityMetadataTableBuilder);
                 }
                 //创建虚拟表
-                var virtualTable = CreateVirtualTable(virtualTableRoute,entityMetadata);
-                _virtualTableManager.AddVirtualTable(virtualTable);
+                _tableRouteManager.AddRoute(virtualTableRoute);
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckShardingTableMetadata();
                 //添加任务
-                if (virtualTableRoute is IJob routeJob && routeJob.AutoCreateTableByTime())
+                if (virtualTableRoute is IJob routeJob&&routeJob.AppendJob())
                 {
-                    var jobManager = ShardingContainer.GetService<IJobManager>();
                     var jobEntry = JobEntryFactory.Create(routeJob);
-                    jobManager.AddJob(jobEntry);
+                    _shardingProvider.GetRequiredService<IJobManager>().AddJob(jobEntry);
                 }
             }
             entityMetadata.CheckGenericMetadata();
         }
 
-        private IVirtualDataSourceRoute<TEntity> CreateVirtualDataSourceRoute(Type virtualRouteType,EntityMetadata entityMetadata)
+        private IVirtualDataSourceRoute<TEntity> CreateVirtualDataSourceRoute(Type virtualRouteType)
         {
-            var constructors
-                = virtualRouteType.GetTypeInfo().DeclaredConstructors
-                    .Where(c => !c.IsStatic && c.IsPublic)
-                    .ToArray();
-            if (constructors.Length != 1)
-            {
-                throw new ArgumentException(
-                    $"virtual route :[{virtualRouteType}] found more  declared constructor ");
-            }
-
-            var @params = constructors[0].GetParameters().Select(x => ShardingContainer.GetService(x.ParameterType))
-                .ToArray();
-            object o = Activator.CreateInstance(virtualRouteType, @params);
-            return (IVirtualDataSourceRoute<TEntity>)o;
+            var instance = _shardingProvider.CreateInstance(virtualRouteType);
+            return (IVirtualDataSourceRoute<TEntity>)instance;
         }
 
 
-        private IVirtualTableRoute<TEntity> CreateVirtualTableRoute(Type virtualRouteType, EntityMetadata entityMetadata)
+        private IVirtualTableRoute<TEntity> CreateVirtualTableRoute(Type virtualRouteType)
         {
-            var constructors
-                = virtualRouteType.GetTypeInfo().DeclaredConstructors
-                    .Where(c => !c.IsStatic && c.IsPublic)
-                    .ToArray();
-
-            if (constructors.Length !=1)
-            {
-                throw new ArgumentException(
-                    $"virtual route :[{virtualRouteType}] found more  declared constructor ");
-            }
-            var @params = constructors[0].GetParameters().Select(x => ShardingContainer.GetService(x.ParameterType))
-                .ToArray();
-            object o = Activator.CreateInstance(virtualRouteType, @params);
-            return (IVirtualTableRoute<TEntity>)o;
-        }
-
-        private IVirtualTable<TEntity> CreateVirtualTable(IVirtualTableRoute<TEntity> virtualTableRoute,EntityMetadata entityMetadata)
-        {
-            return new DefaultVirtualTable<TEntity>(virtualTableRoute, entityMetadata);
+            var instance = _shardingProvider.CreateInstance(virtualRouteType);
+            return (IVirtualTableRoute<TEntity>)instance;
         }
     }
 }

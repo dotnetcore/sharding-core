@@ -7,20 +7,12 @@ using System.Data.Common;
 
 namespace ShardingCore.TableExists.Abstractions
 {
-    public abstract class AbstractTableEnsureManager<TShardingDbContext> : ITableEnsureManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public abstract class AbstractTableEnsureManager : ITableEnsureManager
     {
         protected IRouteTailFactory RouteTailFactory { get; }
-        protected AbstractTableEnsureManager()
+        protected AbstractTableEnsureManager(IRouteTailFactory routeTailFactory)
         {
-            RouteTailFactory = ShardingContainer.GetService<IRouteTailFactory>();
-        }
-        public ISet<string> GetExistTables(string dataSourceName)
-        {
-            using (var scope = ShardingContainer.ServiceProvider.CreateScope())
-            {
-                var shardingDbContext = scope.ServiceProvider.GetService<TShardingDbContext>();
-                return GetExistTables(shardingDbContext, dataSourceName);
-            }
+            RouteTailFactory = routeTailFactory;
         }
 
         public ISet<string> GetExistTables(IShardingDbContext shardingDbContext, string dataSourceName)

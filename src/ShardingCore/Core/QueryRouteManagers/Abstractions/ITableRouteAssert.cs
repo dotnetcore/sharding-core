@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ShardingCore.Core.PhysicTables;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 
 namespace ShardingCore.Core.QueryRouteManagers.Abstractions
 {
@@ -15,7 +16,7 @@ namespace ShardingCore.Core.QueryRouteManagers.Abstractions
     /// </summary>
     public interface ITableRouteAssert
     {
-        void Assert(List<IPhysicTable> allPhysicTables, List<IPhysicTable> resultPhysicTables);
+        void Assert(DataSourceRouteResult dataSourceRouteResult,List<string> tails, List<TableRouteUnit> shardingRouteUnits);
     }
 
     public interface ITableRouteAssert<T> : ITableRouteAssert where T : class

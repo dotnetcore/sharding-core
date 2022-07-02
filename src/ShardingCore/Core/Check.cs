@@ -14,7 +14,7 @@ namespace ShardingCore.Core
         [ExcludeFromCodeCoverage]
         private Check(){}
         /// <summary>
-        /// 不能为空
+        /// 涓嶈兘涓虹┖
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
@@ -28,7 +28,7 @@ namespace ShardingCore.Core
             return value;
         }
         /// <summary>
-        /// 应该为空
+        /// 搴旇涓虹┖
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>

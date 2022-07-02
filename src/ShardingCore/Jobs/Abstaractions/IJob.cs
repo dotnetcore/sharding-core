@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace ShardingCore.Jobs.Abstaractions
 {
-    internal interface IJob
+    public interface IJob
     {
         string JobName { get; }
         string[] GetCronExpressions();
         Task ExecuteAsync();
-        bool AutoCreateTableByTime();
+        bool AppendJob();
     }
 }

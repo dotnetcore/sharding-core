@@ -5,13 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.TableExists
 {
-    public class MySqlTableEnsureManager<TShardingDbContext> : AbstractTableEnsureManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class MySqlTableEnsureManager : AbstractTableEnsureManager
     {
+
+        public MySqlTableEnsureManager(IRouteTailFactory routeTailFactory) : base(routeTailFactory)
+        {
+        }
         private const string Tables = "Tables";
         private const string TABLE_SCHEMA = "TABLE_SCHEMA";
         private const string TABLE_NAME = "TABLE_NAME";

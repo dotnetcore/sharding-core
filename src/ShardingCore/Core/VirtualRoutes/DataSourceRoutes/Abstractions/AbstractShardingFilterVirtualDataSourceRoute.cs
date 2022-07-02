@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
@@ -25,8 +22,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
     public abstract class AbstractShardingFilterVirtualDataSourceRoute<TEntity, TKey> : AbstractVirtualDataSourceRoute<TEntity, TKey> where TEntity : class
     {
 
-        public ShardingRouteContext CurrentShardingRouteContext =>
-            ShardingContainer.GetService<IShardingRouteManager>().Current;
+        public ShardingRouteContext CurrentShardingRouteContext =>RouteShardingProvider.GetRequiredService<IShardingRouteManager>().Current;
         /// <summary>
         /// 启用提示路由
         /// </summary>

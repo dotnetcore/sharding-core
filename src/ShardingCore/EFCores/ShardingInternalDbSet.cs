@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Internal;
 using ShardingCore.Core;
@@ -8,11 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
 
@@ -25,21 +24,22 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    
+
     public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
         where TEntity : class
     {
         private readonly IShardingDbContext _context;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
 #if EFCORE5 || EFCORE6
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
             _context = (IShardingDbContext)context;
+            _shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
         }
 #endif
 #if EFCORE2 || EFCORE3
-
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
             _context = (IShardingDbContext)context;
@@ -59,24 +59,22 @@ namespace ShardingCore.EFCores
                 return _virtualDataSource;
             }
         }
-        
-        private IVirtualTableManager _virtualTableManager;
 
-        protected IVirtualTableManager VirtualTableManager
+        private ITableRouteManager _tableRouteManager;
+
+        protected ITableRouteManager TableRouteManager
         {
             get
             {
-                if (null == _virtualTableManager)
+                if (null == _tableRouteManager)
                 {
-                    _virtualTableManager =
-                        (IVirtualTableManager) ShardingContainer.GetService(
-                            typeof(IVirtualTableManager<>).GetGenericType0(_context.GetType()));
+                    _tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
                 }
 
-                return _virtualTableManager;
+                return _tableRouteManager;
             }
         }
-        
+
         private IEntityMetadataManager _entityMetadataManager;
 
         protected IEntityMetadataManager EntityMetadataManager
@@ -85,9 +83,7 @@ namespace ShardingCore.EFCores
             {
                 if (null == _entityMetadataManager)
                 {
-                    _entityMetadataManager =
-                        (IEntityMetadataManager) ShardingContainer.GetService(
-                            typeof(IEntityMetadataManager<>).GetGenericType0(_context.GetType()));
+                    _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
                 }
 
                 return _entityMetadataManager;
@@ -119,11 +115,11 @@ namespace ShardingCore.EFCores
         {
             var genericDbContext = _context.CreateGenericDbContext(entity);
             return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
-
         }
 #endif
 #if EFCORE2
-        public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken =
+ new CancellationToken())
         {
             var genericDbContext = _context.CreateGenericDbContext(entity);
             return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
@@ -177,11 +173,10 @@ namespace ShardingCore.EFCores
         /// </summary>
         public override void AddRange(params TEntity[] entities)
         {
-
             var aggregateToDic = AggregateToDic(entities);
             foreach (var aggregateKv in aggregateToDic)
             {
-                 aggregateKv.Key.Set<TEntity>().AddRange(aggregateKv.Value);
+                aggregateKv.Key.Set<TEntity>().AddRange(aggregateKv.Value);
             }
         }
 
@@ -196,7 +191,7 @@ namespace ShardingCore.EFCores
             var aggregateToDic = AggregateToDic(entities);
             foreach (var aggregateKv in aggregateToDic)
             {
-              await  aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value);
+                await aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value);
             }
         }
 
@@ -271,11 +266,10 @@ namespace ShardingCore.EFCores
             IEnumerable<TEntity> entities,
             CancellationToken cancellationToken = default)
         {
-
             var aggregateToDic = AggregateToDic(entities);
             foreach (var aggregateKv in aggregateToDic)
             {
-                await aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value,cancellationToken);
+                await aggregateKv.Key.Set<TEntity>().AddRangeAsync(aggregateKv.Value, cancellationToken);
             }
         }
 
@@ -310,7 +304,6 @@ namespace ShardingCore.EFCores
             {
                 aggregateKv.Key.Set<TEntity>().RemoveRange(aggregateKv.Value);
             }
-
         }
 
         /// <summary>
@@ -330,7 +323,7 @@ namespace ShardingCore.EFCores
 
         private Dictionary<DbContext, IEnumerable<TEntity>> AggregateToDic(IEnumerable<TEntity> entities)
         {
-           return  entities.Select(o =>
+            return entities.Select(o =>
             {
                 var dbContext = _context.CreateGenericDbContext(o);
                 return new
@@ -338,7 +331,7 @@ namespace ShardingCore.EFCores
                     DbContext = dbContext,
                     Entity = o
                 };
-            }).GroupBy(g => g.DbContext).ToDictionary(o=>o.Key,o=>o.Select(g=>g.Entity));
+            }).GroupBy(g => g.DbContext).ToDictionary(o => o.Key, o => o.Select(g => g.Entity));
         }
 
         public override TEntity Find(params object[] keyValues)
@@ -348,6 +341,7 @@ namespace ShardingCore.EFCores
             {
                 return primaryKeyFindDbContext.Set<TEntity>().Find(keyValues);
             }
+
             return base.Find(keyValues);
         }
 
@@ -359,6 +353,7 @@ namespace ShardingCore.EFCores
             {
                 return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues);
             }
+
             return base.FindAsync(keyValues);
         }
 
@@ -369,6 +364,7 @@ namespace ShardingCore.EFCores
             {
                 return primaryKeyFindDbContext.Set<TEntity>().FindAsync(keyValues, cancellationToken);
             }
+
             return base.FindAsync(keyValues, cancellationToken);
         }
 #endif
@@ -399,8 +395,9 @@ namespace ShardingCore.EFCores
             if (keyValues.Length == 1)
             {
                 var entityMetadata = EntityMetadataManager.TryGet(typeof(TEntity));
+
                 //单key字段
-                if (null != entityMetadata&& entityMetadata.IsSingleKey)
+                if (null != entityMetadata && entityMetadata.IsSingleKey)
                 {
                     var isShardingDataSource = entityMetadata.IsShardingDataSource();
                     var shardingDataSourceFieldIsKey = entityMetadata.ShardingDataSourceFieldIsKey();
@@ -414,8 +411,9 @@ namespace ShardingCore.EFCores
                     if (primaryKeyValue != null)
                     {
                         var dataSourceName = GetDataSourceName(primaryKeyValue);
-                        var tableTail = VirtualTableManager.GetTableTail<TEntity>(primaryKeyValue);
-                        var routeTail = ShardingContainer.GetService<IRouteTailFactory>().Create(tableTail);
+                        var tableTail = TableRouteManager.GetTableTail<TEntity>(primaryKeyValue);
+                        var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);
+                        ;
                         return _context.GetDbContext(dataSourceName, false, routeTail);
                     }
                 }
@@ -426,11 +424,9 @@ namespace ShardingCore.EFCores
 
         private string GetDataSourceName(object shardingKeyValue)
         {
-
             if (!EntityMetadataManager.IsShardingDataSource(typeof(TEntity)))
                 return VirtualDataSource.DefaultDataSourceName;
             return VirtualDataSource.GetDataSourceName<TEntity>(shardingKeyValue);
         }
     }
-    
 }

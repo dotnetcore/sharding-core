@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 
 namespace ShardingCore.Core.EntityMetadatas
 {
@@ -12,15 +16,10 @@ namespace ShardingCore.Core.EntityMetadatas
     /// 分表或者分库对象的元数据信息记录对象在ShardingCore框架下的一些简单的信息
     /// </summary>
     public class EntityMetadata
-    {
-        public EntityMetadata(Type entityType, string virtualTableName,Type shardingDbContextType, IReadOnlyList<PropertyInfo> primaryKeyProperties,LambdaExpression queryFilterExpression)
+    {private const string QueryFilter = "QueryFilter";
+        public EntityMetadata(Type entityType)
         {
             EntityType = entityType;
-            VirtualTableName = virtualTableName;
-            ShardingDbContextType = shardingDbContextType;
-            PrimaryKeyProperties = primaryKeyProperties;
-            QueryFilterExpression = queryFilterExpression;
-            IsSingleKey= PrimaryKeyProperties.Count == 1;
             ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
             ShardingTableProperties = new Dictionary<string, PropertyInfo>();
         }
@@ -28,26 +27,6 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表类型 sharding entity type
         /// </summary>
         public Type EntityType { get; }
-        /// <summary>
-        /// 分表的原表名 original table name in db exclude tail
-        /// </summary>
-        public string VirtualTableName { get; }
-
-        public Type ShardingDbContextType { get; }
-
-        /// <summary>
-        /// 主键
-        /// </summary>
-        public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; }
-        /**
-         * efcore query filter
-         */
-        public LambdaExpression QueryFilterExpression { get; }
-
-        /// <summary>
-        /// 是否单主键
-        /// </summary>
-        public bool IsSingleKey { get; }
 
         /// <summary>
         /// 是否多数据源
@@ -91,6 +70,37 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 分表隔离器 table sharding tail prefix
         /// </summary>
         public string TableSeparator { get; private set; } = "_";
+        
+        /// <summary>
+        /// 逻辑表名
+        /// </summary>
+        public string LogicTableName { get; private set; }
+        
+        /// <summary>
+        /// 主键
+        /// </summary>
+        public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; private set; }
+        /**
+         * efcore query filter
+         */
+        public LambdaExpression QueryFilterExpression { get; private set; }
+
+        /// <summary>
+        /// 是否单主键
+        /// </summary>
+        public bool IsSingleKey { get; private set; }
+
+        public void SetEntityModel(IEntityType dbEntityType)
+        {
+            LogicTableName = dbEntityType.GetEntityTypeTableName();
+            QueryFilterExpression= dbEntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as LambdaExpression;
+            PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
+                                   new List<PropertyInfo>();
+            IsSingleKey=PrimaryKeyProperties.Count == 1;
+        }
+        
+        
+        
         /// <summary>
         /// 设置分库字段
         /// </summary>
@@ -179,7 +189,7 @@ namespace ShardingCore.Core.EntityMetadatas
         /// </summary>
         public void CheckGenericMetadata()
         {
-            if (null == EntityType || null == PrimaryKeyProperties || null == VirtualTableName ||
+            if (null == EntityType ||
                 (!IsMultiTableMapping && !IsMultiDataSourceMapping))
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure");

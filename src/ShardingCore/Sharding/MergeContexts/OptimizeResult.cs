@@ -14,16 +14,14 @@ namespace ShardingCore.Sharding.MergeContexts
         private readonly bool _isSequenceQuery;
         private readonly bool _sameWithTailComparer;
         private readonly IComparer<string> _shardingTailComparer;
-        private readonly bool _canTrip;
 
-        public OptimizeResult(int maxQueryConnectionsLimit, ConnectionModeEnum connectionMode,bool isSequenceQuery,bool sameWithTailComparer,IComparer<string> shardingTailComparer,bool canTrip)
+        public OptimizeResult(int maxQueryConnectionsLimit, ConnectionModeEnum connectionMode,bool isSequenceQuery,bool sameWithTailComparer,IComparer<string> shardingTailComparer)
         {
             _maxQueryConnectionsLimit = maxQueryConnectionsLimit;
             _connectionMode = connectionMode;
             _isSequenceQuery = isSequenceQuery;
             _sameWithTailComparer = sameWithTailComparer;
             _shardingTailComparer = shardingTailComparer;
-            _canTrip = canTrip;
         }
         public int GetMaxQueryConnectionsLimit()
         {
@@ -48,10 +46,6 @@ namespace ShardingCore.Sharding.MergeContexts
         public IComparer<string> ShardingTailComparer()
         {
             return _shardingTailComparer;
-        }
-        public bool CanTrip()
-        {
-            return _canTrip;
         }
 
     }

@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -17,11 +14,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     /// <summary>
     /// 表路由规则引擎工厂
     /// </summary>
-    public class TableRouteRuleEngineFactory<TShardingDbContext> : ITableRouteRuleEngineFactory<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class TableRouteRuleEngineFactory : ITableRouteRuleEngineFactory
     {
-        private readonly ITableRouteRuleEngine<TShardingDbContext> _tableRouteRuleEngine;
+        private readonly ITableRouteRuleEngine _tableRouteRuleEngine;
 
-        public TableRouteRuleEngineFactory(ITableRouteRuleEngine<TShardingDbContext> tableRouteRuleEngine)
+        public TableRouteRuleEngineFactory(ITableRouteRuleEngine tableRouteRuleEngine)
         {
             _tableRouteRuleEngine = tableRouteRuleEngine;
         }
@@ -31,18 +28,17 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        private TableRouteRuleContext CreateContext(IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
+        private TableRouteRuleContext CreateContext(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
-            return new TableRouteRuleContext(queryable,queryEntities);
+            return new TableRouteRuleContext(dataSourceRouteResult,queryable,queryEntities);
         }
-
-        public IEnumerable<TableRouteResult> Route(IQueryable queryable,Dictionary<Type,IQueryable> queryEntities)
+        public ShardingRouteResult Route(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable, Dictionary<Type, IQueryable> queryEntities)
         {
-            var ruleContext = CreateContext(queryable, queryEntities);
+            var ruleContext = CreateContext(dataSourceRouteResult,queryable, queryEntities);
             return Route(ruleContext);
         }
 
-        private IEnumerable<TableRouteResult> Route(TableRouteRuleContext ruleContext)
+        private ShardingRouteResult Route(TableRouteRuleContext ruleContext)
         {
             return _tableRouteRuleEngine.Route(ruleContext);
         }

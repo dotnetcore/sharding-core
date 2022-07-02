@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
 using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 
@@ -26,8 +23,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
     /// <typeparam name="TKey"></typeparam>
     public abstract class AbstractShardingFilterVirtualTableRoute<T, TKey> : AbstractVirtualTableRoute<T, TKey> where T : class
     {
-        public  ShardingRouteContext CurrentShardingRouteContext =>
-            ShardingContainer.GetService<IShardingRouteManager>().Current;
+        public  ShardingRouteContext CurrentShardingRouteContext =>RouteShardingProvider.GetRequiredService<IShardingRouteManager>().Current;
         /// <summary>
         /// 启用提示路由
         /// </summary>
@@ -36,12 +32,21 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 启用断言路由
         /// </summary>
         protected virtual bool EnableAssertRoute => false;
-        public override List<IPhysicTable> RouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable,bool isQuery)
+        
+        /// <summary>
+        /// 路由是否忽略数据源
+        /// </summary>
+        protected virtual bool RouteIgnoreDataSource => true;
+        /// <summary>
+        /// 路由数据源和表后缀连接符
+        /// </summary>
+        protected virtual string RouteSeparator => ".";
+        public override List<TableRouteUnit> RouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable,bool isQuery)
         {
             if (!isQuery)
             {
                 //后拦截器
-                return DoRouteWithPredicate(allPhysicTables, queryable);
+                return DoRouteWithPredicate(dataSourceRouteResult, queryable);
             }
             //强制路由不经过断言
             if (EnableHintRoute)
@@ -50,47 +55,49 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                 {
                     if (CurrentShardingRouteContext.TryGetMustTail<T>(out HashSet<string> mustTails) && mustTails.IsNotEmpty())
                     {
-                        var physicTables = allPhysicTables.Where(o => mustTails.Contains(o.Tail)).ToList();
-                        if (physicTables.IsEmpty()||physicTables.Count!=mustTails.Count)
+                        var filterTails = GetTails().Where(o => mustTails.Contains(o)).ToList();
+                        if (filterTails.IsEmpty()||filterTails.Count!=mustTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route must error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",mustTails)}]");
-                        return physicTables;
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new TableRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
+                        return shardingRouteUnits;
                     }
 
                     if (CurrentShardingRouteContext.TryGetHintTail<T>(out HashSet<string> hintTails) && hintTails.IsNotEmpty())
                     {
-                        var physicTables = allPhysicTables.Where(o => hintTails.Contains(o.Tail)).ToList();
-                        if (physicTables.IsEmpty()||physicTables.Count!=hintTails.Count)
+                        var filterTails = GetTails().Where(o => hintTails.Contains(o)).ToList();
+                        if (filterTails.IsEmpty()||filterTails.Count!=hintTails.Count)
                             throw new ShardingCoreException(
                                 $" sharding route hint error:[{EntityMetadata.EntityType.FullName}]-->[{string.Join(",",hintTails)}]");
-                        return GetFilterTableNames(allPhysicTables, physicTables);
+                        var shardingRouteUnits = dataSourceRouteResult.IntersectDataSources.SelectMany(dataSourceName=>filterTails.Select(tail=> new TableRouteUnit(dataSourceName,tail,typeof(T)))).ToList();
+                        return GetFilterTableTails(dataSourceRouteResult, shardingRouteUnits);
                     }
                 }
             }
 
 
-            var filterPhysicTables = DoRouteWithPredicate(allPhysicTables,queryable);
-            return GetFilterTableNames(allPhysicTables, filterPhysicTables);
+            var filterPhysicTables = DoRouteWithPredicate(dataSourceRouteResult,queryable);
+            return GetFilterTableTails(dataSourceRouteResult, filterPhysicTables);
         }
 
         /// <summary>
         /// 判断是调用全局过滤器还是调用内部断言
         /// </summary>
-        /// <param name="allPhysicTables"></param>
-        /// <param name="filterPhysicTables"></param>
+        /// <param name="dataSourceRouteResult"></param>
+        /// <param name="shardingRouteUnits"></param>
         /// <returns></returns>
-        private List<IPhysicTable> GetFilterTableNames(List<IPhysicTable> allPhysicTables, List<IPhysicTable> filterPhysicTables)
+        private List<TableRouteUnit> GetFilterTableTails(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         {
             if (UseAssertRoute)
             {
                 //最后处理断言
-                ProcessAssertRoutes(allPhysicTables, filterPhysicTables);
-                return filterPhysicTables;
+                ProcessAssertRoutes(dataSourceRouteResult, shardingRouteUnits);
+                return shardingRouteUnits;
             }
             else
             {
                 //后拦截器
-                return AfterPhysicTableFilter(allPhysicTables, filterPhysicTables);
+                return AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
             }
         }
 
@@ -99,7 +106,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                                            out ICollection<ITableRouteAssert> routeAsserts) &&
                                        routeAsserts.IsNotEmpty();
 
-        private void ProcessAssertRoutes(List<IPhysicTable> allPhysicTables,List<IPhysicTable> filterPhysicTables)
+        private void ProcessAssertRoutes(DataSourceRouteResult dataSourceRouteResult,List<TableRouteUnit> shardingRouteUnits)
         {
             if (UseAssertRoute)
             {
@@ -107,24 +114,33 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
                 {
                     foreach (var routeAssert in routeAsserts)
                     {
-                        routeAssert.Assert(allPhysicTables, filterPhysicTables);
+                        routeAssert.Assert(dataSourceRouteResult,GetTails(), shardingRouteUnits);
                     }
                 }
             }
         }
 
-        protected abstract List<IPhysicTable> DoRouteWithPredicate(List<IPhysicTable> allPhysicTables, IQueryable queryable);
+        protected abstract List<TableRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable);
         
         
         /// <summary>
         /// 物理表过滤后
         /// </summary>
-        /// <param name="allPhysicTables">所有的物理表</param>
-        /// <param name="filterPhysicTables">过滤后的物理表</param>
+        /// <param name="dataSourceRouteResult">所有的数据源</param>
+        /// <param name="shardingRouteUnits">所有的物理表</param>
         /// <returns></returns>
-        protected virtual List<IPhysicTable> AfterPhysicTableFilter(List<IPhysicTable> allPhysicTables, List<IPhysicTable> filterPhysicTables)
+        protected virtual List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         {
-            return filterPhysicTables;
+            return shardingRouteUnits;
+        }
+
+        protected string FormatTableRouteWithDataSource(string dataSourceName, string tableTail)
+        {
+            if (RouteIgnoreDataSource)
+            {
+                return tableTail;
+            }
+            return $"{dataSourceName}{RouteSeparator}{tableTail}";
         }
     }
 }

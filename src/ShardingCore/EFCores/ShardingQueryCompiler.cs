@@ -10,6 +10,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 
 
 namespace ShardingCore.EFCores
@@ -22,11 +24,11 @@ namespace ShardingCore.EFCores
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
 
-        public ShardingQueryCompiler(ICurrentDbContext currentContext)
+        public ShardingQueryCompiler(ICurrentDbContext currentContext,IShardingRuntimeContext shardingRuntimeContext)
         {
             _shardingDbContext = currentContext.Context as IShardingDbContext ??
                                  throw new ShardingCoreException("db context operator is not IShardingDbContext");
-            _shardingCompilerExecutor = ShardingContainer.GetService<IShardingCompilerExecutor>();
+            _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
         }
 
         public TResult Execute<TResult>(Expression query)

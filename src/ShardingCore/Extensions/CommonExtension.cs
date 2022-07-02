@@ -5,11 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core;
-using ShardingCore.Core.VirtualTables;
-using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Utils;
 
 namespace ShardingCore.Extensions
 {

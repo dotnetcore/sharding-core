@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -22,14 +20,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
     public interface IVirtualDataSource
     {
-        /// <summary>
-        /// 配置id
-        /// </summary>
-        string ConfigId { get; }
-        /// <summary>
-        /// 当前配置的优先级
-        /// </summary>
-        int Priority { get; }
         /// <summary>
         /// 数据源配置
         /// </summary>
@@ -128,13 +118,5 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         DbContextOptionsBuilder UseDbContextOptionsBuilder(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder);
 
         IDictionary<string, string> GetDataSources();
-    }
-    /// <summary>
-    /// 虚拟数据源 连接所有的实际数据源
-    /// </summary>
-    public interface IVirtualDataSource<TShardingDbContext> : IVirtualDataSource
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-        IVirtualDataSourceRoute<TEntity> GetRoute<TEntity>() where TEntity:class;
     }
 }

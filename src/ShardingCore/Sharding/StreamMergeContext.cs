@@ -18,7 +18,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 
 namespace ShardingCore.Sharding
@@ -29,12 +33,13 @@ namespace ShardingCore.Sharding
     * @Date: Monday, 25 January 2021 11:38:27
     * @Email: 326308290@qq.com
     */
-    public class StreamMergeContext : ISeqQueryProvider, IMergeParseContext, IDisposable, IPrint
+    public class StreamMergeContext :  IMergeParseContext, IDisposable, IPrint
 #if !EFCORE2
         , IAsyncDisposable
 #endif
     {
         public IMergeQueryCompilerContext MergeQueryCompilerContext { get; }
+        public IShardingRuntimeContext ShardingRuntimeContext{ get; }
         public IParseResult ParseResult { get; }
         public IQueryable RewriteQueryable { get; }
         public IOptimizeResult OptimizeResult { get; }
@@ -47,8 +52,7 @@ namespace ShardingCore.Sharding
 
         public SelectContext SelectContext => ParseResult.GetSelectContext();
         public GroupByContext GroupByContext => ParseResult.GetGroupByContext();
-        public TableRouteResult[] TableRouteResults => MergeQueryCompilerContext.GetTableRouteResults();
-        public DataSourceRouteResult DataSourceRouteResult => MergeQueryCompilerContext.GetDataSourceRouteResult();
+        public ShardingRouteResult ShardingRouteResult => MergeQueryCompilerContext.GetShardingRouteResult();
 
         /// <summary>
         /// 本次查询涉及的对象
@@ -67,7 +71,7 @@ namespace ShardingCore.Sharding
         public bool IsCrossTable => MergeQueryCompilerContext.IsCrossTable();
 
         private readonly ITrackerManager _trackerManager;
-        private readonly IShardingEntityConfigOptions _shardingEntityConfigOptions;
+        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
 
@@ -81,16 +85,18 @@ namespace ShardingCore.Sharding
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult,
-            IRouteTailFactory routeTailFactory)
+            IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
+            ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext())
+                .GetRequireService<IShardingRuntimeContext>();
             ParseResult = parseResult;
             RewriteQueryable = rewriteQueryable;
             OptimizeResult = optimizeResult;
             _routeTailFactory = routeTailFactory;
             QueryEntities= MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
-            _trackerManager = ShardingContainer.GetTrackerManager(mergeQueryCompilerContext.GetShardingDbContextType());
-            _shardingEntityConfigOptions = ShardingContainer.GetRequiredShardingEntityConfigOption(mergeQueryCompilerContext.GetShardingDbContextType());
+            _trackerManager =trackerManager;
+            _shardingRouteConfigOptions = shardingRouteConfigOptions;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             Orders = parseResult.GetOrderByContext().PropertyOrders.ToArray();
             Skip = parseResult.GetPaginationContext().Skip;
@@ -109,16 +115,16 @@ namespace ShardingCore.Sharding
         /// <summary>
         /// 创建对应的dbcontext
         /// </summary>
-        /// <param name="dataSourceName">data source name</param>
-        /// <param name="tableRouteResult"></param>
+        /// <param name="sqlRouteUnit">数据库路由最小单元</param>
         /// <param name="connectionMode"></param>
         /// <returns></returns>
-        public DbContext CreateDbContext(string dataSourceName, TableRouteResult tableRouteResult, ConnectionModeEnum connectionMode)
+        public DbContext CreateDbContext(ISqlRouteUnit sqlRouteUnit, ConnectionModeEnum connectionMode)
         {
-            var routeTail = _routeTailFactory.Create(tableRouteResult);
+            
+            var routeTail = _routeTailFactory.Create(sqlRouteUnit.TableRouteResult);
             //如果开启了读写分离或者本次查询是跨表的表示本次查询的dbcontext是不存储的用完后就直接dispose
             var parallelQuery = IsParallelQuery();
-            var dbContext = GetShardingDbContext().GetDbContext(dataSourceName, parallelQuery, routeTail);
+            var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, parallelQuery, routeTail);
             if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.MEMORY_STRICTLY)
             {
                 _parallelDbContexts.TryAdd(dbContext, null);
@@ -260,7 +266,7 @@ namespace ShardingCore.Sharding
 
         public IShardingComparer GetShardingComparer()
         {
-            return GetShardingDbContext().GetVirtualDataSource().ConfigurationParams.ShardingComparer;
+            return GetShardingDbContext().GetShardingRuntimeContext().GetRequiredService<IShardingComparer>();
         }
 
         public TResult PreperExecute<TResult>(Func<TResult> emptyFunc)
@@ -270,14 +276,7 @@ namespace ShardingCore.Sharding
             {
                 if (ThrowIfQueryRouteNotMatch())
                 {
-                    if (IsDataSourceRouteNotMatch())
-                    {
-                        throw new ShardingCoreDataSourceQueryRouteNotMatchException(MergeQueryCompilerContext.GetQueryExpression().ShardingPrint());
-                    }
-                    else
-                    {
-                        throw new ShardingCoreTableQueryRouteNotMatchException(MergeQueryCompilerContext.GetQueryExpression().ShardingPrint());
-                    }
+                    throw new ShardingCoreQueryRouteNotMatchException(MergeQueryCompilerContext.GetQueryExpression().ShardingPrint());
                 }
                 else
                 {
@@ -293,17 +292,12 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool IsRouteNotMatch()
         {
-            return DataSourceRouteResult.IntersectDataSources.IsEmpty() || TableRouteResults.IsEmpty();
-        }
-
-        private bool IsDataSourceRouteNotMatch()
-        {
-            return DataSourceRouteResult.IntersectDataSources.IsEmpty();
+            return ShardingRouteResult.IsEmpty;
         }
 
         private bool ThrowIfQueryRouteNotMatch()
         {
-            return _shardingEntityConfigOptions.ThrowIfQueryRouteNotMatch;
+            return _shardingRouteConfigOptions.ThrowIfQueryRouteNotMatch;
         }
 
         public bool UseUnionAllMerge()
@@ -332,15 +326,10 @@ namespace ShardingCore.Sharding
             return OptimizeResult.IsSequenceQuery();
         }
 
-        public bool CanTrip()
-        {
-            return OptimizeResult.CanTrip();
-        }
-
         public string GetPrintInfo()
         {
             return
-                $"stream merge context:[max query connections limit:{GetMaxQueryConnectionsLimit()}],[is use read write separation:{IsUseReadWriteSeparation()}],[is parallel query:{IsParallelQuery()}],[is not support sharding:{UseUnionAllMerge()}],[is sequence query:{IsSeqQuery()}],[can trip:{CanTrip()}],[is route not match:{IsRouteNotMatch()}],[throw if query route not match:{ThrowIfQueryRouteNotMatch()}],[is pagination query:{IsPaginationQuery()}],[has group query:{HasGroupQuery()}],[is merge query:{IsMergeQuery()}],[is single sharding entity query:{IsSingleShardingEntityQuery()}]";
+                $"stream merge context:[max query connections limit:{GetMaxQueryConnectionsLimit()}],[is use read write separation:{IsUseReadWriteSeparation()}],[is parallel query:{IsParallelQuery()}],[is not support sharding:{UseUnionAllMerge()}],[is sequence query:{IsSeqQuery()}],[is route not match:{IsRouteNotMatch()}],[throw if query route not match:{ThrowIfQueryRouteNotMatch()}],[is pagination query:{IsPaginationQuery()}],[has group query:{HasGroupQuery()}],[is merge query:{IsMergeQuery()}],[is single sharding entity query:{IsSingleShardingEntityQuery()}]";
         }
 
         public int? GetSkip()

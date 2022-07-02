@@ -17,20 +17,20 @@ namespace ShardingCore.Sharding
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ActualConnectionStringManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class ActualConnectionStringManager
     {
         private readonly bool _useReadWriteSeparation;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
-        private readonly IVirtualDataSource<TShardingDbContext> _virtualDataSource;
+        private readonly IVirtualDataSource _virtualDataSource;
         public int ReadWriteSeparationPriority { get; set; }
         public bool ReadWriteSeparation { get; set; }
         public ReadStrategyEnum ReadStrategy { get; set; }
         public ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; set; }
         private string _cacheConnectionString;
-        public ActualConnectionStringManager(IVirtualDataSource<TShardingDbContext> virtualDataSource)
+        public ActualConnectionStringManager(IShardingReadWriteManager shardingReadWriteManager,IVirtualDataSource virtualDataSource)
         {
+            _shardingReadWriteManager = shardingReadWriteManager;
             _virtualDataSource=virtualDataSource;
-            _shardingReadWriteManager = ShardingContainer.GetService<IShardingReadWriteManager>();
             _useReadWriteSeparation = virtualDataSource.ConnectionStringManager is ReadWriteConnectionStringManager;
             if (_useReadWriteSeparation)
             {
@@ -67,7 +67,7 @@ namespace ShardingCore.Sharding
             var support = ReadWriteSeparation;
             string readNodeName = null;
             var hasConfig = false;
-            var shardingReadWriteContext = _shardingReadWriteManager.GetCurrent<TShardingDbContext>();
+            var shardingReadWriteContext = _shardingReadWriteManager.GetCurrent();
             if (shardingReadWriteContext != null)
             {
                 var dbFirst = ReadWriteSeparationPriority >= shardingReadWriteContext.DefaultPriority;

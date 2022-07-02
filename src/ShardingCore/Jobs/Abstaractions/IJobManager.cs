@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ShardingCore.Core;
 using ShardingCore.Jobs.Impls;
 
 namespace ShardingCore.Jobs.Abstaractions

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.EntityMetadatas
@@ -41,5 +43,9 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <param name="entityType"></param>
         /// <returns></returns>
         bool IsSharding(Type entityType);
+
+        List<Type> GetAllShardingEntities();
+
+        bool TryInitModel(IEntityType efEntityType);
     }
 }

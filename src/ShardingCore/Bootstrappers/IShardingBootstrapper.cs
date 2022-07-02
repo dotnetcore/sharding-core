@@ -7,13 +7,10 @@
 namespace ShardingCore.Bootstrappers
 {
     /// <summary>
-    /// 主要的分表启动器
+    /// 主要的分表初始化器,不再需要手动调用,<code>IShardingRuntimeContext初始化的时候会调用</code>
     /// </summary>
     public interface IShardingBootstrapper
     {
-        /// <summary>
-        /// 启动
-        /// </summary>
-        void Start();
+        void AutoShardingTable();
     }
 }

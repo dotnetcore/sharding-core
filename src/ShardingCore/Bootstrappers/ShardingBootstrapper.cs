@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ShardingCore.Core;
+using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ServiceProviders;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
+using ShardingCore.Sharding.ParallelTables;
 
 namespace ShardingCore.Bootstrappers
 {
@@ -19,40 +27,49 @@ namespace ShardingCore.Bootstrappers
     */
     public class ShardingBootstrapper : IShardingBootstrapper
     {
-        private readonly ILogger<ShardingBootstrapper> _logger;
-        private readonly IEnumerable<IDbContextTypeCollector> _dbContextTypeCollectors;
-        private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+        private readonly IShardingProvider _shardingProvider;
+        private readonly IDbContextCreator _dbContextCreator;
 
-        public ShardingBootstrapper(IServiceProvider serviceProvider,IEnumerable<IDbContextTypeCollector> dbContextTypeCollectors)
+        public ShardingBootstrapper(IShardingProvider shardingProvider,IDbContextCreator dbContextCreator)
         {
-            ShardingContainer.SetServices(serviceProvider);
-            InternalLoggerFactory.DefaultFactory = serviceProvider.GetService<ILoggerFactory>();
-            _logger = InternalLoggerFactory.DefaultFactory .CreateLogger<ShardingBootstrapper>();
-            _dbContextTypeCollectors = dbContextTypeCollectors;
+            _shardingProvider = shardingProvider;
+            _dbContextCreator = dbContextCreator;
         }
-        /// <summary>
-        /// 启动
-        /// </summary>
-        public void Start()
+        public void AutoShardingTable()
         {
-            if (!_doOnlyOnce.IsUnDo())
-                return;
-            _logger.LogDebug("sharding core starting......");
-            foreach (var dbContextTypeCollector in _dbContextTypeCollectors)
-            {
-                var instance = (IShardingDbContextBootstrapper)ShardingContainer.CreateInstance(typeof(ShardingDbContextBootstrapper<>).GetGenericType0(dbContextTypeCollector.ShardingDbContextType));
-                _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  start init......");
-                instance.Init();
-                _logger.LogDebug($"{dbContextTypeCollector.ShardingDbContextType}  complete init");
-            }
+            CheckRequirement();
+            StartAutoShardingJob();
+        }
 
-            var jobManager = ShardingContainer.GetService<IJobManager>();
-            if (jobManager != null && jobManager.HasAnyJob())
+        private void StartAutoShardingJob()
+        {
+            var jobRunnerService = _shardingProvider.GetRequiredService<JobRunnerService>(false);
+            Task.Factory.StartNew(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                await jobRunnerService.StartAsync();
+            }, TaskCreationOptions.LongRunning);
+        }
+        private void CheckRequirement()
+        {
+            try
+            {
+                using (var scope = _shardingProvider.CreateScope())
                 {
-                    await ShardingContainer.GetService<JobRunnerService>().StartAsync();
-                }, TaskCreationOptions.LongRunning);
+                    using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
+                    {
+                        if (dbContext == null)
+                        {
+                            throw new ShardingCoreInvalidOperationException(
+                                $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
+                    ex);
             }
         }
 

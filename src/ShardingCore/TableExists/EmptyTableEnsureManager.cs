@@ -9,13 +9,8 @@ using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.TableExists
 {
-    public class EmptyTableEnsureManager<TShardingDbContext> : ITableEnsureManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class EmptyTableEnsureManager : ITableEnsureManager
     {
-        public ISet<string> GetExistTables(string dataSourceName)
-        {
-            return new HashSet<string>();
-        }
-
         public ISet<string> GetExistTables(IShardingDbContext shardingDbContext, string dataSourceName)
         {
             return new HashSet<string>();

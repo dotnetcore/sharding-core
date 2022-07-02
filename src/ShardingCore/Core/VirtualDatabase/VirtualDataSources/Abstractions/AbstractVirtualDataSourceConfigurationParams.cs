@@ -6,23 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
-using ShardingCore.TableExists;
-using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
 {
-    public abstract class AbstractVirtualDataSourceConfigurationParams<TShardingDbContext>:IVirtualDataSourceConfigurationParams<TShardingDbContext>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public abstract class AbstractVirtualDataSourceConfigurationParams:IVirtualDataSourceConfigurationParams
     {
-        public abstract string ConfigId { get; }
-        public abstract int Priority { get; }
         public virtual int MaxQueryConnectionsLimit { get; } = Environment.ProcessorCount;
         public virtual ConnectionModeEnum ConnectionMode { get; } = ConnectionModeEnum.SYSTEM_AUTO;
         public abstract string DefaultDataSourceName { get; }
@@ -33,12 +24,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public virtual bool? ReadWriteDefaultEnable { get; }
         public virtual int? ReadWriteDefaultPriority { get; }
         public virtual ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
-        public virtual IShardingComparer ShardingComparer { get; } = new CSharpLanguageShardingComparer();
-
-        public virtual ITableEnsureManager TableEnsureManager { get; } =
-            new EmptyTableEnsureManager<TShardingDbContext>();
-
-
 
         public abstract DbContextOptionsBuilder UseDbContextOptionsBuilder(string connectionString,
             DbContextOptionsBuilder dbContextOptionsBuilder);

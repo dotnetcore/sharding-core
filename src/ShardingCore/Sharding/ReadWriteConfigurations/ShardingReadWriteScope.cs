@@ -15,8 +15,7 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingReadWriteScope<TShardingDbContext>:IDisposable
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingReadWriteScope:IDisposable
     {
         public IShardingReadWriteAccessor ShardingReadWriteAccessor { get; }
 
@@ -24,10 +23,10 @@ namespace ShardingCore.Sharding.ReadWriteConfigurations
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="shardingReadWriteAccessors"></param>
-        public ShardingReadWriteScope(IEnumerable<IShardingReadWriteAccessor> shardingReadWriteAccessors)
+        /// <param name="shardingReadWriteAccessor"></param>
+        public ShardingReadWriteScope(IShardingReadWriteAccessor shardingReadWriteAccessor)
         {
-            ShardingReadWriteAccessor = shardingReadWriteAccessors.FirstOrDefault(o=>o.ShardingDbContextType==typeof(TShardingDbContext))??throw new ArgumentNullException(nameof(shardingReadWriteAccessors));
+            ShardingReadWriteAccessor = shardingReadWriteAccessor;
         }
 
     /// <summary>

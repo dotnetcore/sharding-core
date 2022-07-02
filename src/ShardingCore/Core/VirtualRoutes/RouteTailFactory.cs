@@ -1,3 +1,5 @@
+using System.Linq;
+using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
@@ -12,8 +14,15 @@ namespace ShardingCore.Core.VirtualRoutes
     * @Date: Sunday, 22 August 2021 14:58:58
     * @Email: 326308290@qq.com
     */
-    public class RouteTailFactory:IRouteTailFactory
+    public class RouteTailFactory : IRouteTailFactory
     {
+        private readonly IEntityMetadataManager _entityMetadataManager;
+
+        public RouteTailFactory(IEntityMetadataManager entityMetadataManager)
+        {
+            _entityMetadataManager = entityMetadataManager;
+        }
+
         public IRouteTail Create(string tail)
         {
             return Create(tail, true);
@@ -33,7 +42,7 @@ namespace ShardingCore.Core.VirtualRoutes
 
         public IRouteTail Create(TableRouteResult tableRouteResult)
         {
-            return Create(tableRouteResult,true);
+            return Create(tableRouteResult, true);
         }
 
         public IRouteTail Create(TableRouteResult tableRouteResult, bool cache)
@@ -61,7 +70,10 @@ namespace ShardingCore.Core.VirtualRoutes
                     return new NoCacheSingleQueryRouteTail(tableRouteResult);
                 }
             }
-            return new MultiQueryRouteTail(tableRouteResult);
+
+            var isShardingTableQuery = tableRouteResult.ReplaceTables.Select(o => o.EntityType)
+                .Any(o => _entityMetadataManager.IsShardingTable(o));
+            return new MultiQueryRouteTail(tableRouteResult, isShardingTableQuery);
         }
     }
 }

@@ -35,7 +35,7 @@
 //        {
 //            if (EnableRouteParseCompileCache.HasValue)
 //                return EnableRouteParseCompileCache.Value;
-//            return EntityConfigOptions.EnableDataSourceRouteCompileCache.GetValueOrDefault();
+//            return RouteConfigOptions.EnableDataSourceRouteCompileCache.GetValueOrDefault();
 //        }
 
 //        /// <summary>

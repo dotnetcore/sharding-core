@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 {
@@ -12,9 +13,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 * @Email: 326308290@qq.com
 */
 
-    public interface ITableRouteRuleEngine<TShardingDbContext> 
-        where TShardingDbContext : DbContext, IShardingDbContext
+    public interface ITableRouteRuleEngine
     {
-        IEnumerable<TableRouteResult> Route(TableRouteRuleContext tableRouteRuleContext);
+        ShardingRouteResult Route(TableRouteRuleContext tableRouteRuleContext);
     }
 }

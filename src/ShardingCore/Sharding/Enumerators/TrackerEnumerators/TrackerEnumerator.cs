@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Core.QueryTrackers;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -21,9 +24,10 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
         public TrackerEnumerator(IShardingDbContext shardingDbContext,IEnumerator<T> enumerator)
         {
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
             _shardingDbContext = shardingDbContext;
             _enumerator = enumerator;
-            _queryTrack = ShardingContainer.GetService<IQueryTracker>();
+            _queryTrack = shardingRuntimeContext.GetQueryTracker();
         }
         public bool MoveNext()
         {

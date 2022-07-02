@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -49,7 +50,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
                 {
                     if (UseUnionAllMerge())
                     {
-                        var customerDatabaseSqlSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
+                        var customerDatabaseSqlSupportManager = GetStreamMergeContext().ShardingRuntimeContext.GetUnionAllMergeManager();
                         using (customerDatabaseSqlSupportManager.CreateScope(
                                    ((UnSupportSqlRouteUnit)dataSourceSqlExecutorUnit.SqlExecutorGroups[0].Groups[0]
                                        .RouteUnit).TableRouteResults))
@@ -75,17 +76,13 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
         /// <returns></returns>
         protected virtual IEnumerable<ISqlRouteUnit> GetDefaultSqlRouteUnits()
         {
-            var streamMergeContext = GetStreamMergeContext();
-            return streamMergeContext.DataSourceRouteResult.IntersectDataSources.SelectMany(
-                dataSourceName =>
-                {
-                    if (UseUnionAllMerge())
-                    {
-                        return new []{ (ISqlRouteUnit)new UnSupportSqlRouteUnit(dataSourceName, streamMergeContext.TableRouteResults) };
-                    }
-                    return streamMergeContext.TableRouteResults.Select(routeResult =>
-                        (ISqlRouteUnit)new SqlRouteUnit(dataSourceName, routeResult));
-                });
+            var useUnionAllMerge = UseUnionAllMerge();
+            if (useUnionAllMerge)
+            {
+                return GetStreamMergeContext().ShardingRouteResult.RouteUnits.GroupBy(o=>o.DataSourceName).Select(o=>new UnSupportSqlRouteUnit(o.Key,o.Select(g=>g.TableRouteResult).ToList()));
+            }
+            return GetStreamMergeContext().ShardingRouteResult.RouteUnits;
+           
         }
         protected virtual IEnumerable<IGrouping<string, ISqlRouteUnit>> AggregateQueryByDataSourceName(IEnumerable<ISqlRouteUnit> sqlRouteUnits)
         {

@@ -5,21 +5,16 @@ using Sample.SqlServer.DbContexts;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Extensions;
-using ShardingCore.Extensions.ShardingPageExtensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using ShardingCore;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
-using ShardingCore.Sharding.Abstractions;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using ShardingCore.EFCores;
+using ShardingCore.Core;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace Sample.SqlServer.Controllers
@@ -36,39 +31,23 @@ namespace Sample.SqlServer.Controllers
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
         private readonly IShardingReadWriteManager _readWriteManager;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager,IShardingReadWriteManager readWriteManager)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager,IShardingReadWriteManager readWriteManager,IShardingRuntimeContext shardingRuntimeContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
             _ = defaultTableDbContext.Model;
             _shardingRouteManager = shardingRouteManager;
             _readWriteManager = readWriteManager;
+            _shardingRuntimeContext = shardingRuntimeContext;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get2x()
         {
-            _defaultTableDbContext.ChangeTracker.HasChanges();
-            //var queryable = _defaultTableDbContext.Set<SysUserMod>().Where(o=>true);
-
-            //var tableRouteRuleEngineFactory = ShardingContainer.GetService<ITableRouteRuleEngineFactory<DefaultShardingDbContext>>();
-            //var tableRouteResults = tableRouteRuleEngineFactory.Route(queryable);
-            var virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
-            var virtualTable = virtualTableManager.GetVirtualTable<SysUserMod>();
-
-            var physicTable1s = virtualTable.RouteTo(new ShardingTableRouteConfig(shardingKeyValue: "123"));//获取值为123的所有分片
-
-            Expression<Func<SysUserMod, bool>> where = o => o.Id == "123";
-            var physicTable2s = virtualTable.RouteTo(new ShardingTableRouteConfig(predicate: where));//获取表达式o.Id == "123"的所有路由
-
-            var allPhysicTables = virtualTable.GetAllPhysicTables();
-
-            var virtualTableRoute = virtualTable.GetVirtualRoute();
-            var allTails = virtualTableRoute.GetAllTails();
-            Console.WriteLine("------------------Get2x------------------------");
             using (var dbContext =
                    DbContextHelper.CreateDbContextByString(
-                       "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"))
+                       "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;",_shardingRuntimeContext))
             {
                 await dbContext.AddAsync(new SysUserMod()
                 {

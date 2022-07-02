@@ -8,12 +8,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     internal class EmptyQueryEnumerator<T> : IAsyncEnumerator<T>,IEnumerator<T>
     {
 
+
+#if !EFCORE2
         public ValueTask DisposeAsync()
         {
             return new ValueTask();
         }
-
-#if !EFCORE2
         public ValueTask<bool> MoveNextAsync()
         {
             return new ValueTask<bool>(false);

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.DbContextCreator
@@ -24,12 +25,13 @@ namespace ShardingCore.Core.DbContextCreator
         /// <param name="shellDbContext">最外部的dbcontext也就是壳不具备真正的执行</param>
         /// <param name="shardingDbContextOptions">返回dbcontext的配置路由等信息</param>
         /// <returns></returns>
-        public DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions);
-    }
+         DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions);
 
-    public interface IDbContextCreator<TShardingDbContext> : IDbContextCreator
-        where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
+        /// <summary>
+        /// 返回shell db context 框架如何获取db context
+        /// </summary>
+        /// <param name="shardingProvider"></param>
+        /// <returns></returns>
+        DbContext GetShellDbContext(IShardingProvider shardingProvider);
     }
 }

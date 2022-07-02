@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Core.EntityMetadatas
@@ -10,8 +13,7 @@ namespace ShardingCore.Core.EntityMetadatas
     /// <summary>
     /// 默认分片对象元数据管理者实现
     /// </summary>
-    /// <typeparam name="TShardingDbContext"></typeparam>
-    public class DefaultEntityMetadataManager<TShardingDbContext> : IEntityMetadataManager<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
+    public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches =new ();
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
@@ -71,6 +73,21 @@ namespace ShardingCore.Core.EntityMetadatas
         public bool IsSharding(Type entityType)
         {
             return _caches.ContainsKey(entityType);
+        }
+
+        public List<Type> GetAllShardingEntities()
+        {
+            return _caches.Keys.ToList();
+        }
+
+        public bool TryInitModel(IEntityType efEntityType)
+        {
+            if (_caches.TryGetValue(efEntityType.ClrType,out var  metadata))
+            {
+                metadata.SetEntityModel(efEntityType);
+                return true;
+            }
+                return false;
         }
     }
 }

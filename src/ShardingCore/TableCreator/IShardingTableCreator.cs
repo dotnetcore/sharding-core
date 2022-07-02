@@ -30,8 +30,4 @@ namespace ShardingCore.TableCreator
         /// <exception cref="ShardingCreateException"></exception>
         void CreateTable(string dataSourceName, Type shardingEntityType, string tail);
     }
-    public interface IShardingTableCreator<TShardingDbContext>: IShardingTableCreator where TShardingDbContext : DbContext, IShardingDbContext
-    {
-
-    }
 }

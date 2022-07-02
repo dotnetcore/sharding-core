@@ -16,7 +16,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
     public abstract class AbstractSimpleShardingWeekKeyDateTimeVirtualTableRoute<TEntity> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<TEntity> where TEntity : class
     {
         public abstract DateTime GetBeginTime();
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
 

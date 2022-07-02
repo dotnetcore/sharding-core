@@ -30,9 +30,14 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
     */
     public class DefaultShardingQueryExecutor : IShardingQueryExecutor
     {
-        private static readonly ILogger<DefaultShardingQueryExecutor> _logger=InternalLoggerFactory.CreateLogger<DefaultShardingQueryExecutor>();
+        private static readonly ILogger<DefaultShardingQueryExecutor> _logger=ShardingLoggerFactory.CreateLogger<DefaultShardingQueryExecutor>();
+        private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
 
+        public DefaultShardingQueryExecutor(IStreamMergeContextFactory streamMergeContextFactory)
+        {
+            _streamMergeContextFactory = streamMergeContextFactory;
+        }
         public TResult Execute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
             //如果根表达式为tolist toarray getenumerator等表示需要迭代
@@ -109,8 +114,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
 
         private StreamMergeContext GetStreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            var streamMergeContextFactory = (IStreamMergeContextFactory)ShardingContainer.GetService(typeof(IStreamMergeContextFactory<>).GetGenericType0(mergeQueryCompilerContext.GetShardingDbContextType()));
-            return streamMergeContextFactory.Create(mergeQueryCompilerContext);
+            return _streamMergeContextFactory.Create(mergeQueryCompilerContext);
 
         }
         private TResult EnumerableExecute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext)

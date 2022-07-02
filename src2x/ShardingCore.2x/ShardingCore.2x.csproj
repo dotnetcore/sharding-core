@@ -40,7 +40,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
-		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+<!--		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />-->
 	</ItemGroup>
 
 </Project>

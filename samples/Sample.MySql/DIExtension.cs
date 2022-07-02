@@ -17,13 +17,6 @@ namespace Sample.MySql
     */
     public static class DIExtension
     {
-        public static IApplicationBuilder UseShardingCore(this IApplicationBuilder app)
-        {
-            var shardingBootstrapper = app.ApplicationServices.GetRequiredService<IShardingBootstrapper>();
-            shardingBootstrapper.Start();
-            return app;
-        }
-
         public static void DbSeed(this IApplicationBuilder app)
         {
             using (var scope=app.ApplicationServices.CreateScope())

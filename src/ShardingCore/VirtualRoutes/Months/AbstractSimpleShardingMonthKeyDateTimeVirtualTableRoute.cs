@@ -16,7 +16,7 @@ namespace ShardingCore.VirtualRoutes.Months
     public abstract class AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<TEntity> : AbstractShardingTimeKeyDateTimeVirtualTableRoute<TEntity> where TEntity : class
     {
         public abstract DateTime GetBeginTime();
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = ShardingCoreHelper.GetCurrentMonthFirstDay(GetBeginTime());
          
