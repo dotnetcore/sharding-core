@@ -13,6 +13,7 @@ using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
@@ -48,8 +49,14 @@ namespace ShardingCore.Core.RuntimeContexts
                     return;
                 isInited = true;
                 _serviceProvider = _serviceMap.BuildServiceProvider();
-                _serviceProvider.GetRequiredService<IShardingBootstrapper>().Initialize();
+                _serviceProvider.GetRequiredService<IShardingInitializer>().Initialize();
+                
             }
+        }
+
+        public void AutoShardingTable()
+        {
+            GetRequiredService<IShardingBootstrapper>().AutoShardingTable();
         }
 
         public IShardingCompilerExecutor GetShardingCompilerExecutor()

@@ -3,6 +3,7 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {

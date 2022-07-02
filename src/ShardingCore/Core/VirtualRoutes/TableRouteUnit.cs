@@ -17,7 +17,7 @@ namespace ShardingCore.Core.VirtualRoutes
 
         private bool Equals(TableRouteUnit other)
         {
-            return DataSourceName == other.DataSourceName && Tail == other.Tail && EntityType == other.EntityType;
+            return DataSourceName == other.DataSourceName && Tail == other.Tail && Equals(EntityType, other.EntityType);
         }
 
         public override bool Equals(object obj)
@@ -25,9 +25,25 @@ namespace ShardingCore.Core.VirtualRoutes
             return ReferenceEquals(this, obj) || obj is TableRouteUnit other && Equals(other);
         }
 
+#if !EFCORE2
+        
         public override int GetHashCode()
         {
             return HashCode.Combine(DataSourceName, Tail, EntityType);
         }
+#endif
+        
+#if EFCORE2
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (DataSourceName != null ? DataSourceName.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Tail != null ? Tail.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (EntityType != null ? EntityType.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+#endif
     }
 }

@@ -31,7 +31,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
         protected bool Equals(TableRouteResult other)
         {
-            return ReplaceTables.SequenceEqual(other.ReplaceTables);
+            return Equals(ReplaceTables, other.ReplaceTables) && HasDifferentTail == other.HasDifferentTail && IsEmpty == other.IsEmpty;
         }
 
         public override bool Equals(object obj)
@@ -51,9 +51,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ReplaceTables);
+            return HashCode.Combine(ReplaceTables, HasDifferentTail, IsEmpty);
         }
-
 #endif
 
 #if EFCORE2
@@ -62,7 +61,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         {
             unchecked
             {
-                return ((ReplaceTables != null ? ReplaceTables.GetHashCode() : 0) * 397) ^ (ShardingDbContextType != null ? ShardingDbContextType.GetHashCode() : 0);
+                var hashCode = (ReplaceTables != null ? ReplaceTables.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ HasDifferentTail.GetHashCode();
+                hashCode = (hashCode * 397) ^ IsEmpty.GetHashCode();
+                return hashCode;
             }
         }
 #endif

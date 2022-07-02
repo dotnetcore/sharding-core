@@ -39,6 +39,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
          void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider);
          void Initialize();
+         void AutoShardingTable();
         object GetService(Type serviceType);
         TService GetService<TService>();
         object GetRequiredService(Type serviceType);

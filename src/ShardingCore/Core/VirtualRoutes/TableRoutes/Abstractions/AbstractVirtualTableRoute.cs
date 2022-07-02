@@ -5,6 +5,7 @@ using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.PaginationConfigurations;
 using System.Collections.Generic;
 using System.Linq;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.EntityQueryConfigurations;
@@ -25,7 +26,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         // public IShardingRouteConfigOptions RouteConfigOptions { get; private set; }
 
         public PaginationMetadata PaginationMetadata { get; private set; }
+        public bool EnablePagination =>PaginationMetadata != null;
         public EntityQueryMetadata EntityQueryMetadata { get;  private set; }
+        public bool EnableEntityQuery =>EntityQueryMetadata != null;
         public IShardingProvider RouteShardingProvider { get;  private set;}
 
         public virtual void Initialize(EntityMetadata entityMetadata,IShardingProvider shardingProvider)

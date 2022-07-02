@@ -15,5 +15,9 @@ namespace ShardingCore.Exceptions
         public ShardingCoreInvalidOperationException(string? message) : base(message)
         {
         }
+
+        public ShardingCoreInvalidOperationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Extensions.InternalExtensions;
 
 namespace ShardingCore.Core.EntityMetadatas
 {
@@ -90,7 +91,7 @@ namespace ShardingCore.Core.EntityMetadatas
 
         public void SetEntityModel(IEntityType dbEntityType)
         {
-            LogicTableName = dbEntityType.GetTableName();
+            LogicTableName = dbEntityType.GetEntityTypeTableName();
             QueryFilterExpression= dbEntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as LambdaExpression;
             PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
                                    new List<PropertyInfo>();

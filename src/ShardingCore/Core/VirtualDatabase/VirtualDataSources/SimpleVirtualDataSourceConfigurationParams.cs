@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 {

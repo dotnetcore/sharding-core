@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 

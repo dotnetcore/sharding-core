@@ -17,19 +17,17 @@ namespace ShardingCore.TableCreator
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="shardingDbContext"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="tail"></param>
         /// <typeparam name="T"></typeparam>
-        void CreateTable<T>(IShardingDbContext shardingDbContext,string dataSourceName, string tail) where T : class;
+        void CreateTable<T>(string dataSourceName, string tail) where T : class;
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="shardingDbContext"></param>
         /// <param name="dataSourceName"></param>
         /// <param name="shardingEntityType"></param>
         /// <param name="tail"></param>
         /// <exception cref="ShardingCreateException"></exception>
-        void CreateTable(IShardingDbContext shardingDbContext,string dataSourceName, Type shardingEntityType, string tail);
+        void CreateTable(string dataSourceName, Type shardingEntityType, string tail);
     }
 }

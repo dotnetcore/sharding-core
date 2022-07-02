@@ -9,7 +9,6 @@ namespace Sample.MySql.Domain.Entities
     public class SysUserLogByMonth 
     {
         public string Id { get; set; }
-        [ShardingTableKey]
         public DateTime Time { get; set; }
     }
 }

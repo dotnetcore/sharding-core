@@ -16,7 +16,7 @@ namespace ShardingCore.VirtualRoutes.Weeks
     {
 
         public abstract DateTime GetBeginTime();
-        public override List<string> GetTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
          

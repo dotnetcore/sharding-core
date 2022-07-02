@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -23,78 +25,51 @@ namespace ShardingCore.Bootstrappers
     * @Date: Monday, 21 December 2020 09:10:07
     * @Email: 326308290@qq.com
     */
-    internal class ShardingBootstrapper : IShardingBootstrapper
+    public class ShardingBootstrapper : IShardingBootstrapper
     {
-        private readonly ILogger<ShardingBootstrapper> _logger;
         private readonly IShardingProvider _shardingProvider;
-        private readonly IShardingRouteConfigOptions _routeConfigOptions;
-        private readonly IEntityMetadataManager _entityMetadataManager;
-        private readonly IParallelTableManager _parallelTableManager;
-        private readonly IJobManager _jobManager;
-        private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
+        private readonly IDbContextCreator _dbContextCreator;
 
-        public ShardingBootstrapper(IShardingProvider shardingProvider)
+        public ShardingBootstrapper(IShardingProvider shardingProvider,IDbContextCreator dbContextCreator)
         {
-            _logger = InternalLoggerFactory.DefaultFactory.CreateLogger<ShardingBootstrapper>();
             _shardingProvider = shardingProvider;
-            _routeConfigOptions = shardingProvider.GetRequiredService<IShardingRouteConfigOptions>();
-            _entityMetadataManager = shardingProvider.GetRequiredService<IEntityMetadataManager>();
-            _parallelTableManager = shardingProvider.GetRequiredService<IParallelTableManager>();
-            _jobManager =  shardingProvider.GetRequiredService<IJobManager>();
+            _dbContextCreator = dbContextCreator;
         }
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public void Initialize()
+        public void AutoShardingTable()
         {
-            if (!_doOnlyOnce.IsUnDo())
-                return;
-            _logger.LogDebug("sharding core starting......");
-            
-            _logger.LogDebug("sharding core initialize entity metadata......");
-            InitializeEntityMetadata();
-            _logger.LogDebug("sharding core initialize parallel table......");
-            InitializeParallelTables();
-            _logger.LogDebug($"sharding core  complete init");
+            CheckRequirement();
+            StartAutoShardingJob();
+        }
 
-            if (_jobManager != null && _jobManager.HasAnyJob())
+        private void StartAutoShardingJob()
+        {
+            var jobRunnerService = _shardingProvider.GetRequiredService<JobRunnerService>(false);
+            Task.Factory.StartNew(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                await jobRunnerService.StartAsync();
+            }, TaskCreationOptions.LongRunning);
+        }
+        private void CheckRequirement()
+        {
+            try
+            {
+                using (var scope = _shardingProvider.CreateScope())
                 {
-                    await _shardingProvider.GetRequiredService<JobRunnerService>().StartAsync();
-                }, TaskCreationOptions.LongRunning);
-            }
-            _logger.LogDebug("sharding core running......");
-        }
-        
-        private void InitializeEntityMetadata()
-        {
-            var shardingEntities = _routeConfigOptions.GetShardingTableRouteTypes()
-                .Concat(_routeConfigOptions.GetShardingDataSourceRouteTypes()).ToHashSet();
-            foreach (var entityType in shardingEntities)
-            {
-                var entityMetadataInitializerType =
-                    typeof(EntityMetadataInitializer<>).GetGenericType0(entityType);
-
-                var entityMetadataInitializer =(IEntityMetadataInitializer)_shardingProvider.CreateInstance(entityMetadataInitializerType);
-                entityMetadataInitializer.Initialize();
-                    
-            }
-        }
-
-        private void InitializeParallelTables()
-        {
-            foreach (var parallelTableGroupNode in _routeConfigOptions.GetParallelTableGroupNodes())
-            {
-                var parallelTableComparerType = parallelTableGroupNode.GetEntities()
-                    .FirstOrDefault(o => !_entityMetadataManager.IsShardingTable(o.Type));
-                if (parallelTableComparerType != null)
-                {
-                    throw new ShardingCoreInvalidOperationException(
-                        $"{parallelTableComparerType.Type.Name} must is sharding table type");
+                    using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
+                    {
+                        if (dbContext == null)
+                        {
+                            throw new ShardingCoreInvalidOperationException(
+                                $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}");
+                        }
+                    }
                 }
-
-                _parallelTableManager.AddParallelTable(parallelTableGroupNode);
+            }
+            catch (Exception ex)
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
+                    ex);
             }
         }
 

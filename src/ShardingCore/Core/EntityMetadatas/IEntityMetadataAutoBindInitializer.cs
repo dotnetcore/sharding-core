@@ -1,4 +1,6 @@
-﻿namespace ShardingCore.Core.EntityMetadatas
+﻿using ShardingCore.Core.ServiceProviders;
+
+namespace ShardingCore.Core.EntityMetadatas
 {
     /// <summary>
     /// 元数据和路由绑定初始化器

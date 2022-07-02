@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Sharding.Abstractions;

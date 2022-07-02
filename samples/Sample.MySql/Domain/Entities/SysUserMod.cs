@@ -13,7 +13,6 @@ namespace Sample.MySql.Domain.Entities
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingTableKey]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称

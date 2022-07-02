@@ -107,6 +107,8 @@ namespace ShardingCore
         }
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services) where TShardingDbContext : DbContext, IShardingDbContext
         {
+            services.TryAddSingleton<IShardingInitializer, ShardingInitializer>();
+            services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             services.TryAddSingleton<ITableRouteManager, TableRouteManager>();
             services.TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
@@ -155,7 +157,6 @@ namespace ShardingCore
             //sharding page
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
-            services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             services.TryAddSingleton<IUnionAllMergeManager, UnionAllMergeManager>();
             services.TryAddSingleton<IUnionAllMergeAccessor, UnionAllMergeAccessor>();
             services.TryAddSingleton<IQueryTracker, QueryTracker>();
@@ -207,6 +208,15 @@ namespace ShardingCore
         }
 
 
+        /// <summary>
+        /// 使用自动创建表
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        public static void UseAutoShardingCore(this IServiceProvider serviceProvider)
+        {
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            shardingRuntimeContext.AutoShardingTable();
+        }
 
 
         //public static IServiceCollection AddSingleShardingDbContext<TShardingDbContext>(this IServiceCollection services, Action<ShardingConfigOptions> configure,

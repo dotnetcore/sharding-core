@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace ShardingCore.Core.ShardingConfigurations

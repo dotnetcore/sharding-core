@@ -53,7 +53,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
          /// <summary>
          /// 是否启用智能分页
          /// </summary>
-          bool EnablePagination => PaginationMetadata != null;
+          bool EnablePagination {get; }// PaginationMetadata != null;
          /// <summary>
          /// 查询配置
          /// </summary>
@@ -61,7 +61,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
          /// <summary>
          /// 是否启用表达式分片配置
          /// </summary>
-          bool EnableEntityQuery => EntityQueryMetadata != null;
+          bool EnableEntityQuery { get; }
 
     }
 

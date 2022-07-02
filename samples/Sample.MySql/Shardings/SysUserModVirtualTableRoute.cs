@@ -18,7 +18,7 @@ namespace Sample.MySql.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
         {
-            
+            builder.ShardingProperty(o => o.Id);
         }
 
     }

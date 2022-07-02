@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore.Core;
+using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Extensions
 {

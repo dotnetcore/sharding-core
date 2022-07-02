@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.EntityShardingMetadatas;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
@@ -104,7 +105,7 @@ namespace ShardingCore.Bootstrappers
                 //检测校验分表分库对象元数据
                 entityMetadata.CheckShardingTableMetadata();
                 //添加任务
-                if (virtualTableRoute is IJob routeJob)
+                if (virtualTableRoute is IJob routeJob&&routeJob.AppendJob())
                 {
                     var jobEntry = JobEntryFactory.Create(routeJob);
                     _shardingProvider.GetRequiredService<IJobManager>().AddJob(jobEntry);

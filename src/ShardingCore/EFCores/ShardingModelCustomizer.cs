@@ -11,6 +11,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
@@ -79,9 +80,9 @@ namespace ShardingCore.EFCores
             var shardingEntity = entityMetadata.EntityType;
             var tableSeparator = entityMetadata.TableSeparator;
             var entity = modelBuilder.Entity(shardingEntity);
-            var tableName = mutableEntityType.GetTableName();
+            var tableName = entityMetadata.LogicTableName;
             if (string.IsNullOrWhiteSpace(tableName))
-                throw new ArgumentNullException($"{shardingEntity}: not found original table name。");
+                throw new ArgumentNullException($"{shardingEntity}: not found logic table name。");
             _logger.LogDebug($"mapping table :[tableName]-->[{tableName}{tableSeparator}{tail}]");
             entity.ToTable($"{tableName}{tableSeparator}{tail}");
         }

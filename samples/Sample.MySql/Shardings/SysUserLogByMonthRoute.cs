@@ -22,7 +22,7 @@ namespace Sample.MySql.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserLogByMonth> builder)
         {
-            
+            builder.ShardingProperty(o => o.Time);
         }
     }
 }

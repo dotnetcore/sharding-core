@@ -23,18 +23,18 @@ namespace ShardingCore.VirtualRoutes.Mods
     {
         protected readonly int Mod;
         protected readonly int TailLength;
-        protected readonly char PaddingChar;
-        protected AbstractSimpleShardingModKeyIntVirtualTableRoute(int tailLength,int mod,char paddingChar= '0') 
+        /// <summary>
+        /// 当取模后不足tailLength左补什么参数
+        /// </summary>
+        protected virtual char PaddingChar=>'0';
+        protected AbstractSimpleShardingModKeyIntVirtualTableRoute(int tailLength,int mod) 
         {
             if(tailLength<1)
                 throw new ArgumentException($"{nameof(tailLength)} less than 1 ");
             if (mod < 1)
                 throw new ArgumentException($"{nameof(mod)} less than 1 ");
-            if (string.IsNullOrWhiteSpace(paddingChar.ToString()))
-                throw new ArgumentException($"{nameof(paddingChar)} cant empty ");
             TailLength = tailLength;
             Mod = mod;
-            PaddingChar = paddingChar;
         }
 
         public override string ShardingKeyToTail(object shardingKey)
