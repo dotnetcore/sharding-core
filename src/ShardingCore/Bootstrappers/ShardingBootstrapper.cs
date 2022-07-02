@@ -35,7 +35,7 @@ namespace ShardingCore.Bootstrappers
             _shardingProvider = shardingProvider;
             _dbContextCreator = dbContextCreator;
         }
-        public void AutoShardingTable()
+        public void AutoShardingCreate()
         {
             CheckRequirement();
             StartAutoShardingJob();

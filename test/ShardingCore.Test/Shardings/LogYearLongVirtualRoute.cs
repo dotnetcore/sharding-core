@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core.EntityMetadatas;
-using ShardingCore.Core.PhysicTables;
-using ShardingCore.Extensions;
 using ShardingCore.Test.Domain.Entities;
 using ShardingCore.VirtualRoutes.Years;
 

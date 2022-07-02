@@ -6,7 +6,7 @@ namespace ShardingCore.Test3x.Domain.Entities
 * @Date: Thursday, 14 January 2021 15:36:43
 * @Email: 326308290@qq.com
 */
-    public class SysUserMod
+    public class SysUserMod: IId
     {
         /// <summary>
         /// 用户Id用于分表
@@ -21,6 +21,12 @@ namespace ShardingCore.Test3x.Domain.Entities
         /// </summary>
         public int Age { get; set; }
         public int AgeGroup { get; set; }
-        
+
     }
+
+    public interface IId
+    {
+        string Id { get; set; }
+    }
+
 }

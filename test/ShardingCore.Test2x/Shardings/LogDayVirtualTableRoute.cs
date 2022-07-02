@@ -34,7 +34,7 @@ namespace ShardingCore.Test2x.Shardings
         {
             return true;
         }
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
 

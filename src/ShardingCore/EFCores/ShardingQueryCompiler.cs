@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 
@@ -19,7 +20,7 @@ namespace ShardingCore.EFCores
     /// <summary>
     /// 当前查询编译拦截
     /// </summary>
-    public class ShardingQueryCompiler : IQueryCompiler
+    public class ShardingQueryCompiler : IQueryCompiler,IShardingDbContextAvailable
     {
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
@@ -87,5 +88,9 @@ namespace ShardingCore.EFCores
             throw new NotImplementedException();
         }
 #endif
+        public IShardingDbContext GetShardingDbContext()
+        {
+            return _shardingDbContext;
+        }
     }
 }

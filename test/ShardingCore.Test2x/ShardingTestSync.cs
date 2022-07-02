@@ -1,30 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
-using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
-using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.TableCreator;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Test2x.Domain.Entities;
-using ShardingCore.Utils;
 using Xunit;
 
 namespace ShardingCore.Test2x
@@ -35,38 +34,34 @@ namespace ShardingCore.Test2x
     {
         private readonly ShardingDefaultDbContext _virtualDbContext;
         private readonly IShardingRouteManager _shardingRouteManager;
-        private readonly ActualConnectionStringManager<ShardingDefaultDbContext> _connectionStringManager;
+        private readonly ActualConnectionStringManager _connectionStringManager;
         private readonly IConfiguration _configuration;
-        private readonly IEntityMetadataManager<ShardingDefaultDbContext> _entityMetadataManager;
-        private readonly IVirtualDataSource<ShardingDefaultDbContext> _virtualDataSource;
-        private readonly IVirtualTableManager<ShardingDefaultDbContext> _virtualTableManager;
-        private readonly IShardingTableCreator<ShardingDefaultDbContext> _shardingTableCreator;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IVirtualDataSource _virtualDataSource;
+        private readonly ITableRouteManager _tableRouteManager;
+        private readonly IShardingTableCreator _shardingTableCreator;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IReadWriteConnectorFactory _readWriteConnectorFactory;
         private readonly IShardingConnectionStringResolver _shardingConnectionStringResolver;
+        private readonly IShardingComparer _shardingComparer;
 
-        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRouteManager shardingRouteManager, IConfiguration configuration,
-            IEntityMetadataManager<ShardingDefaultDbContext> entityMetadataManager,
-            IVirtualDataSourceManager<ShardingDefaultDbContext> virtualDataSourceManager,
-            IVirtualTableManager<ShardingDefaultDbContext> virtualTableManager,
-            IShardingTableCreator<ShardingDefaultDbContext> shardingTableCreator,
-            IShardingReadWriteManager shardingReadWriteManager, IRouteTailFactory routeTailFactory,
-            IReadWriteConnectorFactory readWriteConnectorFactory)
+        public ShardingTestSync(ShardingDefaultDbContext virtualDbContext, IShardingRuntimeContext shardingRuntimeContext, IConfiguration configuration)
         {
             _virtualDbContext = virtualDbContext;
-            _shardingRouteManager = shardingRouteManager;
-            _virtualDataSource = virtualDataSourceManager.GetCurrentVirtualDataSource();
-            _connectionStringManager = new ActualConnectionStringManager<ShardingDefaultDbContext>(_virtualDataSource);
+            _shardingRouteManager = shardingRuntimeContext.GetShardingRouteManager();
+            _shardingReadWriteManager = shardingRuntimeContext.GetShardingReadWriteManager();
+            _virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
+            _connectionStringManager = new ActualConnectionStringManager(_shardingReadWriteManager,_virtualDataSource);
             _configuration = configuration;
-            this._entityMetadataManager = entityMetadataManager;
-            _virtualTableManager = virtualTableManager;
-            _shardingTableCreator = shardingTableCreator;
-            _shardingReadWriteManager = shardingReadWriteManager;
-            _routeTailFactory = routeTailFactory;
-            _readWriteConnectorFactory = readWriteConnectorFactory;
-            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o => readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
-            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault());
+            _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
+            _tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
+            _shardingTableCreator = shardingRuntimeContext.GetShardingTableCreator();
+            _routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
+            _shardingComparer = shardingRuntimeContext.GetShardingComparer();
+            _readWriteConnectorFactory = shardingRuntimeContext.GetReadWriteConnectorFactory();
+            var readWriteConnectors = _virtualDataSource.ConfigurationParams.ReadWriteNodeSeparationConfigs.Select(o => _readWriteConnectorFactory.CreateConnector(_virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(), o.Key, o.Value));
+            _shardingConnectionStringResolver = new ReadWriteShardingConnectionStringResolver(readWriteConnectors, _virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault(),_readWriteConnectorFactory);
         }
         // [Fact]
         // public void RouteParseCompileCacheTest()
@@ -116,8 +111,10 @@ namespace ShardingCore.Test2x
             var a = new DefaultPhysicDataSource("aaa", "aaa", true);
             var b = new DefaultPhysicDataSource("aaa", "aaa1", false);
             Assert.Equal(a, b);
-            var x = new EntityMetadata(typeof(LogDay), "aa", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null);
-            var y = new EntityMetadata(typeof(LogDay), "aa1", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null);
+            var x = new EntityMetadata(typeof(LogDay));
+            //, "aa", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null
+            var y = new EntityMetadata(typeof(LogDay));
+            //, "aa1", typeof(ShardingDefaultDbContext), new List<PropertyInfo>(),null
             Assert.Equal(x, y);
             var dateTime = new DateTime(2021, 1, 1);
             var logDays = Enumerable.Range(0, 100).Select(o => new LogDay() { Id = Guid.NewGuid(), LogLevel = "info", LogBody = o.ToString(), LogTime = dateTime.AddDays(o) }).ToList();
@@ -167,6 +164,7 @@ namespace ShardingCore.Test2x
             Assert.False(isKey3);
             var isKey4 = userModMetadata.ShardingTableFieldIsKey();
             Assert.True(isKey4);
+
             _virtualDbContext.AddRange(logDays);
             var bulkShardingExpression = _virtualDbContext.BulkShardingExpression<ShardingDefaultDbContext, Order>(o => new[] { "A", "B" }.Contains(o.Area));
             Assert.Equal(2, bulkShardingExpression.Count);
@@ -184,8 +182,6 @@ namespace ShardingCore.Test2x
             Assert.True(shardingDbContext);
             var shardingTableDbContext = _virtualDbContext.GetType().IsShardingTableDbContext();
             Assert.True(shardingTableDbContext);
-            var virtualTable = _virtualTableManager.GetVirtualTable<SysUserMod>();
-            Assert.NotNull(virtualTable);
 
             var x1x1 = new ParallelTableGroupNode(new HashSet<ParallelTableComparerType>()
                 { new ParallelTableComparerType(typeof(SysUserMod)), new ParallelTableComparerType(typeof(SysUserSalary)) });
@@ -201,17 +197,18 @@ namespace ShardingCore.Test2x
             public string Id { get; set; }
             public string T { get; set; }
         }
+
         [Fact]
         public void TestMultiShardingProperty()
         {
 
-            var multiOrder = _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 232398109278351360).FirstOrDefault();
+            var multiOrder =  _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 232398109278351360).FirstOrDefault();
             Assert.NotNull(multiOrder);
             var longs = new[] { 232398109278351360, 255197859283087360 };
-            var multiOrders = _virtualDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToList();
+            var multiOrders =  _virtualDbContext.Set<MultiShardingOrder>().Where(o => longs.Contains(o.Id)).ToList();
             Assert.Equal(2, multiOrders.Count);
             var dateTime = new DateTime(2021, 11, 1);
-            var multiOrder404 = _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 250345338962063360 && o.CreateTime < dateTime).FirstOrDefault();
+            var multiOrder404 =  _virtualDbContext.Set<MultiShardingOrder>().Where(o => o.Id == 250345338962063360 && o.CreateTime < dateTime).FirstOrDefault();
             Assert.Null(multiOrder404);
         }
         [Fact]
@@ -244,7 +241,7 @@ namespace ShardingCore.Test2x
             var compare0 = x.CompareTo(y);
             Assert.True(compare0 > 0);
             //asc x<y db compare  uniqueidentifier
-            var compare1 = _virtualDataSource.ConfigurationParams.ShardingComparer.Compare(x, y, true);
+            var compare1 = _shardingComparer.Compare(x, y, true);
             Assert.True(compare1 < 0);
         }
         //[Fact]
@@ -488,27 +485,28 @@ namespace ShardingCore.Test2x
         {
 
             var x = new Object[] { "1", "2" };
-            var sysUserModab = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id.Equals("1")).FirstOrDefault();
+            var sysUserModab =  _virtualDbContext.Set<SysUserMod>().Where(o => o.Id.Equals("1")).FirstOrDefault();
             Assert.NotNull(sysUserModab);
             Assert.True(sysUserModab.Id == "1");
-            var sysUserModaa = _virtualDbContext.Set<SysUserMod>().Where(o => "1".Equals(o.Id)).FirstOrDefault();
+            var sysUserModaa =  _virtualDbContext.Set<SysUserMod>().Where(o => "1".Equals(o.Id)).FirstOrDefault();
             Assert.NotNull(sysUserModaa);
             Assert.True(sysUserModaa.Id == "1");
-            var sysUserMod = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefault();
+            var sysUserMod =  _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "1").FirstOrDefault();
             Assert.NotNull(sysUserMod);
             Assert.True(sysUserMod.Id == "1");
-            Assert.Equal(sysUserModaa, sysUserMod);
-            var sysUserModxx = _virtualDbContext.Set<SysUserMod>().Where(o => x.Contains(o.Id)).FirstOrDefault();
+            var sysUserModxx =  _virtualDbContext.Set<SysUserMod>().Where(o => x.Contains(o.Id)).FirstOrDefault();
             Assert.NotNull(sysUserModxx);
+            Assert.Equal(sysUserModaa, sysUserMod);
             Assert.True(x.Contains(sysUserModxx.Id));
             Assert.NotNull(sysUserMod);
             var userMod = _virtualDbContext.Set<SysUserMod>().Find("1");
             Assert.Equal(sysUserMod, userMod);
             Assert.True(sysUserMod.Id == "1");
-            var user198 = _virtualDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
+            var user198 =  _virtualDbContext.Set<SysUserMod>().FirstOrDefault(o => o.Id == "198");
             Assert.True(user198.Id == "198");
-            var userId198 = _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
+            var userId198 =  _virtualDbContext.Set<SysUserMod>().Where(o => o.Id == "198").Select(o => o.Id).FirstOrDefault();
             Assert.Equal(userId198, "198");
+
         }
 
         [Fact]
@@ -722,17 +720,10 @@ namespace ShardingCore.Test2x
         [Fact]
         public void LogDayTableSeparatorTest()
         {
-            var virtualTable = _virtualTableManager.GetVirtualTable(typeof(LogDay));
-            var virtualTableName = virtualTable.GetVirtualTableName();
+            var virtualTableRoute = _tableRouteManager.GetRoute(typeof(LogDay));
+            var virtualTableName = virtualTableRoute.EntityMetadata.LogicTableName;
             Assert.Equal(nameof(LogDay), virtualTableName);
-            var table = _virtualTableManager.GetVirtualTable(virtualTableName);
-            var tryGetVirtualTable = _virtualTableManager.TryGetVirtualTable(typeof(LogDay));
-            Assert.NotNull(tryGetVirtualTable);
-            var tryGetVirtualTable1 = _virtualTableManager.TryGetVirtualTable(virtualTableName);
-            Assert.NotNull(tryGetVirtualTable1);
-
-            var all = virtualTable.GetAllPhysicTables().All(o => string.IsNullOrWhiteSpace(o.TableSeparator));
-            Assert.True(all);
+            Assert.True(string.IsNullOrWhiteSpace(virtualTableRoute.EntityMetadata.TableSeparator));
             var entityMetadata = _entityMetadataManager.TryGet<LogDay>();
             Assert.NotNull(entityMetadata);
             var isShardingTable = entityMetadata.IsShardingTable();
@@ -865,7 +856,7 @@ namespace ShardingCore.Test2x
                 catch (Exception e)
                 {
                     Assert.True(typeof(InvalidOperationException) == e.GetType() || typeof(TargetInvocationException) == e.GetType());
-                    Assert.True(e.Message.Contains("contains") || e.InnerException.Message.Contains("contains"));
+                    Assert.True(e.Message.Contains("contains")|| e.InnerException.Message.Contains("contains"));
                 }
             }
         }
@@ -961,9 +952,9 @@ namespace ShardingCore.Test2x
                 Assert.NotNull(areaB);
             }
             _virtualDbContext.ReadWriteSeparationWriteOnly();
-            using (_shardingReadWriteManager.CreateScope<ShardingDefaultDbContext>())
+            using (_shardingReadWriteManager.CreateScope())
             {
-                _shardingReadWriteManager.GetCurrent<ShardingDefaultDbContext>().SetReadWriteSeparation(100, true);
+                _shardingReadWriteManager.GetCurrent().SetReadWriteSeparation(100, true);
                 using (_shardingRouteManager.CreateScope())
                 {
                     _shardingRouteManager.Current.TryCreateOrAddMustDataSource<Order>("A");
@@ -971,9 +962,9 @@ namespace ShardingCore.Test2x
                     Assert.NotNull(areaB);
                 }
             }
-            using (_shardingReadWriteManager.CreateScope<ShardingDefaultDbContext>())
+            using (_shardingReadWriteManager.CreateScope())
             {
-                _shardingReadWriteManager.GetCurrent<ShardingDefaultDbContext>().SetReadWriteSeparation(100, true);
+                _shardingReadWriteManager.GetCurrent().SetReadWriteSeparation(100, true);
                 _virtualDbContext.ReadWriteSeparationWriteOnly();
                 using (_shardingRouteManager.CreateScope())
                 {
@@ -1422,24 +1413,24 @@ namespace ShardingCore.Test2x
         [Fact]
         public void AsRouteTest()
         {
-            var countAsync3 = _virtualDbContext.Set<LogMonthLong>().AsRoute(o =>
+            var countAsync3 =  _virtualDbContext.Set<LogMonthLong>().AsRoute(o =>
             {
                 o.TryCreateOrAddMustTail<LogMonthLong>("202104");
             }).Count();
             Assert.Equal(30, countAsync3);
-            var countAsync2 = _virtualDbContext.Set<LogYearLong>().AsRoute(o =>
+            var countAsync2 =  _virtualDbContext.Set<LogYearLong>().AsRoute(o =>
             {
                 o.TryCreateOrAddMustTail<LogYearLong>("2021");
             }).Count();
             Assert.Equal(300, countAsync2);
 
-            var countAsync4 = _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            var countAsync4 =  _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
             {
                 o.TryCreateOrAddMustTail<LogWeekTimeLong>("20210419_25");
             }).Count();
             Assert.Equal(7, countAsync4);
 
-            var countAsync5 = _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
+            var countAsync5 =  _virtualDbContext.Set<LogWeekTimeLong>().AsRoute(o =>
             {
                 o.TryCreateOrAddHintTail<LogWeekTimeLong>("20210419_25", "20210426_02");
             }).Count();
@@ -1447,7 +1438,7 @@ namespace ShardingCore.Test2x
 
 
             var fiveBegin = new DateTime(2021, 5, 1).Date;
-            var sum = _virtualDbContext.Set<Order>().AsRoute(o =>
+            var sum =  _virtualDbContext.Set<Order>().AsRoute(o =>
                 {
                     o.TryCreateOrAddHintDataSource<Order>("C");
                 })

@@ -11,6 +11,6 @@ namespace ShardingCore.Bootstrappers
     /// </summary>
     public interface IShardingBootstrapper
     {
-        void AutoShardingTable();
+        void AutoShardingCreate();
     }
 }

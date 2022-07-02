@@ -30,7 +30,7 @@ namespace ShardingCore.Test.Shardings
             return new DateTime(2021, 1, 1);
         }
 
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
             var beginTime = GetBeginTime().Date;
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
@@ -14,14 +15,18 @@ using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableCreator;
 
 namespace ShardingCore.Core.RuntimeContexts
 {
     
     public interface IShardingRuntimeContext
     {
+        IShardingComparer GetShardingComparer();
         IShardingCompilerExecutor GetShardingCompilerExecutor();
         IShardingReadWriteManager GetShardingReadWriteManager();
+        IShardingRouteManager GetShardingRouteManager();
         ITrackerManager GetTrackerManager();
         IParallelTableManager GetParallelTableManager();
         IDbContextCreator GetDbContextCreator();
@@ -29,7 +34,9 @@ namespace ShardingCore.Core.RuntimeContexts
         // IVirtualDataSourceManager GetVirtualDataSourceManager();
         IVirtualDataSource GetVirtualDataSource();
         ITableRouteManager GetTableRouteManager();
+        IShardingTableCreator GetShardingTableCreator();
         IRouteTailFactory GetRouteTailFactory();
+        IReadWriteConnectorFactory GetReadWriteConnectorFactory();
         IQueryTracker GetQueryTracker();
         IUnionAllMergeManager GetUnionAllMergeManager();
         IShardingPageManager GetShardingPageManager();
@@ -41,7 +48,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
          void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider);
          void Initialize();
-         void AutoShardingTable();
+         void AutoShardingCreate();
         object GetService(Type serviceType);
         TService GetService<TService>();
         object GetRequiredService(Type serviceType);

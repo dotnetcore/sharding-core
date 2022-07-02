@@ -24,7 +24,7 @@ namespace ShardingCore.Test5x.Shardings
         }
 
 
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             var beginTime = new DateTime(2020, 1, 1);
             var endTime = new DateTime(2021, 12, 1);

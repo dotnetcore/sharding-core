@@ -10,6 +10,7 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 using ShardingCore.Test.Domain.Entities;
 using ShardingCore.Test.Shardings;
 
@@ -35,12 +36,8 @@ namespace ShardingCore.Test
         public void ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
         {
             services.AddShardingDbContext<ShardingDefaultDbContext>()
-                .AddEntityConfig(op =>
+                .UseRouteConfig(op =>
                 {
-                    //如果您使用code-first建议选择false
-                    op.CreateShardingTableOnStart = true;
-                    //如果您使用code-first建议修改为fsle
-                    op.EnsureCreatedWithOutShardingTable = true;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;
 
@@ -59,10 +56,8 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
 
                 })
-                .AddConfig(op =>
+                .UseConfig(op =>
                 {
-                    op.ConfigId="c1";
-                    op.Priority = 1;
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -94,15 +89,14 @@ namespace ShardingCore.Test
                         }
                     };
                     }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<ShardingDefaultDbContext>());
-                }).EnsureConfig();
+                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>(ServiceLifetime.Singleton).AddShardingCore();
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
         public void Configure(IServiceProvider serviceProvider)
         {
-            var shardingBootstrapper = serviceProvider.GetService<IShardingBootstrapper>();
-            shardingBootstrapper.Start();
+            var shardingBootstrapper = serviceProvider.GetRequiredService<IShardingBootstrapper>();
+            shardingBootstrapper.AutoShardingCreate();
             // 有一些测试数据要初始化可以放在这里
             InitData(serviceProvider).GetAwaiter().GetResult();
         }

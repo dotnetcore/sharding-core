@@ -19,6 +19,8 @@ using ShardingCore.Logger;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
+using ShardingCore.Sharding.ShardingComparision.Abstractions;
+using ShardingCore.TableCreator;
 
 namespace ShardingCore.Core.RuntimeContexts
 {
@@ -51,13 +53,17 @@ namespace ShardingCore.Core.RuntimeContexts
                 isInited = true;
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingInitializer>().Initialize();
-                
             }
         }
 
-        public void AutoShardingTable()
+        public void AutoShardingCreate()
         {
-            GetRequiredService<IShardingBootstrapper>().AutoShardingTable();
+            GetRequiredService<IShardingBootstrapper>().AutoShardingCreate();
+        }
+
+        public IShardingComparer GetShardingComparer()
+        {
+            return GetRequiredService<IShardingComparer>();
         }
 
         public IShardingCompilerExecutor GetShardingCompilerExecutor()
@@ -69,6 +75,7 @@ namespace ShardingCore.Core.RuntimeContexts
         {
             return GetRequiredService<IShardingReadWriteManager>();
         }
+        
 
         public ITrackerManager GetTrackerManager()
         {
@@ -98,6 +105,16 @@ namespace ShardingCore.Core.RuntimeContexts
         public ITableRouteManager GetTableRouteManager()
         {
             return GetRequiredService<ITableRouteManager>();
+        }
+
+        public IReadWriteConnectorFactory GetReadWriteConnectorFactory()
+        {
+            return GetRequiredService<IReadWriteConnectorFactory>();
+        }
+
+        public IShardingTableCreator GetShardingTableCreator()
+        {
+            return GetRequiredService<IShardingTableCreator>();
         }
 
         public IRouteTailFactory GetRouteTailFactory()

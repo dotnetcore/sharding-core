@@ -39,7 +39,7 @@ namespace ShardingCore.Test.Shardings
 
         public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
         {
-            
+            builder.ShardingProperty(o => o.Area);
         }
 
         public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

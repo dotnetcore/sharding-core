@@ -15,16 +15,16 @@ namespace ShardingCore.Test5x.Shardings
             return new DateTime(2021, 1, 1);
         }
 
-        public override List<string> GetAllTails()
+        protected override List<string> CalcTailsOnStart()
         {
-            var allTails = base.GetAllTails();
+            var allTails = base.CalcTailsOnStart();
             allTails.Add("202112");
             return allTails;
         }
 
         public override void Configure(EntityMetadataTableBuilder<Order> builder)
         {
-            
+            builder.ShardingProperty(o => o.CreateTime);
         }
 
         public override IPaginationConfiguration<Order> CreatePaginationConfiguration()

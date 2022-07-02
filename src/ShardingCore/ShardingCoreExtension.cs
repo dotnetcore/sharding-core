@@ -216,10 +216,25 @@ namespace ShardingCore
         /// 使用自动创建表
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public static void UseAutoShardingCore(this IServiceProvider serviceProvider)
+        public static void UseAutoShardingCreate(this IServiceProvider serviceProvider)
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            shardingRuntimeContext.AutoShardingTable();
+            shardingRuntimeContext.AutoShardingCreate();
+        }
+        /// <summary>
+        /// 自动尝试补偿表
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        public static void UseAutoTryCompensateTable(this IServiceProvider serviceProvider)
+        {
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
+            var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
+            var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();
+            foreach (var dataSourceName in allDataSourceNames)
+            {
+                dataSourceInitializer.InitConfigure(dataSourceName,true,true);
+            }
         }
 
 

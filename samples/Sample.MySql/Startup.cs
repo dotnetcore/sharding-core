@@ -110,7 +110,7 @@ namespace Sample.MySql
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.ApplicationServices.UseAutoShardingCore();
+            app.ApplicationServices.UseAutoShardingCreate();
             app.UseRouting();
 
             app.UseAuthorization();
