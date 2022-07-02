@@ -23,7 +23,7 @@ namespace ShardingCore.Test2x.Shardings
         }
         public override void Configure(EntityMetadataTableBuilder<Order> builder)
         {
-            
+            builder.ShardingProperty(o => o.CreateTime);
         }
 
         public override IPaginationConfiguration<Order> CreatePaginationConfiguration()

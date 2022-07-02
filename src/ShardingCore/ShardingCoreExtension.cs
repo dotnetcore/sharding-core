@@ -90,15 +90,6 @@ namespace ShardingCore
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            // Stopwatch sp=Stopwatch.StartNew();
-            // for (int i = 0; i < 100000; i++)
-            // {
-            //     
-            //     var virtualDataSource1 = shardingRuntimeContext.GetVirtualDataSource();
-            //     
-            // }
-            // sp.Stop();
-            // Console.WriteLine(sp.ElapsedMilliseconds);
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
             var contextOptionsBuilder = virtualDataSource.ConfigurationParams.UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder)

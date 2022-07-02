@@ -107,8 +107,8 @@ namespace ShardingCore.Test2x
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
         public void Configure(IServiceProvider serviceProvider)
         {
-            var shardingBootstrapper = serviceProvider.GetRequiredService<IShardingBootstrapper>();
-            shardingBootstrapper.AutoShardingCreate();
+            serviceProvider.UseAutoShardingCreate();
+            serviceProvider.UseAutoTryCompensateTable();
             // 有一些测试数据要初始化可以放在这里
             InitData(serviceProvider).GetAwaiter().GetResult();
         }

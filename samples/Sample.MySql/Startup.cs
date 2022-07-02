@@ -58,7 +58,7 @@ namespace Sample.MySql
                         {
                             builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                         });
-                        o.AddDefaultDataSource("ds0","server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                        o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     })
                     .Build(sp);
                 stopwatch.Stop();
@@ -111,6 +111,7 @@ namespace Sample.MySql
                 app.UseDeveloperExceptionPage();
             }
             app.ApplicationServices.UseAutoShardingCreate();
+            app.ApplicationServices.UseAutoTryCompensateTable();
             app.UseRouting();
 
             app.UseAuthorization();

@@ -24,7 +24,7 @@ using ShardingCore.TableCreator;
 
 namespace ShardingCore.Core.RuntimeContexts
 {
-    public sealed class ShardingRuntimeContext:IShardingRuntimeContext
+    public sealed class ShardingRuntimeContext : IShardingRuntimeContext
     {
         private bool isInited = false;
         private object INIT_LOCK = new object();
@@ -32,7 +32,7 @@ namespace ShardingCore.Core.RuntimeContexts
         private object INIT_MODEL = new object();
         private IServiceCollection _serviceMap = new ServiceCollection();
 
-        private  IServiceProvider _serviceProvider;
+        private IServiceProvider _serviceProvider;
         private IServiceProvider _applicationServiceProvider;
 
         public void AddServiceConfig(Action<IServiceCollection> configure)
@@ -53,6 +53,7 @@ namespace ShardingCore.Core.RuntimeContexts
                 isInited = true;
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingInitializer>().Initialize();
+                InitFieldValue();
             }
         }
 
@@ -61,85 +62,101 @@ namespace ShardingCore.Core.RuntimeContexts
             GetRequiredService<IShardingBootstrapper>().AutoShardingCreate();
         }
 
+        private IShardingComparer _shardingComparer;
         public IShardingComparer GetShardingComparer()
         {
-            return GetRequiredService<IShardingComparer>();
+            return _shardingComparer??=GetRequiredService<IShardingComparer>();
         }
 
+        private IShardingCompilerExecutor _shardingCompilerExecutor;
         public IShardingCompilerExecutor GetShardingCompilerExecutor()
         {
-            return GetRequiredService<IShardingCompilerExecutor>();
+            return _shardingCompilerExecutor??=GetRequiredService<IShardingCompilerExecutor>();
         }
 
+        private IShardingReadWriteManager _shardingReadWriteManager;
         public IShardingReadWriteManager GetShardingReadWriteManager()
         {
-            return GetRequiredService<IShardingReadWriteManager>();
+            return _shardingReadWriteManager??=GetRequiredService<IShardingReadWriteManager>();
         }
-        
 
+
+        private ITrackerManager _trackerManager;
         public ITrackerManager GetTrackerManager()
         {
-            return GetRequiredService<ITrackerManager>();
+            return _trackerManager??=GetRequiredService<ITrackerManager>();
         }
 
+        private IParallelTableManager _parallelTableManager;
         public IParallelTableManager GetParallelTableManager()
         {
-            return GetRequiredService<IParallelTableManager>();
+            return _parallelTableManager??=GetRequiredService<IParallelTableManager>();
         }
 
+        private IDbContextCreator _dbContextCreator;
         public IDbContextCreator GetDbContextCreator()
         {
-            return GetRequiredService<IDbContextCreator>();
+            return _dbContextCreator??=GetRequiredService<IDbContextCreator>();
         }
 
+        private IEntityMetadataManager _entityMetadataManager;
         public IEntityMetadataManager GetEntityMetadataManager()
         {
-            return GetRequiredService<IEntityMetadataManager>();
+            return _entityMetadataManager??=GetRequiredService<IEntityMetadataManager>();
         }
 
+        private IVirtualDataSource _virtualDataSource;
         public IVirtualDataSource GetVirtualDataSource()
         {
-            return GetRequiredService<IVirtualDataSource>();
+            return _virtualDataSource??=GetRequiredService<IVirtualDataSource>();
         }
 
+        private ITableRouteManager _tableRouteManager;
         public ITableRouteManager GetTableRouteManager()
         {
-            return GetRequiredService<ITableRouteManager>();
+            return _tableRouteManager??=GetRequiredService<ITableRouteManager>();
         }
 
+        private IReadWriteConnectorFactory _readWriteConnectorFactory;
         public IReadWriteConnectorFactory GetReadWriteConnectorFactory()
         {
-            return GetRequiredService<IReadWriteConnectorFactory>();
+            return _readWriteConnectorFactory??=GetRequiredService<IReadWriteConnectorFactory>();
         }
 
+        private IShardingTableCreator _shardingTableCreator;
         public IShardingTableCreator GetShardingTableCreator()
         {
-            return GetRequiredService<IShardingTableCreator>();
+            return _shardingTableCreator??=GetRequiredService<IShardingTableCreator>();
         }
 
+        private IRouteTailFactory _routeTailFactory;
         public IRouteTailFactory GetRouteTailFactory()
         {
-            return GetRequiredService<IRouteTailFactory>();
+            return _routeTailFactory??=GetRequiredService<IRouteTailFactory>();
         }
 
+        private IQueryTracker _queryTracker;
         public IQueryTracker GetQueryTracker()
         {
-            return GetRequiredService<IQueryTracker>();
+            return _queryTracker??=GetRequiredService<IQueryTracker>();
         }
 
+        private IUnionAllMergeManager _unionAllMergeManager;
         public IUnionAllMergeManager GetUnionAllMergeManager()
         {
-            return GetRequiredService<IUnionAllMergeManager>();
+            return _unionAllMergeManager??=GetRequiredService<IUnionAllMergeManager>();
         }
 
+        private IShardingPageManager _shardingPageManager;
         public IShardingPageManager GetShardingPageManager()
         {
-            return GetRequiredService<IShardingPageManager>();
+            return _shardingPageManager??=GetRequiredService<IShardingPageManager>();
         }
 
+        private IDataSourceInitializer _dataSourceInitializer;
         public IDataSourceInitializer GetDataSourceInitializer()
         {
-            return GetRequiredService<IDataSourceInitializer>();
+            return _dataSourceInitializer??=GetRequiredService<IDataSourceInitializer>();
         }
 
         public void GetOrCreateShardingRuntimeModel(DbContext dbContext)
@@ -147,12 +164,14 @@ namespace ShardingCore.Core.RuntimeContexts
             if (isInitModeled) return;
             lock (INIT_MODEL)
             {
-                if(isInitModeled) return;
+                if (isInitModeled) return;
                 isInitModeled = true;
                 var entityMetadataManager = GetService<IEntityMetadataManager>();
+                var trackerManager = GetService<ITrackerManager>();
                 var entityTypes = dbContext.Model.GetEntityTypes();
                 foreach (var entityType in entityTypes)
                 {
+                    trackerManager.AddDbContextModel(entityType.ClrType, entityType.FindPrimaryKey() != null);
                     entityMetadataManager.TryInitModel(entityType);
                 }
             }
@@ -178,43 +197,66 @@ namespace ShardingCore.Core.RuntimeContexts
             if (!isInited)
                 throw new InvalidOperationException("sharding runtime not init");
         }
-        
-          public object GetService(Type serviceType)
-          {
-              CheckIfNotBuild();
-              return _serviceProvider.GetService(serviceType);
-          }
 
-          public TService GetService<TService>()
-          {
-              CheckIfNotBuild();
-              return _serviceProvider.GetService<TService>();
-          }
+        public object GetService(Type serviceType)
+        {
+            CheckIfNotBuild();
+            return _serviceProvider.GetService(serviceType);
+        }
 
-          public object GetRequiredService(Type serviceType)
-          {
-              CheckIfNotBuild();
-              return _serviceProvider.GetRequiredService(serviceType);
-          }
+        public TService GetService<TService>()
+        {
+            CheckIfNotBuild();
+            return _serviceProvider.GetService<TService>();
+        }
 
-          public TService GetRequiredService<TService>()
-          {
-              CheckIfNotBuild();
-              return _serviceProvider.GetRequiredService<TService>();
-          }
-          public IShardingRouteManager GetShardingRouteManager()
-          {
-              return GetRequiredService<IShardingRouteManager>();
-          }
-         //  
-         // public  IShardingRouteConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
-         //     where TShardingDbContext : DbContext, IShardingDbContext
-         // {
-         //     return (IShardingRouteConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
-         // }
-         // public  IShardingRouteConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
-         // {
-         //     return (IShardingRouteConfigOptions)GetService(typeof(IShardingRouteConfigOptions<>).GetGenericType0(shardingDbContextType));
-         // }
+        public object GetRequiredService(Type serviceType)
+        {
+            CheckIfNotBuild();
+            return _serviceProvider.GetRequiredService(serviceType);
+        }
+
+        public TService GetRequiredService<TService>()
+        {
+            CheckIfNotBuild();
+            return _serviceProvider.GetRequiredService<TService>();
+        }
+        public IShardingRouteManager GetShardingRouteManager()
+        {
+            return GetRequiredService<IShardingRouteManager>();
+        }
+        //  
+        // public  IShardingRouteConfigOptions<TShardingDbContext> GetRequiredShardingEntityConfigOption<TShardingDbContext>()
+        //     where TShardingDbContext : DbContext, IShardingDbContext
+        // {
+        //     return (IShardingRouteConfigOptions<TShardingDbContext>)GetRequiredShardingEntityConfigOption(typeof(TShardingDbContext));
+        // }
+        // public  IShardingRouteConfigOptions GetRequiredShardingEntityConfigOption(Type shardingDbContextType)
+        // {
+        //     return (IShardingRouteConfigOptions)GetService(typeof(IShardingRouteConfigOptions<>).GetGenericType0(shardingDbContextType));
+        // }
+
+
+        private void InitFieldValue()
+        {
+
+            GetShardingComparer();
+            GetShardingCompilerExecutor();
+            GetShardingReadWriteManager();
+            GetShardingRouteManager();
+            GetTrackerManager();
+            GetParallelTableManager();
+            GetDbContextCreator();
+            GetEntityMetadataManager();
+            GetVirtualDataSource();
+            GetTableRouteManager();
+            GetShardingTableCreator();
+            GetRouteTailFactory();
+            GetReadWriteConnectorFactory();
+            GetQueryTracker();
+            GetUnionAllMergeManager();
+            GetShardingPageManager();
+            GetDataSourceInitializer();
+        }
     }
 }

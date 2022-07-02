@@ -8,7 +8,7 @@ using Xunit;
 
 namespace ShardingCore.CommonTest
 {
-    
+
     public class ShardingTableTime
     {
         private readonly EntityMetadata _testEntityMetadata;

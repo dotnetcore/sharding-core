@@ -43,6 +43,7 @@ namespace ShardingCore.EFCores
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
             _context = (IShardingDbContext)context;
+            _shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
         }
 #endif
         private IVirtualDataSource _virtualDataSource;

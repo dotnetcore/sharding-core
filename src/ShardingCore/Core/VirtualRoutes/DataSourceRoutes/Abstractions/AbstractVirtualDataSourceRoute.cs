@@ -35,6 +35,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         {
             if (!_doOnlyOnce.IsUnDo())
                 throw new ShardingCoreInvalidOperationException("already init");
+            RouteShardingProvider = shardingProvider;
             EntityMetadata = entityMetadata;
 
             // RouteConfigOptions = shardingProvider.GetService<IShardingRouteConfigOptions>();
