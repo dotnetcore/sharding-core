@@ -47,6 +47,8 @@ using ShardingCore.Sharding.ShardingComparision;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
 using ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries;
+using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace ShardingCore
 {
@@ -168,6 +170,7 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
             services.TryAddSingleton<IShardingComparer, CSharpLanguageShardingComparer>();
 
+            services.TryAddSingleton<ITableEnsureManager, EmptyTableEnsureManager>();
 
             services.TryAddShardingJob();
             return services;

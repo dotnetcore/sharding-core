@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
@@ -13,7 +15,8 @@ namespace ShardingCore
 {
     public class ShardingRuntimeBuilder<TShardingDbContext> where TShardingDbContext : DbContext, IShardingDbContext
     {
-     
+        private readonly List<Action<IServiceCollection>> _serviceActions = new List<Action<IServiceCollection>>();
+
         private Action<IShardingProvider, IShardingRouteConfigOptions> _shardingRouteConfigOptionsConfigure;
         public ShardingRuntimeBuilder<TShardingDbContext> UseRouteConfig(Action<IShardingRouteConfigOptions> configure)
         {
@@ -51,6 +54,13 @@ namespace ShardingCore
             _shardingConfigOptionsConfigure = configure;
             return this;
         }
+        public ShardingRuntimeBuilder<TShardingDbContext> ReplaceService<TService, TImplement>(ServiceLifetime lifetime)
+        {
+            ServiceDescriptor descriptor = new ServiceDescriptor(typeof(TService), typeof(TImplement), lifetime);
+            Action<IServiceCollection> replace = s => s.Replace(descriptor);
+            _serviceActions.Add(replace);
+            return this;
+        }
 
         public IShardingRuntimeContext Build()
         {
@@ -86,6 +96,10 @@ namespace ShardingCore
                 });
                 services.AddSingleton<IShardingProvider>(sp => new ShardingProvider(sp,appServiceProvider));
                 services.AddInternalShardingCore<TShardingDbContext>();
+                foreach (var serviceAction in _serviceActions)
+                {
+                    serviceAction.Invoke(services);
+                }
             });
             shardingRuntimeContext.Initialize();
             return shardingRuntimeContext;

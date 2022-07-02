@@ -75,6 +75,7 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 逻辑表名
         /// </summary>
         public string LogicTableName { get; private set; }
+        
         /// <summary>
         /// 主键
         /// </summary>
