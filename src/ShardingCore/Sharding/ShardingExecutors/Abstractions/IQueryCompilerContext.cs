@@ -30,6 +30,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.Abstractions
         /// <returns></returns>
         QueryCompilerExecutor GetQueryCompilerExecutor();
         bool IsEnumerableQuery();
+        string GetQueryMethodName();
 
         /// <summary>
         /// 当前是否读写分离走读库(包括是否启用读写分离和是否当前的dbcontext启用了读库查询)

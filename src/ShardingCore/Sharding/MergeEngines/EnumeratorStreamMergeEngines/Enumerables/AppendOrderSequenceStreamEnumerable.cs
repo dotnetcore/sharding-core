@@ -107,7 +107,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
 
             var sequenceResults = new SequencePaginationList(sortRouteResults.Select(o => o.RouteQueryResult)).Skip(skip).Take(take).ToList();
 
-            GetStreamMergeContext().ReSetOrders(reSetOrders);
+            GetStreamMergeContext().ReSetOrders(reSetOrders.ToArray());
            return sequenceResults.Select(sequenceResult => new SqlSequenceRouteUnit(sequenceResult));
 
         }

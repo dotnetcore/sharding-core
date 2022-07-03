@@ -21,11 +21,12 @@ namespace ShardingCore.Sharding.MergeContexts
     public sealed class QueryableRewriteEngine : IQueryableRewriteEngine
     {
         private  static readonly ISet<string> singleEntityMethodNames = new HashSet<string>();
+        private  static readonly ISet<string> supportSingleEntityMethodNames = new HashSet<string>();
 
         static QueryableRewriteEngine()
         {
-            singleEntityMethodNames.Add(nameof(Enumerable.First));
-            singleEntityMethodNames.Add(nameof(Enumerable.FirstOrDefault));
+            supportSingleEntityMethodNames.Add(nameof(Enumerable.First));
+            supportSingleEntityMethodNames.Add(nameof(Enumerable.FirstOrDefault));
             singleEntityMethodNames.Add(nameof(Enumerable.Last));
             singleEntityMethodNames.Add(nameof(Enumerable.LastOrDefault));
             singleEntityMethodNames.Add(nameof(Enumerable.Single));
@@ -46,7 +47,7 @@ namespace ShardingCore.Sharding.MergeContexts
             {
                 if (!mergeQueryCompilerContext.IsEnumerableQuery())
                 {
-                    var queryMethodName = mergeQueryCompilerContext.QueryMethodName();
+                    var queryMethodName = mergeQueryCompilerContext.GetQueryMethodName();
                     if (singleEntityMethodNames.Contains(queryMethodName))
                     {
                         //todo 修复做兼容
@@ -69,16 +70,32 @@ namespace ShardingCore.Sharding.MergeContexts
                 reWriteQueryable = reWriteQueryable.RemoveSkip();
             }
 
-            if (take.HasValue)
+            //如果是first or default
+            var fixedTake = mergeQueryCompilerContext.GetFixedTake();
+            if (fixedTake.HasValue)
             {
                 if (skip.HasValue)
                 {
-                    reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(take.Value + skip.GetValueOrDefault());
+                    reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(fixedTake.Value + skip.GetValueOrDefault());
                 }
                 else
                 {
-                    reWriteQueryable = reWriteQueryable.ReTake(take.Value + skip.GetValueOrDefault());
+                    reWriteQueryable = reWriteQueryable.ReTake(fixedTake.Value);
                 }
+            }
+            else
+            {
+                if (take.HasValue)
+                {
+                    if (skip.HasValue)
+                    {
+                        reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(take.Value + skip.GetValueOrDefault());
+                    }
+                    else
+                    {
+                        reWriteQueryable = reWriteQueryable.ReTake(take.Value + skip.GetValueOrDefault());
+                    }
+                } 
             }
             //包含group by
             if (groupByContext.GroupExpression != null)

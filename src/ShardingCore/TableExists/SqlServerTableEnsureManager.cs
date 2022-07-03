@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists.Abstractions;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace ShardingCore.TableExists
 
         public override ISet<string> DoGetExistTables(DbConnection connection, string dataSourceName)
         {
-            ISet<string> result = new HashSet<string>();
+            ISet<string> result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using (var dataTable = connection.GetSchema(Tables))
             {
                 for (int i = 0; i < dataTable.Rows.Count; i++)

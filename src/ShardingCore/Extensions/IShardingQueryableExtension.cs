@@ -27,14 +27,6 @@ namespace ShardingCore.Extensions
         private static readonly MethodInfo QueryableTakeMethod = typeof(Queryable).GetMethods().First(
             m => m.Name == nameof(Queryable.Take)
                  && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType == typeof(int));
-        internal static ExtraEntry GetExtraEntry<T>(this IQueryable<T> source)
-        {
-            var extraVisitor = new QueryableExtraDiscoverVisitor();
-            extraVisitor.Visit(source.Expression);
-            var extraEntry = new ExtraEntry(extraVisitor.GetPaginationContext().Skip, extraVisitor.GetPaginationContext().Take, extraVisitor.GetOrderByContext().PropertyOrders,extraVisitor.GetSelectContext(),extraVisitor.GetGroupByContext());
-            extraEntry.ProcessGroupBySelectProperties();
-            return extraEntry;
-        }
         /// <summary>
         /// 删除Skip表达式
         /// </summary>

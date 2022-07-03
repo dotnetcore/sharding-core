@@ -24,7 +24,7 @@ namespace ShardingCore.TableExists
         public override ISet<string> DoGetExistTables(DbConnection connection, string dataSourceName)
         {
             var database = connection.Database;
-            ISet<string> result = new HashSet<string>();
+            ISet<string> result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using (var dataTable = connection.GetSchema(Tables))
             {
                 for (int i = 0; i < dataTable.Rows.Count; i++)

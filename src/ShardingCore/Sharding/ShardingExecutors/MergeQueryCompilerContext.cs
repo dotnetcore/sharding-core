@@ -49,6 +49,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private QueryCompilerExecutor _queryCompilerExecutor;
         private bool? hasQueryCompilerExecutor;
+        private readonly int? _fixedTake;
         private MergeQueryCompilerContext(IShardingRuntimeContext shardingRuntimeContext,IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult,  ShardingRouteResult shardingRouteResult)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
@@ -60,6 +61,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _isCrossDataSource = shardingRouteResult.IsCrossDataSource;
             _isCrossTable = shardingRouteResult.IsCrossTable;
             _existCrossTableTails = shardingRouteResult.ExistCrossTableTails;
+            var queryMethodName = queryCompilerContext.GetQueryMethodName();
+            if (nameof(Enumerable.First) == queryMethodName || nameof(Enumerable.FirstOrDefault) == queryMethodName)
+            {
+                _fixedTake = 1;
+            }
         }
         //
         // private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)
@@ -208,6 +214,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _queryCompilerContext.IsEnumerableQuery();
         }
 
+        public string GetQueryMethodName()
+        {
+            return _queryCompilerContext.GetQueryMethodName();
+        }
+
         /// <summary>
         /// 如果需要聚合并且存在跨tail的查询或者本次是读链接
         /// </summary>
@@ -217,23 +228,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return _isCrossTable || _existCrossTableTails|| _queryCompilerContext.IsParallelQuery();
         }
 
-        public string QueryMethodName()
+        public int? GetFixedTake()
         {
-            if (IsEnumerableQuery())
-            {
-                throw new ShardingCoreInvalidOperationException(
-                    $"queryable:[{GetQueryExpression().ShardingPrint()}] is enumerable query cant found query method name");
-            }
-
-            if (GetQueryExpression() is MethodCallExpression methodCallExpression)
-            {
-                return methodCallExpression.Method.Name;
-            }
-            else
-            {
-                throw new ShardingCoreInvalidOperationException(
-                    $"queryable:[{GetQueryExpression().ShardingPrint()}] not {nameof(MethodCallExpression)} cant found query method name");
-            }
+            return _fixedTake;
         }
     }
 }
