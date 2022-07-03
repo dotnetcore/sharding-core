@@ -6,6 +6,7 @@ using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
+using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.Selects;
 
 namespace ShardingCore.Core.Internal.Visitors
@@ -18,12 +19,16 @@ namespace ShardingCore.Core.Internal.Visitors
     */
     internal class QueryableExtraDiscoverVisitor : ShardingExpressionVisitor
     {
+        private readonly IMergeQueryCompilerContext _mergeQueryCompilerContext;
         private GroupByContext _groupByContext = new GroupByContext();
         private SelectContext _selectContext = new SelectContext();
         private PaginationContext _paginationContext = new PaginationContext();
         private OrderByContext _orderByContext = new OrderByContext();
 
-
+        public QueryableExtraDiscoverVisitor(IMergeQueryCompilerContext mergeQueryCompilerContext)
+        {
+            _mergeQueryCompilerContext = mergeQueryCompilerContext;
+        }
         public SelectContext GetSelectContext()
         {
             return _selectContext;
@@ -36,6 +41,11 @@ namespace ShardingCore.Core.Internal.Visitors
 
         public PaginationContext GetPaginationContext()
         {
+            var fixedTake = _mergeQueryCompilerContext.GetFixedTake();
+            if (fixedTake.HasValue)
+            {
+                _paginationContext.Take = fixedTake.Value;
+            }
             return _paginationContext;
         }
         public OrderByContext GetOrderByContext()

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.StreamMerge;
 using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding.Enumerators

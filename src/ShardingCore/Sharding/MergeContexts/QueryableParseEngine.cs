@@ -16,9 +16,9 @@ namespace ShardingCore.Sharding.MergeContexts
         public IParseResult Parse(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
             var isEnumerableQuery = mergeQueryCompilerContext.IsEnumerableQuery();
-            string queryMethodName = isEnumerableQuery ? null : mergeQueryCompilerContext.QueryMethodName();
+            string queryMethodName = mergeQueryCompilerContext.GetQueryMethodName();
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
-            var queryableExtraDiscoverVisitor = new QueryableExtraDiscoverVisitor();
+            var queryableExtraDiscoverVisitor = new QueryableExtraDiscoverVisitor(mergeQueryCompilerContext);
             queryableExtraDiscoverVisitor.Visit(combineQueryable.Expression);
             return new ParseResult(queryableExtraDiscoverVisitor.GetPaginationContext(),
                 queryableExtraDiscoverVisitor.GetOrderByContext(), queryableExtraDiscoverVisitor.GetSelectContext(),

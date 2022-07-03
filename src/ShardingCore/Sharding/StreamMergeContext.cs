@@ -49,7 +49,7 @@ namespace ShardingCore.Sharding
 
         public int? Skip { get; private set; }
         public int? Take { get; private set;}
-        public IEnumerable<PropertyOrder> Orders { get; private set; }
+        public PropertyOrder[] Orders { get; private set; }
 
         public SelectContext SelectContext => ParseResult.GetSelectContext();
         public GroupByContext GroupByContext => ParseResult.GetGroupByContext();
@@ -105,7 +105,7 @@ namespace ShardingCore.Sharding
             Take = parseResult.GetPaginationContext().Take;
         }
 
-        public void ReSetOrders(IEnumerable<PropertyOrder> orders)
+        public void ReSetOrders(PropertyOrder[] orders)
         {
             Orders = orders;
         }

@@ -7,6 +7,8 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Extensions;
+using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.MySql
 {
@@ -59,7 +61,7 @@ namespace Sample.MySql
                             builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
                         });
                         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
-                    })
+                    }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>(ServiceLifetime.Singleton)
                     .Build(sp);
                 stopwatch.Stop();
                 Console.WriteLine("ShardingRuntimeContext build:"+stopwatch.ElapsedMilliseconds);

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Logger;
+using ShardingCore.Sharding.MergeEngines;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
@@ -70,13 +71,13 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         }
         private TResult DoExecute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext, bool async, CancellationToken cancellationToken = new CancellationToken())
         {
-                var queryMethodName = mergeQueryCompilerContext.QueryMethodName();
+                var queryMethodName = mergeQueryCompilerContext.GetQueryMethodName();
                 switch (queryMethodName)
                 {
                     case nameof(Enumerable.First):
-                        return EnsureResultTypeMergeExecute<TResult>(typeof(FirstAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
+                        return EnsureResultTypeMergeExecute<TResult>(typeof(FirstSkipAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.FirstOrDefault):
-                        return EnsureResultTypeMergeExecute<TResult>(typeof(FirstOrDefaultAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
+                        return EnsureResultTypeMergeExecute<TResult>(typeof(FirstOrDefaultSkipAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.Last):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(LastAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.LastOrDefault):
