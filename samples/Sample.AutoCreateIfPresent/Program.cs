@@ -22,8 +22,8 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
     .AddEntityConfig(o =>
     {
         o.ThrowIfQueryRouteNotMatch = false;
-        o.AddShardingTableRoute<OrderByHourRoute>();
-        o.AddShardingTableRoute<AreaDeviceRoute>();
+        // o.AddShardingTableRoute<OrderByHourRoute>();
+        // o.AddShardingTableRoute<AreaDeviceRoute>();
     })
     .AddConfig(o =>
     {

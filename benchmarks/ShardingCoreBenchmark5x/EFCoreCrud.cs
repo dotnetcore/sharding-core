@@ -8,14 +8,10 @@ using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore;
-using ShardingCore.Bootstrappers;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
-using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.Core.VirtualTables;
 using ShardingCore.Extensions;
-using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 using ShardingCoreBenchmark5x.NoShardingDbContexts;
 using ShardingCoreBenchmark5x.ShardingDbContexts;
 
@@ -25,10 +21,6 @@ namespace ShardingCoreBenchmark5x
     {
         private readonly DefaultDbContext _defaultDbContext;
         private readonly DefaultShardingDbContext _defaultShardingDbContext;
-        private readonly IVirtualTableManager<DefaultShardingDbContext> _virtualTableManager;
-        private readonly IVirtualTable<Order> _virtualTable;
-        private readonly IRouteTailFactory _routeTailFactory;
-        private readonly IStreamMergeContextFactory<DefaultShardingDbContext> _streamMergeContextFactory;
         public EFCoreCrud()
         {
             var services = new ServiceCollection();
@@ -38,13 +30,10 @@ namespace ShardingCoreBenchmark5x
             services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
                 .AddEntityConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<OrderVirtualTableRoute>();
                 })
                 .AddConfig(op =>
                 {
-                    op.ConfigId = "c1";
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr);
@@ -53,14 +42,14 @@ namespace ShardingCoreBenchmark5x
                     {
                         builder.UseSqlServer(connection);
                     });
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
                     op.AddDefaultDataSource("ds0",
                         "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;");
 
-                }).EnsureConfig();
+                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
 
             var buildServiceProvider = services.BuildServiceProvider();
-            buildServiceProvider.GetRequiredService<IShardingBootstrapper>().Start();
+            buildServiceProvider.UseAutoShardingCreate();
+            buildServiceProvider.UseAutoTryCompensateTable();
             ICollection<Order> orders = new LinkedList<Order>();
 
             using (var scope = buildServiceProvider.CreateScope())
@@ -111,17 +100,8 @@ namespace ShardingCoreBenchmark5x
                     Console.WriteLine($"批量插入订单数据:{orders.Count},用时:{sp.ElapsedMilliseconds}");
                 }
             }
-            _defaultDbContext = ShardingContainer.GetService<DefaultDbContext>();
-            _defaultShardingDbContext = ShardingContainer.GetService<DefaultShardingDbContext>();
-            _virtualTableManager = ShardingContainer.GetService<IVirtualTableManager<DefaultShardingDbContext>>();
-            _virtualTable = _virtualTableManager.GetVirtualTable<Order>();
-            _routeTailFactory= ShardingContainer.GetService<IRouteTailFactory>();
-            _streamMergeContextFactory =
-                ShardingContainer.GetService<IStreamMergeContextFactory<DefaultShardingDbContext>>();
-            var queryable1 = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "0");
-            _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable1));
-            var queryable = _defaultShardingDbContext.Set<Order>().Where(o => o.Id == "1000");
-            _virtualTable.RouteTo(new ShardingTableRouteConfig(queryable: queryable));
+            _defaultDbContext = buildServiceProvider.GetService<DefaultDbContext>();
+            _defaultShardingDbContext = buildServiceProvider.GetService<DefaultShardingDbContext>();
         }
 
 
