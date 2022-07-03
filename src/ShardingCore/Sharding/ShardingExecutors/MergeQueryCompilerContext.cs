@@ -13,6 +13,7 @@ using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
@@ -214,6 +215,25 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public bool IsParallelQuery()
         {
             return _isCrossTable || _existCrossTableTails|| _queryCompilerContext.IsParallelQuery();
+        }
+
+        public string QueryMethodName()
+        {
+            if (IsEnumerableQuery())
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"queryable:[{GetQueryExpression().ShardingPrint()}] is enumerable query cant found query method name");
+            }
+
+            if (GetQueryExpression() is MethodCallExpression methodCallExpression)
+            {
+                return methodCallExpression.Method.Name;
+            }
+            else
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"queryable:[{GetQueryExpression().ShardingPrint()}] not {nameof(MethodCallExpression)} cant found query method name");
+            }
         }
     }
 }

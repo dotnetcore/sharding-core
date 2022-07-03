@@ -70,10 +70,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
         }
         private TResult DoExecute<TResult>(IMergeQueryCompilerContext mergeQueryCompilerContext, bool async, CancellationToken cancellationToken = new CancellationToken())
         {
-
-            if (mergeQueryCompilerContext.GetQueryExpression() is MethodCallExpression methodCallExpression)
-            {
-                switch (methodCallExpression.Method.Name)
+                var queryMethodName = mergeQueryCompilerContext.QueryMethodName();
+                switch (queryMethodName)
                 {
                     case nameof(Enumerable.First):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(FirstAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
@@ -106,7 +104,6 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     case nameof(Enumerable.Contains):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(ContainsAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                 }
-            }
 
 
             throw new ShardingCoreException($"db context operator not support query expression:[{mergeQueryCompilerContext.GetQueryExpression().ShardingPrint()}]  result type:[{typeof(TResult).FullName}]");
@@ -123,8 +120,8 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             var queryEntityType = combineQueryable.ElementType;
             var streamMergeContext = GetStreamMergeContext(mergeQueryCompilerContext);
 
-            Type streamMergeEngineType = typeof(AsyncEnumeratorStreamMergeEngine<,>);
-            streamMergeEngineType = streamMergeEngineType.MakeGenericType(mergeQueryCompilerContext.GetShardingDbContextType(), queryEntityType);
+            Type streamMergeEngineType = typeof(AsyncEnumeratorStreamMergeEngine<>);
+            streamMergeEngineType = streamMergeEngineType.MakeGenericType(queryEntityType);
             return (TResult)Activator.CreateInstance(streamMergeEngineType, streamMergeContext);
         }
 

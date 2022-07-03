@@ -26,8 +26,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class AppendOrderSequenceStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    internal class AppendOrderSequenceStreamEnumerable<TEntity> : AbstractStreamEnumerable<TEntity>
     {
         private readonly PaginationSequenceConfig _dataSourceSequenceOrderConfig;
         private readonly PaginationSequenceConfig _tableSequenceOrderConfig;

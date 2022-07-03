@@ -47,7 +47,7 @@ namespace ShardingCore.Sharding
         private readonly IRouteTailFactory _routeTailFactory;
 
         public int? Skip { get; private set; }
-        public int? Take { get; }
+        public int? Take { get; private set;}
         public IEnumerable<PropertyOrder> Orders { get; private set; }
 
         public SelectContext SelectContext => ParseResult.GetSelectContext();
@@ -111,6 +111,10 @@ namespace ShardingCore.Sharding
         public void ReSetSkip(int? skip)
         {
             Skip = skip;
+        }
+        public void ReSetTake(int? take)
+        {
+            Take = take;
         }
         /// <summary>
         /// 创建对应的dbcontext

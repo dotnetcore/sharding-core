@@ -19,8 +19,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     * @Date: Thursday, 02 September 2021 20:58:10
     * @Email: 326308290@qq.com
     */
-    internal class SingleQueryStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    internal class SingleQueryStreamEnumerable<TEntity> : AbstractStreamEnumerable<TEntity>
     {
         public SingleQueryStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {

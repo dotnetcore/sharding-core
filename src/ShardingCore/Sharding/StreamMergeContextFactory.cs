@@ -40,10 +40,20 @@ namespace ShardingCore.Sharding
         }
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
+            
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
             var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
+            
             return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
+        }
+
+        private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult)
+        {
+            if (!mergeQueryCompilerContext.IsEnumerableQuery())
+            {
+                
+            }
         }
     }
 }

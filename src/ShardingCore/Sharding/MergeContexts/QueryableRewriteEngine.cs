@@ -20,6 +20,18 @@ namespace ShardingCore.Sharding.MergeContexts
 {
     public sealed class QueryableRewriteEngine : IQueryableRewriteEngine
     {
+        private  static readonly ISet<string> singleEntityMethodNames = new HashSet<string>();
+
+        static QueryableRewriteEngine()
+        {
+            singleEntityMethodNames.Add(nameof(Enumerable.First));
+            singleEntityMethodNames.Add(nameof(Enumerable.FirstOrDefault));
+            singleEntityMethodNames.Add(nameof(Enumerable.Last));
+            singleEntityMethodNames.Add(nameof(Enumerable.LastOrDefault));
+            singleEntityMethodNames.Add(nameof(Enumerable.Single));
+            singleEntityMethodNames.Add(nameof(Enumerable.SingleOrDefault));
+        }
+        
         public IQueryable GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
         {
             var paginationContext = parseResult.GetPaginationContext();
@@ -29,6 +41,20 @@ namespace ShardingCore.Sharding.MergeContexts
             var skip = paginationContext.Skip;
             var take = paginationContext.Take;
             var orders = orderByContext.PropertyOrders;
+
+            if (skip.HasValue && skip.Value > 0)
+            {
+                if (!mergeQueryCompilerContext.IsEnumerableQuery())
+                {
+                    var queryMethodName = mergeQueryCompilerContext.QueryMethodName();
+                    if (singleEntityMethodNames.Contains(queryMethodName))
+                    {
+                        //todo 修复做兼容
+                        throw new ShardingCoreInvalidOperationException(
+                            $"single query:[{mergeQueryCompilerContext.GetQueryExpression().ShardingPrint()}] cant use skip:{skip.Value},u should use {nameof(Enumerable.ToList)} than use skip in {nameof(IEnumerable<object>)}");
+                    }
+                }
+            }
 
             //去除分页,获取前Take+Skip数量
             var reWriteQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();

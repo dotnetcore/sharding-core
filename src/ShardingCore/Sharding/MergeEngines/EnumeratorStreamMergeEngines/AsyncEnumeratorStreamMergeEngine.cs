@@ -15,8 +15,7 @@ using ShardingCore.Sharding.ShardingQueryExecutors;
 */
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 {
-    internal class AsyncEnumeratorStreamMergeEngine<TShardingDbContext,T> : IAsyncEnumerable<T>, IEnumerable<T>
-    where  TShardingDbContext:DbContext,IShardingDbContext
+    internal class AsyncEnumeratorStreamMergeEngine<T> : IAsyncEnumerable<T>, IEnumerable<T>
     {
         private readonly StreamMergeContext _mergeContext;
 
@@ -33,7 +32,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var asyncEnumerator = EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable()
+            var asyncEnumerator = EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable()
                 .GetAsyncEnumerator(cancellationToken);
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
@@ -51,7 +50,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable())
+            var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();
             if (_mergeContext.IsUseShardingTrack(typeof(T)))
             {
@@ -67,7 +66,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
             if (emptyQueryEnumerator != null)
                 return emptyQueryEnumerator;
-            var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<TShardingDbContext,T>.Create(_mergeContext).GetStreamEnumerable())
+            var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();
 
             if (_mergeContext.IsUseShardingTrack(typeof(T)))

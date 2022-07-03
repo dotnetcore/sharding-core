@@ -27,8 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    internal class EnumeratorStreamMergeEngineFactory<TEntity>
     {
         private readonly StreamMergeContext _streamMergeContext;
         private readonly IShardingPageManager _shardingPageManager;
@@ -42,9 +41,9 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             _entityMetadataManager = streamMergeContext.ShardingRuntimeContext.GetEntityMetadataManager();
         }
 
-        public static EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity> Create(StreamMergeContext streamMergeContext)
+        public static EnumeratorStreamMergeEngineFactory<TEntity> Create(StreamMergeContext streamMergeContext)
         {
-            return new EnumeratorStreamMergeEngineFactory<TShardingDbContext, TEntity>(streamMergeContext);
+            return new EnumeratorStreamMergeEngineFactory<TEntity>(streamMergeContext);
         }
 
         public IVirtualDataSourceRoute GetRoute(Type entityType)
@@ -55,17 +54,17 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         {
             if (_streamMergeContext.IsRouteNotMatch())
             {
-                return new EmptyQueryStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new EmptyQueryStreamEnumerable<TEntity>(_streamMergeContext);
             }
             //本次查询没有跨库没有跨表就可以直接执行
             if (!_streamMergeContext.IsMergeQuery())
             {
-                return new SingleQueryStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new SingleQueryStreamEnumerable<TEntity>(_streamMergeContext);
             }
 
             if (_streamMergeContext.UseUnionAllMerge())
             {
-                return new DefaultShardingStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
+                return new DefaultShardingStreamEnumerable<TEntity>(_streamMergeContext);
             }
 
             //未开启系统分表或者本次查询涉及多张分表
@@ -94,7 +93,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
 
-            return new DefaultShardingStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext);
+            return new DefaultShardingStreamEnumerable<TEntity>(_streamMergeContext);
         }
 
         private IStreamEnumerable<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
@@ -130,7 +129,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new AppendOrderSequenceStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
+                return new AppendOrderSequenceStreamEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
             }
 
 
@@ -173,7 +172,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                                                                              !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new SequenceStreamEnumerable<TShardingDbContext, TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                return new SequenceStreamEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);

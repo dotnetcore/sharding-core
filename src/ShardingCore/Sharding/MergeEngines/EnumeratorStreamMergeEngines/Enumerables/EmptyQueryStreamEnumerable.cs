@@ -11,8 +11,7 @@ using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables
 {
-    internal class EmptyQueryStreamEnumerable<TShardingDbContext, TEntity> : AbstractStreamEnumerable<TEntity>
-        where TShardingDbContext : DbContext, IShardingDbContext
+    internal class EmptyQueryStreamEnumerable<TEntity> : AbstractStreamEnumerable<TEntity>
     {
         public EmptyQueryStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
