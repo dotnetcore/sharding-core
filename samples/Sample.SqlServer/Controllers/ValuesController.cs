@@ -95,7 +95,15 @@ namespace Sample.SqlServer.Controllers
             //          };
             //var listAsync = await sql.ToListAsync();
             //var resultx112331tt = await _defaultTableDbContext.Set<SysTest>().AsNoTracking().CountAsync();
+            var resultx112331tt11234 = await _defaultTableDbContext.Set<SysTest>().Skip(2).MaxAsync(o=>o.Id);
+            var resultx112331tt1123 = await _defaultTableDbContext.Set<SysTest>().Skip(2).Take(2).ToListAsync();
+            var resultx112331tt1124 = await _defaultTableDbContext.Set<SysTest>().Take(2).Skip(2).ToListAsync();
             var resultx112331tt112 = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync();
+            var resultx112331tt2x1 = await _defaultTableDbContext.Set<SysTest>().OrderBy(o => o.Id).LastOrDefaultAsync();
+            var resultx112331tt2x1x = await _defaultTableDbContext.Set<SysTest>().OrderBy(o => o.Id).SingleOrDefaultAsync();
+            var resultx112331tt2x = await _defaultTableDbContext.Set<SysTest>().OrderBy(o => o.Id).Skip(2).LastOrDefaultAsync();
+            Console.WriteLine("--------------");
+            var resultx112331tt2y = await _defaultTableDbContext.Set<SysTest>().OrderBy(o => o.Id).Skip(2).OrderByDescending(o => o.Id).FirstOrDefaultAsync();
 
             var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
             var resultx112331ttaa2 = await _defaultTableDbContext.Set<SysTest>().FirstOrDefaultAsync(o => o.Id == "2");
