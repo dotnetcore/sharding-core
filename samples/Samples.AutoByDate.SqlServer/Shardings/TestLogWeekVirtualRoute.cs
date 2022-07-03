@@ -23,7 +23,7 @@ namespace Samples.AutoByDate.SqlServer.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<TestLogByWeek> builder)
         {
-            
+            builder.ShardingProperty(o => o.CreateDate);
         }
     }
 }

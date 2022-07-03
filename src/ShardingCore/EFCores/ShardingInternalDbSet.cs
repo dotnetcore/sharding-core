@@ -46,18 +46,19 @@ namespace ShardingCore.EFCores
             _shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
         }
 #endif
-        private IVirtualDataSource _virtualDataSource;
 
-        protected IVirtualDataSource VirtualDataSource
+        private IDataSourceRouteManager _dataSourceRouteManager;
+
+        protected IDataSourceRouteManager DataSourceRouteManager
         {
             get
             {
-                if (null == _virtualDataSource)
+                if (null == _dataSourceRouteManager)
                 {
-                    _virtualDataSource = _context.GetVirtualDataSource();
+                    _dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
                 }
 
-                return _virtualDataSource;
+                return _dataSourceRouteManager;
             }
         }
 
@@ -425,9 +426,7 @@ namespace ShardingCore.EFCores
 
         private string GetDataSourceName(object shardingKeyValue)
         {
-            if (!EntityMetadataManager.IsShardingDataSource(typeof(TEntity)))
-                return VirtualDataSource.DefaultDataSourceName;
-            return VirtualDataSource.GetDataSourceName<TEntity>(shardingKeyValue);
+            return DataSourceRouteManager.GetDataSourceName<TEntity>(shardingKeyValue);
         }
     }
 }

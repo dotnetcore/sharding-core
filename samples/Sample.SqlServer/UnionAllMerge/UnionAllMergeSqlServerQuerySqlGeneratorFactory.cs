@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-using ShardingCore;
+using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
-using ShardingCore.Core.VirtualDatabase.VirtualTables;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -16,21 +16,31 @@ namespace Sample.SqlServer.UnionAllMerge
     public class UnionAllMergeSqlServerQuerySqlGeneratorFactory<TShardingDbContext> : IQuerySqlGeneratorFactory, IUnionAllMergeQuerySqlGeneratorFactory
     where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public UnionAllMergeSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies)
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+
+        public UnionAllMergeSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
             Dependencies = dependencies;
         }
 
         public QuerySqlGeneratorDependencies Dependencies { get; }
-        public QuerySqlGenerator Create() => new UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies);
+        public QuerySqlGenerator Create() => new UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies,_shardingRuntimeContext);
     }
 
     public class UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext> : SqlServerQuerySqlGenerator
         where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies)
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IUnionAllMergeManager _unionAllMergeManager;
+
+        public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext)
             : base(dependencies)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
+            _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
+            _unionAllMergeManager = shardingRuntimeContext.GetRequiredService<IUnionAllMergeManager>();
         }
 
         protected override Expression VisitTable(TableExpression tableExpression)
@@ -48,26 +58,24 @@ namespace Sample.SqlServer.UnionAllMerge
 
         private Expression OverrideVisitTable(TableExpression tableExpression)
         {
-            var supportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
-            if (supportManager?.Current != null)
+            if (_unionAllMergeManager?.Current != null)
             {
-                var tableRouteResults = supportManager?.Current.TableRoutesResults.ToArray();
-                if (tableRouteResults.IsNotEmpty() &&
-                    tableRouteResults[0].ReplaceTables.Any(o => o.OriginalName == tableExpression.Name))
+                var entityMetadata = _entityMetadataManager.TryGetByLogicTableName(tableExpression.Name);
+                var tableRouteResults = _unionAllMergeManager?.Current.TableRoutesResults.ToArray();
+                if (tableRouteResults.IsNotEmpty() &&entityMetadata!=null&&
+                    tableRouteResults[0].ReplaceTables.Any(o =>o.EntityType==entityMetadata.EntityType));
                 {
-                    var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.OriginalName == tableExpression.Name).Tail).ToHashSet();
+                    var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.EntityType==entityMetadata.EntityType)?.Tail).ToHashSet();
 
                     var sqlGenerationHelper = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
-                    var tableManager = ShardingContainer.GetService<IVirtualTableManager<TShardingDbContext>>();
-                    var virtualTable = tableManager.GetVirtualTable(tableExpression.Name);
                     string newTableName = null;
                     if (tails.Count == 1)
                     {
-                        newTableName = sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tails.First()}", tableExpression.Schema);
+                        newTableName = sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadata.TableSeparator}{tails.First()}", tableExpression.Schema);
                     }
                     else
                     {
-                        newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{virtualTable.EntityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
+                        newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
                     }
 
                     var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;

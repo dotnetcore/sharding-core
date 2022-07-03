@@ -33,6 +33,7 @@ using ShardingCore.Core.UnionAllMergeShardingProviders;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Sharding.MergeContexts;
@@ -115,7 +116,7 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingTableCreator, ShardingTableCreator>();
             //虚拟数据源管理
             services.TryAddSingleton<IVirtualDataSource, VirtualDataSource>();
-            services.TryAddSingleton<IVirtualDataSourceRouteManager, VirtualDataSourceRouteManager>();
+            services.TryAddSingleton<IDataSourceRouteManager, DataSourceRouteManager>();
             services.TryAddSingleton<IDataSourceRouteRuleEngine, DataSourceRouteRuleEngine>();
             services.TryAddSingleton<IDataSourceRouteRuleEngineFactory, DataSourceRouteRuleEngineFactory>();
             //读写分离链接创建工厂
@@ -204,12 +205,13 @@ namespace ShardingCore
 
 
         /// <summary>
-        /// 使用自动创建表
+        /// 启用定时任务自动创建表
         /// </summary>
         /// <param name="serviceProvider"></param>
         public static void UseAutoShardingCreate(this IServiceProvider serviceProvider)
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            shardingRuntimeContext.CheckRequirement();
             shardingRuntimeContext.AutoShardingCreate();
         }
         /// <summary>
@@ -219,6 +221,7 @@ namespace ShardingCore
         public static void UseAutoTryCompensateTable(this IServiceProvider serviceProvider)
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            shardingRuntimeContext.CheckRequirement();
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
             var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();

@@ -1,4 +1,5 @@
-﻿// using System.Collections.Generic;
+// using System;
+// using System.Collections.Generic;
 // using System.Linq;
 // using System.Threading;
 // using System.Threading.Tasks;
@@ -8,18 +9,12 @@
 //
 // namespace ShardingCore.Sharding.MergeEngines
 // {
-//     /*
-//     * @Author: xjm
-//     * @Description:
-//     * @Date: 2021/8/17 15:16:36
-//     * @Ver: 1.0
-//     * @Email: 326308290@qq.com
-//     */
-//     internal class FirstOrDefaultSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
+//     
+//     public class FirstSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
 //     {
 //         private readonly StreamMergeContext _streamMergeContext;
 //
-//         public FirstOrDefaultSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
+//         public FirstSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
 //         {
 //             _streamMergeContext = streamMergeContext;
 //         }
@@ -59,10 +54,20 @@
 //             }
 //
 //             if (list.IsEmpty())
-//             {
-//                 return default;
-//             }
-//             return list.FirstOrDefault();
+//                 throw new InvalidOperationException("Sequence contains no elements.");
+//             
+//             return list.First();
 //         }
+//         
+//         
+//         // if (notNullResult.IsEmpty())
+//         // throw new InvalidOperationException("Sequence contains no elements.");
+//         //
+//         // var streamMergeContext = GetStreamMergeContext();
+//         //     if (streamMergeContext.Orders.Any())
+//         // return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).First();
+//         //
+//         //     return notNullResult.First();
 //     }
 // }
+//

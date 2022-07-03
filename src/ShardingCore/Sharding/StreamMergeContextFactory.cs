@@ -40,19 +40,19 @@ namespace ShardingCore.Sharding
         }
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
-            
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
-            var rewriteQueryable = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
-            var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteQueryable);
             
-            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteQueryable,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
+            var rewriteResult = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
+            var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteResult);
+            
+            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
         }
 
         private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult)
         {
             if (!mergeQueryCompilerContext.IsEnumerableQuery())
             {
-                
+                // Queries performing 'LastOrDefault' operation must have a deterministic sort order. Rewrite the query to apply an 'OrderBy' operation on the sequence before calling 'LastOrDefault'
             }
         }
     }

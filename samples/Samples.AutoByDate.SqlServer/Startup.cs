@@ -34,15 +34,12 @@ namespace Samples.AutoByDate.SqlServer
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<SysUserLogByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserLog1ByDayVirtualTableRoute>();
                     o.AddShardingTableRoute<TestLogWeekVirtualRoute>();
                 })
                 .AddConfig(sp =>
                 {
-                    sp.ConfigId = "c1";
                     sp.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr);

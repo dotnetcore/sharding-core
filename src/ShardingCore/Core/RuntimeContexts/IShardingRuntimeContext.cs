@@ -5,6 +5,7 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
@@ -23,6 +24,7 @@ namespace ShardingCore.Core.RuntimeContexts
     
     public interface IShardingRuntimeContext
     {
+        IShardingProvider GetIhardingProvider();
         IShardingComparer GetShardingComparer();
         IShardingCompilerExecutor GetShardingCompilerExecutor();
         IShardingReadWriteManager GetShardingReadWriteManager();
@@ -33,6 +35,7 @@ namespace ShardingCore.Core.RuntimeContexts
         IEntityMetadataManager GetEntityMetadataManager();
         // IVirtualDataSourceManager GetVirtualDataSourceManager();
         IVirtualDataSource GetVirtualDataSource();
+        IDataSourceRouteManager GetDataSourceRouteManager();
         ITableRouteManager GetTableRouteManager();
         IShardingTableCreator GetShardingTableCreator();
         IRouteTailFactory GetRouteTailFactory();
@@ -41,6 +44,8 @@ namespace ShardingCore.Core.RuntimeContexts
         IUnionAllMergeManager GetUnionAllMergeManager();
         IShardingPageManager GetShardingPageManager();
         IDataSourceInitializer GetDataSourceInitializer();
+
+        void CheckRequirement();
         
         void GetOrCreateShardingRuntimeModel(DbContext dbContext);
 

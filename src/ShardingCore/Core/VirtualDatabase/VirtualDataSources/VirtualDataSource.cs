@@ -11,6 +11,7 @@ using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -33,15 +34,13 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public IVirtualDataSourceConfigurationParams ConfigurationParams { get; }
         public IConnectionStringManager ConnectionStringManager { get; }
 
-        private readonly IEntityMetadataManager _entityMetadataManager;
-        private readonly IVirtualDataSourceRouteManager _dataSourceRouteManager;
 
         private readonly IPhysicDataSourcePool _physicDataSourcePool;
         public string DefaultDataSourceName { get; private set; }
         public string DefaultConnectionString { get; private set; }
         public bool UseReadWriteSeparation { get; }
 
-        public VirtualDataSource(IEntityMetadataManager entityMetadataManager, IVirtualDataSourceRouteManager dataSourceRouteManager, IVirtualDataSourceConfigurationParams configurationParams,IReadWriteConnectorFactory readWriteConnectorFactory)
+        public VirtualDataSource( IVirtualDataSourceConfigurationParams configurationParams,IReadWriteConnectorFactory readWriteConnectorFactory)
         {
             Check.NotNull(configurationParams, nameof(configurationParams));
             Check.NotNull(configurationParams.ExtraDataSources, nameof(configurationParams.ExtraDataSources));
@@ -55,8 +54,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             {
                 AddPhysicDataSource(new DefaultPhysicDataSource(extraDataSource.Key, extraDataSource.Value, false));
             }
-            _entityMetadataManager = entityMetadataManager;
-            _dataSourceRouteManager = dataSourceRouteManager;
             UseReadWriteSeparation = ConfigurationParams.UseReadWriteSeparation();
             if (UseReadWriteSeparation)
             {
@@ -88,42 +85,6 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             {
                 throw new ArgumentException(nameof(ConfigurationParams.ReadWriteDefaultPriority));
             }
-        }
-
-        public IVirtualDataSourceRoute GetRoute(Type entityType)
-        {
-            return _dataSourceRouteManager.GetRoute(entityType);
-        }
-
-        public List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig)
-        {
-            if (!_entityMetadataManager.IsShardingDataSource(entityType))
-                return new List<string>(1) { DefaultDataSourceName };
-            var virtualDataSourceRoute = _dataSourceRouteManager.GetRoute(entityType);
-
-            if (routeRouteConfig.UseQueryable())
-                return virtualDataSourceRoute.RouteWithPredicate(routeRouteConfig.GetQueryable(), true);
-            if (routeRouteConfig.UsePredicate())
-            {
-                var shardingEmptyEnumerableQuery = (IShardingEmptyEnumerableQuery)Activator.CreateInstance(typeof(ShardingEmptyEnumerableQuery<>).MakeGenericType(entityType), routeRouteConfig.GetPredicate());
-                return virtualDataSourceRoute.RouteWithPredicate(shardingEmptyEnumerableQuery.EmptyQueryable(), false);
-            }
-            object shardingKeyValue = null;
-            if (routeRouteConfig.UseValue())
-                shardingKeyValue = routeRouteConfig.GetShardingKeyValue();
-
-            if (routeRouteConfig.UseEntity())
-            {
-                shardingKeyValue = routeRouteConfig.GetShardingDataSource().GetPropertyValue(virtualDataSourceRoute.EntityMetadata.ShardingDataSourceProperty.Name);
-            }
-
-            if (shardingKeyValue != null)
-            {
-                var dataSourceName = virtualDataSourceRoute.RouteWithValue(shardingKeyValue);
-                return new List<string>(1) { dataSourceName };
-            }
-
-            throw new NotImplementedException(nameof(ShardingDataSourceRouteConfig));
         }
 
         /// <summary>

@@ -15,7 +15,6 @@ namespace Sample.BulkConsole.Entities
         public string Id { get; set; }
         public string OrderNo { get; set; }
         public int Seq { get; set; }
-        [ShardingTableKey]
         public DateTime CreateTime { get; set; }
     }
 }

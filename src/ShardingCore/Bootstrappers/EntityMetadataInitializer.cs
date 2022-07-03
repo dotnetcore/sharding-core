@@ -35,14 +35,14 @@ namespace ShardingCore.Bootstrappers
         private readonly Type _shardingEntityType;
         private readonly IShardingProvider _shardingProvider;
         private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
-        private readonly IVirtualDataSourceRouteManager _virtualDataSourceRouteManager;
+        private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
 
         public EntityMetadataInitializer(
             IShardingProvider shardingProvider,
             IShardingRouteConfigOptions shardingRouteConfigOptions,
-            IVirtualDataSourceRouteManager virtualDataSourceRouteManager,
+            IDataSourceRouteManager dataSourceRouteManager,
             ITableRouteManager tableRouteManager,
             IEntityMetadataManager entityMetadataManager
             )
@@ -50,7 +50,7 @@ namespace ShardingCore.Bootstrappers
             _shardingEntityType = typeof(TEntity);
             _shardingProvider = shardingProvider;
             _shardingRouteConfigOptions = shardingRouteConfigOptions;
-            _virtualDataSourceRouteManager = virtualDataSourceRouteManager;
+            _dataSourceRouteManager = dataSourceRouteManager;
             _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
         }
@@ -81,7 +81,7 @@ namespace ShardingCore.Bootstrappers
                 {
                     entityMetadataDataSourceConfiguration.Configure(creatEntityMetadataDataSourceBuilder);
                 }
-                _virtualDataSourceRouteManager.AddVirtualDataSourceRoute(dataSourceRoute);
+                _dataSourceRouteManager.AddDataSourceRoute(dataSourceRoute);
                 entityMetadata.CheckShardingDataSourceMetadata();
 
             }

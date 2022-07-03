@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.SqlServer.UnionAllMerge
@@ -16,13 +18,17 @@ namespace Sample.SqlServer.UnionAllMerge
     public class UnionAllMergeQueryCompiler : QueryCompiler, IUnionAllMergeQueryCompiler
 	{
 		private readonly IQueryContextFactory _queryContextFactory;
+		private readonly IShardingRuntimeContext _shardingRuntimeContext;
 		private readonly IDatabase _database;
 		private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
 		private readonly IModel _model;
+		private readonly IUnionAllMergeManager _unionAllMergeManager;
 
-		public UnionAllMergeQueryCompiler(IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
+		public UnionAllMergeQueryCompiler(IQueryContextFactory queryContextFactory,IShardingRuntimeContext shardingRuntimeContext, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
 		{
 			_queryContextFactory = queryContextFactory;
+			_shardingRuntimeContext = shardingRuntimeContext;
+			_unionAllMergeManager=_shardingRuntimeContext.GetRequiredService<IUnionAllMergeManager>();
 			_database = database;
 			_logger = logger;
 			_model = model;
@@ -30,8 +36,7 @@ namespace Sample.SqlServer.UnionAllMerge
 
 		public override TResult Execute<TResult>(Expression query)
 		{
-			var notSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
-			if (notSupportManager?.Current != null)
+			if (_unionAllMergeManager?.Current != null)
 			{
 				return NotSupportShardingExecute<TResult>(query);
 			}
@@ -58,8 +63,7 @@ namespace Sample.SqlServer.UnionAllMerge
 
 		public override TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken = new CancellationToken())
 		{
-			var notSupportManager = ShardingContainer.GetService<IUnionAllMergeManager>();
-			if (notSupportManager?.Current != null)
+			if (_unionAllMergeManager?.Current != null)
 			{
 				var result = NotSupportShardingExecuteAsync<TResult>(query, cancellationToken);
 				return result;

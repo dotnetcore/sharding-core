@@ -18,5 +18,7 @@ namespace ShardingCore.Sharding.MergeContexts
         SelectContext GetSelectContext();
         
         GroupByContext GetGroupByContext();
+        bool IsEmunerableQuery();
+        string QueryMethodName();
     }
 }

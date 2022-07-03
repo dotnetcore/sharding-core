@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.MergeContexts
         }
 
         public IOptimizeResult Optimize(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult,
-            IQueryable rewriteQueryable)
+            IRewriteResult rewriteResult)
         {
             var shardingDbContext = mergeQueryCompilerContext.GetShardingDbContext();
             var maxParallelExecuteCount =

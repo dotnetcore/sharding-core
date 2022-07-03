@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 
 namespace ShardingCore.Extensions
@@ -18,26 +19,26 @@ namespace ShardingCore.Extensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public static class VirtualDataSourceExtension
+    public static class DataSourceRouteManagerExtension
     {
-        public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource,TEntity entity)where TEntity : class
+        
+        public static string GetDataSourceName<TEntity>(this IDataSourceRouteManager dataSourceRouteManager,TEntity entity)where TEntity : class
         {
 
-            return virtualDataSource.RouteTo(entity.GetType(),
+            return dataSourceRouteManager.RouteTo(entity.GetType(),
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity))[0];
         }
 
-        public static List<string> GetDataSourceNames<TEntity>(this IVirtualDataSource virtualDataSource, Expression<Func<TEntity, bool>> where)
+        public static List<string> GetDataSourceNames<TEntity>(this IDataSourceRouteManager dataSourceRouteManager, Expression<Func<TEntity, bool>> where)
             where TEntity : class
         {
-            return virtualDataSource.RouteTo(typeof(TEntity),new ShardingDataSourceRouteConfig(predicate: where))
+            return dataSourceRouteManager.RouteTo(typeof(TEntity),new ShardingDataSourceRouteConfig(predicate: where))
                 .ToList();
         }
-        public static string GetDataSourceName<TEntity>(this IVirtualDataSource virtualDataSource, object shardingKeyValue) where TEntity : class
+        public static string GetDataSourceName<TEntity>(this IDataSourceRouteManager dataSourceRouteManager, object shardingKeyValue) where TEntity : class
         {
-            return virtualDataSource.RouteTo(typeof(TEntity),
+            return dataSourceRouteManager.RouteTo(typeof(TEntity),
                 new ShardingDataSourceRouteConfig(shardingKeyValue:shardingKeyValue))[0];
         }
-        
     }
 }

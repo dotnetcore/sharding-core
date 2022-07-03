@@ -7,6 +7,7 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
@@ -30,6 +31,8 @@ namespace ShardingCore.Core.RuntimeContexts
         private object INIT_LOCK = new object();
         private bool isInitModeled = false;
         private object INIT_MODEL = new object();
+        private bool isCheckRequirement = false;
+        private object CHECK_REQUIREMENT = new object();
         private IServiceCollection _serviceMap = new ServiceCollection();
 
         private IServiceProvider _serviceProvider;
@@ -60,6 +63,12 @@ namespace ShardingCore.Core.RuntimeContexts
         public void AutoShardingCreate()
         {
             GetRequiredService<IShardingBootstrapper>().AutoShardingCreate();
+        }
+
+        private IShardingProvider _shardingProvider;
+        public IShardingProvider GetIhardingProvider()
+        {
+           return _shardingProvider??=GetRequiredService<IShardingProvider>();
         }
 
         private IShardingComparer _shardingComparer;
@@ -111,6 +120,12 @@ namespace ShardingCore.Core.RuntimeContexts
             return _virtualDataSource??=GetRequiredService<IVirtualDataSource>();
         }
 
+        private IDataSourceRouteManager _dataSourceRouteManager;
+        public IDataSourceRouteManager GetDataSourceRouteManager()
+        {
+          return _dataSourceRouteManager??=GetRequiredService<IDataSourceRouteManager>();
+        }
+
         private ITableRouteManager _tableRouteManager;
         public ITableRouteManager GetTableRouteManager()
         {
@@ -157,6 +172,41 @@ namespace ShardingCore.Core.RuntimeContexts
         public IDataSourceInitializer GetDataSourceInitializer()
         {
             return _dataSourceInitializer??=GetRequiredService<IDataSourceInitializer>();
+        }
+
+        public void CheckRequirement()
+        {
+            if (isCheckRequirement)
+                return;
+
+            lock (CHECK_REQUIREMENT)
+            {
+                if (isCheckRequirement)
+                    return;
+                isCheckRequirement = true;
+                
+                try
+                {
+                    var shardingProvider = GetIhardingProvider();
+                    using (var scope = shardingProvider.CreateScope())
+                    {
+                        using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
+                        {
+                            if (dbContext == null)
+                            {
+                                throw new ShardingCoreInvalidOperationException(
+                                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
+                        ex);
+                }
+            }
         }
 
         public void GetOrCreateShardingRuntimeModel(DbContext dbContext)
@@ -239,7 +289,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
         private void InitFieldValue()
         {
-
+            GetIhardingProvider();
             GetShardingComparer();
             GetShardingCompilerExecutor();
             GetShardingReadWriteManager();
@@ -249,6 +299,7 @@ namespace ShardingCore.Core.RuntimeContexts
             GetDbContextCreator();
             GetEntityMetadataManager();
             GetVirtualDataSource();
+            GetDataSourceRouteManager();
             GetTableRouteManager();
             GetShardingTableCreator();
             GetRouteTailFactory();

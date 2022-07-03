@@ -16,6 +16,7 @@ using Sample.SqlServerShardingTable.VirtualRoutes;
 using ShardingCore;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.SqlServerShardingTable
 {
@@ -42,11 +43,11 @@ namespace Sample.SqlServerShardingTable
             //        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
             //    }).Begin(op =>
             //    {
-            //        //Èç¹ûÄúÊ¹ÓÃcode-first½¨ÒéÑ¡Ôñfalse
+            //        //å¦‚æœæ‚¨ä½¿ç”¨code-firstå»ºè®®é€‰æ‹©false
             //        op.CreateShardingTableOnStart = true;
-            //        //Èç¹ûÄúÊ¹ÓÃcode-first½¨ÒéĞŞ¸ÄÎªfsle
+            //        //å¦‚æœæ‚¨ä½¿ç”¨code-firstå»ºè®®ä¿®æ”¹ä¸ºfsle
             //        op.EnsureCreatedWithOutShardingTable = true;
-            //        //µ±ÎŞ·¨»ñÈ¡Â·ÓÉÊ±»á·µ»ØÄ¬ÈÏÖµ¶ø²»ÊÇ±¨´í
+            //        //å½“æ— æ³•è·å–è·¯ç”±æ—¶ä¼šè¿”å›é»˜è®¤å€¼è€Œä¸æ˜¯æŠ¥é”™
             //        op.ThrowIfQueryRouteNotMatch = true;
             //    }).AddShardingTransaction((connection, builder) =>
             //    {
@@ -72,18 +73,13 @@ namespace Sample.SqlServerShardingTable
             //    },ReadStrategyEnum.Loop,defaultEnable:true).End();
             services.AddShardingDbContext<MyDbContext>().AddEntityConfig(op =>
             {
-                //Èç¹ûÄúÊ¹ÓÃcode-first½¨ÒéÑ¡Ôñfalse
-                op.CreateShardingTableOnStart = true;
-                //Èç¹ûÄúÊ¹ÓÃcode-first½¨ÒéĞŞ¸ÄÎªfsle
-                op.EnsureCreatedWithOutShardingTable = true;
-                //µ±ÎŞ·¨»ñÈ¡Â·ÓÉÊ±»á·µ»ØÄ¬ÈÏÖµ¶ø²»ÊÇ±¨´í
+                //å½“æ— æ³•è·å–è·¯ç”±æ—¶ä¼šè¿”å›é»˜è®¤å€¼è€Œä¸æ˜¯æŠ¥é”™
                 op.ThrowIfQueryRouteNotMatch = false;
                 op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                 op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
             }).AddConfig(op =>
             {
-                op.ConfigId = "a";
                 op.UseShardingQuery((conStr, builder) =>
                 {
                     builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -106,8 +102,7 @@ namespace Sample.SqlServerShardingTable
                         //}
                     };
                 }, ReadStrategyEnum.Loop, defaultEnable: true);
-                op.ReplaceTableEnsureManager(sp=>new SqlServerTableEnsureManager<MyDbContext>());
-            }).EnsureConfig();
+            }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

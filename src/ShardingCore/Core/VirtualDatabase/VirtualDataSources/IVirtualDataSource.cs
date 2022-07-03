@@ -40,19 +40,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         /// 默认连接字符串
         /// </summary>
         string DefaultConnectionString { get;}
-        /// <summary>
-        /// 获取路由
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <returns></returns>
-        IVirtualDataSourceRoute GetRoute(Type entityType);
-        /// <summary>
-        /// 路由到具体的物理数据源
-        /// </summary>
-        /// <param name="entityType"></param>
-        /// <param name="routeRouteConfig"></param>
-        /// <returns>data source names</returns>
-        List<string> RouteTo(Type entityType, ShardingDataSourceRouteConfig routeRouteConfig);
+       
 
         /// <summary>
         /// 获取默认的数据源信息

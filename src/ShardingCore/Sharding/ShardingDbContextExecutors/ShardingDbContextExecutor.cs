@@ -37,6 +37,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly IVirtualDataSource _virtualDataSource;
+        private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IDbContextCreator _dbContextCreator;
         private readonly IRouteTailFactory _routeTailFactory;
@@ -64,6 +65,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
             _shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
             _tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
             _dbContextCreator = _shardingRuntimeContext.GetDbContextCreator();
             _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
@@ -125,9 +127,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private string GetDataSourceName<TEntity>(TEntity entity) where TEntity : class
         {
-            if (!_entityMetadataManager.IsShardingDataSource(entity.GetType()))
-                return _virtualDataSource.DefaultDataSourceName;
-            return _virtualDataSource.GetDataSourceName(entity);
+            return _dataSourceRouteManager.GetDataSourceName(entity);
         }
 
         private string GetTableTail<TEntity>(TEntity entity) where TEntity : class

@@ -23,7 +23,8 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
     {
         private readonly long _total;
 
-        public ReverseShardingStreamEnumerable(StreamMergeContext streamMergeContext, long total) : base(streamMergeContext)
+        public ReverseShardingStreamEnumerable(StreamMergeContext streamMergeContext, long total) : base(
+            streamMergeContext)
         {
             _total = total;
         }
@@ -36,16 +37,17 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
 
         protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async)
         {
-            var noPaginationNoOrderQueryable = GetStreamMergeContext().GetOriginalQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().As<IQueryable<TEntity>>();
+            var noPaginationNoOrderQueryable = GetStreamMergeContext().GetOriginalQueryable().RemoveSkip().RemoveTake()
+                .RemoveAnyOrderBy().As<IQueryable<TEntity>>();
             var skip = GetStreamMergeContext().Skip.GetValueOrDefault();
             var take = GetStreamMergeContext().Take.HasValue ? GetStreamMergeContext().Take.Value : (_total - skip);
             if (take > int.MaxValue)
                 throw new ShardingCoreException($"not support take more than {int.MaxValue}");
             var realSkip = _total - take - skip;
             GetStreamMergeContext().ReSetSkip((int)realSkip);
-            var propertyOrders = GetStreamMergeContext().Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
-            GetStreamMergeContext().ReSetOrders(propertyOrders);
-            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip + (int)take).OrderWithExpression(propertyOrders);
+            GetStreamMergeContext().ReverseOrder();
+            var reverseOrderQueryable = noPaginationNoOrderQueryable.Take((int)realSkip + (int)take)
+                .OrderWithExpression(GetStreamMergeContext().Orders);
             return new ReverseEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(),
                 reverseOrderQueryable, async);
         }

@@ -9,7 +9,6 @@ namespace Samples.AutoByDate.SqlServer.Domain.Entities
     public class TestLogByWeek
     {
         public string Id { get; set; }
-        [ShardingTableKey]
         public DateTime CreateDate { get; set; }
     }
 }

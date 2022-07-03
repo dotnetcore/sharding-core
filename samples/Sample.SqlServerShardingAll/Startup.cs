@@ -1,19 +1,16 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingAll.VirtualDataSourceRoutes;
 using Sample.SqlServerShardingAll.VirtualTableRoutes;
 using ShardingCore;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.SqlServerShardingAll
 {
@@ -37,18 +34,15 @@ namespace Sample.SqlServerShardingAll
             services.AddControllers();
 
             services.AddShardingDbContext<MyDbContext>()
-                .AddEntityConfig(o =>
+                .UseRouteConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();
                     o.AddShardingDataSourceRoute<SysUserVirtualDataSourceRoute>();
                     o.AddShardingTableRoute<SysUserVirtualTableRoute>();
                     o.AddShardingTableRoute<OrderVirtualTableRoute>();
                 })
-                .AddConfig(op =>
+                .UseConfig(op =>
                 {
-                    op.ConfigId = "c1";
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -57,7 +51,6 @@ namespace Sample.SqlServerShardingAll
                     {
                         builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyDbContext>());
                     op.AddDefaultDataSource("A",
                      "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceTableDBA;Integrated Security=True;");
                     op.AddExtraDataSource(sp =>
@@ -72,7 +65,7 @@ namespace Sample.SqlServerShardingAll
                         },
                     };
                     });
-                }).EnsureConfig();
+                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().AddShardingCore();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,7 +76,6 @@ namespace Sample.SqlServerShardingAll
                 app.UseDeveloperExceptionPage();
             }
 
-            //≥ı ºªØShardingCore
             app.UseShardingCore();
             app.UseRouting();
 

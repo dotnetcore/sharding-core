@@ -36,7 +36,8 @@ namespace ShardingCore.Core.EntityMetadatas
         /// </summary>
         /// <param name="entityType"></param>
         /// <returns></returns>
-        EntityMetadata TryGet(Type entityType);
+        EntityMetadata? TryGet(Type entityType);
+        EntityMetadata? TryGetByLogicTableName(string logicTableName);
         /// <summary>
         /// 是否是分片对象(包括分表或者分库)
         /// </summary>

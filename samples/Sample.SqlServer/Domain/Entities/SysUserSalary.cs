@@ -15,7 +15,6 @@ namespace Sample.SqlServer.Domain.Entities
         /// <summary>
         /// 每月的金额
         /// </summary>
-        [ShardingTableKey]
         public int DateOfMonth { get; set; }
         /// <summary>
         /// 工资

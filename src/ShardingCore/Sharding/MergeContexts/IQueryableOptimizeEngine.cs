@@ -10,6 +10,6 @@ namespace ShardingCore.Sharding.MergeContexts
     public interface IQueryableOptimizeEngine
     {
         IOptimizeResult Optimize(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult,
-            IQueryable rewriteQueryable);
+            IRewriteResult rewriteResult);
     }
 }

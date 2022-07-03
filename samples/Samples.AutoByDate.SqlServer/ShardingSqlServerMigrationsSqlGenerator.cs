@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Samples.AutoByDate.SqlServer.Domain.Entities;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 
@@ -60,8 +61,11 @@ namespace Samples.AutoByDate.SqlServer
     /// </summary>
     public class ShardingSqlServerMigrationsSqlGenerator<TShardingDbContext> : SqlServerMigrationsSqlGenerator where TShardingDbContext : DbContext, IShardingDbContext
     {
-        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+
+        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies, migrationsAnnotations)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
         }
 
         protected override void Generate(
@@ -74,7 +78,7 @@ namespace Samples.AutoByDate.SqlServer
             var newCmds = builder.GetCommandList().ToList();
             var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
-            MigrationHelper.Generate<TShardingDbContext>(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
+            MigrationHelper.Generate<TShardingDbContext>(_shardingRuntimeContext,operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }
     }
 }

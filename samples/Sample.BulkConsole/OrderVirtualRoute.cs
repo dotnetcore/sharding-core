@@ -31,7 +31,7 @@ namespace Sample.BulkConsole
 
         public override void Configure(EntityMetadataTableBuilder<Order> builder)
         {
-            
+            builder.ShardingProperty(o => o.CreateTime);
         }
 
         public override bool AutoCreateTableByTime()

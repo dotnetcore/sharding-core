@@ -26,7 +26,6 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         {
             Queryable = queryable;
             ShardingDbContext = shardingDbContext;
-            VirtualDataSource = shardingDbContext.GetVirtualDataSource();
             QueryEntities = queryEntities;
         }
         public Dictionary<Type, IQueryable> QueryEntities { get; }
@@ -36,6 +35,5 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine
         public IQueryable Queryable { get; }
 
         public IShardingDbContext ShardingDbContext { get; }
-        public IVirtualDataSource VirtualDataSource { get; }
     }
 }

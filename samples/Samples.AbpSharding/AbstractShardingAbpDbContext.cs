@@ -31,9 +31,7 @@ namespace Samples.AbpSharding
             var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
             if (wrapOptionsExtension != null)
             {
-                _shardingDbContextExecutor =
-                    (IShardingDbContextExecutor)Activator.CreateInstance(
-                        typeof(ShardingDbContextExecutor<>).GetGenericType0(this.GetType()), this);
+                _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
             }
         }
 

@@ -31,6 +31,7 @@ namespace ShardingCore.DynamicDataSources
         private readonly IShardingRouteConfigOptions _routeConfigOptions;
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly IRouteTailFactory _routeTailFactory;
+        private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IShardingTableCreator _tableCreator;
@@ -42,6 +43,7 @@ namespace ShardingCore.DynamicDataSources
             IShardingRouteConfigOptions routeConfigOptions,
             IVirtualDataSource virtualDataSource,
             IRouteTailFactory routeTailFactory,
+            IDataSourceRouteManager dataSourceRouteManager,
             ITableRouteManager tableRouteManager,
             IEntityMetadataManager entityMetadataManager,
             IShardingTableCreator shardingTableCreator,
@@ -52,6 +54,7 @@ namespace ShardingCore.DynamicDataSources
             _routeConfigOptions = routeConfigOptions;
             _virtualDataSource = virtualDataSource;
             _routeTailFactory = routeTailFactory;
+            _dataSourceRouteManager = dataSourceRouteManager;
             _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
             _tableCreator = shardingTableCreator;
@@ -90,7 +93,7 @@ namespace ShardingCore.DynamicDataSources
                                 //非默认数据源
                                 if (_entityMetadataManager.IsShardingDataSource(entityType))
                                 {
-                                    var virtualDataSourceRoute = _virtualDataSource.GetRoute(entityType);
+                                    var virtualDataSourceRoute = _dataSourceRouteManager.GetRoute(entityType);
                                     if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
                                     {
                                         if (_entityMetadataManager.IsShardingTable(entityType))

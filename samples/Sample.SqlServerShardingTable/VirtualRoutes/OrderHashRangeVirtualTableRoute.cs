@@ -35,7 +35,7 @@ namespace Sample.SqlServerShardingTable.VirtualRoutes
                 throw new ShardingCoreInvalidOperationException($"cant calc hash route hash code:[{stringHashCode}]");
         }
 
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             return new List<string>()
             {

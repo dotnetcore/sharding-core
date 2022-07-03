@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.MergeContexts
             singleEntityMethodNames.Add(nameof(Enumerable.SingleOrDefault));
         }
         
-        public IQueryable GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
+        public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
         {
             var paginationContext = parseResult.GetPaginationContext();
             var orderByContext = parseResult.GetOrderByContext();
@@ -56,8 +56,9 @@ namespace ShardingCore.Sharding.MergeContexts
                 }
             }
 
+            var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
             //去除分页,获取前Take+Skip数量
-            var reWriteQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
+            var reWriteQueryable = combineQueryable;
             if (take.HasValue)
             {
                 reWriteQueryable = reWriteQueryable.RemoveTake();
@@ -158,7 +159,7 @@ namespace ShardingCore.Sharding.MergeContexts
 
             }
 
-            return reWriteQueryable;
+            return new RewriteResult(combineQueryable,reWriteQueryable);
         }
     }
 }

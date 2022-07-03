@@ -65,6 +65,12 @@ namespace ShardingCore.Core.EntityMetadatas
                 return null;
             return entityMetadata;
         }
+
+        public EntityMetadata TryGetByLogicTableName(string logicTableName)
+        {
+            return _caches.Values.FirstOrDefault(o => o.LogicTableName == logicTableName);
+        }
+
         /// <summary>
         /// 是否是分片对象(包括分表或者分库)
         /// </summary>

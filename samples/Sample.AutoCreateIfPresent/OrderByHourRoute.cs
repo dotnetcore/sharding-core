@@ -61,7 +61,7 @@ namespace Sample.AutoCreateIfPresent
         /// 仅启动时调用
         /// </summary>
         /// <returns></returns>
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             //启动寻找有哪些表后缀
             using (var connection = new MySqlConnection(_virtualDataSourceManager.GetCurrentVirtualDataSource().DefaultConnectionString))

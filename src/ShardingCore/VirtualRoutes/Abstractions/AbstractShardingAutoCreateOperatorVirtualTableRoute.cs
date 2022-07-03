@@ -13,6 +13,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
+using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs.Abstaractions;
@@ -107,6 +108,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             var entityMetadataManager = RouteShardingProvider.GetRequiredService<IEntityMetadataManager>();
             var tableCreator = RouteShardingProvider.GetRequiredService<IShardingTableCreator>();
             var virtualDataSource = RouteShardingProvider.GetRequiredService<IVirtualDataSource>();
+            var dataSourceRouteManager = RouteShardingProvider.GetRequiredService<IDataSourceRouteManager>();
             var now = DateTime.Now.AddMinutes(IncrementMinutes);
             var tail = ConvertNowToTail(now);
 //必须先执行AddPhysicTable在进行CreateTable
@@ -114,7 +116,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
             ISet<string> dataSources = new HashSet<string>();
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
             {
-                var virtualDataSourceRoute = virtualDataSource.GetRoute(typeof(TEntity));
+                var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(TEntity));
                 foreach (var dataSourceName in virtualDataSourceRoute.GetAllDataSourceNames())
                 {
                     dataSources.Add(dataSourceName);

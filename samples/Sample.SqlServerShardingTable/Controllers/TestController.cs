@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.SqlServerShardingTable.Entities;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -17,12 +18,12 @@ namespace Sample.SqlServerShardingTable.Controllers
     public class TestController : ControllerBase
     {
         private readonly MyDbContext _myDbContext;
-        private readonly IVirtualDataSourceManager<MyDbContext> _virtualDataSourceManager;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public TestController(MyDbContext myDbContext,IVirtualDataSourceManager<MyDbContext> virtualDataSourceManager)
+        public TestController(MyDbContext myDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
             _myDbContext = myDbContext;
-            _virtualDataSourceManager = virtualDataSourceManager;
+            _shardingRuntimeContext = shardingRuntimeContext;
         }
         public async Task<IActionResult> Testa()
         {
@@ -148,7 +149,7 @@ namespace Sample.SqlServerShardingTable.Controllers
 
         public async Task<IActionResult> DynamicReadWrite()
         {
-            DynamicShardingHelper.DynamicAppendReadWriteConnectionString<MyDbContext>("a","ds0", "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB1;Integrated Security=True;");
+            DynamicShardingHelper.DynamicAppendReadWriteConnectionString<MyDbContext>(_shardingRuntimeContext,"ds0", "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB1;Integrated Security=True;");
             var sysUser = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1").FirstOrDefaultAsync();
 
             return Ok(sysUser);

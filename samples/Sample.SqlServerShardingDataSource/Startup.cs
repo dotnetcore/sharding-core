@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.SqlServerShardingDataSource
 {
@@ -35,16 +36,13 @@ namespace Sample.SqlServerShardingDataSource
             services.AddControllers();
 
             services.AddShardingDbContext<MyDbContext>()
-                .AddEntityConfig(o =>
+                .UseRouteConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = false;
-                    o.EnsureCreatedWithOutShardingTable = false;
                     o.AddShardingDataSourceRoute<OrderVirtualDataSourceRoute>();
                     o.AddShardingDataSourceRoute<SysUserVirtualDataSourceRoute>();
                 })
-                .AddConfig(op =>
+                .UseConfig(op =>
                 {
-                    op.ConfigId = "c1";
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -53,7 +51,6 @@ namespace Sample.SqlServerShardingDataSource
                     {
                         builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyDbContext>());
                     op.AddDefaultDataSource("00",
                     "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly00;Integrated Security=True;");
                     op.AddExtraDataSource(sp =>
@@ -63,7 +60,7 @@ namespace Sample.SqlServerShardingDataSource
                                 o =>
                                     $"Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly{o};Integrated Security=True;");
                     });
-                }).EnsureConfig();
+                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().AddShardingCore();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,10 +71,7 @@ namespace Sample.SqlServerShardingDataSource
                 app.UseDeveloperExceptionPage();
             }
 
-            Stopwatch sp=Stopwatch.StartNew();
             app.UseShardingCore();
-            sp.Stop();
-            Console.WriteLine("ºÄÊ±"+sp.ElapsedMilliseconds);
             app.UseRouting();
 
             app.UseAuthorization();

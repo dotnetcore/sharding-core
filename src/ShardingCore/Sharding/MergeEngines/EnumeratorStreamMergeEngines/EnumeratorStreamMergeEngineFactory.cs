@@ -33,12 +33,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         private readonly IShardingPageManager _shardingPageManager;
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private EnumeratorStreamMergeEngineFactory(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = streamMergeContext.ShardingRuntimeContext.GetShardingPageManager();
             _tableRouteManager =streamMergeContext.ShardingRuntimeContext.GetTableRouteManager();
             _entityMetadataManager = streamMergeContext.ShardingRuntimeContext.GetEntityMetadataManager();
+            _dataSourceRouteManager = streamMergeContext.ShardingRuntimeContext.GetDataSourceRouteManager();
         }
 
         public static EnumeratorStreamMergeEngineFactory<TEntity> Create(StreamMergeContext streamMergeContext)
@@ -48,7 +50,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         public IVirtualDataSourceRoute GetRoute(Type entityType)
         {
-            return _streamMergeContext.GetShardingDbContext().GetVirtualDataSource().GetRoute(entityType);
+            return _dataSourceRouteManager.GetRoute(entityType);
         }
         public IStreamEnumerable<TEntity> GetStreamEnumerable()
         {

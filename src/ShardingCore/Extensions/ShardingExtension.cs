@@ -92,6 +92,7 @@ namespace ShardingCore.Extensions
             var entityType = typeof(TEntity);
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
             var virtualDataSource = shardingDbContext.GetVirtualDataSource();
+            var dataSourceRouteManager = shardingRuntimeContext.GetDataSourceRouteManager();
             var tableRouteManager =shardingRuntimeContext.GetTableRouteManager();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             var dataSourceNames = new Dictionary<string, Dictionary<string, BulkDicEntry<TEntity>>>();
@@ -127,7 +128,7 @@ namespace ShardingCore.Extensions
             }
             else
             {
-                var virtualDataSourceRoute = virtualDataSource.GetRoute(entityType);
+                var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityType);
                 var allDataSourceNames = virtualDataSourceRoute.GetAllDataSourceNames().ToHashSet();
 
                 var entityMetadata = entityMetadataManager.TryGet(entityType);
@@ -245,12 +246,12 @@ namespace ShardingCore.Extensions
             where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
-            var virtualDataSource = shardingDbContext.GetVirtualDataSource();
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
+            var dataSourceRouteManager = shardingRuntimeContext.GetDataSourceRouteManager();
             var tableRouteManager = shardingRuntimeContext.GetTableRouteManager();// (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();// (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
 
-            var dataSourceNames = virtualDataSource.GetDataSourceNames(where);
+            var dataSourceNames = dataSourceRouteManager.GetDataSourceNames(where);
             var result = new Dictionary<string, LinkedList<DbContext>>();
             var entityType = typeof(TEntity);
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServer3x.Domain.Maps;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
@@ -27,7 +28,7 @@ namespace Sample.SqlServer3x
 
     }
 
-    public class CustomerDbContextCreator : IDbContextCreator<DefaultDbContext>
+    public class CustomerDbContextCreator : IDbContextCreator
     {
         public DbContext CreateDbContext(DbContext mainDbContext, ShardingDbContextOptions shardingDbContextOptions)
         {
@@ -39,6 +40,11 @@ namespace Sample.SqlServer3x
             }
             _ = dbContext.Model;
             return dbContext;
+        }
+
+        public DbContext GetShellDbContext(IShardingProvider shardingProvider)
+        {
+           return shardingProvider.GetService<DefaultDbContext>();
         }
     }
 

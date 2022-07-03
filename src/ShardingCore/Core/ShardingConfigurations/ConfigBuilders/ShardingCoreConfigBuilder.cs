@@ -60,6 +60,10 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             _shardingRuntimeBuilder.UseConfig(shardingConfigure);
             return this;
         }
+        public ShardingCoreConfigBuilder<TShardingDbContext> ReplaceService<TService, TImplement>()
+        {
+            return ReplaceService<TService, TImplement>(ServiceLifetime.Singleton);
+        }
         public ShardingCoreConfigBuilder<TShardingDbContext> ReplaceService<TService, TImplement>(ServiceLifetime lifetime)
         {
             _shardingRuntimeBuilder.ReplaceService<TService, TImplement>(lifetime);

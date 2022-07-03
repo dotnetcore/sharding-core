@@ -15,6 +15,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace Sample.SqlServer.Controllers
@@ -350,11 +351,11 @@ namespace Sample.SqlServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get5(string readNodeName)
         {
-            using (_readWriteManager.CreateScope<DefaultShardingDbContext>())
+            using (_readWriteManager.CreateScope())
             {
-                _readWriteManager.GetCurrent<DefaultShardingDbContext>().SetReadWriteSeparation(100,true);
+                _readWriteManager.GetCurrent().SetReadWriteSeparation(100,true);
 
-                _readWriteManager.GetCurrent<DefaultShardingDbContext>().AddDataSourceReadNode("A", readNodeName);
+                _readWriteManager.GetCurrent().AddDataSourceReadNode("A", readNodeName);
                 var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
 
             }

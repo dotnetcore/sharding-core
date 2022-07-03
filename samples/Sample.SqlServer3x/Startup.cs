@@ -17,6 +17,7 @@ using ShardingCore;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.SqlServer3x
 {
@@ -53,16 +54,13 @@ namespace Sample.SqlServer3x
             //services.AddDbContext<DefaultDbContext>(op=>op.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreCreate;Integrated Security=True;"));
             //services.AddScoped<DbContext,DefaultDbContext>(s=>s.GetService<DefaultDbContext>());
             services.AddShardingDbContext<DefaultDbContext>()
-                .AddEntityConfig(o =>
+                .UseRouteConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserModAbcVirtualTableRoute>();
                 })
-                .AddConfig(op =>
+                .UseConfig(op =>
                 {
-                    op.ConfigId = "c1";
                     op.MaxQueryConnectionsLimit = 5;
                     op.UseShardingQuery((conStr, builder) =>
                     {
@@ -72,14 +70,16 @@ namespace Sample.SqlServer3x
                     {
                         builder.UseSqlServer(conn).UseLoggerFactory(efLogger);
                     });
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>());
                     op.AddDefaultDataSource("A",
                         "Data Source=localhost;Initial Catalog=ShardingCoreCreate;Integrated Security=True;"
                     );
-                }).EnsureConfig();
+                })
+                .ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>(ServiceLifetime.Singleton)
+                .ReplaceService<IDbContextCreator,CustomerDbContextCreator>(ServiceLifetime.Singleton)
+                .AddShardingCore();
             services.AddScoped<IScopedService, ScopedService>();
             services.Replace(
-                ServiceDescriptor.Singleton<IDbContextCreator<DefaultDbContext>, CustomerDbContextCreator>());
+                ServiceDescriptor.Singleton<IDbContextCreator, CustomerDbContextCreator>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,8 +90,8 @@ namespace Sample.SqlServer3x
                 app.UseDeveloperExceptionPage();
             }
 
-            var shardingBootstrapper = app.ApplicationServices.GetService<IShardingBootstrapper>();
-            shardingBootstrapper.Start();
+            app.ApplicationServices.UseAutoShardingCreate();
+            app.ApplicationServices.UseAutoTryCompensateTable();
             app.UseRouting();
 
             app.UseAuthorization();

@@ -15,12 +15,14 @@ namespace ShardingCore.Sharding.MergeContexts
     {
         public IParseResult Parse(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
+            var isEnumerableQuery = mergeQueryCompilerContext.IsEnumerableQuery();
+            string queryMethodName = isEnumerableQuery ? null : mergeQueryCompilerContext.QueryMethodName();
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
             var queryableExtraDiscoverVisitor = new QueryableExtraDiscoverVisitor();
             queryableExtraDiscoverVisitor.Visit(combineQueryable.Expression);
             return new ParseResult(queryableExtraDiscoverVisitor.GetPaginationContext(),
                 queryableExtraDiscoverVisitor.GetOrderByContext(), queryableExtraDiscoverVisitor.GetSelectContext(),
-                queryableExtraDiscoverVisitor.GetGroupByContext());
+                queryableExtraDiscoverVisitor.GetGroupByContext(),isEnumerableQuery,queryMethodName);
         }
     }
 }

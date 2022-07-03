@@ -1,25 +1,29 @@
-﻿// using System.Collections.Generic;
+﻿// using System;
+// using System.Collections.Generic;
 // using System.Linq;
 // using System.Threading;
 // using System.Threading.Tasks;
 // using ShardingCore.Extensions;
 // using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 // using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
+// using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+// using ShardingCore.Sharding.MergeEngines.Executors.Methods;
+// using ShardingCore.Sharding.StreamMergeEngines;
 //
 // namespace ShardingCore.Sharding.MergeEngines
 // {
 //     /*
 //     * @Author: xjm
 //     * @Description:
-//     * @Date: 2021/8/17 15:16:36
+//     * @Date: 2021/8/18 14:22:07
 //     * @Ver: 1.0
 //     * @Email: 326308290@qq.com
 //     */
-//     internal class FirstOrDefaultSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
+//     internal class LastSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
 //     {
 //         private readonly StreamMergeContext _streamMergeContext;
 //
-//         public FirstOrDefaultSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
+//         public LastSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
 //         {
 //             _streamMergeContext = streamMergeContext;
 //         }
@@ -48,8 +52,7 @@
 //
 //         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
 //         {
-//             
-//             //将toke改成1
+//             //将take改成1
 //             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 //             
 //             var list = new List<TEntity>();
@@ -64,5 +67,15 @@
 //             }
 //             return list.FirstOrDefault();
 //         }
+//         
+//         
+//         // if (notNullResult.IsEmpty())
+//         // throw new InvalidOperationException("Sequence contains no elements.");
+//         // var streamMergeContext = GetStreamMergeContext();
+//         //     if (streamMergeContext.Orders.Any())
+//         // return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).Last();
+//         //
+//         //     return notNullResult.Last();
 //     }
 // }
+//

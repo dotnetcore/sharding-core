@@ -39,7 +39,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
         /// <returns></returns>
         TableRouteUnit RouteWithValue(DataSourceRouteResult dataSourceRouteResult, object shardingKey);
         /// <summary>
-        /// 获取所有的目前数据库存在的尾巴,仅启动时调用
+        /// 获取所有的目前数据库存在的尾巴,每次路由都会调用
+        /// 请不要在此处添加过于复杂的操作
         /// get all tails in the db
         /// </summary>
         /// <returns></returns>

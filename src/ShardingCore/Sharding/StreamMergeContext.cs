@@ -44,6 +44,7 @@ namespace ShardingCore.Sharding
         public IQueryable RewriteQueryable { get; }
         public IOptimizeResult OptimizeResult { get; }
 
+        private readonly IRewriteResult _rewriteResult;
         private readonly IRouteTailFactory _routeTailFactory;
 
         public int? Skip { get; private set; }
@@ -84,15 +85,16 @@ namespace ShardingCore.Sharding
 
 
 
-        public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult,
+        public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IRewriteResult rewriteResult,IOptimizeResult optimizeResult,
             IRouteTailFactory routeTailFactory,ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
             ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext())
                 .GetRequireService<IShardingRuntimeContext>();
             ParseResult = parseResult;
-            RewriteQueryable = rewriteQueryable;
+            RewriteQueryable = rewriteResult.GetRewriteQueryable();
             OptimizeResult = optimizeResult;
+            _rewriteResult = rewriteResult;
             _routeTailFactory = routeTailFactory;
             QueryEntities= MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
             _trackerManager =trackerManager;
@@ -344,6 +346,15 @@ namespace ShardingCore.Sharding
         public int? GetTake()
         {
             return Take;
+        }
+
+        public void ReverseOrder()
+        {
+            if (Orders.Any())
+            {
+                var propertyOrders = Orders.Select(o => new PropertyOrder(o.PropertyExpression, !o.IsAsc, o.OwnerType)).ToArray();
+                ReSetOrders(propertyOrders);
+            }
         }
     }
 }

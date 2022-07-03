@@ -20,14 +20,14 @@ namespace Sample.SqlServer.Shardings
         }
 
         //数据库已经存在的tail
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             return new List<string>() {"", "1"};
         }
 
         public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
         {
-            
+            builder.ShardingProperty(o => o.Id);
         }
 
         public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

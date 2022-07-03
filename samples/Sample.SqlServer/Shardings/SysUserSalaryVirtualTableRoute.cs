@@ -26,7 +26,7 @@ namespace Sample.SqlServer.Shardings
         }
 
 
-        public override List<string> GetAllTails()
+        public override List<string> GetTails()
         {
             var beginTime = new DateTime(2020, 1, 1);
             var endTime = new DateTime(2021, 12, 1);
@@ -43,7 +43,7 @@ namespace Sample.SqlServer.Shardings
 
         public override void Configure(EntityMetadataTableBuilder<SysUserSalary> builder)
         {
-
+            builder.ShardingProperty(o => o.DateOfMonth);
         }
 
         protected  string TimeFormatToTail(int time)

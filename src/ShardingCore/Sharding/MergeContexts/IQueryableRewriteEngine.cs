@@ -12,6 +12,6 @@ namespace ShardingCore.Sharding.MergeContexts
 */
     public interface IQueryableRewriteEngine
     {
-        IQueryable GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult);
+        IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult);
     }
 }

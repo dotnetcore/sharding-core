@@ -13,6 +13,7 @@ using System.Linq;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.BulkConsole
 {
@@ -30,13 +31,10 @@ namespace Sample.BulkConsole
             services.AddShardingDbContext<MyShardingDbContext>()
                 .AddEntityConfig(o =>
                 {
-                    o.CreateShardingTableOnStart = true;
-                    o.EnsureCreatedWithOutShardingTable = true;
                     o.AddShardingTableRoute<OrderVirtualRoute>();
                 })
                 .AddConfig(op =>
                 {
-                    op.ConfigId = "c1";
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -45,12 +43,12 @@ namespace Sample.BulkConsole
                     {
                         builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
-                    op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<MyShardingDbContext>());
                     op.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=MyOrderSharding;Integrated Security=True;");
 
-                }).EnsureConfig();
+                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
             var serviceProvider = services.BuildServiceProvider();
-            serviceProvider.GetService<IShardingBootstrapper>().Start();
+            serviceProvider.UseAutoShardingCreate();
+            serviceProvider.UseAutoTryCompensateTable();
             using (var serviceScope = serviceProvider.CreateScope())
             {
                 var myShardingDbContext = serviceScope.ServiceProvider.GetService<MyShardingDbContext>();

@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServerShardingAll.Entities;
+using ShardingCore;
 using ShardingCore.Bootstrappers;
 
 namespace Sample.SqlServerShardingAll
@@ -12,7 +13,8 @@ namespace Sample.SqlServerShardingAll
     {
         public static void UseShardingCore(this IApplicationBuilder app)
         {
-            app.ApplicationServices.GetRequiredService<IShardingBootstrapper>().Start();
+            app.ApplicationServices.UseAutoShardingCreate();
+            app.ApplicationServices.UseAutoTryCompensateTable();
         }
         public static void InitSeed(this IApplicationBuilder app)
         {

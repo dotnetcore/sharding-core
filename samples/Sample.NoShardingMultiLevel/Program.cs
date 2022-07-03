@@ -4,6 +4,7 @@ using ShardingCore;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 
 ILoggerFactory efLogger = LoggerFactory.Create(builder =>
 {
@@ -21,12 +22,9 @@ builder.Services.AddControllers();
 builder.Services.AddShardingDbContext<DefaultDbContext>()
     .AddEntityConfig(o =>
     {
-        o.CreateShardingTableOnStart = true;
-        o.EnsureCreatedWithOutShardingTable = true;
     })
     .AddConfig(op =>
     {
-        op.ConfigId = "c1";
         op.UseShardingQuery((conStr, builder) =>
         {
             builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
@@ -35,7 +33,6 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
         {
             builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
         });
-        op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultDbContext>());
         op.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=dbmulti;Integrated Security=True;");
         op.AddReadWriteSeparation(sp =>
         {
@@ -49,11 +46,12 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
                 }
             };
         }, ReadStrategyEnum.Loop, defaultEnable: true);
-    }).EnsureConfig();
+    }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.Services.GetRequiredService<IShardingBootstrapper>().Start();
+app.Services.UseAutoShardingCreate();
+app.Services.UseAutoTryCompensateTable();
 app.UseAuthorization();
 
 app.MapControllers();
