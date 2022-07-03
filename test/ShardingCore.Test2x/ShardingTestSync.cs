@@ -324,6 +324,8 @@ namespace ShardingCore.Test2x
                 Assert.Equal(pageDescAge, sysUserMod.Age);
                 pageDescAge--;
             }
+            var skip10First =  _virtualDbContext.Set<SysUserMod>().Skip(10).OrderByDescending(o => o.Age).FirstOrDefault();
+            Assert.Equal(skip10First, pageResult[0]);
         }
 
         [Fact]
