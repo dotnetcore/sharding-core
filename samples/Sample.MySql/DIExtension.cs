@@ -32,7 +32,7 @@ namespace Sample.MySql
                         {
                             Id = id.ToString(),
                             Age = id,
-                            Name = $"name_{id}",
+                            Name = $"ds{(id%3)}",
                         });
                     }
                     var userModMonths = new List<SysUserLogByMonth>();

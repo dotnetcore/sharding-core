@@ -66,7 +66,7 @@ namespace ShardingCore.Core.RuntimeContexts
         }
 
         private IShardingProvider _shardingProvider;
-        public IShardingProvider GetIhardingProvider()
+        public IShardingProvider GetShardingProvider()
         {
            return _shardingProvider??=GetRequiredService<IShardingProvider>();
         }
@@ -187,7 +187,7 @@ namespace ShardingCore.Core.RuntimeContexts
                 
                 try
                 {
-                    var shardingProvider = GetIhardingProvider();
+                    var shardingProvider = GetShardingProvider();
                     using (var scope = shardingProvider.CreateScope())
                     {
                         using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
@@ -222,6 +222,11 @@ namespace ShardingCore.Core.RuntimeContexts
                 foreach (var entityType in entityTypes)
                 {
                     trackerManager.AddDbContextModel(entityType.ClrType, entityType.FindPrimaryKey() != null);
+                    if (!entityMetadataManager.IsSharding(entityType.ClrType))
+                    {
+                        var entityMetadata = new EntityMetadata(entityType.ClrType);
+                        entityMetadataManager.AddEntityMetadata(entityMetadata);
+                    }
                     entityMetadataManager.TryInitModel(entityType);
                 }
             }
@@ -289,7 +294,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
         private void InitFieldValue()
         {
-            GetIhardingProvider();
+            GetShardingProvider();
             GetShardingComparer();
             GetShardingCompilerExecutor();
             GetShardingReadWriteManager();

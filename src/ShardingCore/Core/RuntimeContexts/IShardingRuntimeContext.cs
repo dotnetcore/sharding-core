@@ -24,7 +24,7 @@ namespace ShardingCore.Core.RuntimeContexts
     
     public interface IShardingRuntimeContext
     {
-        IShardingProvider GetIhardingProvider();
+        IShardingProvider GetShardingProvider();
         IShardingComparer GetShardingComparer();
         IShardingCompilerExecutor GetShardingCompilerExecutor();
         IShardingReadWriteManager GetShardingReadWriteManager();

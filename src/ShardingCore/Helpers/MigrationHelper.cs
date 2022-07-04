@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ShardingMigrations.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -31,33 +33,61 @@ namespace ShardingCore.Helpers
     public class MigrationHelper
     {
         private MigrationHelper() { }
-        public static void Generate<TShardingDContext>(
+        public static void Generate(
             IShardingRuntimeContext shardingRuntimeContext,
             MigrationOperation operation,
             MigrationCommandListBuilder builder,
             ISqlGenerationHelper sqlGenerationHelper,
             List<MigrationCommand> addCmds
-            ) where TShardingDContext:DbContext,IShardingDbContext
+            )
         {
             var migrationCommands = (List<MigrationCommand>) builder.GetFieldValue("_commands");
-            addCmds.ForEach(aAddCmd =>
+            var shardingMigrationManager = shardingRuntimeContext.GetRequiredService<IShardingMigrationManager>();
+            var virtualDataSource = shardingRuntimeContext.GetRequiredService<IVirtualDataSource>();
+            if (shardingMigrationManager.Current == null||shardingMigrationManager.Current.CurrentDataSourceName==virtualDataSource.DefaultDataSourceName)
             {
-                var shardingCmds = BuildShardingCmds<TShardingDContext>(shardingRuntimeContext,operation, aAddCmd.CommandText, sqlGenerationHelper);
-                if (shardingCmds.IsNotEmpty())
+                addCmds.ForEach(aAddCmd =>
                 {
-                    migrationCommands.Remove(aAddCmd);
-                    //针对builder的原始表进行移除
-                    shardingCmds.ForEach(aShardingCmd =>
+                    var shardingCmds = BuildShardingCmds(shardingRuntimeContext,operation, aAddCmd.CommandText, sqlGenerationHelper);
+                    if (shardingCmds.IsNotEmpty())
                     {
-                        builder.Append(aShardingCmd)
-                            .EndCommand();
-                    });
-                }
-            });
+                        migrationCommands.Remove(aAddCmd);
+                        //针对builder的原始表进行移除
+                        shardingCmds.ForEach(aShardingCmd =>
+                        {
+                            builder.Append(aShardingCmd)
+                                .EndCommand();
+                        });
+                    }
+                });
+            }
+            else
+            {
+                addCmds.ForEach(aAddCmd =>
+                {
+                    var (migrationResult,shardingCmds) = BuildDataSourceShardingCmds(shardingRuntimeContext,shardingMigrationManager.Current.CurrentDataSourceName,operation, aAddCmd.CommandText, sqlGenerationHelper);
+                    //如果是分库的
+                    if (migrationResult==MigrationResultEnum.DataSourceTableCommand)
+                    {
+                        if (shardingCmds.IsNotEmpty())
+                        {
+                            migrationCommands.Remove(aAddCmd);
+                            //针对builder的原始表进行移除
+                            shardingCmds.ForEach(aShardingCmd =>
+                            {
+                                builder.Append(aShardingCmd)
+                                    .EndCommand();
+                            });
+                        }
+                    }else if (migrationResult==MigrationResultEnum.TableCommand)//如果不是分库并且有表的话那么就把命令删除掉
+                    {
+                        migrationCommands.Remove(aAddCmd);
+                    }
+                });
+            }
         }
 
-        private static List<string> BuildShardingCmds<TShardingDContext>(IShardingRuntimeContext shardingRuntimeContext,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
-            where TShardingDContext : DbContext, IShardingDbContext
+        private static List<string> BuildShardingCmds(IShardingRuntimeContext shardingRuntimeContext,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
         {
             //所有MigrationOperation定义
             //https://github.com/dotnet/efcore/tree/b970bf29a46521f40862a01db9e276e6448d3cb0/src/EFCore.Relational/Migrations/Operations
@@ -108,6 +138,92 @@ namespace ShardingCore.Helpers
             }
 
             return resList;
+
+            string BuildPattern(string absTableName)
+            {
+                return string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
+            }
+        }
+        private static (MigrationResultEnum migrationResult,List<string>) BuildDataSourceShardingCmds(IShardingRuntimeContext shardingRuntimeContext,string dataSourceName,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
+        {
+            //所有MigrationOperation定义
+            //https://github.com/dotnet/efcore/tree/b970bf29a46521f40862a01db9e276e6448d3cb0/src/EFCore.Relational/Migrations/Operations
+            //ColumnOperation仅替换Table
+            //其余其余都是将Name和Table使用分表名替换
+            var dataSourceRouteManager = shardingRuntimeContext.GetDataSourceRouteManager();
+            var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
+            var tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
+            var tableRoutes = tableRouteManager.GetRoutes();
+            var existsShardingTables = tableRoutes.ToDictionary(o => o.EntityMetadata.LogicTableName, o => o.GetTails().Select(p=>$"{o.EntityMetadata.LogicTableName}{o.EntityMetadata.TableSeparator}{p}").ToList());
+            //Dictionary<string, List<string>> _existsShardingTables
+            //    = Cache.ServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
+            List<string> resList = new List<string>();
+            string absTableName = string.Empty;
+
+            string name = operation.GetPropertyValue("Name") as string;
+            string tableName = operation.GetPropertyValue("Table") as string;
+            string pattern = string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
+            Func<KeyValuePair<string, List<string>>, bool> where = x =>
+                existsShardingTables.Any(y =>x.Key==y.Key&& Regex.IsMatch(name, BuildPattern(y.Key)));
+
+            if (!string.IsNullOrWhiteSpace(tableName))
+            {
+                absTableName = tableName;
+            }
+            else if (!string.IsNullOrWhiteSpace(name))
+            {
+                if (existsShardingTables.Any(x => where(x)))
+                {
+                    absTableName = existsShardingTables.Where(x => where(x)).FirstOrDefault().Key;
+                }
+                else
+                {
+                    absTableName = name;
+                }
+            }
+
+            MigrationResultEnum migrationResult = MigrationResultEnum.OtherCommand;
+            var entityMetadata = entityMetadataManager.TryGetByLogicTableName(absTableName);
+            if (entityMetadata != null)
+            {
+                migrationResult = MigrationResultEnum.TableCommand;
+                
+            
+                bool isShardingDataSource =entityMetadata.IsShardingDataSource();
+                if (isShardingDataSource)
+                {
+                    var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
+                    isShardingDataSource = virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName);
+                }
+
+                if (isShardingDataSource)
+                {
+                    migrationResult= MigrationResultEnum.DataSourceTableCommand;
+                }
+                //分表
+                if (!string.IsNullOrWhiteSpace(absTableName) && existsShardingTables.ContainsKey(absTableName))
+                {
+                
+                    var shardings = existsShardingTables[absTableName];
+                    shardings.ForEach(aShardingTable =>
+                    {
+                        string newCmd = sourceCmd;
+                        GetReplaceGroups(operation, absTableName, aShardingTable).ForEach(aReplace =>
+                        {
+                            newCmd = newCmd.Replace(
+                                sqlGenerationHelper.DelimitIdentifier(aReplace.sourceName),
+                                sqlGenerationHelper.DelimitIdentifier(aReplace.targetName));
+                        });
+                        if (newCmd.Contains("EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE'"))
+                        {
+                            newCmd=newCmd.Replace($"EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'{absTableName}'", $"EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE', N'{aShardingTable}'");
+                        }
+                        resList.Add(newCmd);
+                    });
+                }
+            }
+
+            return (migrationResult,resList);
 
             string BuildPattern(string absTableName)
             {

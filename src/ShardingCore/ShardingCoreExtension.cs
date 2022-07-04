@@ -29,6 +29,8 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.ShardingConfigurations.ConfigBuilders;
+using ShardingCore.Core.ShardingMigrations;
+using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.UnionAllMergeShardingProviders;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions;
@@ -144,6 +146,10 @@ namespace ShardingCore
             services.TryAddSingleton<IQueryableRewriteEngine, QueryableRewriteEngine>();
             services.TryAddSingleton<IQueryableOptimizeEngine, QueryableOptimizeEngine>();
 
+            //migration manage
+            services.TryAddSingleton<IShardingMigrationAccessor, ShardingMigrationAccessor>();
+            services.TryAddSingleton<IShardingMigrationManager, ShardingMigrationManager>();
+            
             //route manage
             services.TryAddSingleton<IShardingRouteManager, ShardingRouteManager>();
             services.TryAddSingleton<IShardingRouteAccessor, ShardingRouteAccessor>();
@@ -151,6 +157,7 @@ namespace ShardingCore
             //sharding page
             services.TryAddSingleton<IShardingPageManager, ShardingPageManager>();
             services.TryAddSingleton<IShardingPageAccessor, ShardingPageAccessor>();
+            
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
             services.TryAddSingleton<IUnionAllMergeManager, UnionAllMergeManager>();
             services.TryAddSingleton<IUnionAllMergeAccessor, UnionAllMergeAccessor>();

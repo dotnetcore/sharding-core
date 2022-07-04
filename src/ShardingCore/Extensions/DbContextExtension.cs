@@ -103,10 +103,10 @@ namespace ShardingCore.Extensions
         //#endif
         //        }
         /// <summary>
-        /// 移除所有的没有分片的表
+        /// 移除所有除了仅分库的
         /// </summary>
         /// <param name="dbContext"></param>
-        public static void RemoveDbContextAllRelationModelThatIsNoSharding(this DbContext dbContext)
+        public static void RemoveDbContextAllRelationModelWithoutShardingDataSourceOnly(this DbContext dbContext)
         {
 #if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
             throw new NotImplementedException();

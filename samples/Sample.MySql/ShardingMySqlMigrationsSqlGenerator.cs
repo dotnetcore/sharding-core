@@ -1,23 +1,18 @@
-﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
-using ShardingCore.Sharding.Abstractions;
 
-namespace Sample.Migrations.EFCores
+namespace Sample.MySql
 {
-    /// <summary>
-    /// https://github.com/Coldairarrow/EFCore.Sharding/blob/master/src/EFCore.Sharding.SqlServer/ShardingSqlServerMigrationsSqlGenerator.cs
-    /// </summary>
-    public class ShardingSqlServerMigrationsSqlGenerator<TShardingDbContext> : SqlServerMigrationsSqlGenerator where TShardingDbContext:DbContext,IShardingDbContext
+    public class ShardingMySqlMigrationsSqlGenerator:MySqlMigrationsSqlGenerator
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies, migrationsAnnotations)
+        public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider annotationProvider, IMySqlOptions options,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies, annotationProvider, options)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
         }

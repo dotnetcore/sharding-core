@@ -1,17 +1,36 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Shardings;
 using ShardingCore;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.EFCores;
 using ShardingCore.Extensions;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
 
 namespace Sample.MySql
 {
+    // public class AutoStart : IHostedService
+    // {
+    //
+    //     public AutoStart(IShardingBootstrapper shardingBootstrapper)
+    //     {
+    //         shardingBootstrapper.Start();
+    //     }
+    //     public Task StartAsync(CancellationToken cancellationToken)
+    //     {
+    //         return Task.CompletedTask;
+    //     }
+    //
+    //     public Task StopAsync(CancellationToken cancellationToken)
+    //     {
+    //         return Task.CompletedTask;
+    //     }
+    // }
     public class Startup
     {
         public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
@@ -28,6 +47,7 @@ namespace Sample.MySql
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // services.AddHostedService<AutoStart>();
             services.AddControllers();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
@@ -49,7 +69,7 @@ namespace Sample.MySql
                     {
                         o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                         o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-                        // o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
+                         o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     }).UseConfig(o =>
                     { 
                         o.UseShardingQuery((conStr,builder)=>
@@ -68,6 +88,19 @@ namespace Sample.MySql
                                 .EnableSensitiveDataLogging();
                         });
                         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                        o.AddExtraDataSource(sp=>new Dictionary<string, string>()
+                        {
+                            {"ds1", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;"},
+                            {"ds2", "server=127.0.0.1;port=3306;database=dbdbd2;userid=root;password=root;"}
+                        });
+                        o.UseShellDbContextConfigure(b =>
+                        {
+                            b.ReplaceService<IMigrator, ShardingMigrator>();
+                        });
+                        o.UseExecutorDbContextConfigure(b =>
+                        {
+                            b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
+                        });
                     }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>(ServiceLifetime.Singleton)
                     .Build(sp);
                 stopwatch.Stop();
@@ -120,6 +153,17 @@ namespace Sample.MySql
                 app.UseDeveloperExceptionPage();
             }
             app.ApplicationServices.UseAutoShardingCreate();
+
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+                if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
+                {
+                    defaultShardingDbContext.Database.Migrate();
+                }
+            }
+            
+            
             app.ApplicationServices.UseAutoTryCompensateTable();
             app.UseRouting();
 

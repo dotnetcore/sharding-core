@@ -124,7 +124,7 @@ namespace ShardingCore.DynamicDataSources
                     }
                     else
                     {
-                        dbContext.RemoveDbContextAllRelationModelThatIsNoSharding();
+                        dbContext.RemoveDbContextAllRelationModelWithoutShardingDataSourceOnly();
                     }
         
                     dbContext.Database.EnsureCreated();

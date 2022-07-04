@@ -59,7 +59,7 @@ namespace Samples.AutoByDate.SqlServer
     /// <summary>
     /// https://github.com/Coldairarrow/EFCore.Sharding/blob/master/src/EFCore.Sharding.SqlServer/ShardingSqlServerMigrationsSqlGenerator.cs
     /// </summary>
-    public class ShardingSqlServerMigrationsSqlGenerator<TShardingDbContext> : SqlServerMigrationsSqlGenerator where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
@@ -78,7 +78,7 @@ namespace Samples.AutoByDate.SqlServer
             var newCmds = builder.GetCommandList().ToList();
             var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
-            MigrationHelper.Generate<TShardingDbContext>(_shardingRuntimeContext,operation, builder, Dependencies.SqlGenerationHelper, addCmds);
+            MigrationHelper.Generate(_shardingRuntimeContext,operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }
     }
 }

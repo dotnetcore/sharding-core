@@ -14,7 +14,10 @@ public class SysUserModVirtualDataSourceRoute:AbstractShardingOperatorVirtualDat
 
     public override List<string> GetAllDataSourceNames()
     {
-        return Enumerable.Range(0, 500).Select(o => $"ds{o}").ToList();
+        return new List<string>()
+        {
+            "ds0", "ds1", "ds2"
+        };
     }
 
     public override bool AddDataSourceName(string dataSourceName)
