@@ -28,13 +28,13 @@ namespace Sample.SqlServer
     public class Startup
     {
 
-        //public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
-        //{
-        //    builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
-        //});
+        public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
+        {
+            builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
+        });
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-    
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -56,8 +56,8 @@ namespace Sample.SqlServer
                     op.MaxQueryConnectionsLimit = 5;
                     op.UseSqlServer(builder =>
                     {
-                        var loggerFactory = ShardingContainer.GetService<ILoggerFactory>();
-                        builder.UseLoggerFactory(loggerFactory).UseUnionAllMerge<DefaultShardingDbContext>();
+                        //var loggerFactory = ShardingContainer.GetService<ILoggerFactory>();
+                        builder.UseLoggerFactory(efLogger).UseUnionAllMerge<DefaultShardingDbContext>();
                     });
                     op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<DefaultShardingDbContext>());
                     op.AddDefaultDataSource("A",
