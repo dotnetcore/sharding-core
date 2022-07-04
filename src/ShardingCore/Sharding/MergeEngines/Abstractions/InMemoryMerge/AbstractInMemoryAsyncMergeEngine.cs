@@ -16,7 +16,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractInMemoryAsyncMergeEngine<TEntity> : AbstractBaseMergeEngine<TEntity>, IInMemoryAsyncMergeEngine
+    internal abstract class AbstractInMemoryAsyncMergeEngine : AbstractBaseMergeEngine, IInMemoryAsyncMergeEngine
     {
         private readonly StreamMergeContext _mergeContext;
 
@@ -27,8 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge
 
         public async Task<List<RouteQueryResult<TResult>>> ExecuteAsync<TResult>(CancellationToken cancellationToken = new CancellationToken())
         {
-            var routeQueryResults = _mergeContext.PreperExecute(() => new List<RouteQueryResult<TResult>>(0));
-            if (routeQueryResults != null)
+            if (!_mergeContext.TryPrepareExecuteContinueQuery(() => new List<RouteQueryResult<TResult>>(0),out var routeQueryResults))
                 return routeQueryResults;
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
             var waitExecuteQueue = GetDataSourceGroupAndExecutorGroup<RouteQueryResult<TResult>>(true, defaultSqlRouteUnits, cancellationToken).ToArray();

@@ -70,10 +70,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
             var circuitBreaker = CreateCircuitBreaker();
             var executorGroups = dataSourceSqlExecutorUnit.SqlExecutorGroups;
             LinkedList<TResult> result = new LinkedList<TResult>();
+            var executorGroupsCount = executorGroups.Count;
             //同数据库下多组数据间采用串行
             foreach (var executorGroup in executorGroups)
             {
-                
+                executorGroupsCount--;
                 //同组采用并行最大化用户配置链接数
                 var routeQueryResults = await GroupExecuteAsync(executorGroup.Groups, cancellationToken);
                 //严格限制连接数就在内存中进行聚合并且直接回收掉当前dbcontext
@@ -99,9 +100,14 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                         result.AddLast(routeQueryResult.MergeResult);
                     }
                 }
-                
-                if (IsCancelled()|| circuitBreaker.Terminated(result))
-                    break;
+
+                //是否存在下次轮询如果是的那么就需要判断
+                var hasNextLoop = executorGroupsCount > 0;
+                if (hasNextLoop)
+                {
+                    if (IsCancelled()|| circuitBreaker.Terminated(result))
+                        break;
+                }
             }
 
             return result;

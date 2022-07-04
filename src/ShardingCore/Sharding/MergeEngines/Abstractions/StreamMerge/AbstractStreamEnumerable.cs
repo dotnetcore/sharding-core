@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractStreamEnumerable<TEntity> : AbstractBaseMergeEngine<TEntity>, IStreamEnumerable<TEntity>
+    internal abstract class AbstractStreamEnumerable<TEntity> : AbstractBaseMergeEngine, IStreamEnumerable<TEntity>
     {
         private readonly StreamMergeContext _streamMergeContext;
 

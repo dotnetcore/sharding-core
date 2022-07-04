@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.MergeEngines.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal abstract class AbstractBaseMergeEngine<TEntity>
+    internal abstract class AbstractBaseMergeEngine
     {
         protected abstract StreamMergeContext GetStreamMergeContext();
         protected bool UseUnionAllMerge()

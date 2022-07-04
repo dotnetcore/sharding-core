@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class MaxAsyncInMemoryMergeEngine<TEntity, TResult> :AbstractInMemoryAsyncMergeEngine<TEntity>, IEnsureMergeResult<TResult>
+    internal class MaxAsyncInMemoryMergeEngine<TEntity, TResult> :AbstractInMemoryAsyncMergeEngine, IEnsureMergeResult<TResult>
     {
         public MaxAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {

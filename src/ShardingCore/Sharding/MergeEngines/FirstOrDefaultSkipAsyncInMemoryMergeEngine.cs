@@ -44,7 +44,10 @@ namespace ShardingCore.Sharding.MergeEngines
         // }
         public TEntity MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException(false);
+            //将toke改成1
+            var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
+            var list = asyncEnumeratorStreamMergeEngine.ToList();
+            return GetFirstOrDefault(list);
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -52,18 +55,14 @@ namespace ShardingCore.Sharding.MergeEngines
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
-#if EFCORE2
-            var list = await asyncEnumeratorStreamMergeEngine.ToList<TEntity>(cancellationToken);
-#endif
-#if !EFCORE2
             var take = _streamMergeContext.GetTake();
-            var list = new List<TEntity>(take??31);
-            await foreach (var element in asyncEnumeratorStreamMergeEngine.WithCancellation(cancellationToken))
-            {
-                list.Add(element);
-            }
-#endif
+            var list = await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take, cancellationToken);
+            return GetFirstOrDefault(list);
 
+        }
+
+        private TEntity GetFirstOrDefault(List<TEntity> list)
+        {
             if (list.IsEmpty())
             {
                 return default;

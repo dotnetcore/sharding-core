@@ -54,11 +54,18 @@ namespace Sample.MySql
                     { 
                         o.UseShardingQuery((conStr,builder)=>
                         {
-                            builder.UseMySql(conStr, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                            builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                                .UseLoggerFactory(efLogger)
+                                .EnableSensitiveDataLogging();
                         });
                         o.UseShardingTransaction((connection, builder) =>
                         {
-                            builder.UseMySql(connection, new MySqlServerVersion(new Version())).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking).UseLoggerFactory(efLogger);
+                            builder
+                                .UseMySql(connection, new MySqlServerVersion(new Version())).
+                                UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                                .UseLoggerFactory(efLogger)
+                                .EnableSensitiveDataLogging();
                         });
                         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>(ServiceLifetime.Singleton)

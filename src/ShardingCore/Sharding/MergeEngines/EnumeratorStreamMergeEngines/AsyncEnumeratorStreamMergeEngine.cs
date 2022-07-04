@@ -29,9 +29,11 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
-            if (emptyQueryEnumerator != null)
+            if (!_mergeContext.TryPrepareExecuteContinueQuery(() => new EmptyQueryEnumerator<T>(),
+                    out var emptyQueryEnumerator))
+            {
                 return emptyQueryEnumerator;
+            }
             var asyncEnumerator = EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable()
                 .GetAsyncEnumerator(cancellationToken);
 
@@ -47,8 +49,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 #if EFCORE2
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
-            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
-            if (emptyQueryEnumerator != null)
+            if (!_mergeContext.TryPrepareExecuteContinueQuery(() => new EmptyQueryEnumerator<T>(),out var emptyQueryEnumerator))
                 return emptyQueryEnumerator;
             var asyncEnumerator = ((IAsyncEnumerable<T>)EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();
@@ -63,8 +64,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         public IEnumerator<T> GetEnumerator()
         {
-            var emptyQueryEnumerator = _mergeContext.PreperExecute(() => new EmptyQueryEnumerator<T>());
-            if (emptyQueryEnumerator != null)
+            if (!_mergeContext.TryPrepareExecuteContinueQuery(() => new EmptyQueryEnumerator<T>(),out var emptyQueryEnumerator))
                 return emptyQueryEnumerator;
             var enumerator = ((IEnumerable<T>)EnumeratorStreamMergeEngineFactory<T>.Create(_mergeContext).GetStreamEnumerable())
                 .GetEnumerator();

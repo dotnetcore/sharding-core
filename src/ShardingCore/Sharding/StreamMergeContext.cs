@@ -180,9 +180,13 @@ namespace ShardingCore.Sharding
         //    return Skip.HasValue || Take.HasValue;
         //}
 
+        /// <summary>
+        /// 任意skip或者take大于0那么就说明是分页的查询
+        /// </summary>
+        /// <returns></returns>
         public bool IsPaginationQuery()
         {
-            return Skip.GetValueOrDefault() > 0 || Take.GetValueOrDefault() > 0;
+            return Skip is > 0 || Take is > 0;
         }
 
 
@@ -275,8 +279,22 @@ namespace ShardingCore.Sharding
             return GetShardingDbContext().GetShardingRuntimeContext().GetRequiredService<IShardingComparer>();
         }
 
-        public TResult PreperExecute<TResult>(Func<TResult> emptyFunc)
+      /// <summary>
+      /// 如果返回false那么就说明不需要继续查询了
+      /// 返回true表示需要继续查询
+      /// </summary>
+      /// <param name="emptyFunc"></param>
+      /// <param name="r"></param>
+      /// <typeparam name="TResult"></typeparam>
+      /// <returns></returns>
+      /// <exception cref="ShardingCoreQueryRouteNotMatchException"></exception>
+        public bool TryPrepareExecuteContinueQuery<TResult>(Func<TResult> emptyFunc,out TResult r)
         {
+            if (TakeZeroNoQueryExecute())
+            {
+                r = emptyFunc();
+                return false;
+            }
 
             if (IsRouteNotMatch())
             {
@@ -286,11 +304,13 @@ namespace ShardingCore.Sharding
                 }
                 else
                 {
-                    return emptyFunc();
+                    r = emptyFunc();
+                    return false;
                 }
             }
 
-            return default;
+            r = default;
+            return true;
         }
         /// <summary>
         /// 无路由匹配
@@ -299,6 +319,15 @@ namespace ShardingCore.Sharding
         public bool IsRouteNotMatch()
         {
             return ShardingRouteResult.IsEmpty;
+        }
+
+        /// <summary>
+        /// take有值并且是0的情况下那么就说明不需要获取
+        /// </summary>
+        /// <returns></returns>
+        public bool TakeZeroNoQueryExecute()
+        {
+            return Take is 0;
         }
 
         private bool ThrowIfQueryRouteNotMatch()

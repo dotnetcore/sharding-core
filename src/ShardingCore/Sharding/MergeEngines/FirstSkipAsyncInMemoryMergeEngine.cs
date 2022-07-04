@@ -38,7 +38,24 @@ namespace ShardingCore.Sharding.MergeEngines
         // }
         public TEntity MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException(false);
+            //将toke改成1
+            var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
+
+#if EFCORE2
+            var list =  asyncEnumeratorStreamMergeEngine.ToList();
+#endif
+#if !EFCORE2
+            var take = _streamMergeContext.GetTake();
+            var list = new List<TEntity>(take??4);
+             foreach (var element in asyncEnumeratorStreamMergeEngine)
+            {
+                list.Add(element);
+            }
+#endif
+            if (list.IsEmpty())
+                throw new InvalidOperationException("Sequence contains no elements.");
+
+            return list.First();
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -52,7 +69,7 @@ namespace ShardingCore.Sharding.MergeEngines
 #endif
 #if !EFCORE2
             var take = _streamMergeContext.GetTake();
-            var list = new List<TEntity>(take??31);
+            var list = new List<TEntity>(take??4);
             await foreach (var element in asyncEnumeratorStreamMergeEngine.WithCancellation(cancellationToken))
             {
                 list.Add(element);

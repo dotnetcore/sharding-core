@@ -69,6 +69,14 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 return new DefaultShardingStreamEnumerable<TEntity>(_streamMergeContext);
             }
 
+            var queryMethodName = _streamMergeContext.MergeQueryCompilerContext.GetQueryMethodName();
+            switch (queryMethodName)
+            {
+                case nameof(Enumerable.First):
+                case nameof(Enumerable.FirstOrDefault):
+                    return new FirstOrDefaultStreamMergeEnumerable<TEntity>(_streamMergeContext);
+            }
+
             //未开启系统分表或者本次查询涉及多张分表
             if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingEntityQuery() && _shardingPageManager.Current != null)
             {
