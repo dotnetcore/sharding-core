@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// create DbContext
         /// </summary>
         /// <param name="dataSourceName">data source</param>
-        /// <param name="parallelQuery">true not care db context life, false need call dispose()</param>
+        /// <param name="parallelQuery">true not care db context life, false need call dispose(),if false will use read connectionString</param>
         /// <param name="routeTail"></param>
         /// <returns></returns>
         DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail);

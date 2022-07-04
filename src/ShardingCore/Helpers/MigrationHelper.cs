@@ -44,47 +44,36 @@ namespace ShardingCore.Helpers
             var migrationCommands = (List<MigrationCommand>) builder.GetFieldValue("_commands");
             var shardingMigrationManager = shardingRuntimeContext.GetRequiredService<IShardingMigrationManager>();
             var virtualDataSource = shardingRuntimeContext.GetRequiredService<IVirtualDataSource>();
-            if (shardingMigrationManager.Current == null||shardingMigrationManager.Current.CurrentDataSourceName==virtualDataSource.DefaultDataSourceName)
-            {
-                addCmds.ForEach(aAddCmd =>
+            var currentCurrentDataSourceName = shardingMigrationManager.Current?.CurrentDataSourceName??virtualDataSource.DefaultDataSourceName;
+
+            addCmds.ForEach(aAddCmd =>
                 {
-                    var shardingCmds = BuildShardingCmds(shardingRuntimeContext,operation, aAddCmd.CommandText, sqlGenerationHelper);
-                    if (shardingCmds.IsNotEmpty())
+                    var (migrationResult,shardingCmds) = BuildDataSourceShardingCmds(shardingRuntimeContext,currentCurrentDataSourceName,operation, aAddCmd.CommandText, sqlGenerationHelper);
+                    if (!migrationResult.InDataSource)
                     {
-                        migrationCommands.Remove(aAddCmd);
-                        //针对builder的原始表进行移除
-                        shardingCmds.ForEach(aShardingCmd =>
-                        {
-                            builder.Append(aShardingCmd)
-                                .EndCommand();
-                        });
-                    }
-                });
-            }
-            else
-            {
-                addCmds.ForEach(aAddCmd =>
-                {
-                    var (migrationResult,shardingCmds) = BuildDataSourceShardingCmds(shardingRuntimeContext,shardingMigrationManager.Current.CurrentDataSourceName,operation, aAddCmd.CommandText, sqlGenerationHelper);
-                    //如果是分库的
-                    if (migrationResult==MigrationResultEnum.DataSourceTableCommand)
-                    {
-                        if (shardingCmds.IsNotEmpty())
+                        if (migrationResult.CommandType == MigrationCommandTypeEnum.TableCommand)
                         {
                             migrationCommands.Remove(aAddCmd);
-                            //针对builder的原始表进行移除
-                            shardingCmds.ForEach(aShardingCmd =>
-                            {
-                                builder.Append(aShardingCmd)
-                                    .EndCommand();
-                            });
                         }
-                    }else if (migrationResult==MigrationResultEnum.TableCommand)//如果不是分库并且有表的话那么就把命令删除掉
+                    }
+                    else
                     {
-                        migrationCommands.Remove(aAddCmd);
+                        if (migrationResult.CommandType == MigrationCommandTypeEnum.TableCommand)
+                        {
+                            //如果是分表
+                            if (shardingCmds.IsNotEmpty())
+                            {
+                                migrationCommands.Remove(aAddCmd);
+                                //针对builder的原始表进行移除
+                                shardingCmds.ForEach(aShardingCmd =>
+                                {
+                                    builder.Append(aShardingCmd)
+                                        .EndCommand();
+                                });
+                            }
+                        }
                     }
                 });
-            }
         }
 
         private static List<string> BuildShardingCmds(IShardingRuntimeContext shardingRuntimeContext,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
@@ -144,7 +133,7 @@ namespace ShardingCore.Helpers
                 return string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
             }
         }
-        private static (MigrationResultEnum migrationResult,List<string>) BuildDataSourceShardingCmds(IShardingRuntimeContext shardingRuntimeContext,string dataSourceName,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
+        private static (MigrationResult migrationResult,List<string>) BuildDataSourceShardingCmds(IShardingRuntimeContext shardingRuntimeContext,string dataSourceName,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
         {
             //所有MigrationOperation定义
             //https://github.com/dotnet/efcore/tree/b970bf29a46521f40862a01db9e276e6448d3cb0/src/EFCore.Relational/Migrations/Operations
@@ -182,11 +171,11 @@ namespace ShardingCore.Helpers
                 }
             }
 
-            MigrationResultEnum migrationResult = MigrationResultEnum.OtherCommand;
+            MigrationResult migrationResult = new MigrationResult();
             var entityMetadata = entityMetadataManager.TryGetByLogicTableName(absTableName);
             if (entityMetadata != null)
             {
-                migrationResult = MigrationResultEnum.TableCommand;
+                migrationResult.CommandType = MigrationCommandTypeEnum.TableCommand;
                 
             
                 bool isShardingDataSource =entityMetadata.IsShardingDataSource();
@@ -194,14 +183,24 @@ namespace ShardingCore.Helpers
                 {
                     var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
                     isShardingDataSource = virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName);
+                    
+                    if (isShardingDataSource)
+                    {
+                        migrationResult.InDataSource = true;
+                    }
+                    else
+                    {
+
+                        migrationResult.InDataSource = false;
+                    }
+                }
+                else
+                {
+                    migrationResult.InDataSource = true;
                 }
 
-                if (isShardingDataSource)
-                {
-                    migrationResult= MigrationResultEnum.DataSourceTableCommand;
-                }
                 //分表
-                if (!string.IsNullOrWhiteSpace(absTableName) && existsShardingTables.ContainsKey(absTableName))
+                if (migrationResult.InDataSource&&!string.IsNullOrWhiteSpace(absTableName) && existsShardingTables.ContainsKey(absTableName))
                 {
                 
                     var shardings = existsShardingTables[absTableName];

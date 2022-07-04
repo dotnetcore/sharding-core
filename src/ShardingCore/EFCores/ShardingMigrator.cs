@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,20 +8,28 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingMigrations.Abstractions;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 
 namespace ShardingCore.EFCores
 {
     public class ShardingMigrator:Migrator
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        private readonly IVirtualDataSource _virtualDataSource;
+        private readonly ShardingConfigOptions _shardingConfigOptions;
 
         public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext,IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IModelRuntimeInitializer modelRuntimeInitializer, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IRelationalCommandDiagnosticsLogger commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, modelRuntimeInitializer, logger, commandLogger, databaseProvider)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
         }
 
         public override void Migrate(string targetMigration = null)
@@ -29,27 +38,36 @@ namespace ShardingCore.EFCores
             // base.Migrate(targetMigration);
         }
 
+        private DbContextOptions CreateDbContextOptions(Type dbContextType,string dataSourceName)
+        {
+            var dbContextOptionBuilder = DataSourceDbContext.CreateDbContextOptionBuilder(dbContextType);
+            var connectionString = _virtualDataSource.GetConnectionString(dataSourceName);
+            _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
+            _shardingConfigOptions.ShardingMigrationConfigure?.Invoke(dbContextOptionBuilder);
+                //迁移
+                dbContextOptionBuilder.UseShardingOptions(_shardingRuntimeContext);
+            return dbContextOptionBuilder.Options;
+        }
         public override async Task MigrateAsync(string targetMigration = null, CancellationToken cancellationToken = new CancellationToken())
         {
-            var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             var shardingProvider = _shardingRuntimeContext.GetShardingProvider();
             var dbContextCreator = _shardingRuntimeContext.GetDbContextCreator();
             var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
             var shardingMigrationManager = _shardingRuntimeContext.GetRequiredService<IShardingMigrationManager>();
-            var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();
+            var allDataSourceNames = _virtualDataSource.GetAllDataSourceNames();
             using (var scope=shardingProvider.CreateScope())
             {
                 using (var shellDbContext = dbContextCreator.GetShellDbContext(scope.ServiceProvider))
                 {
-                    var shardingDbContext = (IShardingDbContext)shellDbContext;
                     foreach (var dataSourceName in allDataSourceNames)
                     {
                         using (shardingMigrationManager.CreateScope())
                         {
                             shardingMigrationManager.Current.CurrentDataSourceName = dataSourceName;
+
+                            var dbContextOptions = CreateDbContextOptions(shellDbContext.GetType(),dataSourceName);
                             
-                            using (var dbContext = shardingDbContext.GetDbContext(dataSourceName, true,
-                                       routeTailFactory.Create(string.Empty, false)))
+                            using (var dbContext = dbContextCreator.CreateDbContext(shellDbContext,new ShardingDbContextOptions(dbContextOptions,routeTailFactory.Create(string.Empty, false))))
                             {
                                 if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
                                 {

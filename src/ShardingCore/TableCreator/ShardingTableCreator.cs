@@ -60,7 +60,7 @@ namespace ShardingCore.TableCreator
                 
                 using (var shellDbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
                 {
-                    using (var context = ((IShardingDbContext)shellDbContext).GetDbContext(dataSourceName, false,
+                    using (var context = ((IShardingDbContext)shellDbContext).GetDbContext(dataSourceName, true,
                                _routeTailFactory.Create(tail, false)))
                     {
                         context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);

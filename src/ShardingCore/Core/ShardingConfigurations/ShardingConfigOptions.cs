@@ -105,6 +105,21 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// </summary>
         public Action<DbContextOptionsBuilder> ExecutorDbContextConfigure { get; private set; }
         /// <summary>
+        /// 分片迁移使用的配置
+        /// </summary>
+        
+        public Action<DbContextOptionsBuilder> ShardingMigrationConfigure { get; private set; }
+
+        /// <summary>
+        /// 添加分片迁移的配置
+        /// </summary>
+        /// <param name="configure"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void UseShardingMigrationConfigure(Action<DbContextOptionsBuilder> configure)
+        {
+            ShardingMigrationConfigure = configure ?? throw new ArgumentNullException(nameof(configure));
+        }
+        /// <summary>
         /// 如何使用字符串创建DbContext
         /// </summary>
         /// <param name="queryConfigure"></param>

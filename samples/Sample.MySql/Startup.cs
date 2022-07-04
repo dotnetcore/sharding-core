@@ -95,9 +95,10 @@ namespace Sample.MySql
                         });
                         o.UseShellDbContextConfigure(b =>
                         {
+                            b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                             b.ReplaceService<IMigrator, ShardingMigrator>();
                         });
-                        o.UseExecutorDbContextConfigure(b =>
+                        o.UseShardingMigrationConfigure(b =>
                         {
                             b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                         });

@@ -1,9 +1,8 @@
 namespace ShardingCore.Helpers
 {
-    public enum MigrationResultEnum
+    public enum MigrationCommandTypeEnum
     {
         OtherCommand,
-        DataSourceTableCommand,
         TableCommand
     }
 }

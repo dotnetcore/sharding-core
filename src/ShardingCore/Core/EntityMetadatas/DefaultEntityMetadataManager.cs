@@ -15,11 +15,13 @@ namespace ShardingCore.Core.EntityMetadatas
     /// </summary>
     public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
-        private readonly ConcurrentDictionary<Type, EntityMetadata> _caches =new ();
+        private readonly ConcurrentDictionary<Type, EntityMetadata> _caches = new();
+
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
         {
             return _caches.TryAdd(entityMetadata.EntityType, entityMetadata);
         }
+
         /// <summary>
         /// 对象是否是分表对象
         /// </summary>
@@ -27,14 +29,14 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <returns></returns>
         public bool IsShardingTable(Type entityType)
         {
-            if(!_caches.TryGetValue(entityType,out var entityMetadata))
+            if (!_caches.TryGetValue(entityType, out var entityMetadata))
                 return false;
             return entityMetadata.IsMultiTableMapping;
         }
 
         public bool IsOnlyShardingTable(Type entityType)
         {
-            return  IsShardingTable(entityType) && !IsShardingDataSource(entityType);
+            return IsShardingTable(entityType) && !IsShardingDataSource(entityType);
         }
 
         /// <summary>
@@ -78,22 +80,29 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <returns></returns>
         public bool IsSharding(Type entityType)
         {
-            return _caches.ContainsKey(entityType);
+            if (!_caches.TryGetValue(entityType, out var metadata))
+            {
+                return false;
+            }
+
+            return metadata.IsShardingTable() || metadata.IsShardingDataSource();
         }
 
         public List<Type> GetAllShardingEntities()
         {
-            return _caches.Keys.ToList();
+            return _caches.Where(o => o.Value.IsShardingTable() || o.Value.IsShardingDataSource()).Select(o => o.Key)
+                .ToList();
         }
 
         public bool TryInitModel(IEntityType efEntityType)
         {
-            if (_caches.TryGetValue(efEntityType.ClrType,out var  metadata))
+            if (_caches.TryGetValue(efEntityType.ClrType, out var metadata))
             {
                 metadata.SetEntityModel(efEntityType);
                 return true;
             }
-                return false;
+
+            return false;
         }
     }
 }
