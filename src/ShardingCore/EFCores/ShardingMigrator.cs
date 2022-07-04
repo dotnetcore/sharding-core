@@ -17,6 +17,11 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 
+#if !EFCORE2
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+
+#endif
+
 namespace ShardingCore.EFCores
 {
     public class ShardingMigrator:Migrator
@@ -25,13 +30,42 @@ namespace ShardingCore.EFCores
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly ShardingConfigOptions _shardingConfigOptions;
 
+#if  EFCORE6
         public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext,IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IModelRuntimeInitializer modelRuntimeInitializer, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IRelationalCommandDiagnosticsLogger commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, modelRuntimeInitializer, logger, commandLogger, databaseProvider)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
         }
+#endif
+#if EFCORE5
+        public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext, IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IConventionSetBuilder conventionSetBuilder, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, conventionSetBuilder, logger, commandLogger, databaseProvider)
+        {
+            _shardingRuntimeContext = shardingRuntimeContext;
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
+        }
+#endif
 
+#if EFCORE3
+        public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext, IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, logger, commandLogger, databaseProvider)
+        {
+            _shardingRuntimeContext = shardingRuntimeContext;
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
+        }
+
+#endif
+#if EFCORE2
+
+        public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext, IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, logger, databaseProvider)
+        {
+            _shardingRuntimeContext = shardingRuntimeContext;
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
+        }
+
+#endif
         public override void Migrate(string targetMigration = null)
         {
             this.MigrateAsync(targetMigration).WaitAndUnwrapException();
@@ -79,5 +113,6 @@ namespace ShardingCore.EFCores
                 }
             }
         }
+
     }
 }
