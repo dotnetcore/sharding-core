@@ -10,7 +10,7 @@ namespace ShardingCore.Extensions
         public static async Task<List<TEntity>> ToStreamListAsync<TEntity>(this IAsyncEnumerable<TEntity> source, int? take=null,CancellationToken cancellationToken=default)
         {
 #if EFCORE2
-            var list = await asyncEnumeratorStreamMergeEngine.ToList<TEntity>(cancellationToken);
+            var list = await source.ToList<TEntity>(cancellationToken);
 #endif
 #if !EFCORE2
             var list = new List<TEntity>(take??4);

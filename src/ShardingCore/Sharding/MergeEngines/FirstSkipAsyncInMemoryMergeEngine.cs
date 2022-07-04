@@ -41,21 +41,8 @@ namespace ShardingCore.Sharding.MergeEngines
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
-#if EFCORE2
-            var list =  asyncEnumeratorStreamMergeEngine.ToList();
-#endif
-#if !EFCORE2
-            var take = _streamMergeContext.GetTake();
-            var list = new List<TEntity>(take??4);
-             foreach (var element in asyncEnumeratorStreamMergeEngine)
-            {
-                list.Add(element);
-            }
-#endif
-            if (list.IsEmpty())
-                throw new InvalidOperationException("Sequence contains no elements.");
-
-            return list.First();
+            var list = asyncEnumeratorStreamMergeEngine.ToStreamList();
+            return GetFirst(list);
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -63,25 +50,19 @@ namespace ShardingCore.Sharding.MergeEngines
             
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
-
-#if EFCORE2
-            var list = await asyncEnumeratorStreamMergeEngine.ToList<TEntity>(cancellationToken);
-#endif
-#if !EFCORE2
             var take = _streamMergeContext.GetTake();
-            var list = new List<TEntity>(take??4);
-            await foreach (var element in asyncEnumeratorStreamMergeEngine.WithCancellation(cancellationToken))
-            {
-                list.Add(element);
-            }
-#endif
+            var list =await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take,cancellationToken);
+            return GetFirst(list);
+        }
+
+        private TEntity GetFirst(List<TEntity> list)
+        {
             if (list.IsEmpty())
                 throw new InvalidOperationException("Sequence contains no elements.");
 
             return list.First();
         }
-        
-        
+
         // if (notNullResult.IsEmpty())
         // throw new InvalidOperationException("Sequence contains no elements.");
         //

@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.MergeEngines
         {
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
-            var list = asyncEnumeratorStreamMergeEngine.ToList();
+            var list = asyncEnumeratorStreamMergeEngine.ToStreamList();
             return GetFirstOrDefault(list);
         }
 
