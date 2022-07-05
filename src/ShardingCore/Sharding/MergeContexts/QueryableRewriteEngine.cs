@@ -27,10 +27,10 @@ namespace ShardingCore.Sharding.MergeContexts
         {
             supportSingleEntityMethodNames.Add(nameof(Enumerable.First));
             supportSingleEntityMethodNames.Add(nameof(Enumerable.FirstOrDefault));
+            supportSingleEntityMethodNames.Add(nameof(Enumerable.Single));
+            supportSingleEntityMethodNames.Add(nameof(Enumerable.SingleOrDefault));
             singleEntityMethodNames.Add(nameof(Enumerable.Last));
             singleEntityMethodNames.Add(nameof(Enumerable.LastOrDefault));
-            singleEntityMethodNames.Add(nameof(Enumerable.Single));
-            singleEntityMethodNames.Add(nameof(Enumerable.SingleOrDefault));
         }
         
         public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)

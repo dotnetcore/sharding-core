@@ -62,10 +62,22 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _isCrossTable = shardingRouteResult.IsCrossTable;
             _existCrossTableTails = shardingRouteResult.ExistCrossTableTails;
             var queryMethodName = queryCompilerContext.GetQueryMethodName();
-            if (nameof(Enumerable.First) == queryMethodName || nameof(Enumerable.FirstOrDefault) == queryMethodName)
+            _fixedTake = GetMethodNameFixedTake(queryMethodName);
+        }
+
+        private int? GetMethodNameFixedTake(string queryMethodName)
+        {
+            switch (queryMethodName)
             {
-                _fixedTake = 1;
+                case nameof(Enumerable.First):
+                case nameof(Enumerable.FirstOrDefault):
+                    return 1;
+                case nameof(Enumerable.Single):
+                case nameof(Enumerable.SingleOrDefault):
+                    return 2;
             }
+
+            return null;
         }
         //
         // private IEnumerable<TableRouteResult> GetTableRouteResults(IEnumerable<TableRouteResult> tableRouteResults)

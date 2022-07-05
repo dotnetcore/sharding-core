@@ -42,7 +42,7 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var list = asyncEnumeratorStreamMergeEngine.ToStreamList();
-            return GetFirst(list);
+            return list.First();
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -52,14 +52,6 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
             var take = _streamMergeContext.GetTake();
             var list =await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take,cancellationToken);
-            return GetFirst(list);
-        }
-
-        private TEntity GetFirst(List<TEntity> list)
-        {
-            if (list.IsEmpty())
-                throw new InvalidOperationException("Sequence contains no elements.");
-
             return list.First();
         }
 
