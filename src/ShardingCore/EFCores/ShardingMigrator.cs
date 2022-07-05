@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,32 +114,36 @@ namespace ShardingCore.EFCores
         }
         public override async Task MigrateAsync(string targetMigration = null, CancellationToken cancellationToken = new CancellationToken())
         {
+            var defaultDataSourceName = _virtualDataSource.DefaultDataSourceName;
             var allDataSourceNames = _virtualDataSource.GetAllDataSourceNames();
             using (var scope=_shardingProvider.CreateScope())
             {
                 using (var shellDbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
                 {
                     var migrationParallelCount = _shardingConfigOptions.MigrationParallelCount;
-                    var partitionMigrationUnits = allDataSourceNames.Partition(migrationParallelCount);
+                    //默认数据源需要最后执行 否则可能会导致异常的情况下GetPendingMigrations为空
+                    var partitionMigrationUnits = allDataSourceNames.Where(o=>o!=defaultDataSourceName).Partition(migrationParallelCount);
                     foreach (var migrationUnits in partitionMigrationUnits)
                     {
                         var migrateUnits = migrationUnits.Select(o =>new MigrateUnit(shellDbContext,o)).ToList();
                         await ExecuteMigrateUnitsAsync(migrateUnits);
                     }
+                    await ExecuteMigrateUnitsAsync(new List<MigrateUnit>(){new MigrateUnit(shellDbContext,defaultDataSourceName)});
                 }
             }
+
         }
 
         private async Task ExecuteMigrateUnitsAsync(List<MigrateUnit> migrateUnits)
         {
             var migrateTasks = migrateUnits.Select(migrateUnit =>
             {
-                return Task.Run(async () =>
+                return Task.Run( () =>
                 {
                     using (_shardingMigrationManager.CreateScope())
                     {
                         _shardingMigrationManager.Current.CurrentDataSourceName = migrateUnit.DataSourceName;
-
+                    
                         var dbContextOptions = CreateDbContextOptions(migrateUnit.ShellDbContext.GetType(),
                             migrateUnit.DataSourceName);
 
@@ -146,29 +151,19 @@ namespace ShardingCore.EFCores
                                    new ShardingDbContextOptions(dbContextOptions,
                                        _routeTailFactory.Create(string.Empty, false))))
                         {
-                            if ((await dbContext.Database.GetPendingMigrationsAsync()).Any())
+                            if (( dbContext.Database.GetPendingMigrations()).Any())
                             {
-                                await dbContext.Database.MigrateAsync();
+                                  dbContext.Database.Migrate();
                             }
                         }
+                    
                     }
-
                     return 1;
+
                 });
             }).ToArray();
             await TaskHelper.WhenAllFastFail(migrateTasks);
         }
     }
 
-    public class MigrateUnit
-    {
-        public MigrateUnit(DbContext shellDbContext, string dataSourceName)
-        {
-            ShellDbContext = shellDbContext;
-            DataSourceName = dataSourceName;
-        }
-
-        public DbContext ShellDbContext { get; }
-        public string DataSourceName { get; }
-    }
 }
