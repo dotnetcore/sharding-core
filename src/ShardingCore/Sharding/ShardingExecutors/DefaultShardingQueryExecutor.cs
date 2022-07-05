@@ -83,9 +83,9 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     case nameof(Enumerable.LastOrDefault):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(LastOrDefaultAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.Single):
-                        return EnsureResultTypeMergeExecute<TResult>(typeof(SingleAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
+                        return EnsureResultTypeMergeExecute<TResult>(typeof(SingleSkipAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.SingleOrDefault):
-                        return EnsureResultTypeMergeExecute<TResult>(typeof(SingleOrDefaultAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
+                        return EnsureResultTypeMergeExecute<TResult>(typeof(SingleOrDefaultSkipAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.Count):
                         return EnsureResultTypeMergeExecute<TResult>(typeof(CountAsyncInMemoryMergeEngine<>), mergeQueryCompilerContext, async, cancellationToken);
                     case nameof(Enumerable.LongCount):

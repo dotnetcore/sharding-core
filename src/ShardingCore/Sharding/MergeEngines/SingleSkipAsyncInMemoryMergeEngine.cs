@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,18 +9,11 @@ using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines
 {
-    /*
-    * @Author: xjm
-    * @Description:
-    * @Date: 2021/8/17 15:16:36
-    * @Ver: 1.0
-    * @Email: 326308290@qq.com
-    */
-    internal class FirstOrDefaultSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
+    internal class SingleSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
     {
         private readonly StreamMergeContext _streamMergeContext;
 
-        public FirstOrDefaultSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
+        public SingleSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
         }
@@ -47,7 +41,7 @@ namespace ShardingCore.Sharding.MergeEngines
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
             var list = asyncEnumeratorStreamMergeEngine.ToStreamList();
-            return list.FirstOrDefault();
+            return list.Single();
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -57,7 +51,7 @@ namespace ShardingCore.Sharding.MergeEngines
 
             var take = _streamMergeContext.GetTake();
             var list = await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take, cancellationToken);
-            return list.FirstOrDefault();
+            return list.Single();
 
         }
     }
