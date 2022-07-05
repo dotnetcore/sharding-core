@@ -80,11 +80,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                     return new SingleOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
                 case nameof(Enumerable.Last):
                 case nameof(Enumerable.LastOrDefault):
-                {
-                    _streamMergeContext.ReSetSkip(0);
-                    _streamMergeContext.ReverseOrder();
                     return new LastOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
-                }
             }
 
             //未开启系统分表或者本次查询涉及多张分表
