@@ -13,6 +13,7 @@ using System.Threading;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Logger;
+using ShardingCore.Sharding;
 
 namespace ShardingCore.TableCreator
 {
@@ -60,7 +61,7 @@ namespace ShardingCore.TableCreator
                 
                 using (var shellDbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
                 {
-                    using (var context = ((IShardingDbContext)shellDbContext).GetDbContext(dataSourceName, true,
+                    using (var context = ((IShardingDbContext)shellDbContext).GetIndependentWriteDbContext(dataSourceName,
                                _routeTailFactory.Create(tail, false)))
                     {
                         context.RemoveDbContextRelationModelSaveOnlyThatIsNamedType(shardingEntityType);

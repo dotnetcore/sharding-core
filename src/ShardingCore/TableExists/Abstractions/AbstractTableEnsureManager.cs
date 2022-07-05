@@ -4,6 +4,8 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding.Abstractions;
 using System.Collections.Generic;
 using System.Data.Common;
+using ShardingCore.Extensions;
+using ShardingCore.Sharding;
 
 namespace ShardingCore.TableExists.Abstractions
 {
@@ -18,7 +20,7 @@ namespace ShardingCore.TableExists.Abstractions
         public ISet<string> GetExistTables(IShardingDbContext shardingDbContext, string dataSourceName)
         {
             using (var dbContext =
-                   shardingDbContext.GetDbContext(dataSourceName, true, RouteTailFactory.Create(string.Empty)))
+                   shardingDbContext.GetIndependentWriteDbContext(dataSourceName, RouteTailFactory.Create(string.Empty)))
             {
                 var dbConnection = dbContext.Database.GetDbConnection();
                 dbConnection.Open();

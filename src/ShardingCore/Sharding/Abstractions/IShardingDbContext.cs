@@ -17,10 +17,10 @@ namespace ShardingCore.Sharding.Abstractions
         /// create DbContext
         /// </summary>
         /// <param name="dataSourceName">data source</param>
-        /// <param name="parallelQuery">true not care db context life, false need call dispose(),if false will use read connectionString</param>
+        /// <param name="strategy">生成db connection的策略,主要区别在于是否和主db connection一直或者是否需要缓存其connection还有是否是独立声明周期的区别</param>
         /// <param name="routeTail"></param>
         /// <returns></returns>
-        DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail);
+        DbContext GetDbContext(string dataSourceName, CreateDbContextStrategyEnum strategy, IRouteTail routeTail);
 
         /// <summary>
         /// 创建通用的db context

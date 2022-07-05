@@ -87,37 +87,38 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public bool IsMultiDbContext =>
             _dbContextCaches.Count > 1 || _dbContextCaches.Sum(o => o.Value.DbContextCount) > 1;
 
-        public DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail)
+        public DbContext CreateDbContext(CreateDbContextStrategyEnum strategy, string dataSourceName, IRouteTail routeTail)
         {
 
-            if (!parallelQuery)
+            if (CreateDbContextStrategyEnum.ShareConnection==strategy)
             {
                 var dataSourceDbContext = GetDataSourceDbContext(dataSourceName);
                 return dataSourceDbContext.CreateDbContext(routeTail);
             }
             else
             {
-                var parallelDbContextOptions = CreateParallelDbContextOptions(dataSourceName);
+                var parallelDbContextOptions = CreateParallelDbContextOptions(dataSourceName,strategy);
                 var dbContext = _dbContextCreator.CreateDbContext(_shardingDbContext, parallelDbContextOptions, routeTail);
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
                 return dbContext;
             }
         }
 
-        private DbContextOptions CreateParallelDbContextOptions(string dataSourceName)
+        private DbContextOptions CreateParallelDbContextOptions(string dataSourceName,CreateDbContextStrategyEnum strategy)
         {
             var dbContextOptionBuilder = DataSourceDbContext.CreateDbContextOptionBuilder(_shardingDbContext.GetType());
-            var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName, false);
+            var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName, CreateDbContextStrategyEnum.IndependentConnectionWrite==strategy);
             _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder).UseShardingOptions(_shardingRuntimeContext);
             return dbContextOptionBuilder.Options;
         }
+
 
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
             var dataSourceName = GetDataSourceName(entity);
             var tail = GetTableTail(entity);
 
-            return CreateDbContext(false, dataSourceName, _routeTailFactory.Create(tail));
+            return CreateDbContext(CreateDbContextStrategyEnum.ShareConnection, dataSourceName, _routeTailFactory.Create(tail));
         }
 
         public IVirtualDataSource GetVirtualDataSource()

@@ -170,7 +170,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
                         //要么本次查询不追踪如果需要追踪不可以存在跨tails
                         var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
                         var sqlRouteUnit = _shardingRouteResult.RouteUnits.First();
-                        var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, IsParallelQuery(), routeTailFactory.Create(sqlRouteUnit.TableRouteResult));
+                        var strategy = !IsParallelQuery()
+                            ? CreateDbContextStrategyEnum.ShareConnection
+                            : CreateDbContextStrategyEnum.IndependentConnectionQuery;
+                        var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName,strategy , routeTailFactory.Create(sqlRouteUnit.TableRouteResult));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }
                 }

@@ -40,11 +40,11 @@ namespace ShardingCore.Sharding.Abstractions
         /// <summary>
         /// create sharding db context options
         /// </summary>
-        /// <param name="parallelQuery">this query has >1 connection query</param>
+        /// <param name="strategy">如果当前查询需要多链接的情况下那么将使用<code>IndependentConnectionQuery</code>否则使用<code>ShareConnection</code></param>
         /// <param name="dataSourceName">data source name</param>
         /// <param name="routeTail"></param>
         /// <returns></returns>
-        DbContext CreateDbContext(bool parallelQuery, string dataSourceName, IRouteTail routeTail);
+        DbContext CreateDbContext(CreateDbContextStrategyEnum strategy, string dataSourceName, IRouteTail routeTail);
         /// <summary>
         /// create db context by entity
         /// </summary>

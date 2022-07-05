@@ -115,7 +115,7 @@ namespace ShardingCore.DynamicDataSources
             if (context is IShardingDbContext shardingDbContext)
             {
                 using (var dbContext =
-                       shardingDbContext.GetDbContext(dataSourceName, true,
+                       shardingDbContext.GetIndependentWriteDbContext(dataSourceName,
                            _routeTailFactory.Create(string.Empty, false)))
                 {
                     if (isDefault)

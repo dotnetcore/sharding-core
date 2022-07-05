@@ -10,6 +10,14 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions
     {
         /// <summary>
+        /// 配置全局迁移最大并行数,以data source为一个单元并行迁移保证在多数据库分库情况下可以大大提高性能
+        /// </summary>
+        public int MigrationParallelCount { get; set; }= Environment.ProcessorCount;
+        /// <summary>
+        /// 启动补偿表的最大并行数,以data source为一个单元并行迁移保证在多数据库分库情况下可以大大提高性能
+        /// </summary>
+        public int CompensateTableParallelCount { get; set; }= Environment.ProcessorCount;
+        /// <summary>
         /// 全局配置最大的查询连接数限制,默认系统逻辑处理器<code>Environment.ProcessorCount</code>
         /// </summary>
         public int MaxQueryConnectionsLimit { get; set; } = Environment.ProcessorCount;

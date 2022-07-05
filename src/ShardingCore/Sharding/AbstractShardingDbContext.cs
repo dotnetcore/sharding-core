@@ -11,8 +11,6 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 
 namespace ShardingCore.Sharding
@@ -66,9 +64,9 @@ namespace ShardingCore.Sharding
 
 
 
-        public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
+        public DbContext GetDbContext(string dataSourceName, CreateDbContextStrategyEnum strategy, IRouteTail routeTail)
         {
-            return ShardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
+            return ShardingDbContextExecutor.CreateDbContext(strategy, dataSourceName, routeTail);
         }
 
         /// <summary>

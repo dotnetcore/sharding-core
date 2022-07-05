@@ -171,7 +171,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 {
                     var virtualDataSource = _shardingDbContext.GetVirtualDataSource();
                     var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
-                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, IsParallelQuery(), routeTailFactory.Create(string.Empty));
+                    
+                    var strategy = !IsParallelQuery()
+                        ? CreateDbContextStrategyEnum.ShareConnection
+                        : CreateDbContextStrategyEnum.IndependentConnectionQuery;
+                    var dbContext = _shardingDbContext.GetDbContext(virtualDataSource.DefaultDataSourceName, strategy, routeTailFactory.Create(string.Empty));
                     _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, _queryExpression);
                 }
             }

@@ -9,6 +9,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.UnionAllMergeShardingProviders.Abstractions;
@@ -76,6 +77,13 @@ namespace ShardingCore.Core.RuntimeContexts
         public ShardingConfigOptions GetShardingConfigOptions()
         {
             return _shardingConfigOptions ??= GetRequiredService<ShardingConfigOptions>();
+        }
+
+
+        private IShardingMigrationManager _shardingMigrationManager;
+        public IShardingMigrationManager GetShardingMigrationManager()
+        {
+          return _shardingMigrationManager??= GetRequiredService<IShardingMigrationManager>();
         }
 
 
@@ -304,6 +312,7 @@ namespace ShardingCore.Core.RuntimeContexts
         {
             GetShardingProvider();
             GetShardingConfigOptions();
+            GetShardingMigrationManager();
             GetShardingComparer();
             GetShardingCompilerExecutor();
             GetShardingReadWriteManager();

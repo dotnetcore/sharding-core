@@ -416,7 +416,7 @@ namespace ShardingCore.EFCores
                         var tableTail = TableRouteManager.GetTableTail<TEntity>(primaryKeyValue);
                         var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);
                         ;
-                        return _context.GetDbContext(dataSourceName, false, routeTail);
+                        return _context.GetShareDbContext(dataSourceName, routeTail);
                     }
                 }
             }
