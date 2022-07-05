@@ -1127,6 +1127,22 @@ namespace ShardingCore.Test
             var x = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).LastOrDefaultAsync();
             Assert.NotNull(x);
             Assert.Equal(319, x.Money);
+
+            var x2 = await _virtualDbContext.Set<Order>().Skip(10).OrderBy(o => o.Money).LastOrDefaultAsync();
+            Assert.NotNull(x2);
+            Assert.Equal(319, x2.Money);
+
+            var x3 = await _virtualDbContext.Set<Order>().Skip(9999999).OrderBy(o => o.Money).LastOrDefaultAsync();
+            Assert.Null(x3);
+            try
+            {
+                var x4 = await _virtualDbContext.Set<Order>().Skip(9999999).OrderBy(o => o.Money).LastAsync();
+            }
+            catch (Exception e)
+            {
+                Assert.True($"{e}".Contains("Sequence contains no elements."));
+            }
+
             var x1 = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).LastAsync();
             Assert.Equal(x, x1);
             var y = await _virtualDbContext.Set<Order>().OrderBy(o => o.Money).FirstOrDefaultAsync();

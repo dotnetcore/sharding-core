@@ -13,11 +13,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
 internal class LastOrDefaultEnumeratorExecutor<TResult> : AbstractEnumeratorExecutor<TResult>
     {
         private readonly IStreamMergeCombine _streamMergeCombine;
+        private readonly IQueryable<TResult> _queryable;
         private readonly bool _async;
 
-        public LastOrDefaultEnumeratorExecutor(StreamMergeContext streamMergeContext, IStreamMergeCombine streamMergeCombine, bool async) : base(streamMergeContext)
+        public LastOrDefaultEnumeratorExecutor(StreamMergeContext streamMergeContext, IStreamMergeCombine streamMergeCombine,IQueryable<TResult> queryable, bool async) : base(streamMergeContext)
         {
             _streamMergeCombine = streamMergeCombine;
+            _queryable = queryable;
             _async = async;
         }
 
@@ -37,13 +39,10 @@ internal class LastOrDefaultEnumeratorExecutor<TResult> : AbstractEnumeratorExec
         protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             var streamMergeContext = GetStreamMergeContext();
-            streamMergeContext.ReverseOrder();
-            streamMergeContext.ReSetSkip(0);
             var connectionMode = streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
 
             var shardingDbContext = streamMergeContext.CreateDbContext(sqlExecutorUnit.RouteUnit, connectionMode);
-            var newQueryable = (IQueryable<TResult>)streamMergeContext.GetReWriteQueryable().RemoveAnyOrderBy().OrderWithExpression(streamMergeContext.Orders)
-                .ReplaceDbContextQueryable(shardingDbContext);
+            var newQueryable = (IQueryable<TResult>)_queryable.ReplaceDbContextQueryable(shardingDbContext);
 
             var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, _async, cancellationToken);
             return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>(shardingDbContext, streamMergeAsyncEnumerator);

@@ -44,20 +44,28 @@ namespace ShardingCore.Sharding.MergeEngines
         // }
         public TEntity MergeResult()
         {
+            var skip = _streamMergeContext.Skip;
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var list =  asyncEnumeratorStreamMergeEngine.ToFixedElementStreamList(1);
-            return list.First();
+
+            if (list.VirtualElementCount >= (skip.GetValueOrDefault() + 1))
+                return list.First();
+            throw new InvalidOperationException("Sequence contains no elements.");
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            var skip = _streamMergeContext.Skip;
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1, cancellationToken);
-            return list.First();
+
+            if (list.VirtualElementCount >= (skip.GetValueOrDefault() + 1))
+                return list.First();
+            throw new InvalidOperationException("Sequence contains no elements.");
         }
         
         

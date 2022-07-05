@@ -1,3 +1,5 @@
+using System.Linq;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
@@ -20,7 +22,15 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumer
 
         protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor0(bool async)
         {
-            return new LastOrDefaultEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(), async);
+            var streamMergeContext = GetStreamMergeContext();
+            var skip = streamMergeContext.Skip;
+            streamMergeContext.ReverseOrder();
+            streamMergeContext.ReSetSkip(0);
+            var reTake = skip.GetValueOrDefault() + 1;
+            streamMergeContext.ReSetTake(reTake);
+            var newQueryable = (IQueryable<TEntity>)streamMergeContext.GetReWriteQueryable().RemoveSkip().RemoveTake().RemoveAnyOrderBy().OrderWithExpression(streamMergeContext.Orders).ReTake(reTake);
+
+            return new LastOrDefaultEnumeratorExecutor<TEntity>(GetStreamMergeContext(), GetStreamMergeCombine(), newQueryable, async);
         }
     }
 }
