@@ -20,18 +20,6 @@ namespace ShardingCore.Sharding.MergeContexts
 {
     public sealed class QueryableRewriteEngine : IQueryableRewriteEngine
     {
-        private  static readonly ISet<string> singleEntityMethodNames = new HashSet<string>();
-        private  static readonly ISet<string> supportSingleEntityMethodNames = new HashSet<string>();
-
-        static QueryableRewriteEngine()
-        {
-            supportSingleEntityMethodNames.Add(nameof(Enumerable.First));
-            supportSingleEntityMethodNames.Add(nameof(Enumerable.FirstOrDefault));
-            supportSingleEntityMethodNames.Add(nameof(Enumerable.Single));
-            supportSingleEntityMethodNames.Add(nameof(Enumerable.SingleOrDefault));
-            singleEntityMethodNames.Add(nameof(Enumerable.Last));
-            singleEntityMethodNames.Add(nameof(Enumerable.LastOrDefault));
-        }
         
         public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
         {
@@ -42,20 +30,6 @@ namespace ShardingCore.Sharding.MergeContexts
             var skip = paginationContext.Skip;
             var take = paginationContext.Take;
             var orders = orderByContext.PropertyOrders;
-
-            if (skip.HasValue && skip.Value > 0)
-            {
-                if (!mergeQueryCompilerContext.IsEnumerableQuery())
-                {
-                    var queryMethodName = mergeQueryCompilerContext.GetQueryMethodName();
-                    if (singleEntityMethodNames.Contains(queryMethodName))
-                    {
-                        //todo 修复做兼容
-                        throw new ShardingCoreInvalidOperationException(
-                            $"single query:[{mergeQueryCompilerContext.GetQueryExpression().ShardingPrint()}] cant use skip:{skip.Value},u should use {nameof(Enumerable.ToList)} than use skip in {nameof(IEnumerable<object>)}");
-                    }
-                }
-            }
 
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
             //去除分页,获取前Take+Skip数量

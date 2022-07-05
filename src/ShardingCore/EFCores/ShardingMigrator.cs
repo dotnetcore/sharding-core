@@ -17,6 +17,7 @@ using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
@@ -121,6 +122,10 @@ namespace ShardingCore.EFCores
                 using (var shellDbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
                 {
                     var migrationParallelCount = _shardingConfigOptions.MigrationParallelCount;
+                    if (migrationParallelCount <= 0)
+                    {
+                        throw new ShardingCoreInvalidOperationException($"migration parallel count must >0");
+                    }
                     //默认数据源需要最后执行 否则可能会导致异常的情况下GetPendingMigrations为空
                     var partitionMigrationUnits = allDataSourceNames.Where(o=>o!=defaultDataSourceName).Partition(migrationParallelCount);
                     foreach (var migrationUnits in partitionMigrationUnits)

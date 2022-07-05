@@ -16,11 +16,11 @@ namespace ShardingCore.Sharding.MergeEngines
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    internal class LastSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
+    internal class LastOrDefaultSkipAsyncInMemoryMergeEngine<TEntity> : IEnsureMergeResult<TEntity>
     {
         private readonly StreamMergeContext _streamMergeContext;
 
-        public LastSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
+        public LastOrDefaultSkipAsyncInMemoryMergeEngine(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
         }
@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var list =  asyncEnumeratorStreamMergeEngine.ToFixedElementStreamList(1);
-            return list.First();
+            return list.FirstOrDefault();
         }
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -57,7 +57,7 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1, cancellationToken);
-            return list.First();
+            return list.FirstOrDefault();
         }
         
         

@@ -74,7 +74,17 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             {
                 case nameof(Enumerable.First):
                 case nameof(Enumerable.FirstOrDefault):
-                    return new FirstOrDefaultStreamMergeEnumerable<TEntity>(_streamMergeContext);
+                    return new FirstOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                case nameof(Enumerable.Single):
+                case nameof(Enumerable.SingleOrDefault):
+                    return new SingleOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                case nameof(Enumerable.Last):
+                case nameof(Enumerable.LastOrDefault):
+                {
+                    _streamMergeContext.ReSetSkip(0);
+                    _streamMergeContext.ReverseOrder();
+                    return new LastOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                }
             }
 
             //未开启系统分表或者本次查询涉及多张分表

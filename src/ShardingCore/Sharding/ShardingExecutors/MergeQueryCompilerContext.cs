@@ -75,6 +75,9 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 case nameof(Enumerable.Single):
                 case nameof(Enumerable.SingleOrDefault):
                     return 2;
+                case nameof(Enumerable.Last):
+                case nameof(Enumerable.LastOrDefault):
+                    return 2;
             }
 
             return null;

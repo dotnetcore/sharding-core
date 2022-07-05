@@ -41,6 +41,7 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.DynamicDataSources;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ParallelTables;
@@ -256,6 +257,10 @@ namespace ShardingCore
             var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
             var compensateTableParallelCount = parallelCount ?? shardingConfigOptions.CompensateTableParallelCount;
+            if (compensateTableParallelCount <= 0)
+            {
+                throw new ShardingCoreInvalidOperationException($"compensate table parallel count must >0");
+            }
             var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();
             var partitionMigrationUnits = allDataSourceNames.Partition(compensateTableParallelCount);
             foreach (var migrationUnits in partitionMigrationUnits)

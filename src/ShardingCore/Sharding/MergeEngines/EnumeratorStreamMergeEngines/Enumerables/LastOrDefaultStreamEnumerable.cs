@@ -7,9 +7,9 @@ using ShardingCore.Sharding.MergeEngines.Executors.Enumerators;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables
 {
-    internal class FirstOrDefaultStreamEnumerable<TEntity>:AbstractStreamEnumerable<TEntity>
+    internal class LastOrDefaultStreamEnumerable<TEntity> : AbstractStreamEnumerable<TEntity>
     {
-        public FirstOrDefaultStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext)
+        public LastOrDefaultStreamEnumerable(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 

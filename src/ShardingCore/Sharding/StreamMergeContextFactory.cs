@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.Abstractions;
@@ -7,6 +8,7 @@ using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
@@ -44,15 +46,19 @@ namespace ShardingCore.Sharding
             
             var rewriteResult = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteResult);
-            
+            CheckMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult, optimizeResult);
             return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
         }
 
-        private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IQueryable rewriteQueryable,IOptimizeResult optimizeResult)
+        private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IRewriteResult rewriteResult,IOptimizeResult optimizeResult)
         {
             if (!mergeQueryCompilerContext.IsEnumerableQuery())
             {
-                // Queries performing 'LastOrDefault' operation must have a deterministic sort order. Rewrite the query to apply an 'OrderBy' operation on the sequence before calling 'LastOrDefault'
+                if ((nameof(Enumerable.Last)==mergeQueryCompilerContext.GetQueryMethodName()||nameof(Enumerable.LastOrDefault)==mergeQueryCompilerContext.GetQueryMethodName())&&parseResult.GetOrderByContext().PropertyOrders.IsEmpty())
+                {
+                    throw new InvalidOperationException(
+                        "Queries performing 'LastOrDefault' operation must have a deterministic sort order. Rewrite the query to apply an 'OrderBy' operation on the sequence before calling 'LastOrDefault'");
+                }
             }
         }
     }
