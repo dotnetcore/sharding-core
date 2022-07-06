@@ -7,13 +7,19 @@ namespace ShardingCore.Core.ServiceProviders
     public class ShardingProvider:IShardingProvider
     {
         private readonly IServiceProvider _internalServiceProvider;
-        private readonly IServiceProvider _applicationServiceProvider;
+        private  IServiceProvider _applicationServiceProvider;
 
         public ShardingProvider(IServiceProvider internalServiceProvider,IServiceProvider applicationServiceProvider)
         {
             _internalServiceProvider = internalServiceProvider;
             _applicationServiceProvider = applicationServiceProvider;
         }
+
+        public void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider)
+        {
+            _applicationServiceProvider = applicationServiceProvider;
+        }
+
         public object GetService(Type serviceType,bool tryApplicationServiceProvider=true)
         {
             var service = _internalServiceProvider?.GetService(serviceType);
@@ -45,7 +51,7 @@ namespace ShardingCore.Core.ServiceProviders
 
         public IShardingScope CreateScope()
         {
-            return new ShardingScope(_internalServiceProvider.CreateScope(), _applicationServiceProvider.CreateScope());
+            return new ShardingScope(_internalServiceProvider.CreateScope(), _applicationServiceProvider?.CreateScope());
         }
 
     }

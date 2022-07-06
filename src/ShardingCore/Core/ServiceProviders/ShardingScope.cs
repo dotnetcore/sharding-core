@@ -14,7 +14,7 @@ namespace ShardingCore.Core.ServiceProviders
             _internalServiceScope = internalServiceScope;
             _applicationServiceScope = applicationServiceScope;
             _shardingProvider = new ShardingProvider(_internalServiceScope.ServiceProvider,
-                _applicationServiceScope.ServiceProvider);
+                _applicationServiceScope?.ServiceProvider);
         }
         public void Dispose()
         {

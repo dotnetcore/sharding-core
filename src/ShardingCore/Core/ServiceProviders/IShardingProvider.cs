@@ -8,6 +8,7 @@ namespace ShardingCore.Core.ServiceProviders
     /// </summary>
     public interface IShardingProvider
     {
+        void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider);
      /// <summary>
      /// 优先通过ShardingCore的IServiceProvider获取
      /// 没有再通过ApplicationServiceProvider获取
