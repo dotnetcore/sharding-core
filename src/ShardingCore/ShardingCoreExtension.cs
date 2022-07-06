@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.QueryTrackers;
@@ -102,10 +103,13 @@ namespace ShardingCore
             DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
+            shardingConfigOptions.ShardingMigrationConfigure?.Invoke(dbContextOptionsBuilder);
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var connectionString = virtualDataSource.GetConnectionString(virtualDataSource.DefaultDataSourceName);
             var contextOptionsBuilder = virtualDataSource.ConfigurationParams
                 .UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder)
+                .UseShardingMigrator()
                 .UseSharding<TShardingDbContext>(shardingRuntimeContext);
 
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
@@ -197,6 +201,12 @@ namespace ShardingCore
                     ShardingRelationalTransactionManager<TShardingDbContext>>()
                 .ReplaceService<IRelationalTransactionFactory,
                     ShardingRelationalTransactionFactory<TShardingDbContext>>();
+        }
+        public static DbContextOptionsBuilder UseShardingMigrator(
+            this DbContextOptionsBuilder optionsBuilder)
+        {
+            return optionsBuilder
+                .ReplaceService<IMigrator, ShardingMigrator>();
         }
 
         public static DbContextOptionsBuilder UseShardingOptions(this DbContextOptionsBuilder optionsBuilder,

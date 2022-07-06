@@ -25,7 +25,7 @@ namespace ShardingCore.Extensions
             var compensateTableParallelCount = parallelCount ?? shardingConfigOptions.CompensateTableParallelCount;
             if (compensateTableParallelCount <= 0)
             {
-                throw new ShardingCoreInvalidOperationException($"compensate table parallel count must >0");
+                throw new ShardingCoreInvalidOperationException($"compensate table parallel count must > 0");
             }
             var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();
             var partitionMigrationUnits = allDataSourceNames.Partition(compensateTableParallelCount);

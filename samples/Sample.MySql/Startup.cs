@@ -93,11 +93,6 @@ namespace Sample.MySql
                             {"ds1", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;"},
                             {"ds2", "server=127.0.0.1;port=3306;database=dbdbd2;userid=root;password=root;"}
                         });
-                        o.UseShellDbContextConfigure(b =>
-                        {
-                            b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
-                            b.ReplaceService<IMigrator, ShardingMigrator>();
-                        });
                         o.UseShardingMigrationConfigure(b =>
                         {
                             b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
@@ -164,10 +159,10 @@ namespace Sample.MySql
                 }
             }
 
-            // Stopwatch sp = Stopwatch.StartNew();
-            // app.ApplicationServices.UseAutoTryCompensateTable();
-            // sp.Stop();
-            // Console.WriteLine("UseAutoTryCompensateTable:"+sp.ElapsedMilliseconds);
+            Stopwatch sp = Stopwatch.StartNew();
+            app.ApplicationServices.UseAutoTryCompensateTable();
+            sp.Stop();
+            Console.WriteLine("UseAutoTryCompensateTable:"+sp.ElapsedMilliseconds);
             app.UseRouting();
 
             app.UseAuthorization();

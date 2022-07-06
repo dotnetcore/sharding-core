@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using ShardingCore.TableCreator;
@@ -26,16 +28,35 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var resultX = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
-            var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");
-            var result = await _defaultTableDbContext.Set<SysTest>().AnyAsync();
-            var result1 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").ToListAsync();
-            var result2 = await _defaultTableDbContext.Set<SysUserLogByMonth>().Skip(1).Take(10).ToListAsync();
-            var shardingFirstOrDefaultAsync = await _defaultTableDbContext.Set<SysUserLogByMonth>().ToListAsync();
-            var shardingCountAsync = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
-            var shardingCountAsyn2c =  _defaultTableDbContext.Set<SysUserLogByMonth>().Count();
-
-            return Ok(result1);
+            // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
+            // {
+                
+                var resultX = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
+                var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");
+                var result = await _defaultTableDbContext.Set<SysTest>().AnyAsync();
+                var result1 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").ToListAsync();
+                var result2 = await _defaultTableDbContext.Set<SysUserLogByMonth>().Skip(1).Take(10).ToListAsync();
+                var shardingFirstOrDefaultAsync = await _defaultTableDbContext.Set<SysUserLogByMonth>().ToListAsync();
+                var shardingCountAsync = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
+                var shardingCountAsyn2c =  _defaultTableDbContext.Set<SysUserLogByMonth>().Count();
+                // var dbConnection = _defaultTableDbContext.Database.GetDbConnection();
+                // if (dbConnection.State != ConnectionState.Open)
+                // {
+                //     dbConnection.Open();
+                // }
+                // using (var dbCommand = dbConnection.CreateCommand())
+                // {
+                //     dbCommand.CommandText = "select * from systest";
+                //     dbCommand.Transaction = _defaultTableDbContext.Database.CurrentTransaction?.GetDbTransaction();
+                //     var dbDataReader = dbCommand.ExecuteReader();
+                //     while (dbDataReader.Read())
+                //     {
+                //         Console.WriteLine(dbDataReader[0]);
+                //     }
+                // }
+            // }
+            
+            return Ok(1);
         }
         // [HttpGet]
         // public async Task<IActionResult> Get1()
