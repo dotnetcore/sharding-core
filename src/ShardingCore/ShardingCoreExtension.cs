@@ -103,6 +103,10 @@ namespace ShardingCore
             DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
+        }
+        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
+        {
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
             shardingConfigOptions.ShardingMigrationConfigure?.Invoke(dbContextOptionsBuilder);
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
