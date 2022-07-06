@@ -14,9 +14,10 @@ namespace ShardingCore6x
     {
         private readonly DefaultDbContext _defaultDbContext;
         private readonly DefaultShardingDbContext _defaultShardingDbContext;
+        private readonly ServiceCollection services;
         public EFCoreCrud()
         {
-            var services = new ServiceCollection();
+            services = new ServiceCollection();
 
             services.AddDbContext<DefaultDbContext>(o => o
                 //.UseMySql("server=127.0.0.1;port=3306;database=db1;userid=root;password=L6yBtV6qNENrwBy7;", new MySqlServerVersion(new Version()))
@@ -25,11 +26,11 @@ namespace ShardingCore6x
             services.AddLogging();
 
             services.AddShardingDbContext<DefaultShardingDbContext>(ServiceLifetime.Transient, ServiceLifetime.Transient)
-                .AddEntityConfig(o =>
+                .UseRouteConfig(o =>
                 {
                     o.AddShardingTableRoute<OrderVirtualTableRoute>();
                 })
-                .AddConfig(op =>
+                .UseConfig(op =>
                 {
                     op.UseShardingQuery((conStr, builder) =>
                     {
@@ -44,9 +45,9 @@ namespace ShardingCore6x
                     op.AddDefaultDataSource("ds0",
                         "Data Source=localhost;Initial Catalog=db2;Integrated Security=True;");
 
-                    //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;")
+                    //op.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=db2;userid=root;password=L6yBtV6qNENrwBy7;");
 
-                }).EnsureConfig();
+                }).AddShardingCore();
 
             var buildServiceProvider = services.BuildServiceProvider();
             buildServiceProvider.UseAutoShardingCreate();
