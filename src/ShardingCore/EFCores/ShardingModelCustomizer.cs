@@ -27,8 +27,6 @@ namespace ShardingCore.EFCores
     */
     public class ShardingModelCustomizer : ModelCustomizer
     {
-        private static readonly ILogger<ShardingModelCustomizer> _logger =
-            ShardingLoggerFactory.CreateLogger<ShardingModelCustomizer>();
 
         public ShardingModelCustomizer(ModelCustomizerDependencies dependencies) : base(dependencies)
         {
@@ -83,7 +81,6 @@ namespace ShardingCore.EFCores
             var tableName = entityMetadata.LogicTableName;
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentNullException($"{shardingEntity}: not found logic table name。");
-            _logger.LogDebug($"mapping table :[tableName]-->[{tableName}{tableSeparator}{tail}]");
             entity.ToTable($"{tableName}{tableSeparator}{tail}");
         }
     }

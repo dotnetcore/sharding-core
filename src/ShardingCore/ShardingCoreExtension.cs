@@ -252,32 +252,7 @@ namespace ShardingCore
         public static void UseAutoTryCompensateTable(this IServiceProvider serviceProvider, int? parallelCount = null)
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            shardingRuntimeContext.CheckRequirement();
-            var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
-            var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
-            var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
-            var compensateTableParallelCount = parallelCount ?? shardingConfigOptions.CompensateTableParallelCount;
-            if (compensateTableParallelCount <= 0)
-            {
-                throw new ShardingCoreInvalidOperationException($"compensate table parallel count must >0");
-            }
-            var allDataSourceNames = virtualDataSource.GetAllDataSourceNames();
-            var partitionMigrationUnits = allDataSourceNames.Partition(compensateTableParallelCount);
-            foreach (var migrationUnits in partitionMigrationUnits)
-            {
-                var migrateUnits = migrationUnits.Select(o => new InitConfigureUnit(o)).ToList();
-                ExecuteInitConfigureUnit(dataSourceInitializer, migrateUnits);
-            }
-        }
-
-        private static void ExecuteInitConfigureUnit(IDataSourceInitializer dataSourceInitializer,
-            List<InitConfigureUnit> initConfigureUnits)
-        {
-            var initConfigureTasks = initConfigureUnits.Select(o =>
-            {
-                return Task.Run(() => { dataSourceInitializer.InitConfigure(o.DataSourceName, true, true); });
-            }).ToArray();
-            Task.WaitAll(initConfigureTasks);
+            shardingRuntimeContext.UseAutoTryCompensateTable(parallelCount);
         }
 
 

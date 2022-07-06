@@ -73,8 +73,6 @@ namespace ShardingCore
         public IShardingRuntimeContext Build(IServiceProvider appServiceProvider, ILoggerFactory loggerFactory)
         {
             var shardingRuntimeContext = new ShardingRuntimeContext();
-            shardingRuntimeContext.UseApplicationServiceProvider(appServiceProvider);
-            shardingRuntimeContext.UseLogfactory(loggerFactory);
             shardingRuntimeContext.AddServiceConfig(services =>
             {
                 // services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
@@ -94,6 +92,12 @@ namespace ShardingCore
                     shardingConfigOptions.CheckArguments();
                     return shardingConfigOptions;
                 });
+                services.AddLogging();
+                if (loggerFactory != null)
+                {
+                    services.Replace(ServiceDescriptor.Singleton<ILoggerFactory>(sp => loggerFactory));
+                }
+                
                 services.AddSingleton<IShardingProvider>(sp => new ShardingProvider(sp,appServiceProvider));
                 services.AddInternalShardingCore<TShardingDbContext>();
                 foreach (var serviceAction in _serviceActions)

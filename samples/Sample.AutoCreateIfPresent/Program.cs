@@ -21,12 +21,12 @@ builder.Services.AddControllers();
 builder.Services.AddShardingDbContext<DefaultDbContext>()
     .AddEntityConfig(o =>
     {
-        o.ThrowIfQueryRouteNotMatch = false;
         // o.AddShardingTableRoute<OrderByHourRoute>();
         // o.AddShardingTableRoute<AreaDeviceRoute>();
     })
     .AddConfig(o =>
     {
+        o.ThrowIfQueryRouteNotMatch = false;
         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=shardingTest;userid=root;password=root;");
         o.UseShardingQuery((conn, b) =>
         {

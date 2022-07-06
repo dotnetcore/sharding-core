@@ -32,11 +32,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     */
     public class DataSourceDbContext : IDataSourceDbContext
     {
-        private static readonly ILogger<DataSourceDbContext> _logger =
-            ShardingLoggerFactory.CreateLogger<DataSourceDbContext>();
 
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
 
+        private  readonly ILogger<DataSourceDbContext> _logger;
         public Type DbContextType { get; }
         /// <summary>
         /// 当前是否是默认的dbcontext 也就是不分片的dbcontext
@@ -118,7 +117,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             bool isDefault,
             DbContext shardingShellDbContext,
             IDbContextCreator dbContextCreator,
-            ActualConnectionStringManager actualConnectionStringManager)
+            ActualConnectionStringManager actualConnectionStringManager,
+            ILogger<DataSourceDbContext> logger)
         {
             var shardingDbContext = (IShardingDbContext)shardingShellDbContext;
             DataSourceName = dataSourceName;
@@ -130,6 +130,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 .GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
+            this._logger = logger;
         }
 
         /// <summary>

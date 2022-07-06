@@ -31,7 +31,6 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
     */
     public class DefaultShardingQueryExecutor : IShardingQueryExecutor
     {
-        private static readonly ILogger<DefaultShardingQueryExecutor> _logger=ShardingLoggerFactory.CreateLogger<DefaultShardingQueryExecutor>();
         private readonly IStreamMergeContextFactory _streamMergeContextFactory;
 
 

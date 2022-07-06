@@ -10,6 +10,15 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions
     {
         /// <summary>
+        /// 当查询遇到没有路由被命中时是否抛出错误
+        /// </summary>
+        public bool ThrowIfQueryRouteNotMatch { get; set; } = true;
+
+        /// <summary>
+        /// 忽略建表时的错误
+        /// </summary>
+        public bool? IgnoreCreateTableError { get; set; } = false;
+        /// <summary>
         /// 配置全局迁移最大并行数,以data source为一个单元并行迁移保证在多数据库分库情况下可以大大提高性能
         /// </summary>
         public int MigrationParallelCount { get; set; }= Environment.ProcessorCount;

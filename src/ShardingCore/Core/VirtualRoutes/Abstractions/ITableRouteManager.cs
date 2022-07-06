@@ -44,6 +44,15 @@ namespace ShardingCore.Core.VirtualRoutes.Abstractions
         List<TableRouteUnit> RouteTo(Type entityType,
             ShardingTableRouteConfig shardingTableRouteConfig);
         /// <summary>
+        /// 直接路由采用默认数据源
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <param name="shardingTableRouteConfig"></param>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
+        List<TableRouteUnit> RouteTo(Type entityType, string dataSourceName,
+            ShardingTableRouteConfig shardingTableRouteConfig);
+        /// <summary>
         /// 根据数据源路由进行分片路由
         /// </summary>
         /// <param name="entityType"></param>

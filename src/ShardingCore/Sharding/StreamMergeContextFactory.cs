@@ -22,23 +22,17 @@ namespace ShardingCore.Sharding
     */
     public class StreamMergeContextFactory : IStreamMergeContextFactory
     {
-        private readonly IRouteTailFactory _routeTailFactory;
         private readonly IQueryableParseEngine _queryableParseEngine;
         private readonly IQueryableRewriteEngine _queryableRewriteEngine;
         private readonly IQueryableOptimizeEngine _queryableOptimizeEngine;
-        private readonly ITrackerManager _trackerManager;
-        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
 
-        public StreamMergeContextFactory(IRouteTailFactory routeTailFactory
-            , IQueryableParseEngine queryableParseEngine, IQueryableRewriteEngine queryableRewriteEngine, IQueryableOptimizeEngine queryableOptimizeEngine,
-            ITrackerManager trackerManager,IShardingRouteConfigOptions shardingRouteConfigOptions)
+        public StreamMergeContextFactory(IQueryableParseEngine queryableParseEngine,
+            IQueryableRewriteEngine queryableRewriteEngine,
+            IQueryableOptimizeEngine queryableOptimizeEngine)
         {
-            _routeTailFactory = routeTailFactory;
             _queryableParseEngine = queryableParseEngine;
             _queryableRewriteEngine = queryableRewriteEngine;
             _queryableOptimizeEngine = queryableOptimizeEngine;
-            _trackerManager = trackerManager;
-            _shardingRouteConfigOptions = shardingRouteConfigOptions;
         }
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
@@ -47,7 +41,7 @@ namespace ShardingCore.Sharding
             var rewriteResult = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteResult);
             CheckMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult, optimizeResult);
-            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult,optimizeResult, _routeTailFactory,_trackerManager,_shardingRouteConfigOptions);
+            return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult,optimizeResult);
         }
 
         private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IRewriteResult rewriteResult,IOptimizeResult optimizeResult)

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrappers;
+using ShardingCore.Core;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
@@ -38,9 +39,6 @@ namespace ShardingCore.Test
             services.AddShardingDbContext<ShardingDefaultDbContext>()
                 .UseRouteConfig(op =>
                 {
-                    //当无法获取路由时会返回默认值而不是报错
-                    op.ThrowIfQueryRouteNotMatch = false;
-
                     op.AddShardingDataSourceRoute<OrderAreaShardingVirtualDataSourceRoute>();
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -58,17 +56,32 @@ namespace ShardingCore.Test
                 })
                 .UseConfig(op =>
                 {
+                    //当无法获取路由时会返回默认值而不是报错
+                    op.ThrowIfQueryRouteNotMatch = false;
+                    //忽略建表错误compensate table和table creator
+                    op.IgnoreCreateTableError = true;
+                    //迁移时使用的并行线程数(分库有效)defaultShardingDbContext.Database.Migrate()
+                    op.MigrationParallelCount = Environment.ProcessorCount;
+                    //补偿表创建并行线程数 调用UseAutoTryCompensateTable有效
+                    op.CompensateTableParallelCount = Environment.ProcessorCount;
+                    //最大连接数限制
+                    op.MaxQueryConnectionsLimit = Environment.ProcessorCount;
+                    //链接模式系统默认
+                    op.ConnectionMode = ConnectionModeEnum.SYSTEM_AUTO;
+                    //如何通过字符串查询创建DbContext
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
                     });
+                    //如何通过事务创建DbContext
                     op.UseShardingTransaction((connection, builder) =>
                     {
                         builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
-
+                    //添加默认数据源
                     op.AddDefaultDataSource("A",
                         "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
+                    //添加额外数据源
                     op.AddExtraDataSource(sp =>
                     {
                         return new Dictionary<string, string>()
@@ -77,6 +90,7 @@ namespace ShardingCore.Test
                         { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
                     };
                     });
+                    //添加读写分离
                     op.AddReadWriteSeparation(sp =>
                     {
                         return new Dictionary<string, IEnumerable<string>>()
@@ -89,13 +103,17 @@ namespace ShardingCore.Test
                         }
                     };
                     }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
-                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>(ServiceLifetime.Singleton).AddShardingCore();
+                })
+                .ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>()
+                .AddShardingCore();
         }
 
         // 可以添加要用到的方法参数，会自动从注册的服务中获取服务实例，类似于 asp.net core 里 Configure 方法
         public void Configure(IServiceProvider serviceProvider)
         {
+            //启动ShardingCore创建表任务
             serviceProvider.UseAutoShardingCreate();
+            //启动进行表补偿
             serviceProvider.UseAutoTryCompensateTable();
             // 有一些测试数据要初始化可以放在这里
             InitData(serviceProvider).GetAwaiter().GetResult();

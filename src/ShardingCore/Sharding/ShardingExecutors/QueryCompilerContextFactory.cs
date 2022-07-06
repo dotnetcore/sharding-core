@@ -21,8 +21,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private readonly IDataSourceRouteRuleEngineFactory _dataSourceRouteRuleEngineFactory;
         private readonly ITableRouteRuleEngineFactory _tableRouteRuleEngineFactory;
 
-        private static readonly ILogger<QueryCompilerContextFactory> _logger =
-            ShardingLoggerFactory.CreateLogger<QueryCompilerContextFactory>();
+        private  readonly ILogger<QueryCompilerContextFactory> _logger;
         private static readonly IQueryableCombine _enumerableQueryableCombine;
         private static readonly IQueryableCombine _allQueryableCombine;
         private static readonly IQueryableCombine _constantQueryableCombine;
@@ -38,10 +37,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _whereQueryableCombine = new WhereQueryableCombine();
         }
 
-        public QueryCompilerContextFactory(IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory,ITableRouteRuleEngineFactory tableRouteRuleEngineFactory)
+        public QueryCompilerContextFactory(IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory,ITableRouteRuleEngineFactory tableRouteRuleEngineFactory,ILogger<QueryCompilerContextFactory> logger)
         {
             _dataSourceRouteRuleEngineFactory = dataSourceRouteRuleEngineFactory;
             _tableRouteRuleEngineFactory = tableRouteRuleEngineFactory;
+           _logger = logger;
         }
 
         public IQueryCompilerContext Create(IPrepareParseResult prepareParseResult)

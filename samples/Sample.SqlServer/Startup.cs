@@ -35,13 +35,13 @@ namespace Sample.SqlServer
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig(o =>
                 {
-                    o.ThrowIfQueryRouteNotMatch = false;
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
                     o.AddShardingTableRoute<TestYearShardingVirtualTableRoute>();
                 })
                 .UseConfig((sp,op) =>
                 {
+                    op.ThrowIfQueryRouteNotMatch = false;
                     op.MaxQueryConnectionsLimit = 5;
                     op.UseSqlServer(builder =>
                     {

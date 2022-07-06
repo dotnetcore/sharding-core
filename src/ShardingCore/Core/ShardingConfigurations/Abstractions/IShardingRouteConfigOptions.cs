@@ -11,39 +11,6 @@ namespace ShardingCore.Core.ShardingConfigurations.Abstractions
     public interface IShardingRouteConfigOptions
     {
         /// <summary>
-        /// 当查询遇到没有路由被命中时是否抛出错误
-        /// </summary>
-        bool ThrowIfQueryRouteNotMatch { get; set; }
-
-        //     /// <summary>
-        //     /// 如果数据库不存在就创建并且创建表除了分表的
-        //     /// </summary>
-        //     bool EnsureCreatedWithOutShardingTable { get; set; }
-        //
-        //     /// <summary>
-        //     /// 是否需要在启动时创建分表
-        //     /// </summary>
-        //     bool? CreateShardingTableOnStart { get; set; }
-        //     /// <summary>
-        //     /// 是否在启动时创建数据库
-        //     /// </summary>
-        //     public bool? CreateDataBaseOnlyOnStart { get; set; }
-        /// <summary>
-        /// 忽略建表时的错误
-        /// </summary>
-        bool? IgnoreCreateTableError { get; set; }
-
-        //     ///// <summary>
-        //     ///// 是否启用分表路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
-        //     ///// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
-        //     ///// </summary>
-        //     //bool? EnableTableRouteCompileCache { get; set; }
-        //     ///// <summary>
-        //     ///// 是否启用分库路由编译缓存(默认只缓存单个操作的也就是<![CDATA[=,>,>=,<,<=]]>)
-        //     ///// default cache single filter route expression, <![CDATA[=,>,>=,<,<=]]> with sharding property
-        //     ///// </summary>
-        //     //bool? EnableDataSourceRouteCompileCache { get; set; }
-        /// <summary>
         /// 添加分库路由
         /// </summary>
         /// <typeparam name="TRoute"></typeparam>

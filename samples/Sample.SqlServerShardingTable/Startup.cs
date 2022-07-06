@@ -73,13 +73,13 @@ namespace Sample.SqlServerShardingTable
             //    },ReadStrategyEnum.Loop,defaultEnable:true).End();
             services.AddShardingDbContext<MyDbContext>().AddEntityConfig(op =>
             {
-                //当无法获取路由时会返回默认值而不是报错
-                op.ThrowIfQueryRouteNotMatch = false;
                 op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                 op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
             }).AddConfig(op =>
             {
+                //当无法获取路由时会返回默认值而不是报错
+                op.ThrowIfQueryRouteNotMatch = false;
                 op.UseShardingQuery((conStr, builder) =>
                 {
                     builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);

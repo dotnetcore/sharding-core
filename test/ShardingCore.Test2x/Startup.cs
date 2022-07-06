@@ -38,8 +38,6 @@ namespace ShardingCore.Test2x
             services.AddShardingDbContext<ShardingDefaultDbContext>()
                 .UseRouteConfig(op =>
                 {
-                    //当无法获取路由时会返回默认值而不是报错
-                    op.ThrowIfQueryRouteNotMatch = false;
                     op.AddShardingDataSourceRoute<OrderAreaShardingVirtualDataSourceRoute>();
                     op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
@@ -58,6 +56,8 @@ namespace ShardingCore.Test2x
                 .UseConfig(op =>
                 {
 
+                    //当无法获取路由时会返回默认值而不是报错
+                    op.ThrowIfQueryRouteNotMatch = false;
                     op.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);

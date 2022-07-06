@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Threading;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.ServiceProviders;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
@@ -23,12 +24,11 @@ namespace ShardingCore.DynamicDataSources
 {
     public class DataSourceInitializer : IDataSourceInitializer
     {
-        private static readonly ILogger<DataSourceInitializer> _logger =
-            ShardingLoggerFactory.CreateLogger<DataSourceInitializer>();
+        private  readonly ILogger<DataSourceInitializer> _logger ;
 
         private readonly IShardingProvider _shardingProvider;
         private readonly IDbContextCreator _dbContextCreator;
-        private readonly IShardingRouteConfigOptions _routeConfigOptions;
+        private readonly ShardingConfigOptions _shardingConfigOptions;
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IDataSourceRouteManager _dataSourceRouteManager;
@@ -40,18 +40,19 @@ namespace ShardingCore.DynamicDataSources
         public DataSourceInitializer(
             IShardingProvider shardingProvider,
             IDbContextCreator dbContextCreator,
-            IShardingRouteConfigOptions routeConfigOptions,
+            ShardingConfigOptions shardingConfigOptions,
             IVirtualDataSource virtualDataSource,
             IRouteTailFactory routeTailFactory,
             IDataSourceRouteManager dataSourceRouteManager,
             ITableRouteManager tableRouteManager,
             IEntityMetadataManager entityMetadataManager,
             IShardingTableCreator shardingTableCreator,
-            ITableEnsureManager tableEnsureManager)
+            ITableEnsureManager tableEnsureManager,
+            ILogger<DataSourceInitializer> logger )
         {
             _shardingProvider = shardingProvider;
             _dbContextCreator = dbContextCreator;
-            _routeConfigOptions = routeConfigOptions;
+            _shardingConfigOptions = shardingConfigOptions;
             _virtualDataSource = virtualDataSource;
             _routeTailFactory = routeTailFactory;
             _dataSourceRouteManager = dataSourceRouteManager;
@@ -59,6 +60,7 @@ namespace ShardingCore.DynamicDataSources
             _entityMetadataManager = entityMetadataManager;
             _tableCreator = shardingTableCreator;
             _tableEnsureManager = tableEnsureManager;
+            _logger = logger;
         }
 
         public void InitConfigure(string dataSourceName,bool createDatabase,bool createTable)
@@ -150,7 +152,7 @@ namespace ShardingCore.DynamicDataSources
                 }
                 catch (Exception e)
                 {
-                    if (!_routeConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                    if (!_shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                     {
                         _logger.LogWarning(e,
                             $"table :{physicTableName} will created.");

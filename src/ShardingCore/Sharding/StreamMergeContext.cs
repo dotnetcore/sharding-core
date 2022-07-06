@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
@@ -72,7 +73,7 @@ namespace ShardingCore.Sharding
         public bool IsCrossTable => MergeQueryCompilerContext.IsCrossTable();
 
         private readonly ITrackerManager _trackerManager;
-        private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;
+        private readonly ShardingConfigOptions _shardingConfigOptions;
 
         private readonly ConcurrentDictionary<DbContext, object> _parallelDbContexts;
 
@@ -85,21 +86,18 @@ namespace ShardingCore.Sharding
 
 
         public StreamMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult,
-            IRewriteResult rewriteResult, IOptimizeResult optimizeResult,
-            IRouteTailFactory routeTailFactory, ITrackerManager trackerManager,
-            IShardingRouteConfigOptions shardingRouteConfigOptions)
+            IRewriteResult rewriteResult, IOptimizeResult optimizeResult)
         {
             MergeQueryCompilerContext = mergeQueryCompilerContext;
-            ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext())
-                .GetRequireService<IShardingRuntimeContext>();
             ParseResult = parseResult;
             RewriteQueryable = rewriteResult.GetRewriteQueryable();
             OptimizeResult = optimizeResult;
             _rewriteResult = rewriteResult;
-            _routeTailFactory = routeTailFactory;
+            ShardingRuntimeContext = mergeQueryCompilerContext.GetShardingDbContext().GetShardingRuntimeContext();
+            _routeTailFactory = ShardingRuntimeContext.GetRouteTailFactory();
+            _trackerManager = ShardingRuntimeContext.GetTrackerManager();
+            _shardingConfigOptions = ShardingRuntimeContext.GetShardingConfigOptions();
             QueryEntities = MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
-            _trackerManager = trackerManager;
-            _shardingRouteConfigOptions = shardingRouteConfigOptions;
             _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
             Orders = parseResult.GetOrderByContext().PropertyOrders.ToArray();
             Skip = parseResult.GetPaginationContext().Skip;
@@ -349,7 +347,7 @@ namespace ShardingCore.Sharding
 
         private bool ThrowIfQueryRouteNotMatch()
         {
-            return _shardingRouteConfigOptions.ThrowIfQueryRouteNotMatch;
+            return _shardingConfigOptions.ThrowIfQueryRouteNotMatch;
         }
 
         public bool UseUnionAllMerge()

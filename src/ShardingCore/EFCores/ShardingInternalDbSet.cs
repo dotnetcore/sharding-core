@@ -413,7 +413,7 @@ namespace ShardingCore.EFCores
                     if (primaryKeyValue != null)
                     {
                         var dataSourceName = GetDataSourceName(primaryKeyValue);
-                        var tableTail = TableRouteManager.GetTableTail<TEntity>(primaryKeyValue);
+                        var tableTail = TableRouteManager.GetTableTail<TEntity>(dataSourceName,primaryKeyValue);
                         var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);
                         ;
                         return _context.GetShareDbContext(dataSourceName, routeTail);

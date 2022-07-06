@@ -9,6 +9,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
@@ -38,7 +39,7 @@ namespace ShardingCore.Core.RuntimeContexts
         private IServiceCollection _serviceMap = new ServiceCollection();
 
         private IServiceProvider _serviceProvider;
-        private IServiceProvider _applicationServiceProvider;
+        // private ILoggerFactory _applicationLoggerFactory;
 
         public void AddServiceConfig(Action<IServiceCollection> configure)
         {
@@ -79,6 +80,12 @@ namespace ShardingCore.Core.RuntimeContexts
             return _shardingConfigOptions ??= GetRequiredService<ShardingConfigOptions>();
         }
 
+
+        private IShardingRouteConfigOptions _shardingRouteConfigOptions;
+        public IShardingRouteConfigOptions GetShardingRouteConfigOptions()
+        {
+            return _shardingRouteConfigOptions??= GetRequiredService<IShardingRouteConfigOptions>();
+        }
 
         private IShardingMigrationManager _shardingMigrationManager;
         public IShardingMigrationManager GetShardingMigrationManager()
@@ -247,16 +254,13 @@ namespace ShardingCore.Core.RuntimeContexts
                 }
             }
         }
+        //
+        // public void UseLogfactory(ILoggerFactory loggerFactory)
+        // {
+        //     // ShardingLoggerFactory.DefaultFactory = loggerFactory;
+        //     _applicationLoggerFactory = loggerFactory;
+        // }
 
-        public void UseLogfactory(ILoggerFactory loggerFactory)
-        {
-            ShardingLoggerFactory.DefaultFactory = loggerFactory;
-        }
-
-        public void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider)
-        {
-            _applicationServiceProvider = applicationServiceProvider;
-        }
 
         private void CheckIfBuild()
         {
@@ -312,6 +316,7 @@ namespace ShardingCore.Core.RuntimeContexts
         {
             GetShardingProvider();
             GetShardingConfigOptions();
+            GetShardingRouteConfigOptions();
             GetShardingMigrationManager();
             GetShardingComparer();
             GetShardingCompilerExecutor();

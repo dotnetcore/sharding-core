@@ -19,7 +19,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
     /// </summary>
     public class DefaultShardingCompilerExecutor: IShardingCompilerExecutor
     {
-        private static readonly ILogger<DefaultShardingCompilerExecutor> _logger=ShardingLoggerFactory.CreateLogger<DefaultShardingCompilerExecutor>();
+        private  readonly ILogger<DefaultShardingCompilerExecutor> _logger;
         private readonly IShardingTrackQueryExecutor _shardingTrackQueryExecutor;
         private readonly IQueryCompilerContextFactory _queryCompilerContextFactory;
         private readonly IPrepareParser _prepareParser;
@@ -27,12 +27,13 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public DefaultShardingCompilerExecutor(
             IShardingTrackQueryExecutor shardingTrackQueryExecutor, IQueryCompilerContextFactory queryCompilerContextFactory,IPrepareParser prepareParser,
-            IShardingRouteManager shardingRouteManager)
+            IShardingRouteManager shardingRouteManager,ILogger<DefaultShardingCompilerExecutor> logger)
         {
             _shardingTrackQueryExecutor = shardingTrackQueryExecutor;
             _queryCompilerContextFactory = queryCompilerContextFactory;
             _prepareParser = prepareParser;
             _shardingRouteManager = shardingRouteManager;
+            _logger = logger;
         }
         public TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {

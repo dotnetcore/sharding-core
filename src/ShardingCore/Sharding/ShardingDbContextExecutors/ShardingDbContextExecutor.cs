@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -31,6 +32,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// <typeparam name="TShardingDbContext"></typeparam>
     public class ShardingDbContextExecutor : IShardingDbContextExecutor
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly DbContext _shardingDbContext;
          
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
@@ -71,6 +73,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
             _routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
             var shardingReadWriteManager = _shardingRuntimeContext.GetShardingReadWriteManager();
+            var shardingProvider = _shardingRuntimeContext.GetShardingProvider();
+            _loggerFactory=shardingProvider.GetService<ILoggerFactory>();
             _actualConnectionStringManager = new ActualConnectionStringManager(shardingReadWriteManager,_virtualDataSource);
         }
 
@@ -78,7 +82,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private IDataSourceDbContext GetDataSourceDbContext(string dataSourceName)
         {
-            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _dbContextCreator, _actualConnectionStringManager));
+            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _dbContextCreator, _actualConnectionStringManager,_loggerFactory.CreateLogger<DataSourceDbContext>()));
 
         }
         /// <summary>
@@ -116,7 +120,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
             var dataSourceName = GetDataSourceName(entity);
-            var tail = GetTableTail(entity);
+            var tail = GetTableTail(dataSourceName,entity);
 
             return CreateDbContext(CreateDbContextStrategyEnum.ShareConnection, dataSourceName, _routeTailFactory.Create(tail));
         }
@@ -131,11 +135,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return _dataSourceRouteManager.GetDataSourceName(entity);
         }
 
-        private string GetTableTail<TEntity>(TEntity entity) where TEntity : class
+        private string GetTableTail<TEntity>(string dataSourceName,TEntity entity) where TEntity : class
         {
             if (!_entityMetadataManager.IsShardingTable(entity.GetType()))
                 return string.Empty;
-            return _tableRouteManager.GetTableTail(entity);
+            return _tableRouteManager.GetTableTail(dataSourceName,entity);
         }
 
         #endregion

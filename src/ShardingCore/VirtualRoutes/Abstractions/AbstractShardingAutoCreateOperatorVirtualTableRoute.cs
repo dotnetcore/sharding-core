@@ -29,8 +29,6 @@ namespace ShardingCore.VirtualRoutes.Abstractions
     {
         private static readonly object APPEND_LOCK = new object();
 
-        private static readonly ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>> _logger =
-            ShardingLoggerFactory.CreateLogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>();
 
         private readonly SafeReadAppendList<string> _tails = new SafeReadAppendList<string>();
 
@@ -103,7 +101,9 @@ namespace ShardingCore.VirtualRoutes.Abstractions
 
         public virtual Task ExecuteAsync()
         {
-            _logger.LogDebug($"get {typeof(TEntity).Name}'s route execute job ");
+            var logger=RouteShardingProvider
+                .GetService<ILogger<AbstractShardingAutoCreateOperatorVirtualTableRoute<TEntity, TKey>>>();
+            logger.LogDebug($"get {typeof(TEntity).Name}'s route execute job ");
 
             var entityMetadataManager = RouteShardingProvider.GetRequiredService<IEntityMetadataManager>();
             var tableCreator = RouteShardingProvider.GetRequiredService<IShardingTableCreator>();
@@ -127,22 +127,22 @@ namespace ShardingCore.VirtualRoutes.Abstractions
                 dataSources.Add(virtualDataSource.DefaultDataSourceName);
             }
 
-            _logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
+            logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
 
             foreach (var dataSource in dataSources)
             {
                 try
                 {
-                    _logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
                     tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
-                    _logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
                 }
                 catch (Exception e)
                 {
                     //ignore
-                    _logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
                     if (DoLogError)
-                        _logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                        logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
                 }
             }
 

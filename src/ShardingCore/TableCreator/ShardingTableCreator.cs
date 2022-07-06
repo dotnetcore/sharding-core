@@ -12,6 +12,7 @@ using System;
 using System.Threading;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.ServiceProviders;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Logger;
 using ShardingCore.Sharding;
 
@@ -25,20 +26,21 @@ namespace ShardingCore.TableCreator
     */
     public class ShardingTableCreator : IShardingTableCreator
     {
-        private static readonly ILogger<ShardingTableCreator> _logger =
-            ShardingLoggerFactory.CreateLogger<ShardingTableCreator>();
+        private  readonly ILogger<ShardingTableCreator> _logger;
 
         private readonly IShardingProvider _shardingProvider;
-        private readonly IShardingRouteConfigOptions _routeConfigOptions;
+        private readonly ShardingConfigOptions _shardingConfigOptions;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly IDbContextCreator _dbContextCreator;
 
-        public ShardingTableCreator(IShardingProvider shardingProvider,IShardingRouteConfigOptions routeConfigOptions, IRouteTailFactory routeTailFactory,IDbContextCreator dbContextCreator)
+        public ShardingTableCreator(IShardingProvider shardingProvider,ShardingConfigOptions shardingConfigOptions, IRouteTailFactory routeTailFactory,IDbContextCreator dbContextCreator,
+            ILogger<ShardingTableCreator> logger)
         {
             _shardingProvider = shardingProvider;
-            _routeConfigOptions = routeConfigOptions;
+            _shardingConfigOptions = shardingConfigOptions;
             _routeTailFactory = routeTailFactory;
             _dbContextCreator = dbContextCreator;
+            _logger = logger;
         }
 
         public void CreateTable<T>(string dataSourceName, string tail)
@@ -72,7 +74,7 @@ namespace ShardingCore.TableCreator
                         }
                         catch (Exception ex)
                         {
-                            if (!_routeConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                            if (!_shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                             {
                                 _logger.LogWarning(ex,
                                     $"create table error entity name:[{shardingEntityType.Name}].");

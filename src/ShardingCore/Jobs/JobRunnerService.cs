@@ -19,8 +19,7 @@ namespace ShardingCore.Jobs
     [ExcludeFromCodeCoverage]
     internal class JobRunnerService
     {
-        private static readonly ILogger<JobRunnerService> _logger =
-            ShardingLoggerFactory.CreateLogger<JobRunnerService>();
+        private  readonly ILogger<JobRunnerService> _logger;
         private readonly IJobManager _jobManager;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private const long DEFAULT_MILLIS = 1000L;
@@ -30,9 +29,10 @@ namespace ShardingCore.Jobs
         /// </summary>
         private const long MAX_DELAY_MILLIS = 30000L;
 
-        public JobRunnerService(IJobManager jobManager)
+        public JobRunnerService(IJobManager jobManager,ILogger<JobRunnerService> logger)
         {
             _jobManager = jobManager;
+            _logger = logger;
         }
 
         public async Task StartAsync()

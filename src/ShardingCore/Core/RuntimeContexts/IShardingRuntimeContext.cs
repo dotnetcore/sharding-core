@@ -7,6 +7,7 @@ using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.ShardingPage.Abstractions;
 using ShardingCore.Core.TrackerManagers;
@@ -28,6 +29,7 @@ namespace ShardingCore.Core.RuntimeContexts
     {
         IShardingProvider GetShardingProvider();
         ShardingConfigOptions GetShardingConfigOptions();
+        IShardingRouteConfigOptions GetShardingRouteConfigOptions();
         IShardingMigrationManager GetShardingMigrationManager();
         IShardingComparer GetShardingComparer();
         IShardingCompilerExecutor GetShardingCompilerExecutor();
@@ -53,9 +55,6 @@ namespace ShardingCore.Core.RuntimeContexts
         
         void GetOrCreateShardingRuntimeModel(DbContext dbContext);
 
-         void UseLogfactory(ILoggerFactory loggerFactory);
-
-         void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider);
          void Initialize();
          void AutoShardingCreate();
         object GetService(Type serviceType);

@@ -31,7 +31,6 @@ namespace ShardingCore.Bootstrappers
     /// <typeparam name="TEntity"></typeparam>
     public class EntityMetadataInitializer<TEntity>: IEntityMetadataInitializer where TEntity:class
     {
-        private static readonly ILogger<EntityMetadataInitializer<TEntity>> _logger=ShardingLoggerFactory.CreateLogger<EntityMetadataInitializer<TEntity>>();
         private readonly Type _shardingEntityType;
         private readonly IShardingProvider _shardingProvider;
         private readonly IShardingRouteConfigOptions _shardingRouteConfigOptions;

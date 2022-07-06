@@ -67,13 +67,13 @@ namespace ShardingCore.Extensions
 
 
 
-        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,
+        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,string dataSourceName,
             TEntity entity) where TEntity : class
         {
             var shardingRouteUnit = tableRouteManager.RouteTo(entity.GetType(),new ShardingTableRouteConfig(shardingTable: entity))[0];
             return shardingRouteUnit.Tail;
         }
-        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,
+        public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,string dataSourceName,
             object shardingKeyValue) where TEntity : class
         {
             var shardingRouteUnit = tableRouteManager.RouteTo(typeof(TEntity),new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];

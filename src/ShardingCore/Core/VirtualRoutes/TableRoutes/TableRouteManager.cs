@@ -18,11 +18,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
     public class TableRouteManager : ITableRouteManager
     {
         private readonly IVirtualDataSource _virtualDataSource;
+        private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ConcurrentDictionary<Type, IVirtualTableRoute> _tableRoutes = new();
 
-        public TableRouteManager(IVirtualDataSource virtualDataSource)
+        public TableRouteManager(IVirtualDataSource virtualDataSource,IDataSourceRouteManager dataSourceRouteManager)
         {
             _virtualDataSource = virtualDataSource;
+            _dataSourceRouteManager = dataSourceRouteManager;
         }
         public bool HasRoute(Type entityType)
         {
@@ -53,7 +55,11 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 
         public List<TableRouteUnit> RouteTo(Type entityType, ShardingTableRouteConfig shardingTableRouteConfig)
         {
-            
+            return RouteTo(entityType, _virtualDataSource.DefaultDataSourceName, shardingTableRouteConfig);
+        }
+
+        public List<TableRouteUnit> RouteTo(Type entityType, string dataSourceName, ShardingTableRouteConfig shardingTableRouteConfig)
+        {
             var dataSourceRouteResult = new DataSourceRouteResult(_virtualDataSource.DefaultDataSourceName);
             return RouteTo(entityType, dataSourceRouteResult, shardingTableRouteConfig);
         }
