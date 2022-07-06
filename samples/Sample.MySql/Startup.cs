@@ -164,10 +164,10 @@ namespace Sample.MySql
                 }
             }
 
-            Stopwatch sp = Stopwatch.StartNew();
-            app.ApplicationServices.UseAutoTryCompensateTable();
-            sp.Stop();
-            Console.WriteLine("UseAutoTryCompensateTable:"+sp.ElapsedMilliseconds);
+            // Stopwatch sp = Stopwatch.StartNew();
+            // app.ApplicationServices.UseAutoTryCompensateTable();
+            // sp.Stop();
+            // Console.WriteLine("UseAutoTryCompensateTable:"+sp.ElapsedMilliseconds);
             app.UseRouting();
 
             app.UseAuthorization();

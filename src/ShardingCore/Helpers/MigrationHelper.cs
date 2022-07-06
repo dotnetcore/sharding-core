@@ -48,7 +48,7 @@ namespace ShardingCore.Helpers
 
             addCmds.ForEach(aAddCmd =>
                 {
-                    var (migrationResult,shardingCmds) = BuildDataSourceShardingCmds(shardingRuntimeContext,currentCurrentDataSourceName,operation, aAddCmd.CommandText, sqlGenerationHelper);
+                    var (migrationResult,shardingCmds) = BuildDataSourceShardingCmds(shardingRuntimeContext,virtualDataSource.DefaultDataSourceName,currentCurrentDataSourceName,operation, aAddCmd.CommandText, sqlGenerationHelper);
                     if (!migrationResult.InDataSource)
                     {
                         if (migrationResult.CommandType == MigrationCommandTypeEnum.TableCommand)
@@ -133,7 +133,7 @@ namespace ShardingCore.Helpers
                 return string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
             }
         }
-        private static (MigrationResult migrationResult,List<string>) BuildDataSourceShardingCmds(IShardingRuntimeContext shardingRuntimeContext,string dataSourceName,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
+        private static (MigrationResult migrationResult,List<string>) BuildDataSourceShardingCmds(IShardingRuntimeContext shardingRuntimeContext,string defaultDataSourceName,string dataSourceName,MigrationOperation operation, string sourceCmd, ISqlGenerationHelper sqlGenerationHelper)
         {
             //所有MigrationOperation定义
             //https://github.com/dotnet/efcore/tree/b970bf29a46521f40862a01db9e276e6448d3cb0/src/EFCore.Relational/Migrations/Operations
@@ -196,7 +196,7 @@ namespace ShardingCore.Helpers
                 }
                 else
                 {
-                    migrationResult.InDataSource = true;
+                    migrationResult.InDataSource = defaultDataSourceName==dataSourceName;
                 }
 
                 //分表
