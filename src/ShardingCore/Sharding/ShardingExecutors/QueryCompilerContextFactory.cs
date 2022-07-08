@@ -11,7 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Parsers.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingExecutors

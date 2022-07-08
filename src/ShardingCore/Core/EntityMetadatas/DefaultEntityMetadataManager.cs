@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
 
@@ -16,6 +17,7 @@ namespace ShardingCore.Core.EntityMetadatas
     public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches = new();
+        private readonly ConcurrentDictionary<string/*logic table name*/, EntityMetadata> _logicTableCaches = new();
 
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
         {
@@ -70,7 +72,11 @@ namespace ShardingCore.Core.EntityMetadatas
 
         public EntityMetadata TryGetByLogicTableName(string logicTableName)
         {
-            return _caches.Values.FirstOrDefault(o => o.LogicTableName == logicTableName);
+            if (_logicTableCaches.TryGetValue(logicTableName, out var metadata))
+            {
+                return metadata;
+            }
+            return null;
         }
 
         /// <summary>
@@ -99,6 +105,16 @@ namespace ShardingCore.Core.EntityMetadatas
             if (_caches.TryGetValue(efEntityType.ClrType, out var metadata))
             {
                 metadata.SetEntityModel(efEntityType);
+                if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}]");
+                }
+                if (!_logicTableCaches.TryAdd(metadata.LogicTableName, metadata))
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
+                }
                 return true;
             }
 

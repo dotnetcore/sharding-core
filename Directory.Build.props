@@ -4,8 +4,9 @@
     <!--默认统一输出XML注释文档，不需要输出的项目可以单独关闭-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>xuejmnet</Authors>
-    <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnetcore/sharding-core</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/dotnetcore/sharding-core</PackageProjectUrl>
     <Company>xuejm</Company>
     <LangVersion>10.0</LangVersion>
     <Description>high performance lightweight solution for efcore sharding table and sharding database support read-write-separation </Description>

@@ -87,22 +87,12 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
 
         public override void UseShellDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.ShellDbContextConfigure == null)
-            {
-                return;
-            }
-
-            _options.ShellDbContextConfigure.Invoke(dbContextOptionsBuilder);
+            _options.ShellDbContextConfigure?.Invoke(dbContextOptionsBuilder);
         }
 
         public override void UseExecutorDbContextOptionBuilder(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (_options.ExecutorDbContextConfigure == null )
-            {
-                return;
-            }
-
-            _options.ExecutorDbContextConfigure.Invoke(dbContextOptionsBuilder);
+            _options.ExecutorDbContextConfigure?.Invoke(dbContextOptionsBuilder);
         }
     }
 }

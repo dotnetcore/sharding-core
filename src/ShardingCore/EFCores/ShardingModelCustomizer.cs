@@ -12,7 +12,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Utils;
 

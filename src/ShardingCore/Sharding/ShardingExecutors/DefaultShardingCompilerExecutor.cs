@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Extensions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.ShardingExtractParameters;

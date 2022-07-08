@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.MergeEngines;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;

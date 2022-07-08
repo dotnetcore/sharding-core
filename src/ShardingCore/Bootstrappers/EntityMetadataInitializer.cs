@@ -14,7 +14,7 @@ using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Abstractions;
 
 /*

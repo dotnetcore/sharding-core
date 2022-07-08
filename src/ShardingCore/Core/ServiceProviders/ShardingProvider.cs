@@ -15,11 +15,6 @@ namespace ShardingCore.Core.ServiceProviders
             _applicationServiceProvider = applicationServiceProvider;
         }
 
-        public void UseApplicationServiceProvider(IServiceProvider applicationServiceProvider)
-        {
-            _applicationServiceProvider = applicationServiceProvider;
-        }
-
         public object GetService(Type serviceType,bool tryApplicationServiceProvider=true)
         {
             var service = _internalServiceProvider?.GetService(serviceType);

@@ -13,7 +13,6 @@ using System.Threading;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.Logger;
 using ShardingCore.Sharding;
 
 namespace ShardingCore.TableCreator

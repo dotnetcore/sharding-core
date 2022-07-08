@@ -54,7 +54,6 @@ namespace ShardingCore.Core.RuntimeContexts
         void CheckRequirement();
         
         void GetOrCreateShardingRuntimeModel(DbContext dbContext);
-
          void Initialize();
          void AutoShardingCreate();
         object GetService(Type serviceType);

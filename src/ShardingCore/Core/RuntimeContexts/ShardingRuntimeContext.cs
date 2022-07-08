@@ -19,7 +19,7 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
@@ -254,12 +254,6 @@ namespace ShardingCore.Core.RuntimeContexts
                 }
             }
         }
-        //
-        // public void UseLogfactory(ILoggerFactory loggerFactory)
-        // {
-        //     // ShardingLoggerFactory.DefaultFactory = loggerFactory;
-        //     _applicationLoggerFactory = loggerFactory;
-        // }
 
 
         private void CheckIfBuild()

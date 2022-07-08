@@ -17,7 +17,7 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Logger;
+
 using ShardingCore.TableCreator;
 
 namespace ShardingCore.VirtualRoutes.Abstractions

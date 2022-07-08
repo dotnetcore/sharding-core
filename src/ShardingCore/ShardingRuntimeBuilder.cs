@@ -70,6 +70,7 @@ namespace ShardingCore
         {
             return Build(appServiceProvider, appServiceProvider?.GetService<ILoggerFactory>());
         }
+        
         public IShardingRuntimeContext Build(IServiceProvider appServiceProvider, ILoggerFactory loggerFactory)
         {
             var shardingRuntimeContext = new ShardingRuntimeContext();

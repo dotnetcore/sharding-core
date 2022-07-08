@@ -18,7 +18,7 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingDbContextExecutors

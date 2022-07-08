@@ -16,7 +16,7 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists.Abstractions;
 

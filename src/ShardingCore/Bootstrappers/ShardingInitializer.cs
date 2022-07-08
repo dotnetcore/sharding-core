@@ -9,7 +9,7 @@ using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Jobs;
 using ShardingCore.Jobs.Abstaractions;
-using ShardingCore.Logger;
+
 using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.ParallelTables;
 
@@ -25,9 +25,9 @@ namespace ShardingCore.Bootstrappers
         private readonly IParallelTableManager _parallelTableManager;
         private readonly DoOnlyOnce _doOnlyOnce = new DoOnlyOnce();
 
-        public ShardingInitializer(IShardingProvider shardingProvider)
+        public ShardingInitializer(IShardingProvider shardingProvider,ILogger<ShardingBootstrapper> logger)
         {
-            _logger = ShardingLoggerFactory.DefaultFactory.CreateLogger<ShardingBootstrapper>();
+            _logger = logger;
             _shardingProvider = shardingProvider;
             _routeConfigOptions = shardingProvider.GetRequiredService<IShardingRouteConfigOptions>();
             _entityMetadataManager = shardingProvider.GetRequiredService<IEntityMetadataManager>();
