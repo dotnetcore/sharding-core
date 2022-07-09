@@ -71,7 +71,8 @@ namespace Sample.MySql
                         o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                          o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     }).UseConfig(o =>
-                    { 
+                    {
+                        o.ThrowIfQueryRouteNotMatch = false;
                         o.UseShardingQuery((conStr,builder)=>
                         {
                             builder.UseMySql(conStr, new MySqlServerVersion(new Version()))

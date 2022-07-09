@@ -99,6 +99,11 @@ namespace ShardingCore
             return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
 
+        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,IServiceProvider serviceProvider) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
+        }
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,
             DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
@@ -254,8 +259,7 @@ namespace ShardingCore
         public static void UseAutoShardingCreate(this IServiceProvider serviceProvider)
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            shardingRuntimeContext.CheckRequirement();
-            shardingRuntimeContext.AutoShardingCreate();
+            shardingRuntimeContext.UseAutoShardingCreate();
         }
 
         /// <summary>

@@ -10,7 +10,11 @@ namespace ShardingCore.Extensions
 
     public static class ShardingRuntimeExtension
     {
-        
+        public static void UseAutoShardingCreate(this IShardingRuntimeContext shardingRuntimeContext)
+        {
+            shardingRuntimeContext.CheckRequirement();
+            shardingRuntimeContext.AutoShardingCreate();
+        }
         /// <summary>
         /// 自动尝试补偿表
         /// </summary>

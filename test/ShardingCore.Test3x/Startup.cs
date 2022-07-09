@@ -83,7 +83,7 @@ namespace ShardingCore.Test3x
                         {
                             "A", new HashSet<string>()
                             {
-                                "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;"
+                                "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;",
                             }
                         }
                     };
