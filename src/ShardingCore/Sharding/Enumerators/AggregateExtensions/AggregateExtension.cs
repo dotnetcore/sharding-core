@@ -124,7 +124,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             return callExpression;
         }
         /// <summary>
-        /// ¸ù¾İÊôĞÔÇóºÍ
+        /// æ ¹æ®å±æ€§æ±‚å’Œ
         /// </summary>
         /// <param name="source"></param>
         /// <param name="property"></param>
@@ -141,7 +141,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             return source.Provider.Execute<TSelect>(callExpression);
         }
         /// <summary>
-        /// ¸ù¾İÊôĞÔÇóºÍ
+        /// æ ¹æ®å±æ€§æ±‚å’Œ
         /// </summary>
         /// <param name="source"></param>
         /// <param name="propertyName"></param>
@@ -156,7 +156,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             return source.SumByProperty(property);
         }
         /// <summary>
-        /// ¶Ô
+        /// å¯¹
         /// </summary>
         /// <typeparam name="TSelect"></typeparam>
         /// <param name="source"></param>
@@ -290,12 +290,12 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             return source.Provider.Execute(callExpression);
         }
         /// <summary>
-        /// »ñÈ¡Æ½¾ùÊıºÍ [{avg1,count1},{avg2,count2}....]=>sum(avg1...n*count1...n)/sum(count1...n)
+        /// è·å–å¹³å‡æ•°å’Œ [{avg1,count1},{avg2,count2}....]=>sum(avg1...n*count1...n)/sum(count1...n)
         /// </summary>
-        /// <param name="source">Êı¾İÔ´</param>
-        /// <param name="averagePropertyName">¾ÛºÏº¯ÊıaverageÊôĞÔÃû</param>
-        /// <param name="countPropertyName">¾ÛºÏº¯ÊıcountÊôĞÔÃû</param>
-        /// <param name="resultType">Æ½¾ùÖµ·µ»Ø½á¹û:int/int=double</param>
+        /// <param name="source">æ•°æ®æº</param>
+        /// <param name="averagePropertyName">èšåˆå‡½æ•°averageå±æ€§å</param>
+        /// <param name="countPropertyName">èšåˆå‡½æ•°countå±æ€§å</param>
+        /// <param name="resultType">å¹³å‡å€¼è¿”å›ç»“æœ:int/int=double</param>
         [ExcludeFromCodeCoverage]
         public static object AverageWithCount(this IQueryable source, string averagePropertyName, string countPropertyName, Type resultType)
         {
@@ -311,7 +311,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averageProperty == null) throw new ArgumentNullException(nameof(averageProperty));
             if (countProperty == null) throw new ArgumentNullException(nameof(countProperty));
-            //»ñÈ¡sum
+            //è·å–sum
             var sum = source.AverageSum(averageProperty, countProperty);
             var count = source.SumByProperty(countProperty);
             return AverageConstant(sum, count,resultType);
@@ -327,11 +327,11 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         {
 
             Expression constantSum = Expression.Constant(sum);
-            //Èç¹û¼ÆËãÀàĞÍºÍ·µ»ØÀàĞÍ²»Ò»ÖÂÏÈ×ª³ÉÒ»ÖÂ
+            //å¦‚æœè®¡ç®—ç±»å‹å’Œè¿”å›ç±»å‹ä¸ä¸€è‡´å…ˆè½¬æˆä¸€è‡´
             if(sum.GetType()!=resultType)
                 constantSum = Expression.Convert(constantSum, resultType);
             Expression constantCount = Expression.Constant(count);
-            //Èç¹û¼ÆËãÀàĞÍºÍ·µ»ØÀàĞÍ²»Ò»ÖÂÏÈ×ª³ÉÒ»ÖÂ
+            //å¦‚æœè®¡ç®—ç±»å‹å’Œè¿”å›ç±»å‹ä¸ä¸€è‡´å…ˆè½¬æˆä¸€è‡´
             if (count.GetType() != resultType)
                 constantCount = Expression.Convert(constantCount, resultType);
             var binaryExpression = Expression.Divide(constantSum, constantCount);
@@ -342,11 +342,11 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         {
             var resultType = typeof(TResult);
             Expression constantSum = Expression.Constant(sum);
-            //Èç¹û¼ÆËãÀàĞÍºÍ·µ»ØÀàĞÍ²»Ò»ÖÂÏÈ×ª³ÉÒ»ÖÂ
+            //å¦‚æœè®¡ç®—ç±»å‹å’Œè¿”å›ç±»å‹ä¸ä¸€è‡´å…ˆè½¬æˆä¸€è‡´
             if (sum.GetType() != resultType)
                 constantSum = Expression.Convert(constantSum, resultType);
             Expression constantCount = Expression.Constant(count);
-            //Èç¹û¼ÆËãÀàĞÍºÍ·µ»ØÀàĞÍ²»Ò»ÖÂÏÈ×ª³ÉÒ»ÖÂ
+            //å¦‚æœè®¡ç®—ç±»å‹å’Œè¿”å›ç±»å‹ä¸ä¸€è‡´å…ˆè½¬æˆä¸€è‡´
             if (count.GetType() != resultType)
                 constantCount = Expression.Convert(constantCount, resultType);
             var binaryExpression = Expression.Divide(constantSum, constantCount);
@@ -368,12 +368,12 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         //}
 
         /// <summary>
-        /// »ñÈ¡Æ½¾ùÊıºÍ [{avg1,sum1},{avg2,sum2}....]=>sum(sum1...n)/sum(sum1...n/avg1...n)
+        /// è·å–å¹³å‡æ•°å’Œ [{avg1,sum1},{avg2,sum2}....]=>sum(sum1...n)/sum(sum1...n/avg1...n)
         /// </summary>
-        /// <param name="source">Êı¾İÔ´</param>
-        /// <param name="averagePropertyName">¾ÛºÏº¯ÊıaverageÊôĞÔÃû</param>
-        /// <param name="sumPropertyName">¾ÛºÏº¯ÊısumÊôĞÔÃû</param>
-        /// <param name="resultType">Æ½¾ùÖµ·µ»Ø½á¹û:int/int=double</param>
+        /// <param name="source">æ•°æ®æº</param>
+        /// <param name="averagePropertyName">èšåˆå‡½æ•°averageå±æ€§å</param>
+        /// <param name="sumPropertyName">èšåˆå‡½æ•°sumå±æ€§å</param>
+        /// <param name="resultType">å¹³å‡å€¼è¿”å›ç»“æœ:int/int=double</param>
         [ExcludeFromCodeCoverage]
         public static object AverageWithSum(this IQueryable source, string averagePropertyName, string sumPropertyName, Type resultType)
         {
@@ -394,11 +394,11 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             return AverageConstant(sum, count, resultType);
         }
         /// <summary>
-        /// »ñÈ¡Æ½¾ùÊıºÍ [{avg1,count1},{avg2,count2}....]=>sum(avg1...n*count1...n)/sum(count1...n)
+        /// è·å–å¹³å‡æ•°å’Œ [{avg1,count1},{avg2,count2}....]=>sum(avg1...n*count1...n)/sum(count1...n)
         /// </summary>
-        /// <param name="source">Êı¾İÔ´</param>
-        /// <param name="averageProperty">¾ÛºÏº¯ÊıaverageÊôĞÔÃû</param>
-        /// <param name="countProperty">¾ÛºÏº¯ÊıcountÊôĞÔÃû</param>
+        /// <param name="source">æ•°æ®æº</param>
+        /// <param name="averageProperty">èšåˆå‡½æ•°averageå±æ€§å</param>
+        /// <param name="countProperty">èšåˆå‡½æ•°countå±æ€§å</param>
         /// <returns></returns>
         private static object AverageSum(this IQueryable source, PropertyInfo averageProperty, PropertyInfo countProperty)
         {
@@ -411,7 +411,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             MemberExpression averageMember = Expression.MakeMemberAccess(parameter, averageProperty);
             //o.count
             MemberExpression countMember = Expression.MakeMemberAccess(parameter, countProperty);
-            //Convert(o.count,o.avg.GetType()) ±ØĞëÒªÍ¬ÀàĞÍ²ÅÄÜ¼ÆËã
+            //Convert(o.count,o.avg.GetType()) å¿…é¡»è¦åŒç±»å‹æ‰èƒ½è®¡ç®—
             var countConvertExpression = Expression.Convert(countMember, averageProperty.PropertyType);
             //o.avg*Convert(o.count,o.avg.GetType())
             var multiply = Expression.Multiply(averageMember, countConvertExpression);
@@ -434,11 +434,11 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
 
         }
         /// <summary>
-        /// »ñÈ¡Æ½¾ùÊı¸öÊı [{avg1,sum1},{avg2,sum2}....]=>sum(sum1..n)/sum(sum1...n/avg1...n)
+        /// è·å–å¹³å‡æ•°ä¸ªæ•° [{avg1,sum1},{avg2,sum2}....]=>sum(sum1..n)/sum(sum1...n/avg1...n)
         /// </summary>
-        /// <param name="source">Êı¾İÔ´</param>
-        /// <param name="averageProperty">¾ÛºÏº¯ÊıaverageÊôĞÔÃû</param>
-        /// <param name="sumProperty">¾ÛºÏº¯ÊıcountÊôĞÔÃû</param>
+        /// <param name="source">æ•°æ®æº</param>
+        /// <param name="averageProperty">èšåˆå‡½æ•°averageå±æ€§å</param>
+        /// <param name="sumProperty">èšåˆå‡½æ•°countå±æ€§å</param>
         /// <returns></returns>
         private static object AverageCount(this IQueryable source, PropertyInfo averageProperty, PropertyInfo sumProperty)
         {
@@ -451,7 +451,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             MemberExpression averageMember = Expression.MakeMemberAccess(parameter, averageProperty);
             //o.sum
             MemberExpression sumMember = Expression.MakeMemberAccess(parameter, sumProperty);
-            //Convert(o.sum,o.avg.GetType()) ±ØĞëÒªÍ¬ÀàĞÍ²ÅÄÜ¼ÆËã
+            //Convert(o.sum,o.avg.GetType()) å¿…é¡»è¦åŒç±»å‹æ‰èƒ½è®¡ç®—
             var sumConvertExpression = Expression.Convert(sumMember, averageProperty.PropertyType);
             //Convert(o.sum,o.avg.GetType())/o.avg
             var divide = Expression.Divide(sumConvertExpression, averageMember);
