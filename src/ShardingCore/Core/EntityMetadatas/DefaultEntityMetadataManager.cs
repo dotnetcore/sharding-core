@@ -17,7 +17,7 @@ namespace ShardingCore.Core.EntityMetadatas
     public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches = new();
-        private readonly ConcurrentDictionary<string/*logic table name*/, EntityMetadata> _logicTableCaches = new();
+        private readonly ConcurrentDictionary<string/*logic table name*/, List<EntityMetadata>> _logicTableCaches = new();
 
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
         {
@@ -70,7 +70,7 @@ namespace ShardingCore.Core.EntityMetadatas
             return entityMetadata;
         }
 
-        public EntityMetadata TryGetByLogicTableName(string logicTableName)
+        public List<EntityMetadata> TryGetByLogicTableName(string logicTableName)
         {
             if (_logicTableCaches.TryGetValue(logicTableName, out var metadata))
             {
@@ -110,12 +110,23 @@ namespace ShardingCore.Core.EntityMetadatas
                     throw new ShardingCoreInvalidOperationException(
                         $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}]");
                 }
-                if (!_logicTableCaches.TryAdd(metadata.LogicTableName, metadata))
+                if (!_logicTableCaches.TryGetValue(metadata.LogicTableName, out var metadatas))
+                {
+                    metadatas = new List<EntityMetadata>();
+                    _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
+                }
+
+                if (metadatas.Any(o => o.EntityType != efEntityType.ClrType))
+                {
+                    metadatas.Add(metadata);
+                    return true;
+                }
+                //添加完成后检查逻辑表对应的对象不可以存在两个以上的分片
+                if (metadatas.Count > 1 && metadatas.Any(o => o.IsShardingTable() || o.IsShardingDataSource()))
                 {
                     throw new ShardingCoreInvalidOperationException(
                         $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
                 }
-                return true;
             }
 
             return false;

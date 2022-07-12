@@ -125,16 +125,15 @@ namespace ShardingCore.Helpers
             }
 
             MigrationResult migrationResult = new MigrationResult();
-            var entityMetadata = entityMetadataManager.TryGetByLogicTableName(absTableName);
-            if (entityMetadata != null)
+            var entityMetadatas = entityMetadataManager.TryGetByLogicTableName(absTableName);
+            if (entityMetadatas.IsNotEmpty())
             {
                 migrationResult.CommandType = MigrationCommandTypeEnum.TableCommand;
 
-
-                bool isShardingDataSource = entityMetadata.IsShardingDataSource();
+                bool isShardingDataSource =entityMetadatas.Count==1&& entityMetadatas[0].IsShardingDataSource();
                 if (isShardingDataSource)
                 {
-                    var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
+                    var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadatas[0].EntityType);
                     isShardingDataSource = virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName);
 
                     if (isShardingDataSource)

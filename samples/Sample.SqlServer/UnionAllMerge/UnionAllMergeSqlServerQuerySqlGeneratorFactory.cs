@@ -60,22 +60,24 @@ namespace Sample.SqlServer.UnionAllMerge
         {
             if (_unionAllMergeManager?.Current != null)
             {
-                var entityMetadata = _entityMetadataManager.TryGetByLogicTableName(tableExpression.Name);
+                var entityMetadatas = _entityMetadataManager.TryGetByLogicTableName(tableExpression.Name);
                 var tableRouteResults = _unionAllMergeManager?.Current.TableRoutesResults.ToArray();
-                if (tableRouteResults.IsNotEmpty() &&entityMetadata!=null&&
-                    tableRouteResults[0].ReplaceTables.Any(o =>o.EntityType==entityMetadata.EntityType));
+                if (tableRouteResults.IsNotEmpty() &&
+                    entityMetadatas.IsNotEmpty()&&
+                    entityMetadatas.Count==1&&
+                    tableRouteResults[0].ReplaceTables.Any(o =>o.EntityType==entityMetadatas[0].EntityType));
                 {
-                    var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.EntityType==entityMetadata.EntityType)?.Tail).ToHashSet();
+                    var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.EntityType==entityMetadatas[0].EntityType)?.Tail).ToHashSet();
 
                     var sqlGenerationHelper = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
                     string newTableName = null;
                     if (tails.Count == 1)
                     {
-                        newTableName = sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadata.TableSeparator}{tails.First()}", tableExpression.Schema);
+                        newTableName = sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadatas[0].TableSeparator}{tails.First()}", tableExpression.Schema);
                     }
                     else
                     {
-                        newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadata.TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
+                        newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadatas[0].TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
                     }
 
                     var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
