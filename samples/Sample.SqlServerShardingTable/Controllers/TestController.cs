@@ -149,7 +149,7 @@ namespace Sample.SqlServerShardingTable.Controllers
 
         public async Task<IActionResult> DynamicReadWrite()
         {
-            DynamicShardingHelper.DynamicAppendReadWriteConnectionString<MyDbContext>(_shardingRuntimeContext,"ds0", "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB1;Integrated Security=True;");
+            DynamicShardingHelper.DynamicAppendReadWriteConnectionString(_shardingRuntimeContext,"ds0", "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB1;Integrated Security=True;");
             var sysUser = await _myDbContext.Set<SysUser>().Where(o => o.Id == "1").FirstOrDefaultAsync();
 
             return Ok(sysUser);
