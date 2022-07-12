@@ -419,15 +419,11 @@ namespace ShardingCore.EFCores
                     var isShardingDataSource = entityMetadata.IsShardingDataSource();
                     var shardingDataSourceFieldIsKey = entityMetadata.ShardingDataSourceFieldIsKey();
                     if (isShardingDataSource && !shardingDataSourceFieldIsKey)
-                    {
-                        throw new ShardingCoreNotSupportException("multi data source entity find key should sharding value");
-                    }
+                        return null;
                     var isShardingTable = entityMetadata.IsShardingTable();
                     var shardingTableFieldIsKey = entityMetadata.ShardingTableFieldIsKey();
                     if (isShardingTable && !shardingTableFieldIsKey)
-                    {
-                        throw new ShardingCoreNotSupportException("multi table entity find key should sharding value");
-                    }
+                        return null;
                     var primaryKeyValue = keyValues[0];
                     if (primaryKeyValue != null)
                     {
@@ -439,7 +435,7 @@ namespace ShardingCore.EFCores
                 }
             }
 
-            throw new ShardingCoreNotSupportException("sharding entity multi key");
+            return null;
         }
 
         private string GetDataSourceName(object shardingKeyValue)
