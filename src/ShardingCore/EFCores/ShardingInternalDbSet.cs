@@ -12,6 +12,7 @@ using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Utils;
 
@@ -394,34 +395,51 @@ namespace ShardingCore.EFCores
 
         private DbContext GetDbContextByKeyValue(params object[] keyValues)
         {
+            var entityMetadata = EntityMetadataManager.TryGet(typeof(TEntity));
+            if (entityMetadata == null)
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"cant found type:[{typeof(TEntity)}] in {nameof(IEntityMetadataManager)}");
+            }
+
+            //既不是分表也不是分库的话就是默认对象
+            if (!entityMetadata.IsShardingTable() && !entityMetadata.IsShardingDataSource())
+            {
+                var defaultDataSourceName = _shardingRuntimeContext.GetVirtualDataSource().DefaultDataSourceName;
+                var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
+                var routeTail = routeTailFactory.Create(string.Empty);
+                return _context.GetShareDbContext(defaultDataSourceName, routeTail);
+            }
+
             if (keyValues.Length == 1)
             {
-                var entityMetadata = EntityMetadataManager.TryGet(typeof(TEntity));
-
                 //单key字段
-                if (null != entityMetadata && entityMetadata.IsSingleKey)
+                if (entityMetadata.IsSingleKey)
                 {
                     var isShardingDataSource = entityMetadata.IsShardingDataSource();
                     var shardingDataSourceFieldIsKey = entityMetadata.ShardingDataSourceFieldIsKey();
                     if (isShardingDataSource && !shardingDataSourceFieldIsKey)
-                        return null;
+                    {
+                        throw new ShardingCoreNotSupportException("multi data source entity find key should sharding value");
+                    }
                     var isShardingTable = entityMetadata.IsShardingTable();
                     var shardingTableFieldIsKey = entityMetadata.ShardingTableFieldIsKey();
                     if (isShardingTable && !shardingTableFieldIsKey)
-                        return null;
+                    {
+                        throw new ShardingCoreNotSupportException("multi table entity find key should sharding value");
+                    }
                     var primaryKeyValue = keyValues[0];
                     if (primaryKeyValue != null)
                     {
                         var dataSourceName = GetDataSourceName(primaryKeyValue);
-                        var tableTail = TableRouteManager.GetTableTail<TEntity>(dataSourceName,primaryKeyValue);
+                        var tableTail = TableRouteManager.GetTableTail<TEntity>(dataSourceName, primaryKeyValue);
                         var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);
-                        ;
                         return _context.GetShareDbContext(dataSourceName, routeTail);
                     }
                 }
             }
 
-            return null;
+            throw new ShardingCoreNotSupportException("sharding entity multi key");
         }
 
         private string GetDataSourceName(object shardingKeyValue)

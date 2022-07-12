@@ -155,16 +155,14 @@ namespace Sample.MySql
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-                if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
+                // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
                 {
                     defaultShardingDbContext.Database.Migrate();
                 }
             }
 
-            Stopwatch sp = Stopwatch.StartNew();
-            app.ApplicationServices.UseAutoTryCompensateTable();
-            sp.Stop();
-            Console.WriteLine("UseAutoTryCompensateTable:"+sp.ElapsedMilliseconds);
+            app.ApplicationServices.UseAutoTryCompensateTable(12);
+            
             app.UseRouting();
 
             app.UseAuthorization();
