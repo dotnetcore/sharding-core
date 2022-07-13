@@ -1,11 +1,19 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplication1.Data.Models
 {
     public class TestModel
     {
 
-        public Guid Id { get; set; } = Guid.NewGuid();
+        //[Key]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        //public Guid Id2 { get; set; } = Guid.NewGuid();
+
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         public string Content { get; set; } = "";
 

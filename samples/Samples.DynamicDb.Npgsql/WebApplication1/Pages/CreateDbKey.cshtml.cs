@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
 using System;
 using System.Collections.Generic;
@@ -14,13 +16,15 @@ namespace WebApplication1.Pages
     {
 
         private readonly AbstaractShardingDbContext db;
+        private readonly IShardingRuntimeContext runtimeContext;
 
         [BindProperty]
         public string Key { get; set; }
 
-        public CreateDbKeyModel(AbstaractShardingDbContext db)
+        public CreateDbKeyModel(AbstaractShardingDbContext db, IShardingRuntimeContext runtimeContext)
         {
             this.db = db;
+            this.runtimeContext = runtimeContext;
         }
 
         public void OnGet()
@@ -40,7 +44,9 @@ namespace WebApplication1.Pages
             JsonFileHelper.Save(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName, dblist);
 
             // 动态新增数据源
-            DynamicShardingHelper.DynamicAppendDataSource<AbstaractShardingDbContext>("c1", Key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{Key};");
+            DynamicShardingHelper.DynamicAppendDataSourceOnly(runtimeContext, Key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{Key};");
+            //DynamicShardingHelper.DynamicAppendDataSourceOnly(runtimeContext, Key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{Key};");
+            db.Database.Migrate();
 
             return RedirectToPage("DbKeyMan");
         }

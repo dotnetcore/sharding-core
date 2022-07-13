@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ShardingCore;
-using ShardingCore.Bootstrappers;
+using ShardingCore.Core;
 using ShardingCore.TableExists;
+using ShardingCore.TableExists.Abstractions;
 using System;
+using System.Diagnostics;
 using WebApplication1.Data;
 using WebApplication1.Data.Extensions;
 using WebApplication1.Data.Sharding;
@@ -22,22 +24,16 @@ var configuration = builder.Configuration;
 var npgConnectionString = configuration.GetConnectionString("DefaultConnection");
 const string migrationsAssemblyName = "WebApplication1.Migrations.Sharding";
 
-#region 注入 dbcontext
+var watch = new Stopwatch();
+watch.Start();
+Console.WriteLine("开始计时");
 
-//services.AddDbContext<ApplicationDbContext>(options =>
-//{
-//    options.UseNpgsql(npgConnectionString, x => x.MigrationsAssembly(migrationsAssemblyName));
-//});
+#region 注入 dbcontext
 
 services
     .AddShardingDbContext<AbstaractShardingDbContext>()
-    .AddEntityConfig(o =>
+    .UseRouteConfig(o =>
     {
-        o.CreateDataBaseOnlyOnStart = true;             // 启动时创建数据库
-        o.CreateShardingTableOnStart = true;            // 如果您使用code-first建议选择false //! 这里需要注意，如果是迁移更新，必须设置为false，然后再开启，用于启动时候自动创建分片
-        o.EnsureCreatedWithOutShardingTable = false;    // 如果您使用code-first建议修改为fsle
-        o.IgnoreCreateTableError = false;               // 如果不忽略就会输出warning的日志
-
         //添加分库路由
         o.AddShardingDataSourceRoute<TestModelVirtualDataSourceRoute>();
 
@@ -46,32 +42,52 @@ services
         o.AddShardingTableRoute<StudentVirtualTableRoute>();
         o.AddShardingTableRoute<GuidShardingTableVirtualTableRoute>();
     })
-    .AddConfig(op =>
+    .UseConfig(op =>
     {
-        op.ConfigId = "c1";
-
-        // 添加这个对象的字符串创建dbcontext 优先级低 优先采用AddConfig下的
-        op.UseShardingQuery((connString, builder) => builder.UseNpgsql(connString, opt => opt.MigrationsAssembly(migrationsAssemblyName)));
-        // 添加这个对象的链接创建dbcontext 优先级低 优先采用AddConfig下的
-        op.UseShardingTransaction((connection, builder) => builder.UseNpgsql(connection, opt => opt.MigrationsAssembly(migrationsAssemblyName)));
-
-        op.ReplaceTableEnsureManager(sp => new SqlServerTableEnsureManager<AbstaractShardingDbContext>());
-        op.AddDefaultDataSource("ds0", npgConnectionString);
-        //op.AddExtraDataSource(sp => new Dictionary<string, string>()
-        //{
-        //    {"11","server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_11;"},
-        //    {"22","server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_22;"},
-        //    //{"C","server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemoC;"},
-        //});
-
-        op.UseShellDbContextConfigure(builder =>
+        //当无法获取路由时会返回默认值而不是报错
+        op.ThrowIfQueryRouteNotMatch = false;
+        //忽略建表错误compensate table和table creator
+        op.IgnoreCreateTableError = true;
+        //迁移时使用的并行线程数(分库有效)defaultShardingDbContext.Database.Migrate()
+        op.MigrationParallelCount = Environment.ProcessorCount * 3;
+        //补偿表创建并行线程数 调用UseAutoTryCompensateTable有效
+        op.CompensateTableParallelCount = Environment.ProcessorCount;
+        //最大连接数限制
+        op.MaxQueryConnectionsLimit = Environment.ProcessorCount;
+        //链接模式系统默认
+        op.ConnectionMode = ConnectionModeEnum.SYSTEM_AUTO;
+        //如何通过字符串查询创建DbContext
+        op.UseShardingQuery((connString, builder) =>
         {
-            builder.ReplaceService<IMigrationsSqlGenerator, ShardingMigrationsSqlGenerator<AbstaractShardingDbContext>>()
-            //.ReplaceService<IMigrationsModelDiffer, RemoveForeignKeyMigrationsModelDiffer>();//如果需要移除外键可以添加这个
+            builder.UseNpgsql(connString, opt => opt.MigrationsAssembly(migrationsAssemblyName))
+            //.UseLoggerFactory(efLogger)
             ;
         });
+        //如何通过事务创建DbContext
+        op.UseShardingTransaction((connection, builder) =>
+        {
+            builder.UseNpgsql(connection, opt => opt.MigrationsAssembly(migrationsAssemblyName))
+            //.UseLoggerFactory(efLogger)
+            ;
+        });
+        //添加默认数据源
+        op.AddDefaultDataSource("ds0", npgConnectionString);
+        //添加额外数据源
+        //op.AddExtraDataSource(sp =>
+        //{
+        //    return new Dictionary<string, string>()
+        //    {
+        //        {"11","server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_11;"},
+        //        {"22","server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_22;"},
+        //    };
+        //});
+        op.UseShardingMigrationConfigure(configure =>
+        {
+            configure.ReplaceService<IMigrationsSqlGenerator, ShardingMigrationsSqlGenerator<AbstaractShardingDbContext>>();
+        });
     })
-    .EnsureConfig();
+    .ReplaceService<ITableEnsureManager, SqlServerTableEnsureManager>()
+    .AddShardingCore();
 
 #endregion
 
@@ -86,11 +102,13 @@ services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
 
-var shardingBootstrapper = app.Services.GetRequiredService<IShardingBootstrapper>();
-shardingBootstrapper.Start();
-
+//启动ShardingCore创建表任务(不调用也可以使用ShardingCore)
+//不调用会导致定时任务不会开启
+app.Services.UseAutoShardingCreate();
 // 初始化动态数据源
 app.Services.InitialDynamicVirtualDataSource();
+//启动进行表补偿(不调用也可以使用ShardingCore)
+app.Services.UseAutoTryCompensateTable(10);
 
 app.UseHsts();
 app.UseHttpsRedirection();
@@ -103,10 +121,7 @@ app.UseAuthorization();
 
 app.UseEndpoints(endpoints => { endpoints.MapRazorPages(); });
 
-// 使用迁移
-using var scope = app.Services.CreateScope();
-// 初始化数据库及启用迁移设置
-DbInitializationProvider.Initialize<AbstaractShardingDbContext>(scope.ServiceProvider);
-
+watch.Stop();
+Console.WriteLine($"耗时：{watch.Elapsed.TotalMilliseconds} 毫秒");
 await app.RunAsync();
 

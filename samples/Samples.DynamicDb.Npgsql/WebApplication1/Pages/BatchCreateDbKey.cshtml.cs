@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
 using System;
 using System.Collections.Generic;
@@ -15,13 +17,15 @@ namespace WebApplication1.Pages
     {
 
         private readonly AbstaractShardingDbContext db;
+        private readonly IShardingRuntimeContext runtimeContext;
 
         [BindProperty]
         public BatchCreateModel CreateModel { get; set; }
 
-        public BatchCreateDbKeyModel(AbstaractShardingDbContext db)
+        public BatchCreateDbKeyModel(AbstaractShardingDbContext db, IShardingRuntimeContext runtimeContext)
         {
             this.db = db;
+            this.runtimeContext = runtimeContext;
         }
 
         public void OnGet()
@@ -37,6 +41,11 @@ namespace WebApplication1.Pages
                 keyList.Add(i.ToString().PadLeft(CreateModel.Len, '0'));
             }
 
+            // 读取并写入到配置
+            var dblist = JsonFileHelper.Read<List<string>>(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName);
+            dblist.AddRange(keyList);
+            JsonFileHelper.Save(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName, dblist);
+
             foreach (var item in keyList)
             {
                 db.TestModelKeys.Add(new TestModelKey { Key = item });
@@ -46,13 +55,10 @@ namespace WebApplication1.Pages
             foreach (var item in keyList)
             {
                 // 动态新增数据源
-                DynamicShardingHelper.DynamicAppendDataSource<AbstaractShardingDbContext>("c1", item, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{item};");
+                DynamicShardingHelper.DynamicAppendDataSourceOnly(runtimeContext, item, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{item};");
             }
 
-            // 读取并写入到配置
-            var dblist = JsonFileHelper.Read<List<string>>(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName);
-            dblist.AddRange(keyList);
-            JsonFileHelper.Save(AppContext.BaseDirectory, TestModelVirtualDataSourceRoute.ConfigFileName, dblist);
+            db.Database.Migrate();
 
 
             return RedirectToPage("DbKeyMan");

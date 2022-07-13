@@ -12,6 +12,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 using WebApplication1.Data.Models;
@@ -21,11 +22,12 @@ namespace WebApplication1.Data
     public class AbstaractShardingDbContext : IdentityDbContext, IShardingDbContext, ISupportShardingReadWrite, IShardingTableDbContext
     {
 
+
         public AbstaractShardingDbContext([NotNull] DbContextOptions<AbstaractShardingDbContext> options) : base(options)
         {
             var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
             if (wrapOptionsExtension != null)
-                _shardingDbContextExecutor = (IShardingDbContextExecutor)Activator.CreateInstance(typeof(ShardingDbContextExecutor<>).GetGenericType0(GetType()), this);
+                _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
         }
 
         #region 接口实现
@@ -35,7 +37,7 @@ namespace WebApplication1.Data
         /// <summary>
         /// 是否是真正的执行者
         /// </summary>
-        private bool isExecutor => _shardingDbContextExecutor == null;
+        private bool IsExecutor => _shardingDbContextExecutor == null;
 
         /// <summary>
         /// 读写分离优先级
@@ -131,7 +133,7 @@ namespace WebApplication1.Data
         /// <param name="routeTail"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public DbContext GetDbContext(string dataSourceName, bool parallelQuery, IRouteTail routeTail)
+        public DbContext GetDbContext(string dataSourceName, CreateDbContextStrategyEnum parallelQuery, IRouteTail routeTail)
         {
             var dbContext = _shardingDbContextExecutor.CreateDbContext(parallelQuery, dataSourceName, routeTail);
             //if (!parallelQuery && dbContext is AbpDbContext<TDbContext> abpDbContext) {
@@ -186,32 +188,32 @@ namespace WebApplication1.Data
 
         public override EntityEntry Add(object entity)
         {
-            if (isExecutor) base.Add(entity);
+            if (IsExecutor) base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
 
         public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         {
-            if (isExecutor) return base.Add(entity);
+            if (IsExecutor) return base.Add(entity);
             return CreateGenericDbContext(entity).Add(entity);
         }
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isExecutor) return base.AddAsync(entity, cancellationToken);
+            if (IsExecutor) return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
         public override ValueTask<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isExecutor) return base.AddAsync(entity, cancellationToken);
+            if (IsExecutor) return base.AddAsync(entity, cancellationToken);
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 
 
         public override void AddRange(params object[] entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.AddRange(entities);
                 return;
@@ -234,7 +236,7 @@ namespace WebApplication1.Data
 
         public override void AddRange(IEnumerable<object> entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.AddRange(entities);
                 return;
@@ -257,7 +259,7 @@ namespace WebApplication1.Data
 
         public override async Task AddRangeAsync(params object[] entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 await base.AddRangeAsync(entities);
                 return;
@@ -280,7 +282,7 @@ namespace WebApplication1.Data
 
         public override async Task AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 await base.AddRangeAsync(entities, cancellationToken);
                 return;
@@ -304,21 +306,21 @@ namespace WebApplication1.Data
 
         public override EntityEntry<TEntity> Attach<TEntity>(TEntity entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override EntityEntry Attach(object entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Attach(entity);
             return CreateGenericDbContext(entity).Attach(entity);
         }
 
         public override void AttachRange(params object[] entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.AttachRange(entities);
                 return;
@@ -341,7 +343,7 @@ namespace WebApplication1.Data
 
         public override void AttachRange(IEnumerable<object> entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.AttachRange(entities);
                 return;
@@ -369,35 +371,35 @@ namespace WebApplication1.Data
 
         public override EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry Entry(object entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Entry(entity);
             return CreateGenericDbContext(entity).Entry(entity);
         }
 
         public override EntityEntry<TEntity> Update<TEntity>(TEntity entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override EntityEntry Update(object entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Update(entity);
             return CreateGenericDbContext(entity).Update(entity);
         }
 
         public override void UpdateRange(params object[] entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.UpdateRange(entities);
                 return;
@@ -420,7 +422,7 @@ namespace WebApplication1.Data
 
         public override void UpdateRange(IEnumerable<object> entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.UpdateRange(entities);
                 return;
@@ -443,21 +445,21 @@ namespace WebApplication1.Data
 
         public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override EntityEntry Remove(object entity)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.Remove(entity);
             return CreateGenericDbContext(entity).Remove(entity);
         }
 
         public override void RemoveRange(params object[] entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.RemoveRange(entities);
                 return;
@@ -480,7 +482,7 @@ namespace WebApplication1.Data
 
         public override void RemoveRange(IEnumerable<object> entities)
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.RemoveRange(entities);
                 return;
@@ -504,13 +506,13 @@ namespace WebApplication1.Data
         public override int SaveChanges()
         {
 
-            if (isExecutor) return base.SaveChanges();
+            if (IsExecutor) return base.SaveChanges();
             return this.SaveChanges(true);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.SaveChanges(acceptAllChangesOnSuccess);
             //ApplyShardingConcepts();
             int i = 0;
@@ -534,14 +536,14 @@ namespace WebApplication1.Data
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return base.SaveChangesAsync(cancellationToken);
             return this.SaveChangesAsync(true, cancellationToken);
         }
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
-            if (isExecutor)
+            if (IsExecutor)
                 return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             //ApplyShardingConcepts();
             int i = 0;
@@ -567,7 +569,7 @@ namespace WebApplication1.Data
         public override void Dispose()
         {
 
-            if (isExecutor)
+            if (IsExecutor)
             {
                 base.Dispose();
             }
@@ -580,7 +582,7 @@ namespace WebApplication1.Data
 
         public override async ValueTask DisposeAsync()
         {
-            if (isExecutor)
+            if (IsExecutor)
             {
                 await base.DisposeAsync();
             }
@@ -613,6 +615,5 @@ namespace WebApplication1.Data
             builder.Entity<TestModelKey>().HasKey(t => new { t.Id, t.Key });
             builder.Entity<TestModelKey>().Property(o => o.Key).IsRequired().HasMaxLength(36);
         }
-
     }
 }
