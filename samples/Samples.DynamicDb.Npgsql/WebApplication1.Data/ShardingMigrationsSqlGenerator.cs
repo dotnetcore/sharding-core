@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 using System.Linq;
@@ -15,9 +16,11 @@ namespace WebApplication1.Data
     /// </summary>
     public class ShardingMigrationsSqlGenerator<TShardingDbContext> : NpgsqlMigrationsSqlGenerator where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private readonly IShardingRuntimeContext runtimeContext;
 
-        public ShardingMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlSingletonOptions npgsqlSingletonOptions) : base(dependencies, npgsqlSingletonOptions)
+        public ShardingMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlSingletonOptions npgsqlSingletonOptions, IShardingRuntimeContext runtimeContext) : base(dependencies, npgsqlSingletonOptions)
         {
+            this.runtimeContext = runtimeContext;
         }
 
         protected override void Generate(MigrationOperation operation, IModel model, MigrationCommandListBuilder builder)
@@ -27,7 +30,7 @@ namespace WebApplication1.Data
             var newCmds = builder.GetCommandList().ToList();
             var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
-            MigrationHelper.Generate<TShardingDbContext>(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
+            MigrationHelper.Generate(runtimeContext, operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }
     }
 

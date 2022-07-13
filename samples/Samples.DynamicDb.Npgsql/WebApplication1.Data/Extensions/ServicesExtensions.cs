@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Helpers;
 using System;
 using System.Linq;
@@ -19,7 +21,8 @@ namespace WebApplication1.Data.Extensions
             using (var scope = serviceProvider.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AbstaractShardingDbContext>();
-                db.Database.EnsureCreated();
+                var runtimeContext = scope.ServiceProvider.GetRequiredService<IShardingRuntimeContext>();
+                //db.Database.EnsureCreated();
 
                 var dblist = db.TestModelKeys.Select(m => m.Key).ToList();
                 // 存入到动态库配置文件缓存中
@@ -28,8 +31,10 @@ namespace WebApplication1.Data.Extensions
                 // 遍历添加动态数据源
                 foreach (var key in dblist)
                 {
-                    DynamicShardingHelper.DynamicAppendDataSource<AbstaractShardingDbContext>("c1", key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{key};");
+                    DynamicShardingHelper.DynamicAppendDataSourceOnly(runtimeContext, key, $"server=127.0.0.1;port=5432;uid=postgres;pwd=3#SanJing;database=shardingCoreDemo_{key};");
                 }
+
+                db.Database.Migrate();
             }
 
             return serviceProvider;

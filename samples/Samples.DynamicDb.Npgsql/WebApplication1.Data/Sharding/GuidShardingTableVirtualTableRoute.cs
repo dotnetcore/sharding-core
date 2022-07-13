@@ -7,7 +7,7 @@ namespace WebApplication1.Data.Sharding
 
     public class GuidShardingTableVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<GuidShardingTable>
     {
-        public GuidShardingTableVirtualTableRoute() : base(3, 6, '0')
+        public GuidShardingTableVirtualTableRoute() : base(3, 6)
         {
         }
 

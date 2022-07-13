@@ -7,7 +7,7 @@ namespace WebApplication1.Data.Sharding
 
     public class StudentVirtualTableRoute : AbstractSimpleShardingModKeyStringVirtualTableRoute<Student>
     {
-        public StudentVirtualTableRoute() : base(3, 6, '0')
+        public StudentVirtualTableRoute() : base(3, 6)
         {
         }
 
