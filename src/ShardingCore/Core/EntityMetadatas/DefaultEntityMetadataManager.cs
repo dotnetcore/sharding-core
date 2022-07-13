@@ -116,7 +116,7 @@ namespace ShardingCore.Core.EntityMetadatas
                     _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
                 }
 
-                if (metadatas.Any(o => o.EntityType != efEntityType.ClrType))
+                if (metadatas.All(o => o.EntityType != efEntityType.ClrType))
                 {
                     metadatas.Add(metadata);
                     return true;

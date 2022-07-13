@@ -151,7 +151,8 @@ namespace Sample.MySql
                 app.UseDeveloperExceptionPage();
             }
             app.ApplicationServices.UseAutoShardingCreate();
-
+            var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
+            var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
