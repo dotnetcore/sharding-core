@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -114,8 +115,22 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
 
                 default:
+                {
+                    if (expression is BinaryExpression binaryExpression&&expression.NodeType == ExpressionType.ArrayIndex)
+                    {
+                        var index = GetExpressionValue(binaryExpression.Right);
+                        if (index is int i)
+                        {
+                            var arrayObject = GetExpressionValue(binaryExpression.Left);
+                            if (arrayObject is IList list)
+                            {
+                                return list[i];
+                            }
+                        }
+                    }
                     //TODO: better messaging
                     throw new ShardingCoreException("cant get value " + expression);
+                }
             }
         }
     }

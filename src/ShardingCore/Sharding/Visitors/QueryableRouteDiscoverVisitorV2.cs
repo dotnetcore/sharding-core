@@ -162,7 +162,8 @@ namespace ShardingCore.Core.Internal.Visitors
                                                                  member.Expression is MemberExpression))
                    || expression is MethodCallExpression
                    || (expression is UnaryExpression unaryExpression &&
-                       unaryExpression.NodeType is ExpressionType.Convert);
+                       unaryExpression.NodeType is ExpressionType.Convert)
+                   || expression.NodeType == ExpressionType.ArrayIndex;
         }
 
         private bool IsMethodCall(Expression expression)
@@ -460,13 +461,15 @@ namespace ShardingCore.Core.Internal.Visitors
                 return RoutePredicateExpression.Default;
         }
 
-        private RoutePredicateExpression ParseNamedComparison(BinaryExpression binaryExpression,MethodCallExpression methodCallExpression)
+        private RoutePredicateExpression ParseNamedComparison(BinaryExpression binaryExpression,
+            MethodCallExpression methodCallExpression)
         {
             if (methodCallExpression.GetComparisonLeftAndRight(out var result))
             {
                 return ParseCompare(methodCallExpression, result.Left, result.Right,
                     binaryExpression.NodeType, (int)GetExpressionValue(binaryExpression.Right));
             }
+
             return RoutePredicateExpression.Default;
         }
 
@@ -557,7 +560,8 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 return ParseConditionOnRight0(false, predicateRightResult, binaryExpression.Left,
                     binaryExpression.NodeType);
-            } else if (binaryExpression.IsNamedComparison(out var methodCallExpression))
+            }
+            else if (binaryExpression.IsNamedComparison(out var methodCallExpression))
             {
                 return ParseNamedComparison(binaryExpression, methodCallExpression);
             }
@@ -589,7 +593,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
 
                 if (binaryExpression.Left is UnaryExpression unaryExpression1 &&
-                    (binaryExpression.Right is MemberExpression ))
+                    (binaryExpression.Right is MemberExpression))
                     left = Resolve(unaryExpression1);
                 if (binaryExpression.Right is UnaryExpression unaryExpression2 &&
                     (binaryExpression.Left is MemberExpression))
