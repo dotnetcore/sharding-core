@@ -24,12 +24,12 @@ namespace ShardingCore.Core.VirtualRoutes
         Equal,
         [Description("!=")]
         NotEqual,
-        // [Description("%w%")]
-        // AllLike,
-        // [Description("%w")]
-        // StartLike,
-        // [Description("w%")]
-        // EndLike
+        [Description("%w%")]
+        AllLike,
+        [Description("%w")]
+        StartLike,
+        [Description("w%")]
+        EndLike
         // [Description("Contains")]
         // BeContains
     }

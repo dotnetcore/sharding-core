@@ -80,11 +80,26 @@ namespace ShardingCore.Extensions
         /// 是否是集合contains方法
         /// </summary>
         /// <param name="express"></param>
-        /// <param name="methodName"></param>
         /// <returns></returns>
-        public static bool IsEnumerableContains(this MethodCallExpression express, string methodName)
+        public static bool IsEnumerableContains(this MethodCallExpression express)
         {
-            return  express.Method.DeclaringType.Namespace.IsIn("System.Linq", "System.Collections.Generic") && methodName == nameof(IList.Contains);
+            var methodName = express.Method.Name;
+            return methodName == nameof(IList.Contains)&& (express.Method.DeclaringType?.Namespace.IsInEnumerable()??false);
+        }
+        public static bool IsStringContains(this MethodCallExpression express)
+        {
+            var methodName = express.Method.Name;
+            return methodName == nameof(string.Contains)&& (express.Method.DeclaringType==typeof(string));
+        }
+        public static bool IsStringStartWith(this MethodCallExpression express)
+        {
+            var methodName = express.Method.Name;
+            return methodName == nameof(string.StartsWith)&& (express.Method.DeclaringType==typeof(string));
+        }
+        public static bool IsStringEndWith(this MethodCallExpression express)
+        {
+            var methodName = express.Method.Name;
+            return methodName == nameof(string.EndsWith)&& (express.Method.DeclaringType==typeof(string));
         }
         /// <summary>
         /// 是否是equal方法

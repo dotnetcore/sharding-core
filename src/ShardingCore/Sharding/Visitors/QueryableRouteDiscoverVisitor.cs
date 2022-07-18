@@ -25,19 +25,45 @@ namespace ShardingCore.Core.Internal.Visitors
     */
     public class QueryableRouteShardingTableDiscoverVisitor : ShardingExpressionVisitor
     {
+        private static readonly Func<bool, ExpressionType, ShardingOperatorEnum> _shardingOperatorFunc =
+            (conditionOnRight, nodeType) =>
+            {
+                var op = nodeType switch
+                {
+                    ExpressionType.GreaterThan => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThan
+                        : ShardingOperatorEnum.LessThan,
+                    ExpressionType.GreaterThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThanOrEqual
+                        : ShardingOperatorEnum.LessThanOrEqual,
+                    ExpressionType.LessThan => conditionOnRight
+                        ? ShardingOperatorEnum.LessThan
+                        : ShardingOperatorEnum.GreaterThan,
+                    ExpressionType.LessThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.LessThanOrEqual
+                        : ShardingOperatorEnum.GreaterThanOrEqual,
+                    ExpressionType.Equal => ShardingOperatorEnum.Equal,
+                    ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
+                    _ => ShardingOperatorEnum.UnKnown
+                };
+                return op;
+            };
 
         private readonly EntityMetadata _entityMetadata;
         private readonly Func<object, ShardingOperatorEnum, string, Func<string, bool>> _keyToTailWithFilter;
+
         /// <summary>
         /// 是否是分表路由
         /// </summary>
         private readonly bool _shardingTableRoute;
+
         private LambdaExpression _entityLambdaExpression;
         private readonly ShardingPredicateResult _noShardingPredicateResult = new ShardingPredicateResult(false, null);
         private bool isIgnoreQueryFilter;
-        private RoutePredicateExpression _where = RoutePredicateExpression.Default; 
+        private RoutePredicateExpression _where = RoutePredicateExpression.Default;
 
-        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter, bool shardingTableRoute)
+        public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata,
+            Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _keyToTailWithFilter = keyToTailWithFilter;
@@ -50,7 +76,6 @@ namespace ShardingCore.Core.Internal.Visitors
         /// <returns></returns>
         public RoutePredicateExpression GetRouteParseExpression()
         {
-
             if (_entityMetadata.QueryFilterExpression != null && !isIgnoreQueryFilter)
             {
                 if (_entityLambdaExpression == null)
@@ -59,7 +84,8 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
                 else
                 {
-                    var body = Expression.AndAlso(_entityLambdaExpression.Body, _entityMetadata.QueryFilterExpression.Body);
+                    var body = Expression.AndAlso(_entityLambdaExpression.Body,
+                        _entityMetadata.QueryFilterExpression.Body);
                     _entityLambdaExpression = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
                 }
             }
@@ -69,6 +95,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 var newWhere = Resolve(_entityLambdaExpression);
                 _where = _where.And(newWhere);
             }
+
             return _where;
         }
 
@@ -77,7 +104,8 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             if (expression is MemberExpression member)
             {
-                if (member.Expression?.Type == _entityMetadata.EntityType|| MemberExpressionIsConvertAndOriginalIsEntityType(member))
+                if (member.Expression?.Type == _entityMetadata.EntityType ||
+                    MemberExpressionIsConvertAndOriginalIsEntityType(member))
                 {
                     var isShardingKey = false;
                     if (_shardingTableRoute)
@@ -100,6 +128,7 @@ namespace ShardingCore.Core.Internal.Visitors
             shardingPredicateResult = _noShardingPredicateResult;
             return false;
         }
+
         /// <summary>
         /// 成员表达式是强转并且强转前的类型是当前对象
         /// </summary>
@@ -111,6 +140,7 @@ namespace ShardingCore.Core.Internal.Visitors
                    member.Expression is UnaryExpression unaryExpression &&
                    unaryExpression.Operand.Type == _entityMetadata.EntityType;
         }
+
         /// <summary>
         /// 方法是否包含shardingKey xxx.invoke(shardingkey) eg. <code>o=>new[]{}.Contains(o.Id)</code>
         /// </summary>
@@ -126,6 +156,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         return result;
                 }
             }
+
             return _noShardingPredicateResult;
         }
 
@@ -138,14 +169,25 @@ namespace ShardingCore.Core.Internal.Visitors
                     return result;
                 }
             }
+
             return _noShardingPredicateResult;
         }
-        private bool IsConstantOrMember(Expression expression)
+
+        /// <summary>
+        /// 表达式是否可以获取值
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        private bool ExpressionCanGetValue(Expression expression)
         {
             return expression is ConstantExpression
-                   || (expression is MemberExpression member && (member.Expression is ConstantExpression || member.Expression is MemberExpression || member.Expression is MemberExpression))
+                   || (expression is MemberExpression member && (member.Expression is ConstantExpression ||
+                                                                 member.Expression is MemberExpression ||
+                                                                 member.Expression is MemberExpression))
                    || expression is MethodCallExpression
-                   || (expression is UnaryExpression unaryExpression && unaryExpression.NodeType is ExpressionType.Convert ) ;
+                   || (expression is UnaryExpression unaryExpression &&
+                       unaryExpression.NodeType is ExpressionType.Convert)
+                   || expression.NodeType == ExpressionType.ArrayIndex;
         }
 
         private bool IsMethodCall(Expression expression)
@@ -157,8 +199,12 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             switch (node.Method.Name)
             {
-                case nameof(EntityFrameworkQueryableExtensions.IgnoreQueryFilters): isIgnoreQueryFilter = true; break;
-                case nameof(Queryable.Where): CombineEntityLambdaExpression(node); break;
+                case nameof(EntityFrameworkQueryableExtensions.IgnoreQueryFilters):
+                    isIgnoreQueryFilter = true;
+                    break;
+                case nameof(Queryable.Where):
+                    CombineEntityLambdaExpression(node);
+                    break;
             }
 
             return base.VisitMethodCall(node);
@@ -196,9 +242,10 @@ namespace ShardingCore.Core.Internal.Visitors
                 return Resolve(expression);
             }
 
+            //解析左右结构属性判断
             if (expression is BinaryExpression binaryExpression) //解析二元运算符
             {
-                return ParseGetWhere(binaryExpression);
+                return ParsePropertyCondition(binaryExpression);
             }
 
             if (expression is UnaryExpression unary) //解析一元运算符
@@ -214,12 +261,13 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 return ResolveInFunc(methodCallExpression, true);
             }
+
             return RoutePredicateExpression.Default;
         }
 
         private RoutePredicateExpression ResolveInFunc(MethodCallExpression methodCallExpression, bool @in)
         {
-            if (methodCallExpression.IsEnumerableContains(methodCallExpression.Method.Name))
+            if (methodCallExpression.IsEnumerableContains())
             {
                 var shardingPredicateResult = IsMethodWrapShardingKey(methodCallExpression);
                 if (shardingPredicateResult.IsShardingKey)
@@ -247,26 +295,67 @@ namespace ShardingCore.Core.Internal.Visitors
 
                     if (arrayObject != null)
                     {
-                        var contains=@in ? RoutePredicateExpression.DefaultFalse : RoutePredicateExpression.Default;
-                      
+                        var contains = @in ? RoutePredicateExpression.DefaultFalse : RoutePredicateExpression.Default;
+
 
                         if (arrayObject is IEnumerable enumerableObj)
                         {
                             foreach (var shardingValue in enumerableObj)
                             {
-                                var eq = _keyToTailWithFilter(shardingValue, @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual, shardingPredicateResult.ShardingPropertyName);
+                                var eq = _keyToTailWithFilter(shardingValue,
+                                    @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual,
+                                    shardingPredicateResult.ShardingPropertyName);
                                 if (@in)
                                     contains = contains.Or(new RoutePredicateExpression(eq));
                                 else
                                     contains = contains.And(new RoutePredicateExpression(eq));
                             }
                         }
+
                         return contains;
                     }
                 }
             }
-
-            if (methodCallExpression.IsNamedEquals())
+            else if (methodCallExpression.IsStringContains())
+            {
+                if (IsShardingKey(methodCallExpression.Object, out var shardingPredicateResult))
+                {
+                    if (methodCallExpression.Arguments.Count == 1)
+                    {
+                        var shardingValue = GetExpressionValue(methodCallExpression.Arguments[0]);
+                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.AllLike,
+                            shardingPredicateResult.ShardingPropertyName);
+                        return new RoutePredicateExpression(keyToTailWithFilter);
+                    }
+                }
+            }
+            else if (methodCallExpression.IsStringStartWith())
+            {
+                if (IsShardingKey(methodCallExpression.Object, out var shardingPredicateResult))
+                {
+                    if (methodCallExpression.Arguments.Count == 1)
+                    {
+                        var shardingValue = GetExpressionValue(methodCallExpression.Arguments[0]);
+                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.StartLike,
+                            shardingPredicateResult.ShardingPropertyName);
+                        return new RoutePredicateExpression(keyToTailWithFilter);
+                    }
+                }
+            }
+            else if (methodCallExpression.IsStringEndWith())
+            {
+                if (IsShardingKey(methodCallExpression.Object, out var shardingPredicateResult))
+                {
+                    if (methodCallExpression.Arguments.Count == 1)
+                    {
+                        var shardingValue = GetExpressionValue(methodCallExpression.Arguments[0]);
+                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.EndLike,
+                            shardingPredicateResult.ShardingPropertyName);
+                        return new RoutePredicateExpression(keyToTailWithFilter);
+                    }
+                }
+            }
+            else if (methodCallExpression.IsNamedEquals())
             {
                 //"".equals(o.id)
                 var shardingPredicateResult = IsMethodWrapShardingKey(methodCallExpression);
@@ -275,7 +364,8 @@ namespace ShardingCore.Core.Internal.Visitors
                     var shardingValue = GetExpressionValue(methodCallExpression.Object);
                     if (shardingValue != null)
                     {
-                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                        var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal,
+                            shardingPredicateResult.ShardingPropertyName);
                         return new RoutePredicateExpression(keyToTailWithFilter);
                     }
                 }
@@ -297,7 +387,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
                         if (shardingValue != default)
                         {
-                            var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal, shardingPredicateResult.ShardingPropertyName);
+                            var keyToTailWithFilter = _keyToTailWithFilter(shardingValue, ShardingOperatorEnum.Equal,
+                                shardingPredicateResult.ShardingPropertyName);
                             return new RoutePredicateExpression(keyToTailWithFilter);
                         }
                     }
@@ -313,30 +404,45 @@ namespace ShardingCore.Core.Internal.Visitors
             return RoutePredicateExpression.Default;
         }
 
-        private ShardingOperatorEnum GetParseCompareShardingOperatorEnum(bool conditionOnRight, ExpressionType expressionType, int compare)
+        private ShardingOperatorEnum GetParseCompareShardingOperatorEnum(bool conditionOnRight,
+            ExpressionType expressionType, int compare)
         {
             if (compare == 1)
             {
                 return expressionType switch
                 {
-                    ExpressionType.GreaterThanOrEqual => conditionOnRight ? ShardingOperatorEnum.GreaterThan : ShardingOperatorEnum.LessThan,//1
-                    ExpressionType.GreaterThan => ShardingOperatorEnum.UnKnown,//无
-                    ExpressionType.LessThanOrEqual => ShardingOperatorEnum.UnKnown,//1,0,-1 = 无
-                    ExpressionType.LessThan => conditionOnRight ? ShardingOperatorEnum.LessThanOrEqual : ShardingOperatorEnum.GreaterThanOrEqual,//0,-1
-                    ExpressionType.Equal => conditionOnRight ? ShardingOperatorEnum.GreaterThan : ShardingOperatorEnum.LessThan,//1
+                    ExpressionType.GreaterThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThan
+                        : ShardingOperatorEnum.LessThan, //1
+                    ExpressionType.GreaterThan => ShardingOperatorEnum.UnKnown, //无
+                    ExpressionType.LessThanOrEqual => ShardingOperatorEnum.UnKnown, //1,0,-1 = 无
+                    ExpressionType.LessThan => conditionOnRight
+                        ? ShardingOperatorEnum.LessThanOrEqual
+                        : ShardingOperatorEnum.GreaterThanOrEqual, //0,-1
+                    ExpressionType.Equal => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThan
+                        : ShardingOperatorEnum.LessThan, //1
                     ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
                     _ => ShardingOperatorEnum.UnKnown
                 };
-
             }
+
             if (compare == 0)
             {
                 return expressionType switch
                 {
-                    ExpressionType.GreaterThanOrEqual => conditionOnRight ? ShardingOperatorEnum.GreaterThanOrEqual : ShardingOperatorEnum.LessThanOrEqual,//0,1
-                    ExpressionType.GreaterThan => conditionOnRight ? ShardingOperatorEnum.GreaterThan: ShardingOperatorEnum.LessThan,//1
-                    ExpressionType.LessThanOrEqual => conditionOnRight ? ShardingOperatorEnum.LessThanOrEqual : ShardingOperatorEnum.GreaterThanOrEqual,//0,-1
-                    ExpressionType.LessThan => conditionOnRight ? ShardingOperatorEnum.LessThan : ShardingOperatorEnum.GreaterThan,//-1
+                    ExpressionType.GreaterThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThanOrEqual
+                        : ShardingOperatorEnum.LessThanOrEqual, //0,1
+                    ExpressionType.GreaterThan => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThan
+                        : ShardingOperatorEnum.LessThan, //1
+                    ExpressionType.LessThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.LessThanOrEqual
+                        : ShardingOperatorEnum.GreaterThanOrEqual, //0,-1
+                    ExpressionType.LessThan => conditionOnRight
+                        ? ShardingOperatorEnum.LessThan
+                        : ShardingOperatorEnum.GreaterThan, //-1
                     ExpressionType.Equal => ShardingOperatorEnum.Equal,
                     ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
                     _ => ShardingOperatorEnum.UnKnown
@@ -347,146 +453,155 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 return expressionType switch
                 {
-                    ExpressionType.GreaterThanOrEqual => ShardingOperatorEnum.UnKnown,//-1,0,1
-                    ExpressionType.GreaterThan => conditionOnRight? ShardingOperatorEnum.GreaterThanOrEqual: ShardingOperatorEnum.LessThanOrEqual,//0,1
-                    ExpressionType.LessThanOrEqual => conditionOnRight? ShardingOperatorEnum.LessThan:ShardingOperatorEnum.GreaterThan,//-1
-                    ExpressionType.LessThan =>ShardingOperatorEnum.UnKnown,//无
-                    ExpressionType.Equal => conditionOnRight ? ShardingOperatorEnum.LessThan : ShardingOperatorEnum.GreaterThan,//1
+                    ExpressionType.GreaterThanOrEqual => ShardingOperatorEnum.UnKnown, //-1,0,1
+                    ExpressionType.GreaterThan => conditionOnRight
+                        ? ShardingOperatorEnum.GreaterThanOrEqual
+                        : ShardingOperatorEnum.LessThanOrEqual, //0,1
+                    ExpressionType.LessThanOrEqual => conditionOnRight
+                        ? ShardingOperatorEnum.LessThan
+                        : ShardingOperatorEnum.GreaterThan, //-1
+                    ExpressionType.LessThan => ShardingOperatorEnum.UnKnown, //无
+                    ExpressionType.Equal => conditionOnRight
+                        ? ShardingOperatorEnum.LessThan
+                        : ShardingOperatorEnum.GreaterThan, //1
                     ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
                     _ => ShardingOperatorEnum.UnKnown
                 };
             }
+
             return ShardingOperatorEnum.UnKnown;
         }
-        private RoutePredicateExpression ParseCompare(MethodCallExpression methodCallExpression, Expression left,Expression right, ExpressionType expressionType, int compare)
+
+        private RoutePredicateExpression ParseCompare(MethodCallExpression methodCallExpression, Expression left,
+            Expression right, ExpressionType expressionType, int compare)
         {
             if (left.Type == right.Type)
             {
                 if (methodCallExpression.Method.ReturnType == typeof(int))
                 {
-                    return ParseCondition0(left, right, conditionOnRight => GetParseCompareShardingOperatorEnum(conditionOnRight, expressionType, compare));
+                    return ParseCondition0(left, right, expressionType,
+                        (conditionOnRight, nodeType) =>
+                            GetParseCompareShardingOperatorEnum(conditionOnRight, nodeType, compare));
                 }
             }
+
             return RoutePredicateExpression.Default;
         }
 
-        private RoutePredicateExpression ParseCondition0(Expression left, Expression right,Func<bool,ShardingOperatorEnum> shardingOperatorFunc)
+        private RoutePredicateExpression ParseConditionOnRight0(bool conditionOnRight,
+            ShardingPredicateResult predicateLeftResult,
+            Expression conditionExpression, ExpressionType expressionType)
         {
-
-            bool conditionOnRight = false;
-            string shardingPropertyName = null;
-            object value = default;
-
-
-            if (IsShardingKey(left, out var predicateLeftResult) && IsConstantOrMember(right))
+            if (ExpressionCanGetValue(conditionExpression))
             {
-                if (predicateLeftResult.IsShardingKey)
-                {
-                    conditionOnRight = true;
-                    shardingPropertyName = predicateLeftResult.ShardingPropertyName;
-                    value = GetExpressionValue(right);
-                }
-                else
+                var shardingPropertyName = predicateLeftResult.ShardingPropertyName;
+                var value = GetExpressionValue(conditionExpression);
+
+                if (shardingPropertyName == null || value == default)
                     return RoutePredicateExpression.Default;
-            }
-            else if (IsShardingKey(right, out var predicateRightResult) && IsConstantOrMember(left))
-            {
-                if (predicateRightResult.IsShardingKey)
-                {
-                    conditionOnRight = false;
-                    shardingPropertyName = predicateRightResult.ShardingPropertyName;
-                    value = GetExpressionValue(left);
-                }
-                else
-                    return RoutePredicateExpression.Default;
+                var op = _shardingOperatorFunc(conditionOnRight, expressionType);
+
+
+                return new RoutePredicateExpression(_keyToTailWithFilter(value, op, shardingPropertyName));
             }
             else
                 return RoutePredicateExpression.Default;
-            var op = shardingOperatorFunc(conditionOnRight);
-
-            if (shardingPropertyName == null || value == default)
-                return RoutePredicateExpression.Default;
-
-
-            return new RoutePredicateExpression( _keyToTailWithFilter(value, op, shardingPropertyName));
         }
 
-        private RoutePredicateExpression ParseCondition(BinaryExpression binaryExpression)
+        private RoutePredicateExpression ParseCondition0(Expression left, Expression right,
+            ExpressionType expressionType, Func<bool, ExpressionType, ShardingOperatorEnum> shardingOperatorFunc)
         {
-            if (binaryExpression.IsNamedComparison(out var methodCallExpression))
+            if (IsShardingKey(left, out var predicateLeftResult))
             {
-                if (methodCallExpression.GetComparisonLeftAndRight(out var result))
-                {
-                    return ParseCompare(methodCallExpression, result.Left, result.Right,
-                        binaryExpression.NodeType, (int)GetExpressionValue(binaryExpression.Right));
-                }
+                return ParseConditionOnRight0(true, predicateLeftResult, right, expressionType);
+            }
+            else if (IsShardingKey(right, out var predicateRightResult))
+            {
+                return ParseConditionOnRight0(false, predicateRightResult, left, expressionType);
+            }
+            else
+                return RoutePredicateExpression.Default;
+        }
+
+        private RoutePredicateExpression ParseNamedComparison(BinaryExpression binaryExpression,
+            MethodCallExpression methodCallExpression)
+        {
+            if (methodCallExpression.GetComparisonLeftAndRight(out var result))
+            {
+                return ParseCompare(methodCallExpression, result.Left, result.Right,
+                    binaryExpression.NodeType, (int)GetExpressionValue(binaryExpression.Right));
+            }
+
+            return RoutePredicateExpression.Default;
+        }
+
+
+        private RoutePredicateExpression ParsePropertyCondition(BinaryExpression binaryExpression)
+        {
+            // RoutePredicateExpression left = RoutePredicateExpression.Default;
+            // RoutePredicateExpression right = RoutePredicateExpression.Default;
+            //左边是属性判断是否是分片的
+            if (IsShardingKey(binaryExpression.Left, out var predicateLeftResult))
+            {
+                return ParseConditionOnRight0(true, predicateLeftResult, binaryExpression.Right,
+                    binaryExpression.NodeType);
+            }
+            else if (IsShardingKey(binaryExpression.Right, out var predicateRightResult))
+            {
+                return ParseConditionOnRight0(false, predicateRightResult, binaryExpression.Left,
+                    binaryExpression.NodeType);
+            }
+            else if (binaryExpression.IsNamedComparison(out var methodCallExpression))
+            {
+                return ParseNamedComparison(binaryExpression, methodCallExpression);
             }
             else
             {
+                RoutePredicateExpression left = RoutePredicateExpression.Default;
+                RoutePredicateExpression right = RoutePredicateExpression.Default;
 
-                return ParseCondition0(binaryExpression.Left, binaryExpression.Right, conditionOnRight =>
+                //递归获取
+                if (binaryExpression.Left is BinaryExpression binaryExpression1)
+                    left = ParsePropertyCondition(binaryExpression1);
+                if (binaryExpression.Right is BinaryExpression binaryExpression2)
+                    right = ParsePropertyCondition(binaryExpression2);
+
+                if (binaryExpression.Left is MethodCallExpression methodCallLeftExpression)
                 {
-                    var op = binaryExpression.NodeType switch
+                    if (!methodCallLeftExpression.IsNamedComparison())
                     {
-                        ExpressionType.GreaterThan => conditionOnRight ? ShardingOperatorEnum.GreaterThan : ShardingOperatorEnum.LessThan,
-                        ExpressionType.GreaterThanOrEqual => conditionOnRight ? ShardingOperatorEnum.GreaterThanOrEqual : ShardingOperatorEnum.LessThanOrEqual,
-                        ExpressionType.LessThan => conditionOnRight ? ShardingOperatorEnum.LessThan : ShardingOperatorEnum.GreaterThan,
-                        ExpressionType.LessThanOrEqual => conditionOnRight ? ShardingOperatorEnum.LessThanOrEqual : ShardingOperatorEnum.GreaterThanOrEqual,
-                        ExpressionType.Equal => ShardingOperatorEnum.Equal,
-                        ExpressionType.NotEqual => ShardingOperatorEnum.NotEqual,
-                        _ => ShardingOperatorEnum.UnKnown
-                    };
-                    return op;
-                });
-            }
-            return RoutePredicateExpression.Default;
-        }
-
-        private RoutePredicateExpression ParseGetWhere(BinaryExpression binaryExpression)
-        {
-            RoutePredicateExpression left = RoutePredicateExpression.Default;
-            RoutePredicateExpression right = RoutePredicateExpression.Default;
-
-            //递归获取
-            if (binaryExpression.Left is BinaryExpression binaryExpression1)
-                left = ParseGetWhere(binaryExpression1);
-            if (binaryExpression.Right is BinaryExpression binaryExpression2)
-                right = ParseGetWhere(binaryExpression2);
-
-            if (binaryExpression.Left is MethodCallExpression methodCallLeftExpression)
-            {
-                if (!methodCallLeftExpression.IsNamedComparison())
-                {
-                    left = Resolve(methodCallLeftExpression);
+                        left = Resolve(methodCallLeftExpression);
+                    }
                 }
-            }
 
-            if (binaryExpression.Right is MethodCallExpression methodCallRightExpression)
-            {
-                if (!methodCallRightExpression.IsNamedComparison())
+                if (binaryExpression.Right is MethodCallExpression methodCallRightExpression)
                 {
-                    right = Resolve(methodCallRightExpression);
+                    if (!methodCallRightExpression.IsNamedComparison())
+                    {
+                        right = Resolve(methodCallRightExpression);
+                    }
                 }
-            }
 
-            if (binaryExpression.Left is UnaryExpression unaryExpression1 && (binaryExpression.Right is MemberExpression&& !IsShardingKey(binaryExpression.Right, out var _)))
-                left = Resolve(unaryExpression1);
-            if (binaryExpression.Right is UnaryExpression unaryExpression2 && (binaryExpression.Left is MemberExpression && !IsShardingKey(binaryExpression.Left, out var _)))
-                right = Resolve(unaryExpression2);
+                if (binaryExpression.Left is UnaryExpression unaryExpression1 &&
+                    (binaryExpression.Right is MemberExpression))
+                    left = Resolve(unaryExpression1);
+                if (binaryExpression.Right is UnaryExpression unaryExpression2 &&
+                    (binaryExpression.Left is MemberExpression))
+                    right = Resolve(unaryExpression2);
 
-            //组合
-            if (binaryExpression.NodeType == ExpressionType.AndAlso)
-            {
-                return left.And(right);
-            }
-            else if (binaryExpression.NodeType == ExpressionType.OrElse)
-            {
-                return left.Or(right);
-            }
-            //单个
-            else
-            {
-                return ParseCondition(binaryExpression);
+                //组合
+                if (binaryExpression.NodeType == ExpressionType.AndAlso)
+                {
+                    return left.And(right);
+                }
+                else if (binaryExpression.NodeType == ExpressionType.OrElse)
+                {
+                    return left.Or(right);
+                }
+                else
+                {
+                    return RoutePredicateExpression.Default;
+                }
             }
         }
     }
@@ -502,10 +617,12 @@ namespace ShardingCore.Core.Internal.Visitors
             IsShardingKey = isShardingKey;
             ShardingPropertyName = shardingPropertyName;
         }
+
         /// <summary>
         /// 是否是分片字段
         /// </summary>
         public bool IsShardingKey { get; }
+
         /// <summary>
         /// 分片字段名称
         /// </summary>

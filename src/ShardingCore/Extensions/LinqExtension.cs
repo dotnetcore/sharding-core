@@ -47,9 +47,14 @@ namespace ShardingCore.Extensions
         {
             return !source.IsEmpty();
         }
-        public static bool IsIn<T>(this T thisValue, params T[] values)
+
+        private static readonly HashSet<string> _enumerableContainsNamespace = new HashSet<string>()
         {
-            return values.Contains(thisValue);
+            "System.Linq", "System.Collections.Generic"
+        };
+        public static bool IsInEnumerable(this string thisValue)
+        {
+            return _enumerableContainsNamespace.Contains(thisValue);
         }
         /// <summary>
         /// 按size分区,每个区size个数目
