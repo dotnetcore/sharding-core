@@ -5,6 +5,8 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
 
+
+var join = string.Join(Environment.NewLine,Enumerable.Range(14,100).Select(o=>o+";"));
 ILoggerFactory efLogger = LoggerFactory.Create(builder =>
 {
     builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
@@ -19,12 +21,12 @@ builder.Services.AddControllers();
 // builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddSwaggerGen();
 builder.Services.AddShardingDbContext<DefaultDbContext>()
-    .AddEntityConfig(o =>
+    .UseRouteConfig(o =>
     {
         o.AddShardingTableRoute<OrderByHourRoute>();
         o.AddShardingTableRoute<AreaDeviceRoute>();
     })
-    .AddConfig(o =>
+    .UseConfig(o =>
     {
         o.ThrowIfQueryRouteNotMatch = false;
         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=shardingTest;userid=root;password=root;");
@@ -36,7 +38,7 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
         {
             b.UseMySql(conn, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
         });
-    }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>().EnsureConfig();
+    }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>().AddShardingCore();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

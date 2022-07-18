@@ -44,7 +44,7 @@ namespace ShardingCore.CommonTest
 
         private void TestId(IQueryable<TestEntity> queryable, string[] dataSourceNames)
         {
-            var routePredicateExpression = ShardingUtil.GetRouteParseExpression(queryable,_testEntityMetadata,GetRouteFilter,false);
+            var routePredicateExpression = ShardingUtil.GetRouteParseExpressionV2(queryable,_testEntityMetadata,GetRouteFilter,false);
             Assert.NotNull(routePredicateExpression);
             var routePredicate = routePredicateExpression.GetRoutePredicate();
         

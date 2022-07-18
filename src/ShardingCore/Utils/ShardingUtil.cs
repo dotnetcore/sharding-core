@@ -44,6 +44,15 @@ namespace ShardingCore.Utils
 
             return visitor.GetRouteParseExpression();
         }
+        public static RoutePredicateExpression GetRouteParseExpressionV2(IQueryable queryable, EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum,string, Func<string, bool>> keyToTailExpression,bool shardingTableRoute)
+        {
+
+            QueryableRouteShardingTableDiscoverVisitorV2 visitor = new QueryableRouteShardingTableDiscoverVisitorV2(entityMetadata, keyToTailExpression, shardingTableRoute);
+
+            visitor.Visit(queryable.Expression);
+
+            return visitor.GetRouteParseExpression();
+        }
 
     }
 }
