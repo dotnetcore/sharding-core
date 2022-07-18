@@ -40,7 +40,7 @@ namespace ShardingCore.Helpers
         }
         public static long ConvertDateTimeToLong(DateTime localDateTime)
         {
-            return new DateTimeOffset(localDateTime).ToUnixTimeMilliseconds(); ;
+            return new DateTimeOffset(localDateTime).ToUnixTimeMilliseconds(); 
         }
 
         /// <summary>

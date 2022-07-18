@@ -21,8 +21,8 @@ builder.Services.AddControllers();
 builder.Services.AddShardingDbContext<DefaultDbContext>()
     .AddEntityConfig(o =>
     {
-        // o.AddShardingTableRoute<OrderByHourRoute>();
-        // o.AddShardingTableRoute<AreaDeviceRoute>();
+        o.AddShardingTableRoute<OrderByHourRoute>();
+        o.AddShardingTableRoute<AreaDeviceRoute>();
     })
     .AddConfig(o =>
     {

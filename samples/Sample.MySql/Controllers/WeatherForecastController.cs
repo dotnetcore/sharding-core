@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.TableCreator;
 
 namespace Sample.MySql.Controllers
@@ -31,7 +32,8 @@ namespace Sample.MySql.Controllers
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
                 
-                var resultX = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
+                var resultX = await _defaultTableDbContext.Set<SysUserMod>()
+                    .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
                 var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");
                 var result = await _defaultTableDbContext.Set<SysTest>().AnyAsync();
                 var result1 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "2" || o.Id == "3").ToListAsync();

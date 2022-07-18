@@ -94,21 +94,23 @@ namespace ShardingCore.CommonTest
             var obj1 = new {time=new DateTime(2022, 1, 2)};
             var queryables=new List<IQueryable<TestTimeEntity>>()
             {
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==queryTime),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<queryTime2),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<queryTime3),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<=queryTime3),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==queryTime1),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>queryTime==o.Time),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time.Equals(queryTime)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>queryTime.Equals(o.Time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==obj1.time),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time.Equals(obj1.time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>obj1.time.Equals(o.Time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>times.Contains(o.Time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>new []{queryTime}.Contains(o.Time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=>times1.Contains(o.Time)),
-                new List<TestTimeEntity>().AsQueryable().Where(o=> new List<DateTime>(){queryTime}.Contains(o.Time))
+                
+                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==times[0]),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==queryTime),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<queryTime2),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<queryTime3),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<=queryTime3),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==queryTime1),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>queryTime==o.Time),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time.Equals(queryTime)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>queryTime.Equals(o.Time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==obj1.time),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time.Equals(obj1.time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>obj1.time.Equals(o.Time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>times.Contains(o.Time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>new []{queryTime}.Contains(o.Time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=>times1.Contains(o.Time)),
+                // new List<TestTimeEntity>().AsQueryable().Where(o=> new List<DateTime>(){queryTime}.Contains(o.Time))
             };
             TestFor(queryables,tables);
         }
