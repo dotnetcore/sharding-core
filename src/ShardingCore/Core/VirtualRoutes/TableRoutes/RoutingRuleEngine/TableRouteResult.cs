@@ -44,7 +44,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
 
         public override string ToString()
         {
-            return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => o.EntityType))}])";
+            return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => $"{o.DataSourceName}.{o.Tail}.{o.EntityType}"))}])";
         }
 
 #if !EFCORE2
