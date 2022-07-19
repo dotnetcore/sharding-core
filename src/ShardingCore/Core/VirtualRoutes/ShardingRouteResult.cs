@@ -26,7 +26,7 @@ namespace ShardingCore.Core.VirtualRoutes
 
         public override string ToString()
         {
-            return string.Join(",", Environment.NewLine,RouteUnits.Select(o => o.ToString()));
+            return string.Join(",",RouteUnits.Select(o => o.ToString()));
         }
     }
 }
