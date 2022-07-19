@@ -27,6 +27,7 @@ namespace ShardingCore.Core.RuntimeContexts
     
     public interface IShardingRuntimeContext
     {
+        Type DbContextType { get; }
         IShardingProvider GetShardingProvider();
         ShardingConfigOptions GetShardingConfigOptions();
         IShardingRouteConfigOptions GetShardingRouteConfigOptions();

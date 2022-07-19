@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Sample.MySql.DbContexts;
+using Sample.MySql.Domain.Entities;
 using Sample.MySql.Shardings;
 using ShardingCore;
 using ShardingCore.Bootstrappers;
@@ -153,6 +154,7 @@ namespace Sample.MySql
             app.ApplicationServices.UseAutoShardingCreate();
             var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
+            var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();

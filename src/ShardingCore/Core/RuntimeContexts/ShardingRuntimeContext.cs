@@ -39,7 +39,12 @@ namespace ShardingCore.Core.RuntimeContexts
         private IServiceCollection _serviceMap = new ServiceCollection();
 
         private IServiceProvider _serviceProvider;
+        public Type DbContextType { get; }
         // private ILoggerFactory _applicationLoggerFactory;
+        public ShardingRuntimeContext(Type dbContextType)
+        {
+            DbContextType = dbContextType;
+        }
 
         public void AddServiceConfig(Action<IServiceCollection> configure)
         {
@@ -69,6 +74,7 @@ namespace ShardingCore.Core.RuntimeContexts
         }
 
         private IShardingProvider _shardingProvider;
+
         public IShardingProvider GetShardingProvider()
         {
            return _shardingProvider??=GetRequiredService<IShardingProvider>();

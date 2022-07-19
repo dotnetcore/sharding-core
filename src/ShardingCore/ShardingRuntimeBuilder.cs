@@ -73,7 +73,7 @@ namespace ShardingCore
         
         public IShardingRuntimeContext Build(IServiceProvider appServiceProvider, ILoggerFactory loggerFactory)
         {
-            var shardingRuntimeContext = new ShardingRuntimeContext();
+            var shardingRuntimeContext = new ShardingRuntimeContext(typeof(TShardingDbContext));
             shardingRuntimeContext.AddServiceConfig(services =>
             {
                 // services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());
