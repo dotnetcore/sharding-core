@@ -14,6 +14,7 @@ namespace Sample.AutoCreateIfPresent
 {
     public class DefaultDbContext:AbstractShardingDbContext,IShardingTableDbContext
     {
+
         public DefaultDbContext(DbContextOptions<DefaultDbContext> options) : base(options)
         {
         }

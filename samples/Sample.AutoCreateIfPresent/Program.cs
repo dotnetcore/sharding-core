@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Sample.AutoCreateIfPresent;
 using ShardingCore;
 using ShardingCore.Bootstrappers;
+using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
 
@@ -38,7 +40,8 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
         {
             b.UseMySql(conn, new MySqlServerVersion(new Version())).UseLoggerFactory(efLogger);
         });
-    }).ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>().AddShardingCore();
+    })
+    .ReplaceService<ITableEnsureManager,MySqlTableEnsureManager>().AddShardingCore();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -158,12 +158,15 @@ namespace ShardingCore.Helpers
                     shardings.ForEach(aShardingTable =>
                     {
                         string newCmd = sourceCmd;
-                        GetReplaceGroups(operation, absTableName, aShardingTable).ForEach(aReplace =>
+                        var replaceGroups = GetReplaceGroups(operation, absTableName, aShardingTable);
+                        foreach (var migrationReplaceItem in replaceGroups)
                         {
+                            var delimitSourceNameIdentifier = sqlGenerationHelper.DelimitIdentifier(migrationReplaceItem.SourceName);
+                            var delimitTargetNameIdentifier = sqlGenerationHelper.DelimitIdentifier(migrationReplaceItem.TargetName);
                             newCmd = newCmd.Replace(
-                                sqlGenerationHelper.DelimitIdentifier(aReplace.sourceName),
-                                sqlGenerationHelper.DelimitIdentifier(aReplace.targetName));
-                        });
+                                delimitSourceNameIdentifier,
+                                delimitTargetNameIdentifier);
+                        }
                         if (newCmd.Contains(
                                 "EXEC sp_addextendedproperty 'MS_Description', @description, 'SCHEMA', @defaultSchema, 'TABLE'"))
                         {
@@ -185,13 +188,13 @@ namespace ShardingCore.Helpers
             }
         }
 
-        private static List<(string sourceName, string targetName)> GetReplaceGroups(
+        private static ISet<MigrationReplaceItem> GetReplaceGroups(
             MigrationOperation operation, string sourceTableName, string targetTableName)
         {
-            List<(string sourceName, string targetName)> resList =
-                new List<(string sourceName, string targetName)>
+            ISet<MigrationReplaceItem> resList =
+                new HashSet<MigrationReplaceItem>()
                 {
-                    (sourceTableName, targetTableName)
+                    new MigrationReplaceItem(sourceTableName, targetTableName)
                 };
 
             string name = operation.GetPropertyValue("Name") as string;
@@ -209,7 +212,7 @@ namespace ShardingCore.Helpers
                         if (Regex.IsMatch(name, aPattern))
                         {
                             var newName = new Regex(aPattern).Replace(name, "${1}" + targetTableName + "$3");
-                            resList.Add((name, newName));
+                            resList.Add(new MigrationReplaceItem(name, newName));
                             break;
                         }
                     }
@@ -235,14 +238,22 @@ namespace ShardingCore.Helpers
                     var propertyValue = aProperty.GetValue(operation);
                     if (propertyValue is MigrationOperation propertyOperation)
                     {
-                        resList.AddRange(GetReplaceGroups(propertyOperation, sourceTableName, targetTableName));
+                        var migrationReplaceItems = GetReplaceGroups(propertyOperation, sourceTableName, targetTableName);
+                        foreach (var migrationReplaceItem in migrationReplaceItems)
+                        {
+                            resList.Add(migrationReplaceItem);
+                        }
                     }
                     else if (listPropertyWhere(aProperty))
                     {
                         foreach (var aValue in (IEnumerable)propertyValue)
                         {
-                            resList.AddRange(GetReplaceGroups((MigrationOperation)aValue, sourceTableName,
-                                targetTableName));
+                            var migrationReplaceItems = GetReplaceGroups((MigrationOperation)aValue, sourceTableName,
+                                targetTableName);
+                            foreach (var migrationReplaceItem in migrationReplaceItems)
+                            {
+                                resList.Add(migrationReplaceItem);
+                            }
                         }
                     }
                 });

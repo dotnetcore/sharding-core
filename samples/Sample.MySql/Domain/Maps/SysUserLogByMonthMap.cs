@@ -14,7 +14,7 @@ namespace Sample.MySql.Domain.Maps
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
-            builder.ToTable(nameof(SysUserLogByMonth));
+            builder.ToTable("Sys_User_LogBy_Month");
         }
     }
 }

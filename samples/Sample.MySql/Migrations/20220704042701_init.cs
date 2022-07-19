@@ -28,7 +28,7 @@ namespace Sample.MySql.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "SysUserLogByMonth",
+                name: "Sys_User_LogBy_Month",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
@@ -37,7 +37,7 @@ namespace Sample.MySql.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SysUserLogByMonth", x => x.Id);
+                    table.PrimaryKey("PK_Sys_User_LogBy_Month", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -64,7 +64,7 @@ namespace Sample.MySql.Migrations
                 name: "SysTest");
 
             migrationBuilder.DropTable(
-                name: "SysUserLogByMonth");
+                name: "Sys_User_LogBy_Month");
 
             migrationBuilder.DropTable(
                 name: "SysUserMod");
