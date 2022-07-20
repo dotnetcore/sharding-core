@@ -16,10 +16,6 @@ namespace ShardingCore.EFCores
 
     public class ShardingModelCacheKeyFactory : IModelCacheKeyFactory
     {
-        public ShardingModelCacheKeyFactory()
-        {
-            Console.WriteLine("ShardingModelCacheKeyFactory");
-        }
         public object Create(DbContext context)
         {
             return Create(context, false);
