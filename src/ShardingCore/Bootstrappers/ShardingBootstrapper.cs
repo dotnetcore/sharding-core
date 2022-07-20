@@ -29,7 +29,7 @@ namespace ShardingCore.Bootstrappers
     {
         private readonly IShardingProvider _shardingProvider;
         private readonly IDbContextCreator _dbContextCreator;
-
+        private readonly DoOnlyOnce _onlyOnce=new DoOnlyOnce();
         public ShardingBootstrapper(IShardingProvider shardingProvider,IDbContextCreator dbContextCreator)
         {
             _shardingProvider = shardingProvider;
@@ -37,6 +37,8 @@ namespace ShardingCore.Bootstrappers
         }
         public void AutoShardingCreate()
         {
+            if (!_onlyOnce.IsUnDo())
+                return;
             CheckRequirement();
             StartAutoShardingJob();
         }

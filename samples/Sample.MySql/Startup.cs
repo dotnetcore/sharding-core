@@ -123,25 +123,25 @@ namespace Sample.MySql
                             { "ds1", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;" },
                             { "ds2", "server=127.0.0.1;port=3306;database=dbdbd2;userid=root;password=root;" }
                         });
-                        o.AddReadWriteSeparation(sp =>
-                            {
-                                return new Dictionary<string, IEnumerable<string>>()
-                                {
-                                    {
-                                        "ds0",
-                                        new[]
-                                        {
-                                            "server=127.0.0.1;port=3306;database=dbdbd0_0;userid=root;password=root;"
-                                        }
-                                    }
-                                };
-                            }, defaultEnable: true, readStrategyEnum: ReadStrategyEnum.Loop,
-                            readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
+                        // o.AddReadWriteSeparation(sp =>
+                        //     {
+                        //         return new Dictionary<string, IEnumerable<string>>()
+                        //         {
+                        //             {
+                        //                 "ds0",
+                        //                 new[]
+                        //                 {
+                        //                     "server=127.0.0.1;port=3306;database=dbdbd0_0;userid=root;password=root;"
+                        //                 }
+                        //             }
+                        //         };
+                        //     }, defaultEnable: true, readStrategyEnum: ReadStrategyEnum.Loop,
+                        //     readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
                         o.UseShardingMigrationConfigure(b =>
                         {
                             b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                         });
-                    })//.ReplaceService<ITableEnsureManager, MySqlTableEnsureManager>(ServiceLifetime.Singleton)
+                    }).ReplaceService<ITableEnsureManager, MySqlTableEnsureManager>(ServiceLifetime.Singleton)
                     .Build(sp);
                 stopwatch.Stop();
                 Console.WriteLine("ShardingRuntimeContext build:" + stopwatch.ElapsedMilliseconds);

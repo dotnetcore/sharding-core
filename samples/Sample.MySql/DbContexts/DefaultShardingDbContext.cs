@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Sample.MySql.Domain.Entities;
 using Sample.MySql.Domain.Maps;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
@@ -15,6 +19,8 @@ namespace Sample.MySql.DbContexts
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //Database.SetCommandTimeout(30000);
         }
+        private readonly MethodInfo? _configureGlobalFiltersMethodInfo =
+            typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,8 +28,37 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                _configureGlobalFiltersMethodInfo?.MakeGenericMethod(entityType.ClrType)
+                    .Invoke(this, new object[] { modelBuilder, entityType });
+            }
         }
 
+        
+        protected void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType)
+            where TEntity : class
+        {
+            var filterExpression = CreateFilterExpression<TEntity>();
+
+            if (filterExpression != null) modelBuilder.Entity<TEntity>().HasQueryFilter(filterExpression);
+        }
+
+        protected Expression<Func<TEntity, bool>>? CreateFilterExpression<TEntity>() where TEntity : class
+        {
+            Expression<Func<TEntity, bool>>? expression = null;
+            if (typeof(TEntity) == typeof(SysTest))
+            {  
+                expression = e => ((IUser)e).UserId == "123";
+              
+            }  if (typeof(TEntity) == typeof(SysUserMod))
+            {  
+                expression = e => ((IAge)e).Age == 99;
+              
+            }
+
+            return expression;
+        }
         public IRouteTail RouteTail { get; set; }
     }
 }
