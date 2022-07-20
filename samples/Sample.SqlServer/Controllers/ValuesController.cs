@@ -34,12 +34,12 @@ namespace Sample.SqlServer.Controllers
         private readonly IShardingReadWriteManager _readWriteManager;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRouteManager shardingRouteManager,IShardingReadWriteManager readWriteManager,IShardingRuntimeContext shardingRuntimeContext)
+        public ValuesController(DefaultShardingDbContext defaultTableDbContext, IShardingRuntimeContext shardingRuntimeContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
             _ = defaultTableDbContext.Model;
-            _shardingRouteManager = shardingRouteManager;
-            _readWriteManager = readWriteManager;
+            _shardingRouteManager = shardingRuntimeContext.GetShardingRouteManager();
+            _readWriteManager = shardingRuntimeContext.GetShardingReadWriteManager();
             _shardingRuntimeContext = shardingRuntimeContext;
         }
 
