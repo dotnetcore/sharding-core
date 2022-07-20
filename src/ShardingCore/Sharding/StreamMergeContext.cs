@@ -93,7 +93,7 @@ namespace ShardingCore.Sharding
             RewriteQueryable = rewriteResult.GetRewriteQueryable();
             OptimizeResult = optimizeResult;
             _rewriteResult = rewriteResult;
-            ShardingRuntimeContext = mergeQueryCompilerContext.GetShardingDbContext().GetShardingRuntimeContext();
+            ShardingRuntimeContext = ((DbContext)mergeQueryCompilerContext.GetShardingDbContext()).GetShardingRuntimeContext();
             _routeTailFactory = ShardingRuntimeContext.GetRouteTailFactory();
             _trackerManager = ShardingRuntimeContext.GetTrackerManager();
             _shardingConfigOptions = ShardingRuntimeContext.GetShardingConfigOptions();
@@ -289,7 +289,7 @@ namespace ShardingCore.Sharding
 
         public IShardingComparer GetShardingComparer()
         {
-            return GetShardingDbContext().GetShardingRuntimeContext().GetRequiredService<IShardingComparer>();
+            return ((DbContext)GetShardingDbContext()).GetShardingRuntimeContext().GetShardingComparer();
         }
 
         /// <summary>

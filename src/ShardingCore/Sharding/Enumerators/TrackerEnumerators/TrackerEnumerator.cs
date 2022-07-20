@@ -24,7 +24,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
         public TrackerEnumerator(IShardingDbContext shardingDbContext,IEnumerator<T> enumerator)
         {
-            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             _shardingDbContext = shardingDbContext;
             _enumerator = enumerator;
             _queryTrack = shardingRuntimeContext.GetQueryTracker();

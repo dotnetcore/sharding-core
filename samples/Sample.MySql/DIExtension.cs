@@ -5,6 +5,8 @@ using Sample.MySql.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Internal;
+using Sample.MySql.multi;
 using ShardingCore.Bootstrappers;
 
 namespace Sample.MySql
@@ -21,6 +23,8 @@ namespace Sample.MySql
         {
             using (var scope=app.ApplicationServices.CreateScope())
             {
+                var otherDbContext =scope.ServiceProvider.GetService<OtherDbContext>();
+                var any = otherDbContext.MyUsers.Any();
                 var virtualDbContext =scope.ServiceProvider.GetService<DefaultShardingDbContext>();
                 if (!virtualDbContext.Set<SysUserMod>().Any())
                 {
@@ -51,6 +55,13 @@ namespace Sample.MySql
 
                 }
             }
+            
+            // using (var scope=app.ApplicationServices.CreateScope())
+            // {
+            //   
+            //     var virtualDbContext =scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     var any = virtualDbContext.Set<SysUserMod>().Any();
+            // }
             //using (var scope = app.ApplicationServices.CreateScope())
             //{
             //    var dbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();

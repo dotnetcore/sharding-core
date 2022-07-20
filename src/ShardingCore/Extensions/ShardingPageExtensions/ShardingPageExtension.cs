@@ -44,7 +44,7 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
         public static async Task<ShardingPagedResult<T>> ToShardingPageAsync<T>(this IQueryable<T> source, int pageIndex, int pageSize)
         {
             var shardingDbContext = GetShardingDbContext(source);
-            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             
             //设置每次获取多少页
             var take = pageSize <= 0 ? 1 : pageSize;
@@ -79,7 +79,7 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
         public static ShardingPagedResult<T> ToShardingPage<T>(this IQueryable<T> source, int pageIndex, int pageSize)
         {
             var shardingDbContext = GetShardingDbContext(source);
-            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             //设置每次获取多少页
             var take = pageSize <= 0 ? 1 : pageSize;
             //设置当前页码最小1

@@ -30,12 +30,6 @@ namespace ShardingCore.Extensions
             return dbContext.GetService<IDbContextServices>().ContextOptions.FindExtension<UnionAllMergeOptionsExtension>() is not null;
         }
 
-        public static IShardingRuntimeContext GetShardingRuntimeContext(this IShardingDbContext shardingDbContext)
-        {
-            return ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
-        }
-
-
         /// <summary>
         /// 创建共享链接DbConnection
         /// </summary>

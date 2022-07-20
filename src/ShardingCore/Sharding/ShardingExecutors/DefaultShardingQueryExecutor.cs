@@ -55,13 +55,11 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
             if (mergeQueryCompilerContext.IsEnumerableQuery())
             {
                 return EnumerableExecute<TResult>(mergeQueryCompilerContext);
-
             }
 
             if (typeof(TResult).HasImplementedRawGeneric(typeof(Task<>)))
             {
                 return DoExecute<TResult>(mergeQueryCompilerContext, true, cancellationToken);
-
             }
 
 

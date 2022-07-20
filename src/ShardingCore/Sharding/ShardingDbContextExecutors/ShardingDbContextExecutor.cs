@@ -64,7 +64,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             _shardingDbContext = shardingDbContext;
             //初始化
-            _shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            _shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             _shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             _dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();

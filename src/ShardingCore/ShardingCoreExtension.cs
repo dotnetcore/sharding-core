@@ -91,6 +91,22 @@ namespace ShardingCore
             return services.AddShardingConfigure<TShardingDbContext>();
         }
 
+        public static ShardingCoreConfigBuilder<TShardingDbContext> AddMultiShardingDbContext<TShardingDbContext>(
+            this IServiceCollection services,
+            ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
+            ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+            where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            if (contextLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(contextLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+            if (optionsLifetime == ServiceLifetime.Singleton)
+                throw new NotSupportedException($"{nameof(optionsLifetime)}:{nameof(ServiceLifetime.Singleton)}");
+            services.AddDbContext<TShardingDbContext>(UseMutliDefaultSharding<TShardingDbContext>, contextLifetime,
+                optionsLifetime);
+            services.TryAddSingleton<IShardingRuntimeContextManager, ShardingRuntimeContextManager>();
+            return services.AddShardingConfigure<TShardingDbContext>();
+        }
+
         public static ShardingCoreConfigBuilder<TShardingDbContext> AddShardingConfigure<TShardingDbContext>(
             this IServiceCollection services)
             where TShardingDbContext : DbContext, IShardingDbContext
@@ -99,18 +115,36 @@ namespace ShardingCore
             return new ShardingCoreConfigBuilder<TShardingDbContext>(services);
         }
 
-        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,IServiceProvider serviceProvider) where TShardingDbContext : DbContext, IShardingDbContext
+        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,
+            IServiceProvider serviceProvider) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
             dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
         }
+
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,
             DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
             dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
         }
-        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
+
+        public static void UseMutliDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,
+            DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
+        {
+            var shardingRuntimeContextManager = serviceProvider.GetRequiredService<IShardingRuntimeContextManager>();
+            var shardingRuntimeContext = shardingRuntimeContextManager.TryGet(typeof(TShardingDbContext));
+            if (shardingRuntimeContext == null)
+            {
+                throw new InvalidOperationException(
+                    $"cant get multi sharding runtime context:[{typeof(TShardingDbContext)}]");
+            }
+
+            dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
+        }
+
+        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,
+            IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
             shardingConfigOptions.ShardingMigrationConfigure?.Invoke(dbContextOptionsBuilder);
@@ -211,6 +245,7 @@ namespace ShardingCore
                 .ReplaceService<IRelationalTransactionFactory,
                     ShardingRelationalTransactionFactory<TShardingDbContext>>();
         }
+
         public static DbContextOptionsBuilder UseShardingMigrator(
             this DbContextOptionsBuilder optionsBuilder)
         {
@@ -221,6 +256,7 @@ namespace ShardingCore
         public static DbContextOptionsBuilder UseShardingOptions(this DbContextOptionsBuilder optionsBuilder,
             IShardingRuntimeContext shardingRuntimeContext)
         {
+    
             var shardingOptionsExtension = optionsBuilder.CreateOrGetShardingOptionsExtension(shardingRuntimeContext);
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(shardingOptionsExtension);
             return optionsBuilder;
@@ -240,9 +276,13 @@ namespace ShardingCore
                new ShardingWrapOptionsExtension();
 
         private static ShardingOptionsExtension CreateOrGetShardingOptionsExtension(
-            this DbContextOptionsBuilder optionsBuilder, IShardingRuntimeContext shardingRuntimeContext)
-            => optionsBuilder.Options.FindExtension<ShardingOptionsExtension>() ??
-               new ShardingOptionsExtension(shardingRuntimeContext);
+            this DbContextOptionsBuilder optionsBuilder, IShardingRuntimeContext shardingRuntimeContext) =>
+            optionsBuilder.Options.FindExtension<ShardingOptionsExtension>() ??
+            new ShardingOptionsExtension(shardingRuntimeContext);
+        // private static CoreOptionsExtension CreateOrGetCoreOptionsExtension(
+        //     this DbContextOptionsBuilder optionsBuilder) =>
+        //     optionsBuilder.Options.FindExtension<CoreOptionsExtension>() ??
+        //     new CoreOptionsExtension();
 
         public static DbContextOptionsBuilder UseInnerDbContextSharding(this DbContextOptionsBuilder optionsBuilder)
         {

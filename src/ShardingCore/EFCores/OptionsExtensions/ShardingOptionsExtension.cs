@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,15 +20,15 @@ namespace ShardingCore.EFCores.OptionsExtensions
 #if EFCORE6
     public class ShardingOptionsExtension : IDbContextOptionsExtension
     {
-        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        public IShardingRuntimeContext ShardingRuntimeContext { get; }
 
         public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
-            _shardingRuntimeContext = shardingRuntimeContext;
+            ShardingRuntimeContext = shardingRuntimeContext;
         }
         public void ApplyServices(IServiceCollection services)
         {
-            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
+            services.AddSingleton<IShardingRuntimeContext>(sp =>ShardingRuntimeContext);
         }
 
         public void Validate(IDbContextOptions options)
@@ -35,15 +36,17 @@ namespace ShardingCore.EFCores.OptionsExtensions
         }
 
 
-        public DbContextOptionsExtensionInfo Info => new ShardingWrapDbContextOptionsExtensionInfo(this);
+        public DbContextOptionsExtensionInfo Info => new ShardingOptionsExtensionInfo(this);
 
-        private class ShardingWrapDbContextOptionsExtensionInfo : DbContextOptionsExtensionInfo
+        private class ShardingOptionsExtensionInfo : DbContextOptionsExtensionInfo
         {
-            public ShardingWrapDbContextOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
+            private readonly ShardingOptionsExtension _shardingOptionsExtension;
+            public ShardingOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
             {
+                _shardingOptionsExtension = (ShardingOptionsExtension)extension;
             }
 
-            public override int GetServiceProviderHashCode() => 0;
+            public override int GetServiceProviderHashCode() => _shardingOptionsExtension.ShardingRuntimeContext.GetHashCode();
 
             public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
 
@@ -60,15 +63,15 @@ namespace ShardingCore.EFCores.OptionsExtensions
 
      public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
-        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        public IShardingRuntimeContext ShardingRuntimeContext { get; }
 
         public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
-            _shardingRuntimeContext = shardingRuntimeContext;
+            ShardingRuntimeContext = shardingRuntimeContext;
         }
         public void ApplyServices(IServiceCollection services)
         {
-            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
+            services.AddSingleton<IShardingRuntimeContext>(sp => ShardingRuntimeContext);
         }
 
         public void Validate(IDbContextOptions options)
@@ -76,13 +79,18 @@ namespace ShardingCore.EFCores.OptionsExtensions
         }
 
 
-        public DbContextOptionsExtensionInfo Info => new ShardingWrapDbContextOptionsExtensionInfo(this);
+        public DbContextOptionsExtensionInfo Info => new ShardingOptionsExtensionInfo(this);
 
-        private class ShardingWrapDbContextOptionsExtensionInfo : DbContextOptionsExtensionInfo
+        private class ShardingOptionsExtensionInfo : DbContextOptionsExtensionInfo
         {
-            public ShardingWrapDbContextOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension) { }
+            private readonly ShardingOptionsExtension _shardingOptionsExtension;
+            public ShardingOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
+            {
+                _shardingOptionsExtension = (ShardingOptionsExtension)extension;
+            }
 
-            public override long GetServiceProviderHashCode() => 0;
+
+            public override long GetServiceProviderHashCode() => _shardingOptionsExtension.ShardingRuntimeContext.GetHashCode();
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo) { }
 
@@ -96,18 +104,18 @@ namespace ShardingCore.EFCores.OptionsExtensions
 
     public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
-        private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        public IShardingRuntimeContext ShardingRuntimeContext { get; }
 
         public ShardingOptionsExtension(IShardingRuntimeContext shardingRuntimeContext)
         {
-            _shardingRuntimeContext = shardingRuntimeContext;
+            ShardingRuntimeContext = shardingRuntimeContext;
         }
         public bool ApplyServices(IServiceCollection services)
         {
-            services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeContext);
+            services.AddSingleton<IShardingRuntimeContext>(sp => ShardingRuntimeContext);
             return true;
         }
-        public long GetServiceProviderHashCode() => 0;
+        public long GetServiceProviderHashCode() => ShardingRuntimeContext.GetHashCode();
 
         public void Validate(IDbContextOptions options)
         {

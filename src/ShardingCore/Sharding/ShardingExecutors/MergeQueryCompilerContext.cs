@@ -101,7 +101,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         public static MergeQueryCompilerContext Create(IQueryCompilerContext queryCompilerContext, QueryCombineResult queryCombineResult, ShardingRouteResult shardingRouteResult)
         {
             var shardingDbContext = queryCompilerContext.GetShardingDbContext();
-            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             return new MergeQueryCompilerContext(shardingRuntimeContext,queryCompilerContext, queryCombineResult,shardingRouteResult);
         }
         public Dictionary<Type,IQueryable> GetQueryEntities()

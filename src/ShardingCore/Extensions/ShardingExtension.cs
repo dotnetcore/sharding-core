@@ -89,7 +89,7 @@ namespace ShardingCore.Extensions
         {
             if (entities.IsEmpty())
                 return new Dictionary<string, Dictionary<DbContext, IEnumerable<TEntity>>>();
-            var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             var entityType = typeof(TEntity);
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
             var virtualDataSource = shardingDbContext.GetVirtualDataSource();
@@ -225,7 +225,7 @@ namespace ShardingCore.Extensions
                 IEnumerable<TEntity> entities) where TShardingDbContext : DbContext, IShardingDbContext
             where TEntity : class
         {
-            var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
                 throw new ShardingCoreInvalidOperationException(typeof(TEntity).FullName);
@@ -246,7 +246,7 @@ namespace ShardingCore.Extensions
         public static IDictionary<string, IEnumerable<DbContext>> BulkShardingExpression<TShardingDbContext, TEntity>(this TShardingDbContext shardingDbContext, Expression<Func<TEntity, bool>> where) where TEntity : class
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
             var dataSourceRouteManager = shardingRuntimeContext.GetDataSourceRouteManager();
             var tableRouteManager = shardingRuntimeContext.GetTableRouteManager();// (IVirtualTableManager)ShardingContainer.GetService(typeof(IVirtualTableManager<>).GetGenericType0(shardingDbContext.GetType()));
@@ -289,7 +289,7 @@ namespace ShardingCore.Extensions
         public static IEnumerable<DbContext> BulkShardingTableExpression<TShardingDbContext, TEntity>(this TShardingDbContext shardingDbContext, Expression<Func<TEntity, bool>> where) where TEntity : class
             where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var shardingRuntimeContext = shardingDbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();// (IEntityMetadataManager)ShardingContainer.GetService(typeof(IEntityMetadataManager<>).GetGenericType0(shardingDbContext.GetType()));
             if (entityMetadataManager.IsShardingDataSource(typeof(TEntity)))
                 throw new ShardingCoreInvalidOperationException(typeof(TEntity).FullName);

@@ -124,7 +124,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingShellDbContext = shardingShellDbContext;
-            _shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            _shardingRuntimeContext = shardingShellDbContext.GetShardingRuntimeContext();
             DbContextType = shardingShellDbContext.GetType();
             _virtualDataSource =shardingDbContext
                 .GetVirtualDataSource();

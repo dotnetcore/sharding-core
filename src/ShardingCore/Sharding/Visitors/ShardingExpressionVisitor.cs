@@ -15,9 +15,8 @@ namespace ShardingCore.Core.Internal.Visitors
 * @Date: Wednesday, 13 January 2021 11:31:01
 * @Email: 326308290@qq.com
 */
-    public abstract class ShardingExpressionVisitor:ExpressionVisitor
+    public abstract class ShardingExpressionVisitor : ExpressionVisitor
     {
-        
         //public object GetFieldValue(Expression expression)
         //{
         //    if (expression is ConstantExpression)
@@ -50,56 +49,67 @@ namespace ShardingCore.Core.Internal.Visitors
                     return field.GetValue(
                         GetExpressionValue(
                             e.Expression
-                        ) ?? throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
+                        ) ?? throw new InvalidOperationException(
+                            $"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
                     );
 
                 case MemberExpression e when e.Member is PropertyInfo property:
                 {
-                    if (e.Expression == null&&property.DeclaringType==typeof(DateTime)&&property.Name==nameof(DateTime.Now))
+                    if (e.Expression == null)
                     {
-                        return DateTime.Now;
+                        if (property.DeclaringType == typeof(DateTime) && property.Name == nameof(DateTime.Now))
+                        {
+                            return DateTime.Now;
+                        }
+
+                        if (property.DeclaringType == typeof(DateTimeOffset) &&
+                            property.Name == nameof(DateTimeOffset.Now))
+                        {
+                            return DateTimeOffset.Now;
+                        }
                     }
-                    else
-                    {
-                        return property.GetValue(
-                            GetExpressionValue(
-                                e.Expression
-                            )??throw new InvalidOperationException($"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
-                        ); 
-                    }
+
+                    return property.GetValue(
+                        GetExpressionValue(
+                            e.Expression
+                        ) ?? throw new InvalidOperationException(
+                            $"cant get expression value,{e.Expression.ShardingPrint()} may be null reference")
+                    );
                 }
 
                 case ListInitExpression e when e.NewExpression.Arguments.Count() == 0:
+                {
+                    var collection = e.NewExpression.Constructor.Invoke(new object[0]);
+                    foreach (var i in e.Initializers)
                     {
-                        var collection = e.NewExpression.Constructor.Invoke(new object[0]);
-                        foreach (var i in e.Initializers)
-                        {
-                            i.AddMethod.Invoke(
-                                collection,
-                                i.Arguments
-                                    .Select(
-                                        a => GetExpressionValue(a)
-                                    )
-                                    .ToArray()
-                            );
-                        }
-                        return collection;
+                        i.AddMethod.Invoke(
+                            collection,
+                            i.Arguments
+                                .Select(
+                                    a => GetExpressionValue(a)
+                                )
+                                .ToArray()
+                        );
                     }
+
+                    return collection;
+                }
                 case NewArrayExpression e when e.NodeType == ExpressionType.NewArrayInit && e.Expressions.Count > 0:
+                {
+                    var collection = new List<object>(e.Expressions.Count);
+                    foreach (var arrayItemExpression in e.Expressions)
                     {
-                        var collection = new List<object>(e.Expressions.Count);
-                        foreach (var arrayItemExpression in e.Expressions)
-                        {
-                            collection.Add(GetExpressionValue(arrayItemExpression));
-                        }
-                        return collection;
+                        collection.Add(GetExpressionValue(arrayItemExpression));
                     }
+
+                    return collection;
+                }
 
 
                 case MethodCallExpression e:
                 {
                     var expressionValue = GetExpressionValue(e.Object);
-                    
+
                     return e.Method.Invoke(
                         expressionValue,
                         e.Arguments
@@ -116,7 +126,8 @@ namespace ShardingCore.Core.Internal.Visitors
 
                 default:
                 {
-                    if (expression is BinaryExpression binaryExpression&&expression.NodeType == ExpressionType.ArrayIndex)
+                    if (expression is BinaryExpression binaryExpression &&
+                        expression.NodeType == ExpressionType.ArrayIndex)
                     {
                         var index = GetExpressionValue(binaryExpression.Right);
                         if (index is int i)
@@ -128,6 +139,7 @@ namespace ShardingCore.Core.Internal.Visitors
                             }
                         }
                     }
+
                     //TODO: better messaging
                     throw new ShardingCoreException("cant get value " + expression);
                 }

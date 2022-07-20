@@ -17,6 +17,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.EFCores;
+using ShardingCore.EFCores.OptionsExtensions;
 using ShardingCore.Exceptions;
 using ShardingCore.Utils;
 
@@ -42,7 +43,7 @@ namespace ShardingCore.Extensions
 
             var contextModel = dbContext.Model as Model;
 #endif
-            var shardingRuntimeContext = dbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = dbContext.GetShardingRuntimeContext();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if EFCORE6
@@ -119,7 +120,7 @@ namespace ShardingCore.Extensions
 
             var contextModel = dbContext.Model as Model;
 #endif
-            var shardingRuntimeContext = dbContext.GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = dbContext.GetShardingRuntimeContext();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if EFCORE6
@@ -327,15 +328,16 @@ namespace ShardingCore.Extensions
             //return entry?.Entity;
         }
 
-        public static TService GetRequireService<TService>(this DbContext dbContext) where TService:class
+        public static IShardingRuntimeContext GetShardingRuntimeContext(this DbContext dbContext)
         {
-            var service = dbContext.GetService<TService>();
-            if (service == null)
+            var shardingRuntimeContext =  dbContext.GetService<IShardingRuntimeContext>();
+           
+            if (shardingRuntimeContext == null)
             {
-                throw new ShardingCoreInvalidOperationException($"cant resolve:[{typeof(TService)}]");
+                throw new ShardingCoreInvalidOperationException($"cant resolve:[{typeof(IShardingRuntimeContext)}],dbcontext:[{dbContext}]");
             }
 
-            return service;
+            return shardingRuntimeContext;
         }
 
     }

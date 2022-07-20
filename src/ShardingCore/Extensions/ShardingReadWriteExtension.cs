@@ -58,7 +58,7 @@ namespace ShardingCore.Extensions
         /// <param name="readOnly">是否是读数据源</param>
         private static void SetReadWriteSeparation(this ISupportShardingReadWrite supportShardingReadWrite, bool readOnly)
         {
-            var shardingRuntimeContext = ((DbContext)supportShardingReadWrite).GetRequireService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = ((DbContext)supportShardingReadWrite).GetShardingRuntimeContext();
             var shardingReadWriteManager =shardingRuntimeContext.GetService<IShardingReadWriteManager>();
             var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
             if (shardingReadWriteContext != null)
@@ -86,7 +86,7 @@ namespace ShardingCore.Extensions
             {
                 if (shardingDbContext.IsUseReadWriteSeparation())
                 {
-                    var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+                    var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
                     var shardingReadWriteManager =shardingRuntimeContext.GetService<IShardingReadWriteManager>();
                     var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
                     if (shardingReadWriteContext != null)

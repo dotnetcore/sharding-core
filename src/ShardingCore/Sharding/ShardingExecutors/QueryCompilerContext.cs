@@ -39,7 +39,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         private QueryCompilerContext(IPrepareParseResult prepareParseResult)
         {
-            _shardingRuntimeContext = ((DbContext)prepareParseResult.GetShardingDbContext()).GetRequireService<IShardingRuntimeContext>();
+            _shardingRuntimeContext = ((DbContext)prepareParseResult.GetShardingDbContext()).GetShardingRuntimeContext();
             _shardingDbContext = prepareParseResult.GetShardingDbContext();
             _queryExpression = prepareParseResult.GetNativeQueryExpression();
             _shardingDbContextType = _shardingDbContext.GetType();

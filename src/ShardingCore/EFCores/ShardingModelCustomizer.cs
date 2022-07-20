@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
 
 using ShardingCore.Sharding.Abstractions;
@@ -38,8 +41,7 @@ namespace ShardingCore.EFCores
        
             if (context is IShardingTableDbContext shardingTableDbContext&& shardingTableDbContext.RouteTail !=null&& shardingTableDbContext.RouteTail.IsShardingTableQuery())
             {
-                
-                var shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
+                var shardingRuntimeContext = context.GetShardingRuntimeContext(); 
                 var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
                 var isMultiEntityQuery = shardingTableDbContext.RouteTail.IsMultiEntityQuery();
                 if (!isMultiEntityQuery)

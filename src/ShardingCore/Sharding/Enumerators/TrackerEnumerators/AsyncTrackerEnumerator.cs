@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
         public AsyncTrackerEnumerator(IShardingDbContext shardingDbContext, IAsyncEnumerator<T> asyncEnumerator)
         {
-            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             _shardingDbContext = shardingDbContext;
             _asyncEnumerator = asyncEnumerator;
             _queryTrack = shardingRuntimeContext.GetQueryTracker();
@@ -70,7 +70,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
 
         public AsyncTrackerEnumerator(IShardingDbContext shardingDbContext, IAsyncEnumerator<T> asyncEnumerator)
         {
-            var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
             _shardingDbContext = shardingDbContext;
             _asyncEnumerator = asyncEnumerator;
             _queryTrack = shardingRuntimeContext.GetQueryTracker();

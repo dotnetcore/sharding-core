@@ -37,14 +37,14 @@ namespace ShardingCore.EFCores
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
             _context = (IShardingDbContext)context;
-            _shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
+            _shardingRuntimeContext = context.GetShardingRuntimeContext();
         }
 #endif
 #if EFCORE2 || EFCORE3
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
             _context = (IShardingDbContext)context;
-            _shardingRuntimeContext = context.GetService<IShardingRuntimeContext>();
+            _shardingRuntimeContext = context.GetShardingRuntimeContext();
         }
 #endif
 
