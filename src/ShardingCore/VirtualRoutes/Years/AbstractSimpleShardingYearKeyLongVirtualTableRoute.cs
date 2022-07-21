@@ -102,5 +102,9 @@ namespace ShardingCore.VirtualRoutes.Years
                 "0 1 0 1 1 ?",
             };
         }
+        public override string[] GetCompensateCronExpressions()
+        {
+            return new[] { "0 0 0 1 1 ?" };
+        }
     }
 }

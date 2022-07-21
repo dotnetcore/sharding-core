@@ -85,5 +85,10 @@ namespace ShardingCore.VirtualRoutes.Days
             };
         }
 
+        public override string[] GetCompensateCronExpressions()
+        {
+            return new[] { "0 0 0 * * ?" };
+        }
+
     }
 }

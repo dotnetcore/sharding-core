@@ -81,5 +81,9 @@ namespace ShardingCore.VirtualRoutes.Weeks
                 "0 1 0 ? * 2",
             };
         }
+        public override string[] GetCompensateCronExpressions()
+        {
+            return new[] { "0 0 0 ? * 2" };
+        }
     }
 }

@@ -7,7 +7,7 @@ namespace ShardingCore.Jobs.Abstaractions
     public interface IJob
     {
         string JobName { get; }
-        string[] GetCronExpressions();
+        string[] GetJobCronExpressions();
         Task ExecuteAsync();
         bool AppendJob();
     }

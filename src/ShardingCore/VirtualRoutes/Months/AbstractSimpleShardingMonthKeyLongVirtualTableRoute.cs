@@ -79,5 +79,9 @@ namespace ShardingCore.VirtualRoutes.Months
                 "0 1 0 1 * ?",
             };
         }
+        public override string[] GetCompensateCronExpressions()
+        {
+            return new[] { "0 0 0 1 * ?" };
+        }
     }
 }

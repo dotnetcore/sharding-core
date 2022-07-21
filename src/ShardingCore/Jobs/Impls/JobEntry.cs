@@ -15,6 +15,12 @@ namespace ShardingCore.Jobs.Impls
 */
     public sealed class JobEntry
     {
+        public JobEntry(IJob job)
+        {
+            JobInstance = job;
+            JobName = job.JobName;
+            JobCronExpressions = job.GetJobCronExpressions();
+        }
         /// <summary>
         /// 保证多线程只有一个清理操作
         /// </summary>
@@ -32,7 +38,7 @@ namespace ShardingCore.Jobs.Impls
         /// <summary>
         /// job实例
         /// </summary>
-        public IJob JobInstance { get; set; }
+        public IJob JobInstance { get; }
 
         /// <summary>
         /// 是否跳过如果正在运行
@@ -43,6 +49,10 @@ namespace ShardingCore.Jobs.Impls
         /// 下次运行时间
         /// </summary>
         public DateTime? NextUtcTime { get; set; }
+        /// <summary>
+        /// 任务的cron表达式
+        /// </summary>
+        public string[] JobCronExpressions { get; }
 
         /// <summary>
         /// 是否正在运行
@@ -69,7 +79,7 @@ namespace ShardingCore.Jobs.Impls
         /// </summary>
         public void CalcNextUtcTime()
         {
-            this.NextUtcTime= JobInstance.GetCronExpressions().Select(cron => new CronExpression(cron).GetTimeAfter(DateTime.UtcNow)).Min();
+            this.NextUtcTime= JobCronExpressions.Select(cron => new CronExpression(cron).GetTimeAfter(DateTime.UtcNow)).Min();
         }
     }
 }

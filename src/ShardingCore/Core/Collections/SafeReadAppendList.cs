@@ -16,7 +16,7 @@ namespace ShardingCore.Core.Collections
         {
         }
 
-        public IReadOnlyList<T> Data => _list;
+        public ImmutableList<T> Data => _list;
 
         public void Append(T value)
         {

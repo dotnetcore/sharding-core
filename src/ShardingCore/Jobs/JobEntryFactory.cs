@@ -17,11 +17,7 @@ namespace ShardingCore.Jobs
         public static JobEntry Create(IJob job)
         {
 
-            var jobEntry = new JobEntry()
-            {
-                JobInstance = job,
-                JobName = job.JobName,
-            };
+            var jobEntry = new JobEntry(job);
             jobEntry.CalcNextUtcTime();
             return jobEntry;
         }
