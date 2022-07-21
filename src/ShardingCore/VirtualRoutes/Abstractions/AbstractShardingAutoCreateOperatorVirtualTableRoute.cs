@@ -39,7 +39,8 @@ namespace ShardingCore.VirtualRoutes.Abstractions
 
         public override List<string> GetTails()
         {
-            return _tails.Data.ToList();
+            // ReSharper disable once InconsistentlySynchronizedField
+            return _tails.CopyList;
         }
 
         protected abstract List<string> CalcTailsOnStart();
@@ -48,7 +49,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         {
             lock (APPEND_LOCK)
             {
-                if (!_tails.Data.Contains(tail))
+                if (!_tails.Contains(tail))
                 {
                     _tails.Append(tail);
                     return true;

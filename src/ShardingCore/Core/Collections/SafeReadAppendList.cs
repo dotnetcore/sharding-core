@@ -1,22 +1,44 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 
 namespace ShardingCore.Core.Collections
 {
-    
-    public class SafeReadAppendList<T>
+    public sealed class SafeReadAppendList<T>
     {
         private ImmutableList<T> _list;
+        private readonly object COPY_LOCK = new object();
+
         public SafeReadAppendList(IEnumerable<T> list)
         {
             _list = ImmutableList.CreateRange(list);
         }
-        public SafeReadAppendList():this(new List<T>(0))
+
+        public SafeReadAppendList() : this(new List<T>(0))
         {
         }
 
-        public ImmutableList<T> Data => _list;
+        public List<T> CopyList
+        {
+            get
+            {
+                if (_copyList?.Count != _list.Count)
+                {
+                    lock (COPY_LOCK)
+                    {
+                        if (_copyList?.Count != _list.Count)
+                        {
+                            _copyList = _list.ToList();
+                        }
+                    }
+                }
+
+                return _copyList;
+            }
+        }
+
+        public List<T> _copyList;
 
         public void Append(T value)
         {
@@ -26,9 +48,12 @@ namespace ShardingCore.Core.Collections
             {
                 original = _list!;
                 afterChange = _list!.Add(value);
-            }
-            while (Interlocked.CompareExchange(ref _list, afterChange, original) != original);
+            } while (Interlocked.CompareExchange(ref _list, afterChange, original) != original);
         }
 
+        public bool Contains(T value)
+        {
+            return _list.Contains(value);
+        }
     }
 }
