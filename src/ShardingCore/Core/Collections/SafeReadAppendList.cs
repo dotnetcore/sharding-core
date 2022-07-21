@@ -23,11 +23,11 @@ namespace ShardingCore.Core.Collections
         {
             get
             {
-                if (_copyList?.Count != _list.Count)
+                if (_copyList.Count != _list.Count)
                 {
                     lock (COPY_LOCK)
                     {
-                        if (_copyList?.Count != _list.Count)
+                        if (_copyList.Count != _list.Count)
                         {
                             _copyList = _list.ToList();
                         }
@@ -38,7 +38,7 @@ namespace ShardingCore.Core.Collections
             }
         }
 
-        public List<T> _copyList;
+        public List<T> _copyList=new List<T>(0);
 
         public void Append(T value)
         {
