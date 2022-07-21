@@ -2,35 +2,59 @@ using System.ComponentModel;
 
 namespace ShardingCore.Core.VirtualRoutes
 {
-/*
-* @Author: xjm
-* @Description:
-* @Date: Saturday, 19 December 2020 19:56:57
-* @Email: 326308290@qq.com
-*/
+    /// <summary>
+    /// 分片条件比较符
+    /// </summary>
     public enum ShardingOperatorEnum
     {
-        [Description("??")]
-        UnKnown,
-        [Description(">")]
-        GreaterThan,
-        [Description(">=")]
-        GreaterThanOrEqual,
-        [Description("<")]
-        LessThan,
-        [Description("<=")]
-        LessThanOrEqual,
-        [Description("==")]
-        Equal,
-        [Description("!=")]
-        NotEqual,
-        [Description("%w%")]
-        AllLike,
-        [Description("%w")]
-        StartLike,
-        [Description("w%")]
-        EndLike
-        // [Description("Contains")]
-        // BeContains
+        /// <summary>
+        /// 未知操作符
+        /// </summary>
+        [Description("??")] UnKnown,
+
+        /// <summary>
+        /// 大于
+        /// </summary>
+        [Description(">")] GreaterThan,
+
+        /// <summary>
+        /// 大于等于
+        /// </summary>
+        [Description(">=")] GreaterThanOrEqual,
+
+        /// <summary>
+        /// 小于
+        /// </summary>
+        [Description("<")] LessThan,
+
+        /// <summary>
+        /// 小于等于
+        /// </summary>
+        [Description("<=")] LessThanOrEqual,
+
+        /// <summary>
+        /// 等于
+        /// </summary>
+        [Description("==")] Equal,
+
+        /// <summary>
+        /// 不等于
+        /// </summary>
+        [Description("!=")] NotEqual,
+
+        /// <summary>
+        /// like 类似 contains
+        /// </summary>
+        [Description("%w%")] AllLike,
+
+        /// <summary>
+        /// like 类似 start with
+        /// </summary>
+        [Description("w%")] StartLike,
+
+        /// <summary>
+        /// like 类似 end with
+        /// </summary>
+        [Description("%w")] EndLike
     }
 }
