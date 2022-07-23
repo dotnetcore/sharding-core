@@ -32,6 +32,18 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            OtherDbContext.CurrentId = "";
+            var myUsers0 = _otherDbContext.MyUsers.ToList();
+            OtherDbContext.CurrentId = "123";
+            var myUsers1 = _otherDbContext.MyUsers.ToList();
+            OtherDbContext.CurrentId = "456";
+            var myUsers2= _otherDbContext.MyUsers.ToList();
+            
+            // var sysUserModQueryable = _otherDbContext.MyUsers.Where(o => o.Id == "2");
+            // var dbSetDiscoverExpressionVisitor = new DbSetDiscoverExpressionVisitor<MyUser>(_otherDbContext);
+            // dbSetDiscoverExpressionVisitor.Visit(sysUserModQueryable.Expression);
+            // var myUsers = dbSetDiscoverExpressionVisitor.DbSet;
+            // Console.WriteLine("------------");
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
                 

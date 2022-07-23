@@ -13,6 +13,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 ---
 - [Gitee](https://gitee.com/dotnetchina/sharding-core) 国内镜像
 
+- [捐赠](#捐赠)
 
 ## Community Partners and Sponsors
 
@@ -1101,6 +1102,9 @@ return optionsBuilder.ReplaceService<IModelCacheKeyFactory, ShardingModelCacheKe
 
 凭借各大开源生态圈提供的优秀代码和思路才有的这个框架,希望可以为.Net生态提供一份微薄之力,该框架本人会一直长期维护,有大神技术支持可以联系下方方式欢迎star :)
 
+# 捐赠
+<img src="./imgs/zfb.jpg" title="JetBrains" width=200 />
+<img src="./imgs/wx.jpg" title="JetBrains" width=222 />
 [博客](https://www.cnblogs.com/xuejiaming)
 
 QQ群:771630778
