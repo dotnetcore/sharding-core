@@ -10,6 +10,10 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions
     {
         /// <summary>
+        /// 写操作数据库后自动使用写库链接防止读库链接未同步无法查询到数据
+        /// </summary>
+        public bool AutoUseWriteConnectionStringAfterWriteDb { get; set; } = false;
+        /// <summary>
         /// 当查询遇到没有路由被命中时是否抛出错误
         /// </summary>
         public bool ThrowIfQueryRouteNotMatch { get; set; } = true;

@@ -13,6 +13,7 @@ using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -38,6 +39,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
         private readonly ConcurrentDictionary<string, IDataSourceDbContext> _dbContextCaches = new ConcurrentDictionary<string, IDataSourceDbContext>();
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        private readonly ShardingConfigOptions _shardingConfigOptions;
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
@@ -66,6 +68,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             //初始化
             _shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             _shardingRuntimeContext.GetOrCreateShardingRuntimeModel(shardingDbContext);
+            _shardingConfigOptions = _shardingRuntimeContext.GetShardingConfigOptions();
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             _dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
             _tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
@@ -154,6 +157,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 i += await dbContextCache.Value.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             }
 
+            AutoUseWriteConnectionString();
             return i;
         }
 
@@ -165,6 +169,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 i += dbContextCache.Value.SaveChanges(acceptAllChangesOnSuccess);
             }
 
+            AutoUseWriteConnectionString();
             return i;
         }
 
@@ -182,6 +187,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 dbContextCache.Value.Rollback();
             }
+
+            AutoUseWriteConnectionString();
         }
 
         public void Commit()
@@ -190,6 +197,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 dbContextCache.Value.Commit(_dbContextCaches.Count);
             }
+
+            AutoUseWriteConnectionString();
         }
 
         public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
@@ -215,6 +224,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 await dbContextCache.Value.RollbackAsync(cancellationToken);
             }
+
+            AutoUseWriteConnectionString();
         }
 
         public async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -223,6 +234,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 await dbContextCache.Value.CommitAsync(_dbContextCaches.Count, cancellationToken);
             }
+
+            AutoUseWriteConnectionString();
         }
         public async ValueTask DisposeAsync()
         {
@@ -232,5 +245,16 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             }
         }
 #endif
+
+        /// <summary>
+        /// 自动切换成写库连接
+        /// </summary>
+        private void AutoUseWriteConnectionString()
+        {
+            if (_shardingConfigOptions.AutoUseWriteConnectionStringAfterWriteDb)
+            {
+                ((IShardingDbContext)_shardingDbContext).ReadWriteSeparationWriteOnly();
+            }
+        }
     }
 }
