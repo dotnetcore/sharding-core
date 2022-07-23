@@ -105,6 +105,7 @@ namespace Sample.MySql
                     }).UseConfig(o =>
                     {
                         o.ThrowIfQueryRouteNotMatch = false;
+                        o.AutoUseWriteConnectionStringAfterWriteDb = true;
                         o.UseShardingQuery((conStr, builder) =>
                         {
                             builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
