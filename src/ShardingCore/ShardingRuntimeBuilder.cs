@@ -54,6 +54,14 @@ namespace ShardingCore
             _shardingConfigOptionsConfigure = configure;
             return this;
         }
+        public void AddServiceConfigure(Action<IServiceCollection> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+            _serviceActions.Add(configure);;
+        }
         public ShardingRuntimeBuilder<TShardingDbContext> ReplaceService<TService, TImplement>(ServiceLifetime lifetime)
         {
             ServiceDescriptor descriptor = new ServiceDescriptor(typeof(TService), typeof(TImplement), lifetime);

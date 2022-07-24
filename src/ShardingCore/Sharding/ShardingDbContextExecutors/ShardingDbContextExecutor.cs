@@ -17,6 +17,7 @@ using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace ShardingCore.Sharding.ShardingDbContextExecutors
 {
@@ -253,7 +254,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             if (_shardingConfigOptions.AutoUseWriteConnectionStringAfterWriteDb)
             {
-                ((IShardingDbContext)_shardingDbContext).ReadWriteSeparationWriteOnly();
+                if (_virtualDataSource.ConnectionStringManager is ReadWriteConnectionStringManager)
+                {
+                    ((IShardingDbContext)_shardingDbContext).ReadWriteSeparationWriteOnly();
+                }
             }
         }
     }
