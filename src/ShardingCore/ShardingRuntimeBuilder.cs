@@ -54,13 +54,14 @@ namespace ShardingCore
             _shardingConfigOptionsConfigure = configure;
             return this;
         }
-        public void AddServiceConfigure(Action<IServiceCollection> configure)
+        public ShardingRuntimeBuilder<TShardingDbContext> AddServiceConfigure(Action<IServiceCollection> configure)
         {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
             _serviceActions.Add(configure);;
+            return this;
         }
         public ShardingRuntimeBuilder<TShardingDbContext> ReplaceService<TService, TImplement>(ServiceLifetime lifetime)
         {
