@@ -27,6 +27,12 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
             _services = services;
             _shardingRuntimeBuilder = new ShardingRuntimeBuilder<TShardingDbContext>();
         }
+        
+        public ShardingCoreConfigBuilder<TShardingDbContext> AddServiceConfigure(Action<IServiceCollection> configure)
+        {
+            _shardingRuntimeBuilder.AddServiceConfigure(configure);
+            return this;
+        }
 
         [Obsolete("plz use UseRouteConfig")]
         public ShardingCoreConfigBuilder<TShardingDbContext> AddEntityConfig(Action<IShardingRouteConfigOptions> entityConfigure)
