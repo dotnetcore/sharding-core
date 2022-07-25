@@ -3,6 +3,7 @@ using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ShardingCore.VirtualRoutes.Years
@@ -102,9 +103,10 @@ namespace ShardingCore.VirtualRoutes.Years
                 "0 1 0 1 1 ?",
             };
         }
-        public override string[] GetCompensateCronExpressions()
+        public override string[] GetJobCronExpressions()
         {
-            return new[] { "0 0 0 1 1 ?" };
+            var crons = base.GetJobCronExpressions().Concat(new []{"0 0 0 1 1 ?"}).Distinct().ToArray();
+            return crons;
         }
     }
 }

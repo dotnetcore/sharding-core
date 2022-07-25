@@ -91,17 +91,10 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// </summary>
         public virtual int IncrementMinutes => 10;
 
-        public string[] GetJobCronExpressions()
+        public virtual string[] GetJobCronExpressions()
         {
-            var cronExpressions = GetCronExpressions();
-            var compensateCronExpressions = GetCompensateCronExpressions();
-            return cronExpressions.Concat(compensateCronExpressions).Distinct().ToArray();
+            return GetCronExpressions();
         }
-        /// <summary>
-        /// 补偿cron防止提前创建后没有添加tail到内存中从而无法识别
-        /// </summary>
-        /// <returns></returns>
-        public abstract string[] GetCompensateCronExpressions();
         /// <summary>
         /// 重写改方法后请一起重写IncrementMinutes值，比如你按月分表但是你设置cron表达式为月中的时候建表，
         /// 那么会在月中的时候 <code>DateTime.Now.AddMinutes(IncrementMinutes);</code>来获取tail会导致还是当月的所以不会建表

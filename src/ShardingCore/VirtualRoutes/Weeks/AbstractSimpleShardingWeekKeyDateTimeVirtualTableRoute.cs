@@ -3,6 +3,7 @@ using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ShardingCore.VirtualRoutes.Weeks
@@ -78,9 +79,10 @@ namespace ShardingCore.VirtualRoutes.Weeks
                 "0 1 0 ? * 2",
             };
         }
-        public override string[] GetCompensateCronExpressions()
+        public override string[] GetJobCronExpressions()
         {
-            return new[] { "0 0 0 ? * 2" };
+            var crons = base.GetJobCronExpressions().Concat(new []{"0 0 0 ? * 2"}).Distinct().ToArray();
+            return crons;
         }
 
     }

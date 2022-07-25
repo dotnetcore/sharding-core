@@ -10,6 +10,7 @@ using ShardingCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace Sample.SqlServer
