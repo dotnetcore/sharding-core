@@ -8,7 +8,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
     internal class OneAtMostElementStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
-        private int _moveIndex = 0;
+        private int _moveIndex = -1;
         private T _constantElement;
 
         public OneAtMostElementStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
@@ -79,7 +79,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            _moveIndex = 0;
         }
 
         object IEnumerator.Current => Current;
