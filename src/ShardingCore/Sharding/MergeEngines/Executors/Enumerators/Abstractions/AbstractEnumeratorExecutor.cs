@@ -170,7 +170,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             //single如果没有元素就可以回收
             //enumerable如果没有元素就可以回收
             var streamMergeContext = GetStreamMergeContext();
-            if (DisposeInExecuteUnit(streamMergeContext, sqlExecutorUnit.ConnectionMode, streamMergeAsyncEnumerator))
+            if (DisposeInExecuteUnit(streamMergeContext, streamMergeAsyncEnumerator))
             {
                 var disConnectionStreamMergeAsyncEnumerator =
                     new OneAtMostElementStreamMergeAsyncEnumerator<TResult>(streamMergeAsyncEnumerator);
@@ -186,15 +186,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
         /// 是否需要在执行单元中直接回收掉链接有助于提高吞吐量
         /// </summary>
         /// <param name="streamMergeContext"></param>
-        /// <param name="connectionMode"></param>
         /// <param name="streamMergeAsyncEnumerator"></param>
         /// <returns></returns>
-        private bool DisposeInExecuteUnit(StreamMergeContext streamMergeContext, ConnectionModeEnum connectionMode,
+        private bool DisposeInExecuteUnit(StreamMergeContext streamMergeContext,
             IStreamMergeAsyncEnumerator<TResult> streamMergeAsyncEnumerator)
         {
             var queryMethodName = streamMergeContext.MergeQueryCompilerContext.GetQueryMethodName();
             var hasElement = streamMergeAsyncEnumerator.HasElement();
-            var notConnectionStrictly = connectionMode != ConnectionModeEnum.CONNECTION_STRICTLY;
             switch (queryMethodName)
             {
                 case nameof(Queryable.First):
@@ -203,13 +201,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
                 case nameof(Queryable.LastOrDefault):
                 {
                     var skip = streamMergeContext.GetSkip();
-                    return (skip is null or < 0 || !hasElement) && notConnectionStrictly;
+                    return !hasElement||(skip is null or < 0);
                 }
                 case nameof(Queryable.Single):
                 case nameof(Queryable.SingleOrDefault):
                 case QueryCompilerContext.ENUMERABLE:
                 {
-                    return !hasElement && notConnectionStrictly;
+                    return !hasElement;
                 }
                 // case nameof(Queryable.Count):
                 // case nameof(Queryable.LongCount):
