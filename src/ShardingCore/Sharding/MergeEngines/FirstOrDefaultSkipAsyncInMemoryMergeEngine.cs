@@ -23,25 +23,6 @@ namespace ShardingCore.Sharding.MergeEngines
         {
             _streamMergeContext = streamMergeContext;
         }
-
-        // protected override IExecutor<RouteQueryResult<TEntity>> CreateExecutor0(bool async)
-        // {
-        //     return new FirstOrDefaultMethodExecutor<TEntity>(GetStreamMergeContext());
-        // }
-        //
-        // protected override TEntity DoMergeResult0(List<RouteQueryResult<TEntity>> resultList)
-        // {
-        //     var notNullResult = resultList.Where(o => o != null && o.HasQueryResult()).Select(o => o.QueryResult).ToList();
-        //
-        //     if (notNullResult.IsEmpty())
-        //         return default;
-        //
-        //     var streamMergeContext = GetStreamMergeContext();
-        //     if (streamMergeContext.Orders.Any())
-        //         return notNullResult.AsQueryable().OrderWithExpression(streamMergeContext.Orders, streamMergeContext.GetShardingComparer()).FirstOrDefault();
-        //
-        //     return notNullResult.FirstOrDefault();
-        // }
         public TEntity MergeResult()
         {
             //将toke改成1

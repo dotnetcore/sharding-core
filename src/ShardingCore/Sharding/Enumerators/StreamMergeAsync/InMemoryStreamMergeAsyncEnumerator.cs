@@ -32,7 +32,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 
         private async Task<IEnumerator<T>> GetAllRowsAsync(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
-            var linkedList = new LinkedList<T>();
+            var list = new List<T>();
 #if !EFCORE2
             while (await streamMergeAsyncEnumerator.MoveNextAsync())
 #endif
@@ -40,15 +40,15 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             while (await streamMergeAsyncEnumerator.MoveNext(new CancellationToken()))
 #endif
             {
-                linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
+                list.Add(streamMergeAsyncEnumerator.GetCurrent());
                 _inMemoryReallyCount++;
             }
 
-            return linkedList.GetEnumerator();
+            return list.GetEnumerator();
         }
         private IEnumerator<T> GetAllRows(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
-            var linkedList = new LinkedList<T>();
+            var list = new List<T>();
 #if !EFCORE2
             while ( streamMergeAsyncEnumerator.MoveNext())
 #endif
@@ -56,11 +56,11 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             while (streamMergeAsyncEnumerator.MoveNext())
 #endif
             {
-                linkedList.AddLast(streamMergeAsyncEnumerator.GetCurrent());
+                list.Add(streamMergeAsyncEnumerator.GetCurrent());
                 _inMemoryReallyCount++;
             }
 
-            return linkedList.GetEnumerator();
+            return list.GetEnumerator();
         }
 
         public bool SkipFirst()
