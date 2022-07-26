@@ -26,19 +26,23 @@ namespace ShardingCore.Extensions
         {
             return source.ToList();
         }
-        public static FixedElementCollection<TEntity> ToFixedElementStreamList<TEntity>(this IEnumerable<TEntity> source,int capacity)
+        public static FixedElementCollection<TEntity> ToFixedElementStreamList<TEntity>(this IEnumerable<TEntity> source,int capacity,int maxVirtualElementCount)
         {
             var fixedElementCollection = new FixedElementCollection<TEntity>(capacity);
-            var enumerator = source.GetEnumerator();
+            using var enumerator = source.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 fixedElementCollection.Add(enumerator.Current);
+                if (fixedElementCollection.VirtualElementCount >= maxVirtualElementCount)
+                {
+                    break;
+                }
             }
             return fixedElementCollection;
         }
         
         
-        public static async Task<FixedElementCollection<TEntity>> ToFixedElementStreamListAsync<TEntity>(this IAsyncEnumerable<TEntity> source,int capacity,CancellationToken cancellationToken=default)
+        public static async Task<FixedElementCollection<TEntity>> ToFixedElementStreamListAsync<TEntity>(this IAsyncEnumerable<TEntity> source,int capacity,int maxVirtualElementCount,CancellationToken cancellationToken=default)
         {
             var fixedElementCollection = new FixedElementCollection<TEntity>(capacity);
 #if EFCORE2
@@ -46,12 +50,20 @@ namespace ShardingCore.Extensions
             while (await asyncEnumerator.MoveNext(cancellationToken))
             {
                 fixedElementCollection.Add(asyncEnumerator.Current);
+                if (fixedElementCollection.VirtualElementCount >= maxVirtualElementCount)
+                {
+                    break;
+                }
             }
 #endif
 #if !EFCORE2
             await foreach (var element in source.WithCancellation(cancellationToken))
             {
                 fixedElementCollection.Add(element);
+                if (fixedElementCollection.VirtualElementCount >= maxVirtualElementCount)
+                {
+                    break;
+                }
             }
 #endif
             return fixedElementCollection;

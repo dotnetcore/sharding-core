@@ -18,13 +18,15 @@ namespace ShardingCore.Core.Internal
         public int VirtualElementCount => _virtualElementCount;
         public int ReallyElementCount => _list.Count;
 
-        public void Add(TEntity element)
+        public bool Add(TEntity element)
         {
             _virtualElementCount++;
             if (VirtualElementCount <= _capacity)
             {
                 _list.Add(element);
+                return true;
             }
+            return false;
         }
 
         public TEntity FirstOrDefault()

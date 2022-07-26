@@ -26,16 +26,18 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions
 
         protected override async Task<ShardingMergeResult<RouteQueryResult<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
+            var streamMergeContext = GetStreamMergeContext();
             var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
-            var shardingDbContext = GetStreamMergeContext().CreateDbContext(sqlExecutorUnit.RouteUnit);
+            var shardingDbContext = streamMergeContext.CreateDbContext(sqlExecutorUnit.RouteUnit);
             var newQueryable = GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
 
             var queryResult = await EFCoreQueryAsync(newQueryable, cancellationToken);
             var routeQueryResult = new RouteQueryResult<TResult>(dataSourceName, routeResult, queryResult);
-            return new ShardingMergeResult<RouteQueryResult<TResult>>(shardingDbContext, routeQueryResult);
+            await streamMergeContext.DbContextDisposeAsync(shardingDbContext);
+            return new ShardingMergeResult<RouteQueryResult<TResult>>(null, routeQueryResult);
         }
 
         protected abstract Task<TResult> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken());

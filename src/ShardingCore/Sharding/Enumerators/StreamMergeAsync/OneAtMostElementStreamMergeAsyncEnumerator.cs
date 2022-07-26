@@ -8,86 +8,72 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
     internal class OneAtMostElementStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
-        private List<T>.Enumerator _enumerator;
-        private bool skip;
+        private int _moveIndex = 0;
+        private T _constantElement;
 
         public OneAtMostElementStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
-            var list = new List<T>();
-            if (streamMergeAsyncEnumerator.HasElement())
-            {
-                list.Add(streamMergeAsyncEnumerator.ReallyCurrent);
-            }
-
-            _enumerator = list.GetEnumerator();
-            _enumerator.MoveNext();
-            skip = true;
+            _constantElement=streamMergeAsyncEnumerator.ReallyCurrent;
         }
 
+
+        private bool MoveNext0()
+        {
+            if (_moveIndex >= 1)
+            {
+                return false;
+            }
+
+            _moveIndex++;
+            return HasElement();
+        }
 #if !EFCORE2&&!EFCORE3&&!EFCORE5
         public  ValueTask DisposeAsync()
         {
-            _enumerator.Dispose();
             return ValueTask.CompletedTask;
         }
-
         public  ValueTask<bool> MoveNextAsync()
         {
-            var moveNext = _enumerator.MoveNext();
+            var moveNext = MoveNext0();
             return ValueTask.FromResult<bool>(moveNext);
         }
 
         public void Dispose()
         {
-            _enumerator.Dispose();
         }
 
 #endif
 #if EFCORE3 || EFCORE5
         public  ValueTask DisposeAsync()
         {
-            _enumerator.Dispose();
             return new ValueTask();
         }
 
         public  ValueTask<bool> MoveNextAsync()
         {
-            var moveNext = _enumerator.MoveNext();
+            var moveNext = MoveNext0();
             return new ValueTask<bool>(moveNext);
         }
 
         public void Dispose()
         {
-            _enumerator.Dispose();
         }
 
 #endif
         public bool MoveNext()
         {
-            if (skip)
-            {
-                skip = false;
-                return null != _enumerator.Current;
-            }
-
-            var moveNext = _enumerator.MoveNext();
+            var moveNext = MoveNext0();
             return moveNext;
         }
 
         public bool SkipFirst()
         {
-            if (skip)
-            {
-                skip = false;
-                return true;
-            }
-
             return false;
         }
 
         public bool HasElement()
         {
-            return null != _enumerator.Current;
+            return null != _constantElement;
         }
 
 
@@ -102,29 +88,23 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 
         public T GetCurrent()
         {
-            if (skip)
+            if (_moveIndex==0)
                 return default;
-            return _enumerator.Current;
+            return _constantElement;
         }
 
         public T GetReallyCurrent()
         {
-            return _enumerator.Current;
+            return _constantElement;
         }
 #if EFCORE2
         public void Dispose()
         {
-            _enumerator.Dispose();
         }
 
         public  Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
         {
-            if (skip)
-            {
-                skip = false;
-               return Task.FromResult(null != _enumerator.Current);
-            }
-            var moveNext = _enumerator.MoveNext();
+            var moveNext = MoveNext0();
             return Task.FromResult(moveNext);
         }
 

@@ -30,50 +30,59 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
     /// Email: 326308290@qq.com
     internal abstract class AbstractEnumeratorExecutor<TResult> : AbstractExecutor<IStreamMergeAsyncEnumerator<TResult>>
     {
-
         protected AbstractEnumeratorExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
 
         protected abstract IStreamMergeCombine GetStreamMergeCombine();
+
         public override ICircuitBreaker CreateCircuitBreaker()
         {
             return new EnumeratorCircuitBreaker(GetStreamMergeContext());
         }
 
-        protected override void MergeParallelExecuteResult(LinkedList<IStreamMergeAsyncEnumerator<TResult>> previewResults, IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelResults, bool async)
+        protected override void MergeParallelExecuteResult(
+            LinkedList<IStreamMergeAsyncEnumerator<TResult>> previewResults,
+            IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelResults, bool async)
         {
             var previewResultsCount = previewResults.Count;
             if (previewResultsCount > 1)
             {
-                throw new ShardingCoreInvalidOperationException($"{typeof(TResult)} {nameof(previewResults)} has more than one element in container");
+                throw new ShardingCoreInvalidOperationException(
+                    $"{typeof(TResult)} {nameof(previewResults)} has more than one element in container");
             }
 
             var parallelCount = parallelResults.Count();
             if (parallelCount == 0)
                 return;
             //聚合
-            if (previewResults is LinkedList<IStreamMergeAsyncEnumerator<TResult>> previewInMemoryStreamEnumeratorResults && parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelStreamEnumeratorResults)
+            if (previewResults is LinkedList<IStreamMergeAsyncEnumerator<TResult>>
+                    previewInMemoryStreamEnumeratorResults &&
+                parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelStreamEnumeratorResults)
             {
                 var mergeAsyncEnumerators = new LinkedList<IStreamMergeAsyncEnumerator<TResult>>();
                 if (previewResultsCount == 1)
                 {
                     mergeAsyncEnumerators.AddLast(previewInMemoryStreamEnumeratorResults.First());
                 }
+
                 foreach (var parallelStreamEnumeratorResult in parallelStreamEnumeratorResults)
                 {
                     mergeAsyncEnumerators.AddLast(parallelStreamEnumeratorResult);
                 }
 
-                var combineStreamMergeAsyncEnumerator = CombineInMemoryStreamMergeAsyncEnumerator(mergeAsyncEnumerators.ToArray());
-                var inMemoryStreamMergeAsyncEnumerator = new InMemoryStreamMergeAsyncEnumerator<TResult>(combineStreamMergeAsyncEnumerator, async);
+                var combineStreamMergeAsyncEnumerator =
+                    CombineInMemoryStreamMergeAsyncEnumerator(mergeAsyncEnumerators.ToArray());
+                var inMemoryStreamMergeAsyncEnumerator =
+                    new InMemoryStreamMergeAsyncEnumerator<TResult>(combineStreamMergeAsyncEnumerator, async);
                 previewInMemoryStreamEnumeratorResults.Clear();
                 previewInMemoryStreamEnumeratorResults.AddLast(inMemoryStreamMergeAsyncEnumerator);
                 //合并
                 return;
             }
 
-            throw new ShardingCoreInvalidOperationException($"{typeof(TResult)} is not {typeof(IStreamMergeAsyncEnumerator<TResult>)}");
+            throw new ShardingCoreInvalidOperationException(
+                $"{typeof(TResult)} is not {typeof(IStreamMergeAsyncEnumerator<TResult>)}");
         }
 
         /// <summary>
@@ -81,9 +90,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
         /// </summary>
         /// <param name="streamsAsyncEnumerators"></param>
         /// <returns></returns>
-        public virtual IStreamMergeAsyncEnumerator<TResult> CombineStreamMergeAsyncEnumerator(IStreamMergeAsyncEnumerator<TResult>[] streamsAsyncEnumerators)
+        public virtual IStreamMergeAsyncEnumerator<TResult> CombineStreamMergeAsyncEnumerator(
+            IStreamMergeAsyncEnumerator<TResult>[] streamsAsyncEnumerators)
         {
-            return GetStreamMergeCombine().StreamMergeEnumeratorCombine(GetStreamMergeContext(), streamsAsyncEnumerators);
+            return GetStreamMergeCombine()
+                .StreamMergeEnumeratorCombine(GetStreamMergeContext(), streamsAsyncEnumerators);
         }
 
         public virtual IStreamMergeAsyncEnumerator<TResult> CombineInMemoryStreamMergeAsyncEnumerator(
@@ -99,7 +110,8 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
         /// <param name="async"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IStreamMergeAsyncEnumerator<TResult>> AsyncParallelEnumerator(IQueryable<TResult> queryable, bool async,
+        public async Task<IStreamMergeAsyncEnumerator<TResult>> AsyncParallelEnumerator(IQueryable<TResult> queryable,
+            bool async,
             CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -114,6 +126,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
                 return new StreamMergeAsyncEnumerator<TResult>(enumerator);
             }
         }
+
         /// <summary>
         /// 获取异步迭代器
         /// </summary>
@@ -127,11 +140,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             return enumator;
 #endif
 #if EFCORE2
-            var enumator = new EFCore2TryCurrentAsyncEnumerator<TResult>(newQueryable.AsAsyncEnumerable().GetEnumerator());
+            var enumator =
+ new EFCore2TryCurrentAsyncEnumerator<TResult>(newQueryable.AsAsyncEnumerable().GetEnumerator());
             await enumator.MoveNext();
             return enumator;
 #endif
         }
+
         /// <summary>
         /// 获取同步迭代器
         /// </summary>
@@ -144,7 +159,8 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             return enumator;
         }
 
-        protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(
+            SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             var shardingMergeResult = await ExecuteUnitAsync0(sqlExecutorUnit, cancellationToken);
             var dbContext = shardingMergeResult.DbContext;
@@ -153,31 +169,32 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             //first last 等操作没有skip就可以回收，如果没有元素就可以回收
             //single如果没有元素就可以回收
             //enumerable如果没有元素就可以回收
-            if (sqlExecutorUnit.ConnectionMode != ConnectionModeEnum.CONNECTION_STRICTLY)
+            var streamMergeContext = GetStreamMergeContext();
+            if (DisposeInExecuteUnit(streamMergeContext, sqlExecutorUnit.ConnectionMode, streamMergeAsyncEnumerator))
             {
-                var streamMergeContext = GetStreamMergeContext();
-                if (DisposeInExecuteUnit(streamMergeContext,streamMergeAsyncEnumerator))
-                {
-                    var disConnectionStreamMergeAsyncEnumerator = new OneAtMostElementStreamMergeAsyncEnumerator<TResult>(streamMergeAsyncEnumerator);
-                    await streamMergeContext.DbContextDisposeAsync(dbContext);
-                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>(null,
-                        disConnectionStreamMergeAsyncEnumerator);
-                }
+                var disConnectionStreamMergeAsyncEnumerator =
+                    new OneAtMostElementStreamMergeAsyncEnumerator<TResult>(streamMergeAsyncEnumerator);
+                await streamMergeContext.DbContextDisposeAsync(dbContext);
+                return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>(null,
+                    disConnectionStreamMergeAsyncEnumerator);
             }
-            
+
             return shardingMergeResult;
         }
+
         /// <summary>
         /// 是否需要在执行单元中直接回收掉链接有助于提高吞吐量
         /// </summary>
         /// <param name="streamMergeContext"></param>
+        /// <param name="connectionMode"></param>
         /// <param name="streamMergeAsyncEnumerator"></param>
         /// <returns></returns>
-        private bool DisposeInExecuteUnit(StreamMergeContext streamMergeContext,IStreamMergeAsyncEnumerator<TResult> streamMergeAsyncEnumerator)
+        private bool DisposeInExecuteUnit(StreamMergeContext streamMergeContext, ConnectionModeEnum connectionMode,
+            IStreamMergeAsyncEnumerator<TResult> streamMergeAsyncEnumerator)
         {
             var queryMethodName = streamMergeContext.MergeQueryCompilerContext.GetQueryMethodName();
             var hasElement = streamMergeAsyncEnumerator.HasElement();
-
+            var notConnectionStrictly = connectionMode != ConnectionModeEnum.CONNECTION_STRICTLY;
             switch (queryMethodName)
             {
                 case nameof(Queryable.First):
@@ -186,18 +203,31 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
                 case nameof(Queryable.LastOrDefault):
                 {
                     var skip = streamMergeContext.GetSkip();
-                    return skip is null or < 0||!hasElement;
-                } 
+                    return (skip is null or < 0 || !hasElement) && notConnectionStrictly;
+                }
                 case nameof(Queryable.Single):
                 case nameof(Queryable.SingleOrDefault):
                 case QueryCompilerContext.ENUMERABLE:
                 {
-                    return !hasElement;
+                    return !hasElement && notConnectionStrictly;
                 }
+                // case nameof(Queryable.Count):
+                // case nameof(Queryable.LongCount):
+                // case nameof(Queryable.Any):
+                // case nameof(Queryable.All):
+                // case nameof(Queryable.Sum):
+                // case nameof(Queryable.Max):
+                // case nameof(Queryable.Min):
+                // case nameof(Queryable.Average):
+                // case nameof(Queryable.Contains):
+                // {
+                //     return true;
+                // }
             }
 
             return false;
         }
+
         protected abstract Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(
             SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken());
     }

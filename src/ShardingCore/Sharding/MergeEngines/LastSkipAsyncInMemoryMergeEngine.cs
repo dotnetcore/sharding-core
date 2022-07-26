@@ -48,9 +48,10 @@ namespace ShardingCore.Sharding.MergeEngines
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
-            var list =  asyncEnumeratorStreamMergeEngine.ToFixedElementStreamList(1);
+            var maxVirtualElementCount = skip.GetValueOrDefault() + 1;
+            var list =  asyncEnumeratorStreamMergeEngine.ToFixedElementStreamList(1,maxVirtualElementCount);
 
-            if (list.VirtualElementCount >= (skip.GetValueOrDefault() + 1))
+            if (list.VirtualElementCount >= maxVirtualElementCount)
                 return list.First();
             throw new InvalidOperationException("Sequence contains no elements.");
         }
@@ -60,10 +61,10 @@ namespace ShardingCore.Sharding.MergeEngines
             var skip = _streamMergeContext.Skip;
             //将toke改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
+            var maxVirtualElementCount = skip.GetValueOrDefault() + 1;
+            var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1,maxVirtualElementCount, cancellationToken);
 
-            var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1, cancellationToken);
-
-            if (list.VirtualElementCount >= (skip.GetValueOrDefault() + 1))
+            if (list.VirtualElementCount >= maxVirtualElementCount)
                 return list.First();
             throw new InvalidOperationException("Sequence contains no elements.");
         }

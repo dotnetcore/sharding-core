@@ -27,6 +27,9 @@
 		<Compile Include="..\..\src\ShardingCore\**\*.cs" />
 		<Compile Remove="..\..\src\ShardingCore\obj\**" />
 		<Compile Remove="..\..\src\ShardingCore\bin\**" />
+		<Compile Update="..\..\src\ShardingCore\Sharding\Enumerators\StreamMergeAsync\ConstantElementStreamMergeAsyncEnumerator.cs">
+		  <Link>Sharding\Enumerators\StreamMergeAsync\ConstantElementStreamMergeAsyncEnumerator.cs</Link>
+		</Compile>
 	</ItemGroup>
 
 
