@@ -22,8 +22,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
+using ShardingCore.Sharding.ShardingExecutors;
 
 
 namespace ShardingCore.Sharding
@@ -98,7 +100,7 @@ namespace ShardingCore.Sharding
             _trackerManager = ShardingRuntimeContext.GetTrackerManager();
             _shardingConfigOptions = ShardingRuntimeContext.GetShardingConfigOptions();
             QueryEntities = MergeQueryCompilerContext.GetQueryEntities().Keys.ToHashSet();
-            _parallelDbContexts = new ConcurrentDictionary<DbContext, object>();
+            _parallelDbContexts = new ConcurrentDictionary<DbContext, object>(Environment.ProcessorCount,mergeQueryCompilerContext.GetShardingRouteResult().RouteUnits.Count);
             Orders = parseResult.GetOrderByContext().PropertyOrders.ToArray();
             Skip = parseResult.GetPaginationContext().Skip;
             Take = parseResult.GetPaginationContext().Take;
@@ -123,21 +125,13 @@ namespace ShardingCore.Sharding
         /// 创建对应的dbcontext
         /// </summary>
         /// <param name="sqlRouteUnit">数据库路由最小单元</param>
-        /// <param name="connectionMode"></param>
         /// <returns></returns>
-        public DbContext CreateDbContext(ISqlRouteUnit sqlRouteUnit, ConnectionModeEnum connectionMode)
+        public DbContext CreateDbContext(ISqlRouteUnit sqlRouteUnit)
         {
             var routeTail = _routeTailFactory.Create(sqlRouteUnit.TableRouteResult);
-            //如果开启了读写分离或者本次查询是跨表的表示本次查询的dbcontext是不存储的用完后就直接dispose
-            var parallelQuery = IsParallelQuery();
-            var strategy = !parallelQuery
-                ? CreateDbContextStrategyEnum.ShareConnection
-                : CreateDbContextStrategyEnum.IndependentConnectionQuery;
-            var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, strategy, routeTail);
-            if (parallelQuery && RealConnectionMode(connectionMode) == ConnectionModeEnum.MEMORY_STRICTLY)
-            {
-                _parallelDbContexts.TryAdd(dbContext, null);
-            }
+
+            var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, CreateDbContextStrategyEnum.IndependentConnectionQuery, routeTail);
+            _parallelDbContexts.TryAdd(dbContext, null);
 
             return dbContext;
         }
@@ -402,5 +396,32 @@ namespace ShardingCore.Sharding
                 ReSetOrders(propertyOrders);
             }
         }
+#if !EFCORE2
+
+        public async ValueTask<bool> DbContextDisposeAsync(DbContext dbContext)
+        {
+            if (_parallelDbContexts.TryRemove(dbContext, out var _))
+            {
+                await dbContext.DisposeAsync();
+                
+                return true;
+            }
+
+            return false;
+        }
+#endif
+#if EFCORE2
+
+        public  Task<bool> DbContextDisposeAsync(DbContext dbContext)
+        {
+            if (_parallelDbContexts.TryRemove(dbContext, out var _))
+            {
+                 dbContext.Dispose();
+                return Task.FromResult(true);
+            }
+
+            return Task.FromResult(false);
+        }
+#endif
     }
 }

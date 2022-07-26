@@ -32,13 +32,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
             _noPaginationQueryable = streamMergeContext.GetOriginalQueryable().RemoveSkip().RemoveTake().As<IQueryable<TResult>>();
         }
 
-        protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             var streamMergeContext = GetStreamMergeContext();
-            var connectionMode = streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
             var sqlSequenceRouteUnit = sqlExecutorUnit.RouteUnit.As<SqlSequenceRouteUnit>();
             var sequenceResult = sqlSequenceRouteUnit.SequenceResult;
-            var shardingDbContext = streamMergeContext.CreateDbContext(sqlSequenceRouteUnit, connectionMode);
+            var shardingDbContext = streamMergeContext.CreateDbContext(sqlSequenceRouteUnit);
             var newQueryable = _noPaginationQueryable
                 .Skip(sequenceResult.Skip)
                 .Take(sequenceResult.Take)

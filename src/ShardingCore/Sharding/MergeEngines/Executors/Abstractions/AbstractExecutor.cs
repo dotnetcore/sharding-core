@@ -13,6 +13,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
     internal abstract class AbstractExecutor<TResult> : IExecutor<TResult>
     {
         private readonly StreamMergeContext _streamMergeContext;
+
         /// <summary>
         /// not cancelled const mark
         /// </summary>
@@ -22,10 +23,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
         /// cancelled const mark
         /// </summary>
         private const int cancelled = 0;
+
         /// <summary>
         /// cancel status
         /// </summary>
-        private int cancelStatus= notCancelled;
+        private int cancelStatus = notCancelled;
 
         protected AbstractExecutor(StreamMergeContext streamMergeContext)
         {
@@ -36,6 +38,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
         {
             return _streamMergeContext;
         }
+
         /// <summary>
         /// 创建熔断器来中断符合查询的结果比如firstordefault只需要在顺序查询下查询到第一个
         /// 如果不是顺序查询则需要所有表的第一个进行内存再次查询
@@ -53,7 +56,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
             return cancelStatus == cancelled;
         }
 
-        public async Task<LinkedList<TResult>> ExecuteAsync(bool async, DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,  CancellationToken cancellationToken = new CancellationToken())
+        public async Task<LinkedList<TResult>> ExecuteAsync(bool async,
+            DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             try
             {
@@ -65,8 +70,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 throw;
             }
         }
-        private async Task<LinkedList<TResult>> ExecuteAsync0(bool async, DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,  CancellationToken cancellationToken = new CancellationToken())
+
+        private async Task<LinkedList<TResult>> ExecuteAsync0(bool async,
+            DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,
+            CancellationToken cancellationToken = new CancellationToken())
         {
+            var streamMergeContext = GetStreamMergeContext();
             var circuitBreaker = CreateCircuitBreaker();
             var executorGroups = dataSourceSqlExecutorUnit.SqlExecutorGroups;
             LinkedList<TResult> result = new LinkedList<TResult>();
@@ -84,13 +93,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                     var dbContexts = routeQueryResults.Select(o => o.DbContext);
                     foreach (var dbContext in dbContexts)
                     {
-#if !EFCORE2
-                        await dbContext.DisposeAsync();
-
-#endif
-#if EFCORE2
-                                dbContext.Dispose();
-#endif
+                        await streamMergeContext.DbContextDisposeAsync(dbContext);
                     }
                 }
                 else
@@ -105,20 +108,22 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 var hasNextLoop = executorGroupsCount > 0;
                 if (hasNextLoop)
                 {
-                    if (IsCancelled()|| circuitBreaker.Terminated(result))
+                    if (IsCancelled() || circuitBreaker.Terminated(result))
                         break;
                 }
             }
 
             return result;
         }
+
         /// <summary>
         /// 同库同组下面的并行异步执行，需要归并成一个结果
         /// </summary>
         /// <param name="sqlExecutorUnits"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<LinkedList<ShardingMergeResult<TResult>>> GroupExecuteAsync(List<SqlExecutorUnit> sqlExecutorUnits, CancellationToken cancellationToken = new CancellationToken())
+        protected async Task<LinkedList<ShardingMergeResult<TResult>>> GroupExecuteAsync(
+            List<SqlExecutorUnit> sqlExecutorUnits, CancellationToken cancellationToken = new CancellationToken())
         {
             if (sqlExecutorUnits.Count <= 0)
             {
@@ -128,8 +133,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
             {
                 var result = new LinkedList<ShardingMergeResult<TResult>>();
 
-                var tasks = sqlExecutorUnits.Select(sqlExecutorUnit => ExecuteUnitAsync(sqlExecutorUnit, cancellationToken)).ToArray();
-              
+                var tasks = sqlExecutorUnits
+                    .Select(sqlExecutorUnit => ExecuteUnitAsync(sqlExecutorUnit, cancellationToken)).ToArray();
+
                 var results = await TaskHelper.WhenAllFastFail(tasks);
                 foreach (var r in results)
                 {
@@ -139,13 +145,16 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 return result;
             }
         }
-        protected virtual void MergeParallelExecuteResult(LinkedList<TResult> previewResults, IEnumerable<TResult> parallelResults, bool async)
+
+        protected virtual void MergeParallelExecuteResult(LinkedList<TResult> previewResults,
+            IEnumerable<TResult> parallelResults, bool async)
         {
             foreach (var parallelResult in parallelResults)
             {
                 previewResults.AddLast(parallelResult);
             }
         }
+
         protected abstract Task<ShardingMergeResult<TResult>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit,
             CancellationToken cancellationToken = new CancellationToken());
     }

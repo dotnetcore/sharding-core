@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
         public SingleQueryEnumeratorExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
         }
-        protected override Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        protected override Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             throw new NotImplementedException();
         }

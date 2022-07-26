@@ -34,6 +34,9 @@
         <Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\CustomerQueryScope.cs">
           <Link>Sharding\ShardingExecutors\CustomerQueryScope.cs</Link>
         </Compile>
+        <Compile Update="..\..\src\ShardingCore\Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs">
+          <Link>Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs</Link>
+        </Compile>
     </ItemGroup>
 
 

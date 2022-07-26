@@ -26,11 +26,10 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions
 
         protected override async Task<ShardingMergeResult<RouteQueryResult<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
-            var connectionMode = GetStreamMergeContext().RealConnectionMode(sqlExecutorUnit.ConnectionMode);
             var dataSourceName = sqlExecutorUnit.RouteUnit.DataSourceName;
             var routeResult = sqlExecutorUnit.RouteUnit.TableRouteResult;
 
-            var shardingDbContext = GetStreamMergeContext().CreateDbContext(sqlExecutorUnit.RouteUnit, connectionMode);
+            var shardingDbContext = GetStreamMergeContext().CreateDbContext(sqlExecutorUnit.RouteUnit);
             var newQueryable = GetStreamMergeContext().GetReWriteQueryable()
                 .ReplaceDbContextQueryable(shardingDbContext);
 

@@ -5,13 +5,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Core;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x;
 using ShardingCore.Sharding.MergeEngines.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
+using ShardingCore.Sharding.ShardingExecutors;
 
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
@@ -140,5 +143,62 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
             enumator.MoveNext();
             return enumator;
         }
+
+        protected override async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var shardingMergeResult = await ExecuteUnitAsync0(sqlExecutorUnit, cancellationToken);
+            var dbContext = shardingMergeResult.DbContext;
+            var streamMergeAsyncEnumerator = shardingMergeResult.MergeResult;
+            //连接数严格的会在内存中聚合然后聚合后回收,非连接数严格需要判断是否需要当前执行单元直接回收
+            //first last 等操作没有skip就可以回收，如果没有元素就可以回收
+            //single如果没有元素就可以回收
+            //enumerable如果没有元素就可以回收
+            if (sqlExecutorUnit.ConnectionMode != ConnectionModeEnum.CONNECTION_STRICTLY)
+            {
+                var streamMergeContext = GetStreamMergeContext();
+                if (DisposeInExecuteUnit(streamMergeContext,streamMergeAsyncEnumerator))
+                {
+                    var disConnectionStreamMergeAsyncEnumerator = new OneAtMostElementStreamMergeAsyncEnumerator<TResult>(streamMergeAsyncEnumerator);
+                    await streamMergeContext.DbContextDisposeAsync(dbContext);
+                    return new ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>(null,
+                        disConnectionStreamMergeAsyncEnumerator);
+                }
+            }
+            
+            return shardingMergeResult;
+        }
+        /// <summary>
+        /// 是否需要在执行单元中直接回收掉链接有助于提高吞吐量
+        /// </summary>
+        /// <param name="streamMergeContext"></param>
+        /// <param name="streamMergeAsyncEnumerator"></param>
+        /// <returns></returns>
+        private bool DisposeInExecuteUnit(StreamMergeContext streamMergeContext,IStreamMergeAsyncEnumerator<TResult> streamMergeAsyncEnumerator)
+        {
+            var queryMethodName = streamMergeContext.MergeQueryCompilerContext.GetQueryMethodName();
+            var hasElement = streamMergeAsyncEnumerator.HasElement();
+
+            switch (queryMethodName)
+            {
+                case nameof(Queryable.First):
+                case nameof(Queryable.FirstOrDefault):
+                case nameof(Queryable.Last):
+                case nameof(Queryable.LastOrDefault):
+                {
+                    var skip = streamMergeContext.GetSkip();
+                    return skip is null or < 0||!hasElement;
+                } 
+                case nameof(Queryable.Single):
+                case nameof(Queryable.SingleOrDefault):
+                case QueryCompilerContext.ENUMERABLE:
+                {
+                    return !hasElement;
+                }
+            }
+
+            return false;
+        }
+        protected abstract Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(
+            SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken());
     }
 }

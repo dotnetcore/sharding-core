@@ -171,8 +171,11 @@ namespace ShardingCore.Sharding.ShardingExecutors
 
         public QueryCompilerExecutor GetQueryCompilerExecutor()
         {
+            //只获取第一次所以判断是否已经获取过了
             if (!hasQueryCompilerExecutor.HasValue)
             {
+                //空结果
+                //todo 后续优化直接无需后续的解析之类的
                 if(_shardingRouteResult.IsEmpty)
                 {
                     hasQueryCompilerExecutor = false;

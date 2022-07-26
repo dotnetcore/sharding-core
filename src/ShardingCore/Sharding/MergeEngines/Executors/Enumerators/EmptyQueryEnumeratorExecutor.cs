@@ -28,10 +28,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
             _async = async;
         }
 
-        protected override Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        protected override Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             throw new NotImplementedException();
         }
+
 
         protected override IStreamMergeCombine GetStreamMergeCombine()
         {

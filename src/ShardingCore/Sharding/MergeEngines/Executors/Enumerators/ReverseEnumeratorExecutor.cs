@@ -33,12 +33,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators
             _async = async;
         }
 
-        protected override  async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
+        protected override  async Task<ShardingMergeResult<IStreamMergeAsyncEnumerator<TResult>>> ExecuteUnitAsync0(SqlExecutorUnit sqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken())
         {
             var streamMergeContext = GetStreamMergeContext();
-            var connectionMode = streamMergeContext.RealConnectionMode(sqlExecutorUnit.ConnectionMode);
 
-            var shardingDbContext = streamMergeContext.CreateDbContext(sqlExecutorUnit.RouteUnit, connectionMode);
+            var shardingDbContext = streamMergeContext.CreateDbContext(sqlExecutorUnit.RouteUnit);
             var newQueryable = _reverseOrderQueryable
                 .ReplaceDbContextQueryable(shardingDbContext).As<IQueryable<TResult>>();
             var streamMergeAsyncEnumerator = await AsyncParallelEnumerator(newQueryable, _async, cancellationToken);
