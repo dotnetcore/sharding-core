@@ -90,10 +90,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 if (dataSourceSqlExecutorUnit.ConnectionMode == ConnectionModeEnum.CONNECTION_STRICTLY)
                 {
                     MergeParallelExecuteResult(result, routeQueryResults.Select(o => o.MergeResult), async);
-                    var dbContexts = routeQueryResults.Where(o=>o!=null).Select(o => o.DbContext).ToArray();
-                    foreach (var dbContext in dbContexts)
+                    foreach (var routeQueryResult in routeQueryResults)
                     {
-                        await streamMergeContext.DbContextDisposeAsync(dbContext);
+                        var dbContext = routeQueryResult.DbContext;
+                        if (dbContext != null)
+                        {
+                            await streamMergeContext.DbContextDisposeAsync(dbContext);
+                        }
                     }
                 }
                 else

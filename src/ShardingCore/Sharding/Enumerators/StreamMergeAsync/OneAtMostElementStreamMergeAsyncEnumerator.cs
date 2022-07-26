@@ -8,6 +8,9 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 {
     internal class OneAtMostElementStreamMergeAsyncEnumerator<T> : IStreamMergeAsyncEnumerator<T>
     {
+        /// <summary>
+        /// 因为启动的时候需要一次movenext所以这边将其设置为-1
+        /// </summary>
         private int _moveIndex = -1;
         private T _constantElement;
 
