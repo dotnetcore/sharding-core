@@ -209,18 +209,6 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerators.Abstractions
                 {
                     return !hasElement;
                 }
-                // case nameof(Queryable.Count):
-                // case nameof(Queryable.LongCount):
-                // case nameof(Queryable.Any):
-                // case nameof(Queryable.All):
-                // case nameof(Queryable.Sum):
-                // case nameof(Queryable.Max):
-                // case nameof(Queryable.Min):
-                // case nameof(Queryable.Average):
-                // case nameof(Queryable.Contains):
-                // {
-                //     return true;
-                // }
             }
 
             return false;
