@@ -17,6 +17,7 @@ namespace Sample.Migrations
     public class DefaultDesignTimeDbContextFactory: IDesignTimeDbContextFactory<DefaultShardingTableDbContext>
     {
         private static IServiceProvider _serviceProvider;
+        [Obsolete("Obsolete")]
         static DefaultDesignTimeDbContextFactory()
         {
             var services = new ServiceCollection();
@@ -30,16 +31,18 @@ namespace Sample.Migrations
                 {
                     op.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseSqlServer(conStr)
-                            .ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>()
-                            .ReplaceService<IMigrationsModelDiffer, RemoveForeignKeyMigrationsModelDiffer>();
+                        builder.UseSqlServer(conStr);
                     });
                     op.UseShardingTransaction((connection, builder) =>
                     {
                         builder.UseSqlServer(connection);
                     });
                     op.AddDefaultDataSource("ds0", "Data Source=localhost;Initial Catalog=ShardingCoreDBMigration;Integrated Security=True;");
-                   
+                   op.UseShardingMigrationConfigure(op =>
+                   {
+                       op.ReplaceService<IMigrationsSqlGenerator,
+                           ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>();
+                   });
                 }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
             _serviceProvider = services.BuildServiceProvider();
         }
