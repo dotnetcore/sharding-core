@@ -96,6 +96,25 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
+        /// <summary>
+        /// 读写分离配置 和 AddReadWriteSeparation不同的是
+        /// 当前配置支持自定义读链接节点命名,命名的好处在于当使用读库链接的时候由于服务器性能的差异
+        /// 可以将部分吃性能的查询通过节点名称切换到对应的性能相对较好或者较空闲的读库服务器
+        /// <code><![CDATA[
+        /// IShardingReadWriteManager _readWriteManager=...
+        ///   using (_readWriteManager.CreateScope())
+        ///     {
+        ///         _readWriteManager.GetCurrent().SetReadWriteSeparation(100,true);
+        ///         _readWriteManager.GetCurrent().AddDataSourceReadNode("A", readNodeName);
+        ///         var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
+        ///   }]]></code>
+        /// </summary>
+        /// <param name="readWriteNodeSeparationConfigure"></param>
+        /// <param name="readStrategyEnum"></param>
+        /// <param name="defaultEnable"></param>
+        /// <param name="defaultPriority"></param>
+        /// <param name="readConnStringGetStrategy"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddReadWriteNodeSeparation(
             Func<IShardingProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
@@ -135,6 +154,14 @@ namespace ShardingCore.Core.ShardingConfigurations
 
         /// <summary>
         /// 添加分片迁移的配置
+        /// 当前配置只有在调用迁移代码时才会生效
+        /// <code><![CDATA[
+        /// using (var scope = app.ApplicationServices.CreateScope())
+        /// {
+        ///   var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+        ///    defaultShardingDbContext.Database.Migrate();
+        /// }
+        /// ]]></code>
         /// </summary>
         /// <param name="configure"></param>
         /// <exception cref="ArgumentNullException"></exception>

@@ -20,6 +20,11 @@ namespace ShardingCore.Helpers
     public class ShardingCoreHelper
     {
         private ShardingCoreHelper() { }
+        /// <summary>
+        /// c#默认的字符串gethashcode只是进程内一致如果程序关闭开启后那么就会乱掉所以这边建议重写string的gethashcode或者使用shardingcore提供的
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static int GetStringHashCode(string value)
         {
             Check.NotNull(value, nameof(value));
