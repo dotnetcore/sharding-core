@@ -37,6 +37,9 @@
         <Compile Update="..\..\src\ShardingCore\Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs">
           <Link>Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs</Link>
         </Compile>
+        <Compile Update="..\..\src\ShardingCore\Sharding\MergeContexts\Paginations\PaginationItem.cs">
+          <Link>Sharding\MergeContexts\Paginations\PaginationItem.cs</Link>
+        </Compile>
     </ItemGroup>
 
 

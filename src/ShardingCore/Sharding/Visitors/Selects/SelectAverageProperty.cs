@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ShardingCore.Core.Internal.Visitors.Selects;
 
 namespace ShardingCore.Sharding.Visitors.Selects
 {

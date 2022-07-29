@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using Microsoft.Extensions.Logging;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
@@ -20,13 +21,33 @@ namespace ShardingCore.Sharding.MergeContexts
 {
     public sealed class QueryableRewriteEngine : IQueryableRewriteEngine
     {
-        
+        private readonly ILogger<QueryableRewriteEngine> _logger;
+        private readonly bool _enableLogDebug;
+
+        public QueryableRewriteEngine(ILogger<QueryableRewriteEngine> logger)
+        {
+            _logger = logger;
+            _enableLogDebug=logger.IsEnabled(LogLevel.Debug);
+        }
         public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
         {
             var paginationContext = parseResult.GetPaginationContext();
+            _logger.LogDebug($"rewrite queryable pagination context:[{paginationContext}]");
             var orderByContext = parseResult.GetOrderByContext();
+            if (_enableLogDebug)
+            {
+                _logger.LogDebug($"rewrite queryable order by context:[{orderByContext}]");
+            }
             var groupByContext = parseResult.GetGroupByContext();
+            if (_enableLogDebug)
+            {
+                _logger.LogDebug($"rewrite queryable group by context:[{groupByContext.GroupExpression?.ShardingPrint()}]");
+            }
             var selectContext = parseResult.GetSelectContext();
+            if (_enableLogDebug)
+            {
+                _logger.LogDebug($"rewrite queryable select context:[{selectContext}]");
+            }
             var skip = paginationContext.Skip;
             var take = paginationContext.Take;
             var orders = orderByContext.PropertyOrders;
@@ -34,43 +55,23 @@ namespace ShardingCore.Sharding.MergeContexts
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
             //去除分页,获取前Take+Skip数量
             var reWriteQueryable = combineQueryable;
+            if (take.HasValue || skip.HasValue)
+            {
+                reWriteQueryable = reWriteQueryable.RemoveSkipAndTake();
+            }
+
+           
             if (take.HasValue)
-            {
-                reWriteQueryable = reWriteQueryable.RemoveTake();
-            }
-
-            if (skip.HasValue)
-            {
-                reWriteQueryable = reWriteQueryable.RemoveSkip();
-            }
-
-            //如果是first or default
-            var fixedTake = mergeQueryCompilerContext.GetFixedTake();
-            if (fixedTake.HasValue)
             {
                 if (skip.HasValue)
                 {
-                    reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(fixedTake.Value + skip.GetValueOrDefault());
+                    reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(take.Value + skip.GetValueOrDefault());
                 }
                 else
                 {
-                    reWriteQueryable = reWriteQueryable.ReTake(fixedTake.Value);
+                    reWriteQueryable = reWriteQueryable.ReTake(take.Value + skip.GetValueOrDefault());
                 }
-            }
-            else
-            {
-                if (take.HasValue)
-                {
-                    if (skip.HasValue)
-                    {
-                        reWriteQueryable = reWriteQueryable.ReSkip(0).ReTake(take.Value + skip.GetValueOrDefault());
-                    }
-                    else
-                    {
-                        reWriteQueryable = reWriteQueryable.ReTake(take.Value + skip.GetValueOrDefault());
-                    }
-                } 
-            }
+            } 
             //包含group by
             if (groupByContext.GroupExpression != null)
             {

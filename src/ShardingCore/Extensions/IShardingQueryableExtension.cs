@@ -27,6 +27,12 @@ namespace ShardingCore.Extensions
         private static readonly MethodInfo QueryableTakeMethod = typeof(Queryable).GetMethods().First(
             m => m.Name == nameof(Queryable.Take)
                  && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType == typeof(int));
+        
+        internal static IQueryable RemoveSkipAndTake(this IQueryable source)
+        {
+            var expression = new RemoveSkipAndTakeVisitor().Visit(source.Expression);
+            return source.Provider.CreateQuery(expression);
+        }
         /// <summary>
         /// 删除Skip表达式
         /// </summary>

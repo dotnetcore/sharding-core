@@ -1,14 +1,13 @@
 using System;
 using System.Reflection;
-using ShardingCore.Sharding.Visitors.Selects;
 
 /*
 * @Author: xjm
-* @Description:±í´ïselectÊôÐÔ 
+* @Description:ï¿½ï¿½ï¿½ï¿½selectï¿½ï¿½ï¿½ï¿½ 
 * @Date: Tuesday, 02 February 2021 08:17:48
 * @Email: 326308290@qq.com
 */
-namespace ShardingCore.Core.Internal.Visitors.Selects
+namespace ShardingCore.Sharding.Visitors.Selects
 {
     public class SelectOwnerProperty: SelectProperty
     {
@@ -20,5 +19,10 @@ namespace ShardingCore.Core.Internal.Visitors.Selects
         public Type OwnerType { get; }
         public PropertyInfo Property { get; }
         public string PropertyName => Property.Name;
+
+        public override string ToString()
+        {
+            return $"{nameof(OwnerType)}: {OwnerType}, {nameof(Property)}: {Property}, {nameof(PropertyName)}: {PropertyName}";
+        }
     }
 }

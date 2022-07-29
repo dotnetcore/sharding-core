@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using ShardingCore.Core.Internal.Visitors.Selects;
 
 namespace ShardingCore.Sharding.MergeContexts
 {

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Exceptions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.Visitors.Selects;

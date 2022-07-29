@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ShardingCore.Core.Internal.Visitors.Selects;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
@@ -44,7 +43,7 @@ namespace ShardingCore.Core.Internal.Visitors
             var fixedTake = _mergeQueryCompilerContext.GetFixedTake();
             if (fixedTake.HasValue)
             {
-                _paginationContext.Take = fixedTake.Value;
+                _paginationContext.ReplaceToFixedTake(fixedTake.Value);
             }
             return _paginationContext;
         }
@@ -60,13 +59,15 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 if (_paginationContext.HasSkip())
                     throw new ShardingCoreInvalidOperationException("more than one skip found");
-                _paginationContext.Skip = (int)GetExpressionValue(node.Arguments[1]);
+                var skip = (int)GetExpressionValue(node.Arguments[1]);
+                _paginationContext.AddSkip(skip);
             }
             else if (node.Method.Name == nameof(Queryable.Take))
             {
                 if (_paginationContext.HasTake())
                     throw new ShardingCoreInvalidOperationException("more than one take found");
-                _paginationContext.Take = (int)GetExpressionValue(node.Arguments[1]);
+                var take = (int)GetExpressionValue(node.Arguments[1]);
+                _paginationContext.AddTake(take);
             }
             else if (method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.OrderByDescending) || method.Name == nameof(Queryable.ThenBy) || method.Name == nameof(Queryable.ThenByDescending))
             {

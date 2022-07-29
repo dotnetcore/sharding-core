@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Sharding.Visitors.Selects;
 
-namespace ShardingCore.Core.Internal.Visitors.Selects
+namespace ShardingCore.Sharding.MergeContexts
 {
 /*
 * @Author: xjm
@@ -23,6 +23,11 @@ namespace ShardingCore.Core.Internal.Visitors.Selects
         public bool HasCount()
         {
             return SelectProperties.Any(o=>o is SelectCountProperty);
+        }
+
+        public override string ToString()
+        {
+            return String.Join(",",SelectProperties.Select(o=>$"{o}"));
         }
     }
 }
