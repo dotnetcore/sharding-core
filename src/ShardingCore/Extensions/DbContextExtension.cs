@@ -245,7 +245,7 @@ namespace ShardingCore.Extensions
             
             foreach (var entityType in entityTypes)
             {
-                if (entityType.GetFieldValue("_data") is List<object> _data)
+                if (entityType.Value.GetFieldValue("_data") is List<object> _data)
                 {
                     _data.Clear();
                 }
