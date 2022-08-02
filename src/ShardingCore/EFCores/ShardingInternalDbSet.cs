@@ -31,6 +31,7 @@ namespace ShardingCore.EFCores
     {
         private readonly IShardingDbContext _context;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        private LocalView<TEntity>? _localView;
 
 #if EFCORE5 || EFCORE6
 
@@ -63,6 +64,19 @@ namespace ShardingCore.EFCores
             }
         }
 
+        public override LocalView<TEntity> Local 
+        {
+            get
+            {
+
+                if (((DbContext)_context).ChangeTracker.AutoDetectChangesEnabled)
+                {
+                    ((DbContext)_context).ChangeTracker.DetectChanges();
+                }
+
+                return _localView ??= new ShardingLocalView<TEntity>(this);
+            }
+        }
         private ITableRouteManager _tableRouteManager;
 
         protected ITableRouteManager TableRouteManager

@@ -10,6 +10,8 @@ using ShardingCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Extensions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 
@@ -32,7 +34,6 @@ namespace Sample.SqlServer
         {
             services.AddControllers();
             //services.AddDbContext<DefaultTableDbContext>(o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDBxx3;Integrated Security=True"));
-
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig(o =>
                 {

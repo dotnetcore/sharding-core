@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
@@ -42,6 +43,7 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.DynamicDataSources;
+using ShardingCore.EFCores.ChangeTrackers;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
@@ -143,7 +145,7 @@ namespace ShardingCore
             dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
         }
 
-        public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,
+        public static DbContextOptionsBuilder UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,
             IShardingRuntimeContext shardingRuntimeContext) where TShardingDbContext : DbContext, IShardingDbContext
         {
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
@@ -156,6 +158,7 @@ namespace ShardingCore
                 .UseSharding<TShardingDbContext>(shardingRuntimeContext);
 
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
+            return dbContextOptionsBuilder;
         }
 
         internal static IServiceCollection AddInternalShardingCore<TShardingDbContext>(this IServiceCollection services)
@@ -240,6 +243,7 @@ namespace ShardingCore
             return optionsBuilder.UseShardingWrapMark().UseShardingOptions(shardingRuntimeContext)
                 .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IChangeTrackerFactory, ShardingChangeTrackerFactory>()
                 .ReplaceService<IDbContextTransactionManager,
                     ShardingRelationalTransactionManager<TShardingDbContext>>()
                 .ReplaceService<IRelationalTransactionFactory,

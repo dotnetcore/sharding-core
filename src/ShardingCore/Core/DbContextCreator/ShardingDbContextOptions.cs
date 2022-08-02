@@ -5,12 +5,9 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 
 namespace ShardingCore.Core.DbContextCreator
 {
-    /*
-    * @Author: xjm
-    * @Description:
-    * @Date: Wednesday, 16 December 2020 16:15:43
-    * @Email: 326308290@qq.com
-    */
+    /// <summary>
+    /// 用来实现dbcontext的创建,将RouteTail和DbContextOptions封装到一起
+    /// </summary>
     public class ShardingDbContextOptions
     {
         public ShardingDbContextOptions(DbContextOptions dbContextOptions, IRouteTail routeTail)
@@ -19,7 +16,13 @@ namespace ShardingCore.Core.DbContextCreator
             DbContextOptions = dbContextOptions;
         }
 
+        /// <summary>
+        /// 用来告诉ShardingCore创建的DbContext是什么后缀
+        /// </summary>
         public  IRouteTail RouteTail{ get; }
+        /// <summary>
+        /// 用来创建DbContext
+        /// </summary>
         public DbContextOptions DbContextOptions { get; }
     }
 }

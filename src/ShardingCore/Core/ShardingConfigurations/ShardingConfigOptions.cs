@@ -7,6 +7,9 @@ using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.ShardingConfigurations
 {
+    /// <summary>
+    /// 分片配置
+    /// </summary>
     public class ShardingConfigOptions
     {
         /// <summary>

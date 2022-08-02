@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding
     /// <summary>
     /// 分表分库的dbcontext
     /// </summary>
-    public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingReadWrite//,ICurrentDbContextDiscover
+    public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext, ISupportShardingReadWrite,ICurrentDbContextDiscover
     {
         protected IShardingDbContextExecutor ShardingDbContextExecutor { get; }
 
@@ -501,10 +501,10 @@ namespace ShardingCore.Sharding
             ShardingDbContextExecutor.Commit();
         }
 
-        //public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
-        //{
-        //    return ShardingDbContextExecutor.GetCurrentDbContexts();
-        //}
+        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
+        {
+            return ShardingDbContextExecutor.GetCurrentDbContexts();
+        }
         
     }
 }

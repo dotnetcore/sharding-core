@@ -46,8 +46,8 @@ namespace Sample.MySql.Controllers
             // Console.WriteLine("------------");
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
-                
-                var resultX = await _defaultTableDbContext.Set<SysUserMod>()
+            var sysUserMods = _defaultTableDbContext.Set<SysUserMod>();
+            var resultX = await _defaultTableDbContext.Set<SysUserMod>()
                     .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
                 var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");
                 var shardingFirstOrDefaultAsyncxxx = await _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Time==DateTime.Now).ToListAsync();
