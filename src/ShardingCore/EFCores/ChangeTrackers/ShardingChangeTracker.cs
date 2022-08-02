@@ -91,23 +91,23 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override void TrackGraph(object rootEntity, Action<EntityEntryGraphNode> callback)
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                Do(c => c.TrackGraph(rootEntity,callback));
-                return;
+                var genericDbContext = shardingDbContext.CreateGenericDbContext(rootEntity);
+                genericDbContext.ChangeTracker.TrackGraph(rootEntity,callback);
+                // Do(c => c.TrackGraph(rootEntity,callback));
             }
-            base.TrackGraph(rootEntity, callback);
         }
 
 #if !EFCORE2
         public override void TrackGraph<TState>(object rootEntity, TState state, Func<EntityEntryGraphNode<TState>, bool> callback) where TState : default
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                Do(c => c.TrackGraph(rootEntity,state,callback));
-                return;
+                var genericDbContext = shardingDbContext.CreateGenericDbContext(rootEntity);
+                genericDbContext.ChangeTracker.TrackGraph(rootEntity,state,callback);
+                // Do(c => c.TrackGraph(rootEntity,callback));
             }
-            base.TrackGraph(rootEntity, state, callback);
         }
 
         public override void CascadeChanges()
@@ -136,12 +136,12 @@ namespace ShardingCore.EFCores.ChangeTrackers
 #if EFCORE2
         public override void TrackGraph<TState>(object rootEntity, TState state, Func<EntityEntryGraphNode, TState, bool> callback)
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                Do(c => c.TrackGraph(rootEntity,state,callback));
-                return;
+                var genericDbContext = shardingDbContext.CreateGenericDbContext(rootEntity);
+                genericDbContext.ChangeTracker.TrackGraph(rootEntity,state,callback);
+                // Do(c => c.TrackGraph(rootEntity,callback));
             }
-            base.TrackGraph(rootEntity, state, callback);
         }
 #endif
     }
