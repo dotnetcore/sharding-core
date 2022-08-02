@@ -79,10 +79,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             }
             var shardingKeyToTail = ShardingKeyToTail(shardingKey);
 
-            var filterTails = GetTails().Where(o => o== shardingKeyToTail).ToList();
+            var filterTails = GetTails().Where(o => o == shardingKeyToTail).ToList();
             if (filterTails.IsEmpty())
             {
-                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all tails ->[{string.Join(",", filterTails)}]");
+                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] -> [{shardingKey}] -> sharding key to tail :[{shardingKeyToTail}] ->  all tails ->[{string.Join(",", GetTails())}]");
             }
 
             if (filterTails.Count > 1)
