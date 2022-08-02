@@ -192,15 +192,23 @@ namespace ShardingCore.Extensions
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType(this DbContext dbContext,
             Type shardingType)
         {
-#if !EFCORE2&&!EFCORE3&&!EFCORE5&&!EFCORE6
-            throw new NotImplementedException();
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+            1
 #endif
 #if EFCORE2 ||EFCORE3 ||EFCORE5
 
             var contextModel = dbContext.Model as Model;
 #endif
 #if EFCORE6
-            var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
+            var contextModel = dbContext.GetService<IDesignTimeModel>().Model;
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
             var valueTuples =
                 contextModelRelationalModel.Tables
@@ -214,6 +222,15 @@ namespace ShardingCore.Extensions
 
 #if EFCORE5
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
+            
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var valueTuples = contextModelRelationalModel.Tables
                 .Where(o => o.Value.EntityTypeMappings.All(m => m.EntityType.ClrType != shardingType))
                 .Select(o => o.Key).ToList();
@@ -225,6 +242,14 @@ namespace ShardingCore.Extensions
 #if EFCORE2 || EFCORE3
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
+            
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var list = entityTypes.Where(o=>o.Value.ClrType!=shardingType).Select(o=>o.Key).ToList();
             for (int i = 0; i < list.Count; i++)
             {

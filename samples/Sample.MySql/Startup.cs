@@ -196,21 +196,21 @@ namespace Sample.MySql
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-                // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
-                {
-                    try
-                    {
-            
-                        defaultShardingDbContext.Database.Migrate();
-                    }
-                    catch (Exception e)
-                    {
-                    }
-                }
-            }
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
+            //     {
+            //         try
+            //         {
+            //
+            //             defaultShardingDbContext.Database.Migrate();
+            //         }
+            //         catch (Exception e)
+            //         {
+            //         }
+            //     }
+            // }
             // using (var scope = app.ApplicationServices.CreateScope())
             // {
             //     var defaultShardingDbContext = scope.ServiceProvider.GetService<OtherDbContext>();

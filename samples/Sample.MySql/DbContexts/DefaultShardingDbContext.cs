@@ -33,6 +33,9 @@ namespace Sample.MySql.DbContexts
                 _configureGlobalFiltersMethodInfo?.MakeGenericMethod(entityType.ClrType)
                     .Invoke(this, new object[] { modelBuilder, entityType });
             }
+
+            modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
+            modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
         }
 
         
