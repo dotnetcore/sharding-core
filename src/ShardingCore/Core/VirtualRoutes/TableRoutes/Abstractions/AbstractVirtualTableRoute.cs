@@ -96,10 +96,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// <param name="builder"></param>
         public abstract void Configure(EntityMetadataTableBuilder<T> builder);
 
+        /// <summary>
+        /// 创建分页配置
+        /// </summary>
+        /// <returns></returns>
         public virtual IPaginationConfiguration<T> CreatePaginationConfiguration()
         {
             return null;
         }
+        /// <summary>
+        /// 创建熟悉怒查询配置
+        /// </summary>
+        /// <returns></returns>
         public virtual IEntityQueryConfiguration<T> CreateEntityQueryConfiguration()
         {
             return null;

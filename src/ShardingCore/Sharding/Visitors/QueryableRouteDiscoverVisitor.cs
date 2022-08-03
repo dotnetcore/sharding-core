@@ -104,26 +104,45 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             if (expression is MemberExpression member)
             {
-                if (member.Expression?.Type == _entityMetadata.EntityType ||
-                    MemberExpressionIsConvertAndOriginalIsEntityType(member))
+                MemberExpression realMember = null;
+                if (member.Expression?.Type == _entityMetadata.EntityType)
+                {
+                    realMember = member;
+                }
+                else if (MemberExpressionIsConvertAndOriginalIsEntityType(member,out  realMember))
+                {
+                }
+
+                if (realMember != null)
                 {
                     var isShardingKey = false;
                     if (_shardingTableRoute)
                     {
-                        isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(member.Member.Name);
+                        isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(realMember.Member.Name);
                     }
                     else
                     {
-                        isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(member.Member.Name);
+                        isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(realMember.Member.Name);
                     }
 
                     if (isShardingKey)
                     {
-                        shardingPredicateResult = new ShardingPredicateResult(true, member.Member.Name);
+                        shardingPredicateResult = new ShardingPredicateResult(true, realMember.Member.Name);
                         return true;
                     }
                 }
             }
+            // else if (expression is BinaryExpression binaryExpression)
+            // {
+            //     if (IsShardingKey(binaryExpression.Left, out shardingPredicateResult))
+            //     {
+            //         return true;
+            //     }
+            //     else if (IsShardingKey(binaryExpression.Right, out shardingPredicateResult))
+            //     {
+            //         return true;
+            //     }
+            // }
 
             shardingPredicateResult = _noShardingPredicateResult;
             return false;
@@ -133,12 +152,30 @@ namespace ShardingCore.Core.Internal.Visitors
         /// 成员表达式是强转并且强转前的类型是当前对象
         /// </summary>
         /// <param name="member"></param>
+        /// <param name="realMember"></param>
         /// <returns></returns>
-        private bool MemberExpressionIsConvertAndOriginalIsEntityType(MemberExpression member)
+        private bool MemberExpressionIsConvertAndOriginalIsEntityType(MemberExpression member,
+            out MemberExpression realMember)
         {
-            return member.Expression?.NodeType == ExpressionType.Convert &&
-                   member.Expression is UnaryExpression unaryExpression &&
-                   unaryExpression.Operand.Type == _entityMetadata.EntityType;
+            if (member.Expression?.NodeType == ExpressionType.Convert &&
+                member.Expression is UnaryExpression unaryExpression)
+            {
+                if (unaryExpression.Operand.Type == _entityMetadata.EntityType)
+                {
+                    realMember = member;
+                    return true;
+                }
+
+                if (unaryExpression.Operand is MemberExpression m &&
+                    m.Expression?.Type == _entityMetadata.EntityType)
+                {
+                    realMember = m;
+                    return true;
+                }
+            }
+
+            realMember = null;
+            return false;
         }
 
         /// <summary>

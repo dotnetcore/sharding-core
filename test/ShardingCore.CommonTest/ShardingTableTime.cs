@@ -9,6 +9,7 @@ using Xunit;
 namespace ShardingCore.CommonTest
 {
 
+    
     public class ShardingTableTime
     {
         private readonly EntityMetadata _testEntityMetadata;
@@ -95,7 +96,7 @@ namespace ShardingCore.CommonTest
             var obj1 = new {time=new DateTime(2022, 1, 2)};
             var queryables=new List<IQueryable<TestTimeEntity>>()
             {
-                
+                new List<TestTimeEntity>().AsQueryable().CheckBetween((DateTime?)queryTime,(DateTime?)queryTime3,o=>o.Time),
                 new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==times2[0]),
                 new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=times2[0]&&o.Time<times2[1]),
                 new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time>=queryTime&&o.Time<queryTime2),
