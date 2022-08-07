@@ -43,7 +43,6 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 list.Add(streamMergeAsyncEnumerator.GetCurrent());
                 _inMemoryReallyCount++;
             }
-
             return list.GetEnumerator();
         }
         private IEnumerator<T> GetAllRows(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)

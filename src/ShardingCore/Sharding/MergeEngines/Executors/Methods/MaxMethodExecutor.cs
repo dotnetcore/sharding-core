@@ -12,6 +12,8 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
@@ -22,7 +24,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
     /// Author: xjm
     /// Created: 2022/5/7 11:13:57
     /// Email: 326308290@qq.com
-    internal class MaxMethodExecutor<TEntity,TResult> : AbstractMethodExecutor<TResult>
+    internal class MaxMethodExecutor<TEntity,TResult> : AbstractMethodWrapExecutor<TResult>
     {
         public MaxMethodExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
@@ -31,6 +33,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
         public override ICircuitBreaker CreateCircuitBreaker()
         {
             return new AnyElementCircuitBreaker(GetStreamMergeContext());
+        }
+
+        public override IShardingMerger<RouteQueryResult<TResult>> GetShardingMerger()
+        {
+            return new MaxMethodShardingMerger<TResult>();
         }
 
         protected override Task<TResult> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())

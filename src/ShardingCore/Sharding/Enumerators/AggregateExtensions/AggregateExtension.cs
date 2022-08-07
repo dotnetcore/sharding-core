@@ -123,6 +123,30 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
                 new[] { source.Expression, Expression.Quote(selector) });
             return callExpression;
         }
+        
+        private static MethodCallExpression CreateSumByConstant<TSelect>(this IQueryable source)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            var valueType = typeof(TSelect);
+            if (!valueType.IsNumericType())
+                throw new ShardingCoreInvalidOperationException(
+                    $"method sum cant calc type :[{valueType}]");
+            ParameterExpression parameter = Expression.Parameter(source.ElementType, "s");
+            // MemberExpression getter = Expression.MakeMemberAccess(parameter, property);
+            Expression selector = Expression.Lambda(parameter);
+            MethodInfo sumMethod = typeof(Queryable).GetMethods().First(
+                m => m.Name == nameof(Queryable.Sum)
+                     && m.ReturnType == valueType
+                     && m.IsGenericMethod);
+
+            var genericSumMethod = sumMethod.MakeGenericMethod(new[] { source.ElementType });
+
+            var callExpression = Expression.Call(
+                null,
+                genericSumMethod,
+                new[] { source.Expression, Expression.Quote(selector) });
+            return callExpression;
+        }
         /// <summary>
         /// 根据属性求和
         /// </summary>
@@ -138,6 +162,11 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         public static TSelect SumByProperty<TSelect>(this IQueryable source, PropertyInfo property)
         {
             var callExpression = CreateSumByProperty(source, property);
+            return source.Provider.Execute<TSelect>(callExpression);
+        }
+        public static TSelect SumByConstant<TSelect>(this IQueryable source)
+        {
+            var callExpression = CreateSumByConstant<TSelect>(source);
             return source.Provider.Execute<TSelect>(callExpression);
         }
         /// <summary>

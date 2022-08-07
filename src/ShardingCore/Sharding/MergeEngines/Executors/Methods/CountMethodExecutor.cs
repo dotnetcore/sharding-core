@@ -9,6 +9,9 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
 {
@@ -18,7 +21,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
     /// Author: xjm
     /// Created: 2022/5/7 8:26:46
     /// Email: 326308290@qq.com
-    internal class CountMethodExecutor<TEntity> : AbstractMethodExecutor<int>
+    internal class CountMethodExecutor<TEntity> : AbstractMethodWrapExecutor<int>
     {
         public CountMethodExecutor(StreamMergeContext streamMergeContext) : base(streamMergeContext)
         {
@@ -32,6 +35,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
                 Cancel();
             });
             return circuitBreaker;
+        }
+
+        public override IShardingMerger<RouteQueryResult<int>> GetShardingMerger()
+        {
+            return new CountMethodShardingMerger(GetStreamMergeContext());
         }
 
         protected override Task<int> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())

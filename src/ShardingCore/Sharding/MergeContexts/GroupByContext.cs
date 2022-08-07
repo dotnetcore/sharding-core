@@ -13,7 +13,11 @@ namespace ShardingCore.Sharding.MergeContexts
         /// <summary>
         /// group by 表达式
         /// </summary>
-        public LambdaExpression GroupExpression { get; set; } 
+        public LambdaExpression GroupExpression { get; set; }
+        /// <summary>
+        /// 是否内存聚合
+        /// </summary>
+        public bool GroupMemoryMerge { get; set; }
 
     }
 }

@@ -22,7 +22,6 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Sharding.Enumerators;
-using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
 
@@ -192,6 +191,14 @@ namespace ShardingCore.Sharding
         public bool HasGroupQuery()
         {
             return this.GroupByContext.GroupExpression != null;
+        }
+        /// <summary>
+        /// group 内存排序
+        /// </summary>
+        /// <returns></returns>
+        public bool GroupQueryMemoryMerge()
+        {
+            return this.GroupByContext.GroupMemoryMerge;
         }
 
         public bool IsMergeQuery()

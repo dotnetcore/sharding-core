@@ -14,8 +14,8 @@ using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.MergeContexts;
-using ShardingCore.Sharding.MergeEngines.Abstractions.StreamMerge;
-using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines.Enumerables;
+using ShardingCore.Sharding.MergeEngines.Enumerables;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.PaginationConfigurations;
 
 namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
@@ -56,17 +56,17 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         {
             if (_streamMergeContext.IsRouteNotMatch())
             {
-                return new EmptyQueryStreamEnumerable<TEntity>(_streamMergeContext);
+                return new EmptyShardingEnumerable<TEntity>(_streamMergeContext);
             }
-            //本次查询没有跨库没有跨表就可以直接执行
-            if (!_streamMergeContext.IsMergeQuery())
-            {
-                return new SingleQueryStreamEnumerable<TEntity>(_streamMergeContext);
-            }
+            // //本次查询没有跨库没有跨表就可以直接执行
+            // if (!_streamMergeContext.IsMergeQuery())
+            // {
+            //     return new SingleQueryStreamEnumerable<TEntity>(_streamMergeContext);
+            // }
 
             if (_streamMergeContext.UseUnionAllMerge())
             {
-                return new DefaultShardingStreamEnumerable<TEntity>(_streamMergeContext);
+                return new DefaultShardingEnumerable<TEntity>(_streamMergeContext);
             }
 
             var queryMethodName = _streamMergeContext.MergeQueryCompilerContext.GetQueryMethodName();
@@ -74,13 +74,13 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             {
                 case nameof(Enumerable.First):
                 case nameof(Enumerable.FirstOrDefault):
-                    return new FirstOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                    return new FirstOrDefaultShardingEnumerable<TEntity>(_streamMergeContext);
                 case nameof(Enumerable.Single):
                 case nameof(Enumerable.SingleOrDefault):
-                    return new SingleOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                    return new SingleOrDefaultShardingEnumerable<TEntity>(_streamMergeContext);
                 case nameof(Enumerable.Last):
                 case nameof(Enumerable.LastOrDefault):
-                    return new LastOrDefaultStreamEnumerable<TEntity>(_streamMergeContext);
+                    return new LastOrDefaultShardingEnumerable<TEntity>(_streamMergeContext);
             }
 
             //未开启系统分表或者本次查询涉及多张分表
@@ -109,7 +109,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
 
-            return new DefaultShardingStreamEnumerable<TEntity>(_streamMergeContext);
+            return new DefaultShardingEnumerable<TEntity>(_streamMergeContext);
         }
 
         private IStreamEnumerable<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
@@ -145,7 +145,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new AppendOrderSequenceStreamEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
+                return new AppendOrderSequenceShardingEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
             }
 
 
@@ -188,7 +188,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                                                                              !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new SequenceStreamEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                return new SequenceShardingEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
@@ -207,7 +207,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             //skip过大reserve skip
             if (dataSourceUseReverse && tableUseReverse)
             {
-                return new ReverseShardingStreamEnumerable<TEntity>(_streamMergeContext, total);
+                return new ReverseShardingEnumerable<TEntity>(_streamMergeContext, total);
             }
 
 

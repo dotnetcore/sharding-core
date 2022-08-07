@@ -9,7 +9,6 @@ using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.NativeTrackQueries;
 

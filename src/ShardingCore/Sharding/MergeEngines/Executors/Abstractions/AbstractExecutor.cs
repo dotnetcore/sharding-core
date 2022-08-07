@@ -4,9 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core;
+using ShardingCore.Exceptions;
 using ShardingCore.Helpers;
-using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
 {
@@ -56,7 +57,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
             return cancelStatus == cancelled;
         }
 
-        public async Task<LinkedList<TResult>> ExecuteAsync(bool async,
+        public abstract IShardingMerger<TResult> GetShardingMerger();
+
+        public async Task<List<TResult>> ExecuteAsync(bool async,
             DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -71,14 +74,14 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
             }
         }
 
-        private async Task<LinkedList<TResult>> ExecuteAsync0(bool async,
+        private async Task<List<TResult>> ExecuteAsync0(bool async,
             DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit,
             CancellationToken cancellationToken = new CancellationToken())
         {
             var streamMergeContext = GetStreamMergeContext();
             var circuitBreaker = CreateCircuitBreaker();
             var executorGroups = dataSourceSqlExecutorUnit.SqlExecutorGroups;
-            LinkedList<TResult> result = new LinkedList<TResult>();
+            List<TResult> result = new List<TResult>();
             var executorGroupsCount = executorGroups.Count;
             //同数据库下多组数据间采用串行
             foreach (var executorGroup in executorGroups)
@@ -89,7 +92,16 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 //严格限制连接数就在内存中进行聚合并且直接回收掉当前dbcontext
                 if (dataSourceSqlExecutorUnit.ConnectionMode == ConnectionModeEnum.CONNECTION_STRICTLY)
                 {
-                    MergeParallelExecuteResult(result, routeQueryResults.Select(o => o.MergeResult), async);
+                    var resultCount = result.Count;
+                    if (resultCount > 1)
+                    {
+                        throw new ShardingCoreInvalidOperationException(
+                            $"in memory merge result length error:{resultCount}");
+                    }
+
+                    GetShardingMerger()
+                        .InMemoryMerge(result, routeQueryResults.Select(o => o.MergeResult).ToList());
+                    // MergeParallelExecuteResult(result, , async);
                     foreach (var routeQueryResult in routeQueryResults)
                     {
                         var dbContext = routeQueryResult.DbContext;
@@ -103,7 +115,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 {
                     foreach (var routeQueryResult in routeQueryResults)
                     {
-                        result.AddLast(routeQueryResult.MergeResult);
+                        result.Add(routeQueryResult.MergeResult);
                     }
                 }
 
@@ -125,38 +137,33 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
         /// <param name="sqlExecutorUnits"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<LinkedList<ShardingMergeResult<TResult>>> GroupExecuteAsync(
+        protected async Task<List<ShardingMergeResult<TResult>>> GroupExecuteAsync(
             List<SqlExecutorUnit> sqlExecutorUnits, CancellationToken cancellationToken = new CancellationToken())
         {
             if (sqlExecutorUnits.Count <= 0)
             {
-                return new LinkedList<ShardingMergeResult<TResult>>();
+                return new List<ShardingMergeResult<TResult>>();
             }
             else
             {
-                var result = new LinkedList<ShardingMergeResult<TResult>>();
-
                 var tasks = sqlExecutorUnits
                     .Select(sqlExecutorUnit => ExecuteUnitAsync(sqlExecutorUnit, cancellationToken)).ToArray();
 
                 var results = await TaskHelper.WhenAllFastFail(tasks);
-                foreach (var r in results)
-                {
-                    result.AddLast(r);
-                }
+                var result = results.ToList();
 
                 return result;
             }
         }
 
-        protected virtual void MergeParallelExecuteResult(LinkedList<TResult> previewResults,
-            IEnumerable<TResult> parallelResults, bool async)
-        {
-            foreach (var parallelResult in parallelResults)
-            {
-                previewResults.AddLast(parallelResult);
-            }
-        }
+        // protected virtual void MergeParallelExecuteResult<TResult>(List<TResult> previewResults,
+        //     IEnumerable<TResult> parallelResults, bool async)
+        // {
+        //     foreach (var parallelResult in parallelResults)
+        //     {
+        //         previewResults.Add(parallelResult);
+        //     }
+        // }
 
         protected abstract Task<ShardingMergeResult<TResult>> ExecuteUnitAsync(SqlExecutorUnit sqlExecutorUnit,
             CancellationToken cancellationToken = new CancellationToken());

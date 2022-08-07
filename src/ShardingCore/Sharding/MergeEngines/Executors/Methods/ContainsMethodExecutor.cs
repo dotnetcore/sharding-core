@@ -9,7 +9,10 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
 {
@@ -33,6 +36,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
                 Cancel();
             });
             return circuitBreaker;
+        }
+
+        public override IShardingMerger<bool> GetShardingMerger()
+        {
+            return ContainsMethodShardingMerger.Instance;
         }
 
         protected override Task<bool> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())

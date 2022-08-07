@@ -6,11 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Extensions.InternalExtensions;
-using ShardingCore.Sharding.MergeEngines.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
@@ -30,6 +31,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
         public override ICircuitBreaker CreateCircuitBreaker()
         {
             return new AnyElementCircuitBreaker(GetStreamMergeContext());
+        }
+
+        public override IShardingMerger<bool> GetShardingMerger()
+        {
+            return AnyMethodShardingMerger.Instance;
         }
 
         protected override Task<bool> EFCoreQueryAsync(IQueryable queryable, CancellationToken cancellationToken = new CancellationToken())

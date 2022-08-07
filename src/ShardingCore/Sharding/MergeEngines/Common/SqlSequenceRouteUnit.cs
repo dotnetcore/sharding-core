@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
-using ShardingCore.Sharding.StreamMergeEngines.EnumeratorStreamMergeEngines.Base;
+using ShardingCore.Sharding.MergeEngines.Enumerables.Base;
 
 namespace ShardingCore.Sharding.MergeEngines.Common
 {

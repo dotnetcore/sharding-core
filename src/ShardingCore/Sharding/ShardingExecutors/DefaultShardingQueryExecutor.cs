@@ -1,11 +1,9 @@
 ﻿using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.MergeEngines.Abstractions.InMemoryMerge;
 using ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.StreamMergeEngines;
-using ShardingCore.Sharding.StreamMergeEngines.AggregateMergeEngines;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -16,6 +14,8 @@ using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
 
 using ShardingCore.Sharding.MergeEngines;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.InMemoryMerge;
 #if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif

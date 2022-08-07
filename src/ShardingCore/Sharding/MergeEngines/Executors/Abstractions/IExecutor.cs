@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Sharding.MergeEngines.Common;
+using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
 {
@@ -16,6 +17,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
     /// Email: 326308290@qq.com
     internal interface IExecutor<TResult>
     {
-        Task<LinkedList<TResult>> ExecuteAsync(bool async, DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken());
+        IShardingMerger<TResult> GetShardingMerger();
+        Task<List<TResult>> ExecuteAsync(bool async, DataSourceSqlExecutorUnit dataSourceSqlExecutorUnit, CancellationToken cancellationToken = new CancellationToken());
     }
 }

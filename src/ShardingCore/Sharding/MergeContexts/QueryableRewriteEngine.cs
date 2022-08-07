@@ -27,9 +27,11 @@ namespace ShardingCore.Sharding.MergeContexts
         public QueryableRewriteEngine(ILogger<QueryableRewriteEngine> logger)
         {
             _logger = logger;
-            _enableLogDebug=logger.IsEnabled(LogLevel.Debug);
+            _enableLogDebug = logger.IsEnabled(LogLevel.Debug);
         }
-        public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext, IParseResult parseResult)
+
+        public IRewriteResult GetRewriteQueryable(IMergeQueryCompilerContext mergeQueryCompilerContext,
+            IParseResult parseResult)
         {
             var paginationContext = parseResult.GetPaginationContext();
             _logger.LogDebug($"rewrite queryable pagination context:[{paginationContext}]");
@@ -38,16 +40,20 @@ namespace ShardingCore.Sharding.MergeContexts
             {
                 _logger.LogDebug($"rewrite queryable order by context:[{orderByContext}]");
             }
+
             var groupByContext = parseResult.GetGroupByContext();
             if (_enableLogDebug)
             {
-                _logger.LogDebug($"rewrite queryable group by context:[{groupByContext.GroupExpression?.ShardingPrint()}]");
+                _logger.LogDebug(
+                    $"rewrite queryable group by context:[{groupByContext.GroupExpression?.ShardingPrint()}]");
             }
+
             var selectContext = parseResult.GetSelectContext();
             if (_enableLogDebug)
             {
                 _logger.LogDebug($"rewrite queryable select context:[{selectContext}]");
             }
+
             var skip = paginationContext.Skip;
             var take = paginationContext.Take;
             var orders = orderByContext.PropertyOrders;
@@ -60,7 +66,7 @@ namespace ShardingCore.Sharding.MergeContexts
                 reWriteQueryable = reWriteQueryable.RemoveSkipAndTake();
             }
 
-           
+
             if (take.HasValue)
             {
                 if (skip.HasValue)
@@ -71,52 +77,90 @@ namespace ShardingCore.Sharding.MergeContexts
                 {
                     reWriteQueryable = reWriteQueryable.ReTake(take.Value + skip.GetValueOrDefault());
                 }
-            } 
-            //包含group by
+            }
+
+            //包含group by select必须包含group by字段其余的order字段需要在内存中实现
             if (groupByContext.GroupExpression != null)
             {
+                //group字段不可以为空
+                var selectGroupKeyProperties =
+                    selectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty)).ToArray();
+                if (selectGroupKeyProperties.IsEmpty())
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        "group by select object must contains group by key value");
+                }
+
+
                 if (orders.IsEmpty())
                 {
-                    //将查询的属性转换成order by
-                    var selectProperties = selectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty)).ToArray();
-                    if (selectProperties.IsNotEmpty())
+                    groupByContext.GroupMemoryMerge = false;
+                    var sort = string.Join(",", selectGroupKeyProperties.Select(o => $"{o.PropertyName} asc"));
+                    reWriteQueryable = reWriteQueryable.RemoveAnyOrderBy().OrderWithExpression(sort, null);
+                    foreach (var orderProperty in selectGroupKeyProperties)
                     {
-                        var sort = string.Join(",", selectProperties.Select(o => $"{o.PropertyName} asc"));
-                        reWriteQueryable = reWriteQueryable.OrderWithExpression(sort, null);
-                        foreach (var orderProperty in selectProperties)
-                        {
-                            orders.AddLast(new PropertyOrder(orderProperty.PropertyName, true, orderProperty.OwnerType));
-                        }
+                        orders.AddLast(new PropertyOrder(orderProperty.PropertyName, true, orderProperty.OwnerType));
                     }
                 }
-                else if (!mergeQueryCompilerContext.UseUnionAllMerge())
+                else
                 {
-                    //将查询的属性转换成order by 并且order和select的未聚合查询必须一致
-                    var selectProperties = selectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty));
-
-                    if (orders.Count() != selectProperties.Count())
-                        throw new ShardingCoreInvalidOperationException("group by query order items not equal select un-aggregate items");
-                    var os = orders.Select(o => o.PropertyExpression).ToList();
-                    var ss = selectProperties.Select(o => o.PropertyName).ToList();
-                    for (int i = 0; i < os.Count(); i++)
+                    var groupKeys = selectGroupKeyProperties.Select(o=>o.PropertyName).ToHashSet();
+                    bool groupMemoryMerge = false;
+                    foreach (var propertyOrder in orders)
                     {
-                        if (!os[i].Equals(ss[i]))
-                            throw new ShardingCoreInvalidOperationException($"group by query order items not equal select un-aggregate items: order:[{os[i]}],select:[{ss[i]}");
+                        if (groupKeys.IsEmpty())
+                        {
+                            break;
+                        }
+                        if (!groupKeys.Contains(propertyOrder.PropertyExpression))
+                        {
+                            groupMemoryMerge = true;
+                            break;
+                        }
+                        groupKeys.Remove(propertyOrder.PropertyExpression);
                     }
-
+                    //判断是否优先group key排序如果不是就是要内存聚合
+                    groupByContext.GroupMemoryMerge = groupMemoryMerge;
+                    
+                    
+                    var sort = string.Join(",", selectGroupKeyProperties.Select(o => $"{o.PropertyName} asc"));
+                    reWriteQueryable = reWriteQueryable.RemoveAnyOrderBy().OrderWithExpression(sort, null);
                 }
+
+                // else if (!mergeQueryCompilerContext.UseUnionAllMerge())
+                // {
+                //     //将查询的属性转换成order by 并且order和select的未聚合查询必须一致
+                //     // var selectProperties = selectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty));
+                //
+                //     // if (orders.Count() != selectProperties.Count())
+                //     //     throw new ShardingCoreInvalidOperationException("group by query order items not equal select un-aggregate items");
+                //     // var os = orders.Select(o => o.PropertyExpression).ToList();
+                //     // var ss = selectProperties.Select(o => o.PropertyName).ToList();
+                //     // for (int i = 0; i < os.Count(); i++)
+                //     // {
+                //     //     if (!os[i].Equals(ss[i]))
+                //     //         throw new ShardingCoreInvalidOperationException($"group by query order items not equal select un-aggregate items: order:[{os[i]}],select:[{ss[i]}");
+                //     // }
+                //
+                // }
                 if (selectContext.HasAverage())
                 {
-                    var averageSelectProperties = selectContext.SelectProperties.OfType<SelectAverageProperty>().ToList();
-                    var selectAggregateProperties = selectContext.SelectProperties.OfType<SelectAggregateProperty>().Where(o => !(o is SelectAverageProperty)).ToList();
+                    var averageSelectProperties =
+                        selectContext.SelectProperties.OfType<SelectAverageProperty>().ToList();
+                    var selectAggregateProperties = selectContext.SelectProperties.OfType<SelectAggregateProperty>()
+                        .Where(o => !(o is SelectAverageProperty)).ToList();
                     foreach (var averageSelectProperty in averageSelectProperties)
                     {
-                        var selectCountProperty = selectAggregateProperties.FirstOrDefault(o => o is SelectCountProperty selectCountProperty);
+                        var selectCountProperty =
+                            selectAggregateProperties.FirstOrDefault(o => o is SelectCountProperty selectCountProperty);
                         if (null != selectCountProperty)
                         {
                             averageSelectProperty.BindCountProperty(selectCountProperty.Property);
                         }
-                        var selectSumProperty = selectAggregateProperties.FirstOrDefault(o => o is SelectSumProperty selectSumProperty && selectSumProperty.FromProperty == averageSelectProperty.FromProperty);
+
+                        var selectSumProperty = selectAggregateProperties.FirstOrDefault(o =>
+                            o is SelectSumProperty selectSumProperty &&
+                            selectSumProperty.FromProperty == averageSelectProperty.FromProperty);
                         if (selectSumProperty != null)
                         {
                             averageSelectProperty.BindSumProperty(selectSumProperty.Property);
@@ -144,14 +188,14 @@ namespace ShardingCore.Sharding.MergeContexts
                 //}
             }
 
-            if (mergeQueryCompilerContext.UseUnionAllMerge() & !mergeQueryCompilerContext.GetShardingDbContext().SupportUnionAllMerge())
+            if (mergeQueryCompilerContext.UseUnionAllMerge() &
+                !mergeQueryCompilerContext.GetShardingDbContext().SupportUnionAllMerge())
             {
                 throw new ShardingCoreException(
-                $"if use {nameof(EntityFrameworkShardingQueryableExtension.UseUnionAllMerge)} plz rewrite {nameof(IQuerySqlGeneratorFactory)} with {nameof(IUnionAllMergeQuerySqlGeneratorFactory)} and {nameof(IQueryCompiler)} with {nameof(IUnionAllMergeQueryCompiler)}");
-
+                    $"if use {nameof(EntityFrameworkShardingQueryableExtension.UseUnionAllMerge)} plz rewrite {nameof(IQuerySqlGeneratorFactory)} with {nameof(IUnionAllMergeQuerySqlGeneratorFactory)} and {nameof(IQueryCompiler)} with {nameof(IUnionAllMergeQueryCompiler)}");
             }
 
-            return new RewriteResult(combineQueryable,reWriteQueryable);
+            return new RewriteResult(combineQueryable, reWriteQueryable);
         }
     }
 }

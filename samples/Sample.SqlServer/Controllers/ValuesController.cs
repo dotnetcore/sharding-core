@@ -177,7 +177,6 @@ namespace Sample.SqlServer.Controllers
            // var compiler = provider.GetFieldValue("_queryCompiler") as ShardingQueryCompiler;
            // var shardingDbContext = compiler.GetFieldValue("_shardingDbContext") as IShardingDbContext;
 
-
             Stopwatch sp = new Stopwatch();
             sp.Start();
             var shardingPageResultAsync = await _defaultTableDbContext.Set<SysUserMod>()
