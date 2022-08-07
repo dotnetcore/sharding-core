@@ -32,14 +32,5 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.I
             var result =await ShardingExecutor.Instance.ExecuteAsync<RouteQueryResult<TResult>>(GetStreamMergeContext(),executor,true,defaultSqlRouteUnits,cancellationToken);
             return result.QueryResult;
         }
-        //
-        // protected abstract TResult DoMergeResult(List<RouteQueryResult<TResult>> resultList);
-        //
-        // protected override IExecutor<TR> CreateExecutor<TR>(bool async)
-        // {
-        //     return CreateExecutor0(async) as IExecutor<TR>;
-        // }
-        //
-        // protected abstract IExecutor<RouteQueryResult<TResult>> CreateExecutor0(bool async);
     }
 }

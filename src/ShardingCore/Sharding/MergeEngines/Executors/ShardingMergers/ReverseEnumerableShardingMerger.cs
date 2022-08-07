@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity> StreamMerge(
+        protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(
             List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
         {
             if (GetStreamMergeContext().IsPaginationQuery() && GetStreamMergeContext().HasGroupQuery())
@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
             if (GetStreamMergeContext().IsPaginationQuery())
                 return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0,
                     GetStreamMergeContext().GetPaginationReWriteTake());
-            return base.StreamMerge(parallelResults);
+            return base.StreamInMemoryMerge(parallelResults);
         }
     }
 }

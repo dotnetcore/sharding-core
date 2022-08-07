@@ -55,9 +55,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
             _afterTerminated?.Invoke();
         }
 
-        public void Register(Action afterTrip)
+        public void Register(Action afterTerminated)
         {
-            _afterTerminated = afterTrip;
+            _afterTerminated = afterTerminated;
         }
     }
 }

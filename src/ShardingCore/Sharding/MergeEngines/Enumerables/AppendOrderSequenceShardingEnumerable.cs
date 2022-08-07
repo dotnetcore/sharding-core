@@ -8,6 +8,7 @@ using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Enumerables.Base;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
+using ShardingCore.Sharding.MergeEngines.Executors.Enumerables;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.StreamMerge;
 using ShardingCore.Sharding.PaginationConfigurations;
 using ShardingCore.Sharding.StreamMergeEngines;
@@ -95,7 +96,7 @@ namespace ShardingCore.Sharding.MergeEngines.Enumerables
 
         protected override IExecutor<IStreamMergeAsyncEnumerator<TEntity>> CreateExecutor(bool async)
         {
-            throw new System.NotImplementedException();
+            return new AppendOrderSequenceEnumerableExecutor<TEntity>(GetStreamMergeContext(), async);
         }
     }
 }

@@ -28,7 +28,9 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
             
                 return new RouteQueryResult<int>(null,null,r,true);
             }
-            return new RouteQueryResult<int>(null,null,parallelResults.Sum(o => o.QueryResult),true);
+
+            var sum = parallelResults.Sum(o => o.QueryResult);
+            return new RouteQueryResult<int>(null,null, sum, true);
         }
 
         public void InMemoryMerge(List<RouteQueryResult<int>> beforeInMemoryResults, List<RouteQueryResult<int>> parallelResults)

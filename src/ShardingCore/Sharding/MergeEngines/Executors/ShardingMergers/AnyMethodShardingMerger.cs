@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 
         static AnyMethodShardingMerger()
         {
-            _allShardingMerger = new AllMethodShardingMerger();
+            _allShardingMerger = new AnyMethodShardingMerger();
         }
 
         public static IShardingMerger<bool> Instance => _allShardingMerger;

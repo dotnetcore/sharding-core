@@ -11,13 +11,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
         {
         }
 
-        public override IStreamMergeAsyncEnumerator<TEntity> StreamMerge(
-            List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
+        protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
         {
             if (GetStreamMergeContext().IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0,
-                    GetStreamMergeContext().GetPaginationReWriteTake()); //内存聚合分页不可以直接获取skip必须获取skip+take的数目
-            return base.StreamMerge(parallelResults);
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0, GetStreamMergeContext().GetPaginationReWriteTake());//内存聚合分页不可以直接获取skip必须获取skip+take的数目
+
+            return base.StreamInMemoryMerge(parallelResults);
         }
     }
 }

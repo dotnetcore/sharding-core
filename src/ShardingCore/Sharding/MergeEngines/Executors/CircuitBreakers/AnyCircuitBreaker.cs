@@ -11,12 +11,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers
         }
         protected override bool OrderConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
-            return results.Any(o => o is RouteQueryResult<bool> routeQueryResult && routeQueryResult.QueryResult);
+            return results.Any(o => o is true);
         }
 
         protected override bool RandomConditionTerminated<TResult>(IEnumerable<TResult> results)
         {
-            return results.Any(o => o is RouteQueryResult<bool> routeQueryResult && routeQueryResult.QueryResult);
+            return results.Any(o => o is true);
         }
     }
 }

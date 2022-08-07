@@ -5,16 +5,17 @@ using System.Linq.Expressions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Enumerators.AggregateExtensions;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
+using ShardingCore.Sharding.StreamMergeEngines;
 
 namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 {
-    internal class SumMethodShardingMerger<TEntity> : IShardingMerger<TEntity>
+    internal class SumMethodShardingMerger<TEntity> : IShardingMerger<RouteQueryResult<TEntity>>
     {
         private TEntity GetSumResult<TInnerSelect>(List<TInnerSelect> source)
         {
             if (source.IsEmpty())
                 return default;
-            var sum = source.AsQueryable().SumByConstant<TInnerSelect>();
+            var sum = source.AsQueryable().SumByPropertyName(nameof(RouteQueryResult<TEntity>.QueryResult));
             return ConvertSum(sum);
         }
 
@@ -30,12 +31,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 // {
 //     return GetSumResult(resultList);
 // }
-        public TEntity StreamMerge(List<TEntity> parallelResults)
+        public RouteQueryResult<TEntity> StreamMerge(List<RouteQueryResult<TEntity>> parallelResults)
         {
-            return GetSumResult(parallelResults);
+            var sumResult = GetSumResult(parallelResults);
+            return new RouteQueryResult<TEntity>(null, null, sumResult, true);
         }
 
-        public void InMemoryMerge(List<TEntity> beforeInMemoryResults, List<TEntity> parallelResults)
+        public void InMemoryMerge(List<RouteQueryResult<TEntity>> beforeInMemoryResults, List<RouteQueryResult<TEntity>> parallelResults)
         {
             beforeInMemoryResults.AddRange(parallelResults);
         }

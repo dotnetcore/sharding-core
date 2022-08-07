@@ -31,7 +31,13 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
 
         public override ICircuitBreaker CreateCircuitBreaker()
         {
-            return new AnyElementCircuitBreaker(GetStreamMergeContext());
+
+            var circuitBreaker = new AnyElementCircuitBreaker(GetStreamMergeContext());
+            circuitBreaker.Register(() =>
+            {
+                Cancel();
+            });
+            return circuitBreaker;
         }
 
         public override IShardingMerger<RouteQueryResult<TResult>> GetShardingMerger()

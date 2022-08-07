@@ -92,13 +92,6 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Abstractions
                 //严格限制连接数就在内存中进行聚合并且直接回收掉当前dbcontext
                 if (dataSourceSqlExecutorUnit.ConnectionMode == ConnectionModeEnum.CONNECTION_STRICTLY)
                 {
-                    var resultCount = result.Count;
-                    if (resultCount > 1)
-                    {
-                        throw new ShardingCoreInvalidOperationException(
-                            $"in memory merge result length error:{resultCount}");
-                    }
-
                     GetShardingMerger()
                         .InMemoryMerge(result, routeQueryResults.Select(o => o.MergeResult).ToList());
                     // MergeParallelExecuteResult(result, , async);
