@@ -1454,31 +1454,88 @@ namespace ShardingCore.Test5x
             var sysUserModInts = _virtualDbContext.Set<SysUserModInt>().Where(o => sysUserMods.Select(i => i.Age).Any(i => i == o.Age)).ToList();
             Assert.Equal(1000, sysUserModInts.Count);
         }
-        // [Fact]
-        // public void Group_API_Test()
-        // {
-        //     var ids = new[] {"200", "300"};
-        //     var dateOfMonths = new[] {202111, 202110};
-        //     var group =  _virtualDbContext.Set<SysUserSalary>()
-        //         .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
-        //         .ShardingGroupBy(g => new {UId = g.UserId}, g => new
-        //         {
-        //
-        //             GroupUserId = g.Key.UId,
-        //             Count = g.Count(),
-        //             TotalSalary = g.Sum(o => o.Salary),
-        //             AvgSalary = g.Average(o => o.Salary),
-        //             AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
-        //             MinSalary = g.Min(o => o.Salary),
-        //             MaxSalary = g.Max(o => o.Salary)
-        //         });
-        //     Assert.Equal(2, group.Count);
-        //     Assert.Equal(2, group[0].Count);
-        //     Assert.Equal(2260000, group[0].TotalSalary);
-        //     Assert.Equal(1130000, group[0].AvgSalary);
-        //     Assert.Equal(11300, group[0].AvgSalaryDecimal);
-        //     Assert.Equal(1120000, group[0].MinSalary);
-        //     Assert.Equal(1140000, group[0].MaxSalary);
-        // }
+        [Fact]
+        public void Group_API_Test()
+        {
+            var ids = new[] { "200", "300" };
+            var dateOfMonths = new[] { 202111, 202110 };
+            var group =  _virtualDbContext.Set<SysUserSalary>()
+                .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                .GroupBy(g => new { UId = g.UserId })
+                .Select(g => new
+                {
+
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                }).ToList();
+            Assert.Equal(2, group.Count);
+            Assert.Equal(2, group[0].Count);
+            Assert.Equal(2260000, group[0].TotalSalary);
+            Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(11300, group[0].AvgSalaryDecimal);
+            Assert.Equal(1120000, group[0].MinSalary);
+            Assert.Equal(1140000, group[0].MaxSalary);
+        }
+        [Fact]
+        public void Group_API_Test1()
+        {
+            var ids = new[] { "200", "300" };
+            var dateOfMonths = new[] { 202111, 202110 };
+            var group =  _virtualDbContext.Set<SysUserSalary>()
+                .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                .GroupBy(g => new { UId = g.UserId })
+                .Select(g => new
+                {
+
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                }).OrderBy(o => o.TotalSalary).ToList();
+            Assert.Equal(2, group.Count);
+            Assert.Equal(2, group[0].Count);
+            Assert.Equal("200", group[0].GroupUserId);
+            Assert.Equal(2260000, group[0].TotalSalary);
+            Assert.Equal(1130000, group[0].AvgSalary);
+            Assert.Equal(11300, group[0].AvgSalaryDecimal);
+            Assert.Equal(1120000, group[0].MinSalary);
+            Assert.Equal(1140000, group[0].MaxSalary);
+        }
+        [Fact]
+        public void Group_API_Test2()
+        {
+            var ids = new[] { "200", "300" };
+            var dateOfMonths = new[] { 202111, 202110 };
+            var group =  _virtualDbContext.Set<SysUserSalary>()
+                .Where(o => ids.Contains(o.UserId) && dateOfMonths.Contains(o.DateOfMonth))
+                .GroupBy(g => new { UId = g.UserId })
+                .Select(g => new
+                {
+
+                    GroupUserId = g.Key.UId,
+                    Count = g.Count(),
+                    TotalSalary = g.Sum(o => o.Salary),
+                    AvgSalary = g.Average(o => o.Salary),
+                    AvgSalaryDecimal = g.Average(o => o.SalaryDecimal),
+                    MinSalary = g.Min(o => o.Salary),
+                    MaxSalary = g.Max(o => o.Salary)
+                }).OrderByDescending(o => o.TotalSalary).ToList();
+            Assert.Equal(2, group.Count);
+            Assert.Equal(2, group[0].Count);
+            Assert.Equal("300", group[0].GroupUserId);
+            Assert.Equal(2690000, group[0].TotalSalary);
+            Assert.Equal(1345000, group[0].AvgSalary);
+            Assert.Equal(13450, group[0].AvgSalaryDecimal);
+            Assert.Equal(1330000, group[0].MinSalary);
+            Assert.Equal(1360000, group[0].MaxSalary);
+        }
     }
 }
