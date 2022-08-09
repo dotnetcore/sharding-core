@@ -25,6 +25,11 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 
         protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
         {
+            //如果是group in memory merger需要在内存中聚合好所有的 并且最后通过内存聚合在发挥
+            if (GetStreamMergeContext().GroupQueryMemoryMerge())
+            {
+                return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults);
+            }
             return StreamMerge(parallelResults);
         }
     }
