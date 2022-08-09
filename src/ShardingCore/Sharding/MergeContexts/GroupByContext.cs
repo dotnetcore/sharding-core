@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ShardingCore.Sharding.MergeContexts
@@ -18,6 +19,11 @@ namespace ShardingCore.Sharding.MergeContexts
         /// 是否内存聚合
         /// </summary>
         public bool GroupMemoryMerge { get; set; }
+        public List<PropertyOrder> PropertyOrders { get; } = new List<PropertyOrder>();
+        public string GetOrderExpression()
+        {
+            return string.Join(",", PropertyOrders);
+        }
 
     }
 }

@@ -198,7 +198,7 @@ namespace ShardingCore.Sharding
         /// <returns></returns>
         public bool GroupQueryMemoryMerge()
         {
-            return this.GroupByContext.GroupMemoryMerge;
+            return HasGroupQuery()&&this.GroupByContext.GroupMemoryMerge;
         }
 
         public bool IsMergeQuery()

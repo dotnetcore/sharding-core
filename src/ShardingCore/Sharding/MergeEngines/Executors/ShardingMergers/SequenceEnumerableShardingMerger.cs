@@ -22,5 +22,10 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 
             return new MultiOrderStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults);
         }
+
+        protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
+        {
+            return StreamMerge(parallelResults);
+        }
     }
 }

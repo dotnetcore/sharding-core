@@ -44,7 +44,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 list.Add(streamMergeAsyncEnumerator.GetCurrent());
                 _inMemoryReallyCount++;
             }
-            return list.AsQueryable().OrderWithExpression(_streamMergeContext.Orders).GetEnumerator();
+            return list.AsQueryable().OrderWithExpression(_streamMergeContext.GroupByContext.PropertyOrders).GetEnumerator();
         }
         private IEnumerator<T> GetAllRows(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
@@ -60,7 +60,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                 _inMemoryReallyCount++;
             }
 
-            return list.AsQueryable().OrderWithExpression(_streamMergeContext.Orders).GetEnumerator();
+            return list.AsQueryable().OrderWithExpression(_streamMergeContext.GroupByContext.PropertyOrders).GetEnumerator();
         }
 
         public bool SkipFirst()

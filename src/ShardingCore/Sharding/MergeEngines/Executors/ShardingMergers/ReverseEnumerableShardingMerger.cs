@@ -11,23 +11,23 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
         {
         }
 
-        protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(
-            List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
-        {
-            if (GetStreamMergeContext().IsPaginationQuery() && GetStreamMergeContext().HasGroupQuery())
-            {
-                var multiAggregateOrderStreamMergeAsyncEnumerator =
-                    new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(),
-                        parallelResults);
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(),
-                    new[] { multiAggregateOrderStreamMergeAsyncEnumerator }, 0,
-                    GetStreamMergeContext().GetPaginationReWriteTake());
-            }
-
-            if (GetStreamMergeContext().IsPaginationQuery())
-                return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0,
-                    GetStreamMergeContext().GetPaginationReWriteTake());
-            return base.StreamInMemoryMerge(parallelResults);
-        }
+        // protected override IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(
+        //     List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
+        // {
+        //     // if (GetStreamMergeContext().IsPaginationQuery() && GetStreamMergeContext().HasGroupQuery())
+        //     // {
+        //     //     var multiAggregateOrderStreamMergeAsyncEnumerator =
+        //     //         new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(),
+        //     //             parallelResults);
+        //     //     return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(),
+        //     //         new[] { multiAggregateOrderStreamMergeAsyncEnumerator }, 0,
+        //     //         GetStreamMergeContext().GetPaginationReWriteTake());
+        //     // }
+        //
+        //     if (GetStreamMergeContext().IsPaginationQuery())
+        //         return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0,
+        //             GetStreamMergeContext().GetPaginationReWriteTake());
+        //     return base.StreamInMemoryMerge(parallelResults);
+        // }
     }
 }

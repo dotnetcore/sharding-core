@@ -104,27 +104,39 @@ namespace ShardingCore.Sharding.MergeContexts
                 }
                 else
                 {
-                    var groupKeys = selectGroupKeyProperties.Select(o=>o.PropertyName).ToHashSet();
+                    var groupKeys = selectGroupKeyProperties.Select(o => o.PropertyName).ToHashSet();
                     bool groupMemoryMerge = false;
                     foreach (var propertyOrder in orders)
                     {
-                        if (groupKeys.IsEmpty())
+                        groupByContext.PropertyOrders.Add(propertyOrder);
+                        if (!groupMemoryMerge && !groupKeys.IsEmpty())
                         {
-                            break;
+                            if (!groupKeys.Contains(propertyOrder.PropertyExpression))
+                            {
+                                groupMemoryMerge = true;
+                            }
+
+                            groupKeys.Remove(propertyOrder.PropertyExpression);
                         }
-                        if (!groupKeys.Contains(propertyOrder.PropertyExpression))
-                        {
-                            groupMemoryMerge = true;
-                            break;
-                        }
-                        groupKeys.Remove(propertyOrder.PropertyExpression);
                     }
+
                     //判断是否优先group key排序如果不是就是要内存聚合
                     groupByContext.GroupMemoryMerge = groupMemoryMerge;
-                    
-                    
-                    var sort = string.Join(",", selectGroupKeyProperties.Select(o => $"{o.PropertyName} asc"));
-                    reWriteQueryable = reWriteQueryable.RemoveAnyOrderBy().OrderWithExpression(sort, null);
+                    if (groupByContext.GroupMemoryMerge)
+                    {
+                        if (groupByContext.GroupMemoryMerge)
+                        {
+                            var sort = string.Join(",", selectGroupKeyProperties.Select(o => $"{o.PropertyName} asc"));
+                            reWriteQueryable = reWriteQueryable.RemoveAnyOrderBy().OrderWithExpression(sort, null);
+                        }
+
+                        orders.Clear();
+                        foreach (var orderProperty in selectGroupKeyProperties)
+                        {
+                            orders.AddLast(new PropertyOrder(orderProperty.PropertyName, true,
+                                orderProperty.OwnerType));
+                        }
+                    }
                 }
 
                 // else if (!mergeQueryCompilerContext.UseUnionAllMerge())
@@ -188,11 +200,13 @@ namespace ShardingCore.Sharding.MergeContexts
                 //}
             }
 
-            if (mergeQueryCompilerContext.UseUnionAllMerge() &
-                !mergeQueryCompilerContext.GetShardingDbContext().SupportUnionAllMerge())
+            if (mergeQueryCompilerContext.UseUnionAllMerge())
             {
-                throw new ShardingCoreException(
-                    $"if use {nameof(EntityFrameworkShardingQueryableExtension.UseUnionAllMerge)} plz rewrite {nameof(IQuerySqlGeneratorFactory)} with {nameof(IUnionAllMergeQuerySqlGeneratorFactory)} and {nameof(IQueryCompiler)} with {nameof(IUnionAllMergeQueryCompiler)}");
+                if (!mergeQueryCompilerContext.GetShardingDbContext().SupportUnionAllMerge())
+                {
+                    throw new ShardingCoreException(
+                        $"if use {nameof(EntityFrameworkShardingQueryableExtension.UseUnionAllMerge)} plz rewrite {nameof(IQuerySqlGeneratorFactory)} with {nameof(IUnionAllMergeQuerySqlGeneratorFactory)} and {nameof(IQueryCompiler)} with {nameof(IUnionAllMergeQueryCompiler)}");
+                }
             }
 
             return new RewriteResult(combineQueryable, reWriteQueryable);

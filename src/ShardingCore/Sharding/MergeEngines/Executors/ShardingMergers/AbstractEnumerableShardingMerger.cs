@@ -23,6 +23,20 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
         }
         public virtual IStreamMergeAsyncEnumerator<TEntity> StreamMerge(List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
         {
+            //如果是group in memory merger需要在内存中聚合好所有的 并且最后通过内存聚合在发挥
+            if (GetStreamMergeContext().GroupQueryMemoryMerge())
+            {
+                var multiAggregateOrderStreamMergeAsyncEnumerator = new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(_streamMergeContext, parallelResults);
+                //内存按key聚合好之后需要进行重排序按order
+                var inMemoryGroupByOrderStreamMergeAsyncEnumerator = new InMemoryGroupByOrderStreamMergeAsyncEnumerator<TEntity>(_streamMergeContext,multiAggregateOrderStreamMergeAsyncEnumerator, _async);
+                if (_streamMergeContext.IsPaginationQuery())
+                {
+                    //分页的前提下还需要进行内存分页
+                    return new PaginationStreamMergeAsyncEnumerator<TEntity>(_streamMergeContext,new[]{inMemoryGroupByOrderStreamMergeAsyncEnumerator});
+                }
+
+                return inMemoryGroupByOrderStreamMergeAsyncEnumerator;
+            }
             if (_streamMergeContext.IsPaginationQuery())
                 return new PaginationStreamMergeAsyncEnumerator<TEntity>(_streamMergeContext, parallelResults);
             if (_streamMergeContext.HasGroupQuery())
@@ -32,6 +46,15 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
 
         protected virtual IStreamMergeAsyncEnumerator<TEntity> StreamInMemoryMerge(List<IStreamMergeAsyncEnumerator<TEntity>> parallelResults)
         {
+            //如果是group in memory merger需要在内存中聚合好所有的 并且最后通过内存聚合在发挥
+            if (GetStreamMergeContext().GroupQueryMemoryMerge())
+            {
+                return new MultiAggregateOrderStreamMergeAsyncEnumerator<TEntity>(_streamMergeContext, parallelResults);
+            }
+            if (GetStreamMergeContext().IsPaginationQuery())
+            {
+                return new PaginationStreamMergeAsyncEnumerator<TEntity>(GetStreamMergeContext(), parallelResults, 0, GetStreamMergeContext().GetPaginationReWriteTake());//内存聚合分页不可以直接获取skip必须获取skip+take的数目
+            }
             return StreamMerge(parallelResults);
         }
 
