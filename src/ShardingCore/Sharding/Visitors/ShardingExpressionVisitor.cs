@@ -44,6 +44,8 @@ namespace ShardingCore.Core.Internal.Visitors
             {
                 case ConstantExpression e:
                     return e.Value;
+                case NewExpression e:
+                    return e.Constructor?.Invoke(e.Arguments.Select(a => ((ConstantExpression)a).Value).ToArray());
 
                 case MemberExpression e when e.Member is FieldInfo field:
                     return field.GetValue(

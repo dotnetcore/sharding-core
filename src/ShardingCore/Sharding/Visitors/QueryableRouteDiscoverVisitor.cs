@@ -216,8 +216,11 @@ namespace ShardingCore.Core.Internal.Visitors
         /// <param name="expression"></param>
         /// <returns></returns>
         private bool ExpressionCanGetValue(Expression expression)
-        {
+        { 
             return expression is ConstantExpression
+                   || expression is NewExpression
+                   || expression is ListInitExpression
+                   || expression is NewArrayExpression
                    || (expression is MemberExpression member && (member.Expression is ConstantExpression ||
                                                                  member.Expression is MemberExpression ||
                                                                  member.Expression is MemberExpression))
