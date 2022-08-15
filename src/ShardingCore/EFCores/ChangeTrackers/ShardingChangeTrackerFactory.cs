@@ -23,7 +23,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
             _model = model;
             _graphIterator = graphIterator;
         }
-        public ChangeTracker Create()
+        public override ChangeTracker Create()
         {
             return new ShardingChangeTracker(_currentContext.Context, _stateManager, _changeDetector, _model,
                 _graphIterator);
