@@ -39,7 +39,32 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             {
                 var shardingEntity = shardingEntityKv.Key;
                 if (!_entityMetadataManager.IsShardingTable(shardingEntity))
+                {
+                    var dataSourceNames = tableRouteRuleContext.DataSourceRouteResult.IntersectDataSources;
+                    foreach (var dataSourceName in dataSourceNames)
+                    {
+                        var shardingRouteUnit = new TableRouteUnit(dataSourceName, string.Empty, shardingEntity);
+                        if (!routeMaps.ContainsKey(dataSourceName))
+                        {
+                            routeMaps.Add(dataSourceName,
+                                new Dictionary<Type, ISet<TableRouteUnit>>()
+                                    { { shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit } } });
+                        }
+                        else
+                        {
+                            var routeMap = routeMaps[dataSourceName];
+                            if (!routeMap.ContainsKey(shardingEntity))
+                            {
+                                routeMap.Add(shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit });
+                            }
+                            else
+                            {
+                                routeMap[shardingEntity].Add(shardingRouteUnit);
+                            }
+                        }
+                    }
                     continue;
+                }
                 var virtualTableRoute = _tableRouteManager.GetRoute(shardingEntity);
                 var shardingRouteUnits = virtualTableRoute.RouteWithPredicate(
                     tableRouteRuleContext.DataSourceRouteResult,
@@ -106,10 +131,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                             sqlRouteUnits.Add(new SqlRouteUnit(dataSourceName, tableRouteResult));
                         }
                     }
-                }
-                else
-                {
-                    routeMaps.Add(dataSourceName,new Dictionary<Type, ISet<TableRouteUnit>>());   
                 }
             }
 

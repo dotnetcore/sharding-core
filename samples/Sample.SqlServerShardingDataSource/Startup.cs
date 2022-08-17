@@ -80,7 +80,7 @@ namespace Sample.SqlServerShardingDataSource
             {
                 endpoints.MapControllers();
             });
-            //app.InitSeed();
+            app.InitSeed();
         }
     }
 }
