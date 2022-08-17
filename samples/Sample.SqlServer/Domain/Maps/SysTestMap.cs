@@ -9,7 +9,7 @@ namespace Sample.SqlServer.Domain.Maps
         public void Configure(EntityTypeBuilder<SysTest> builder)
         {
             builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
+            builder.Property(o => o.Id).ValueGeneratedOnAdd().IsRequired().HasMaxLength(128);
             builder.Property(o => o.UserId).IsRequired().HasMaxLength(128);
             builder.ToTable(nameof(SysTest));
         }
