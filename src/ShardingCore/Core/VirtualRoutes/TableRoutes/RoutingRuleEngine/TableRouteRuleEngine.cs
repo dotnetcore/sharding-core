@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
@@ -28,6 +29,22 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             _entityMetadataManager = entityMetadataManager;
         }
 
+        private List<TableRouteUnit> GetEntityRouteUnit(DataSourceRouteResult dataSourceRouteResult,Type shardingEntity,IQueryable queryable)
+        {
+            if (!_entityMetadataManager.IsShardingTable(shardingEntity))
+            {
+                var dataSourceNames = dataSourceRouteResult.IntersectDataSources;
+                var tableRouteUnits = new List<TableRouteUnit>(dataSourceNames.Count);
+                foreach (var dataSourceName in dataSourceNames)
+                {
+                    var shardingRouteUnit = new TableRouteUnit(dataSourceName, string.Empty, shardingEntity);
+                    tableRouteUnits.Add(shardingRouteUnit);
+                }
+                return tableRouteUnits;
+            }
+            var virtualTableRoute = _tableRouteManager.GetRoute(shardingEntity);
+            return virtualTableRoute.RouteWithPredicate(dataSourceRouteResult, queryable, true);
+        }
         public ShardingRouteResult Route(TableRouteRuleContext tableRouteRuleContext)
         {
             Dictionary<string /*dataSourceName*/, Dictionary<Type /*entityType*/, ISet<TableRouteUnit>>> routeMaps =
@@ -38,40 +55,12 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             foreach (var shardingEntityKv in queryEntities)
             {
                 var shardingEntity = shardingEntityKv.Key;
-                if (!_entityMetadataManager.IsShardingTable(shardingEntity))
-                {
-                    var dataSourceNames = tableRouteRuleContext.DataSourceRouteResult.IntersectDataSources;
-                    foreach (var dataSourceName in dataSourceNames)
-                    {
-                        var shardingRouteUnit = new TableRouteUnit(dataSourceName, string.Empty, shardingEntity);
-                        if (!routeMaps.ContainsKey(dataSourceName))
-                        {
-                            routeMaps.Add(dataSourceName,
-                                new Dictionary<Type, ISet<TableRouteUnit>>()
-                                    { { shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit } } });
-                        }
-                        else
-                        {
-                            var routeMap = routeMaps[dataSourceName];
-                            if (!routeMap.ContainsKey(shardingEntity))
-                            {
-                                routeMap.Add(shardingEntity, new HashSet<TableRouteUnit>() { shardingRouteUnit });
-                            }
-                            else
-                            {
-                                routeMap[shardingEntity].Add(shardingRouteUnit);
-                            }
-                        }
-                    }
-                    continue;
-                }
-                var virtualTableRoute = _tableRouteManager.GetRoute(shardingEntity);
-                var shardingRouteUnits = virtualTableRoute.RouteWithPredicate(
-                    tableRouteRuleContext.DataSourceRouteResult,
-                    (shardingEntityKv.Value ?? tableRouteRuleContext.Queryable), true);
+                var shardingRouteUnits = GetEntityRouteUnit(tableRouteRuleContext.DataSourceRouteResult,shardingEntity, shardingEntityKv.Value ?? tableRouteRuleContext.Queryable);
+                
                 foreach (var shardingRouteUnit in shardingRouteUnits)
                 {
                     var dataSourceName = shardingRouteUnit.DataSourceName;
+
 
                     if (!routeMaps.ContainsKey(dataSourceName))
                     {
@@ -148,5 +137,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             // return sqlRouteUnits;
             // return routeMaps.Select(o => o.Value).Cartesian().Where(o=>o).Select(o => new TableRouteResult(o,_shardingDatabaseProvider.GetShardingDbContextType()));
         }
+        
     }
 }
