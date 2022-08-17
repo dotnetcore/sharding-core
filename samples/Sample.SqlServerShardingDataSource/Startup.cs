@@ -55,7 +55,7 @@ namespace Sample.SqlServerShardingDataSource
                     "Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly00;Integrated Security=True;");
                     op.AddExtraDataSource(sp =>
                     {
-                        return Enumerable.Range(1, 100).Select(o => (o % 100).ToString().PadLeft(2, '0')).ToList()
+                        return Enumerable.Range(1, 3).Select(o => o.ToString().PadLeft(2, '0')).ToList()
                             .ToDictionary(o => o,
                                 o =>
                                     $"Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly{o};Integrated Security=True;");
