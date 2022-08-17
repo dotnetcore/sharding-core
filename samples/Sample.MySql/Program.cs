@@ -13,6 +13,7 @@ namespace Sample.MySql
     {
         public static void Main(string[] args)
         {
+            var list = Enumerable.Range(1,3).Select(o=>(o%100).ToString().PadLeft(2,'0')).ToList();
             CreateHostBuilder(args).Build().Run();
         }
 

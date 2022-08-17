@@ -67,7 +67,7 @@ namespace Sample.MySql
             //     });
             services.AddMultiShardingDbContext<OtherDbContext>()
                 .UseRouteConfig(op => { op.AddShardingTableRoute<MyUserRoute>(); })
-                .UseConfig(o =>
+                .UseConfig((sp,o) =>
                 {
                     o.ThrowIfQueryRouteNotMatch = false;
                     o.UseShardingQuery((conStr, builder) =>

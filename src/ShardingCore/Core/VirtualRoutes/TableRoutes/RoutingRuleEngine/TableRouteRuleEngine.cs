@@ -107,6 +107,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                         }
                     }
                 }
+                else
+                {
+                    routeMaps.Add(dataSourceName,new Dictionary<Type, ISet<TableRouteUnit>>());   
+                }
             }
 
            return new ShardingRouteResult(sqlRouteUnits, sqlRouteUnits.Count == 0, dataSourceCount > 1, isCrossTable,
