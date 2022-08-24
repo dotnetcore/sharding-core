@@ -41,7 +41,6 @@ namespace ShardingCore.Bootstrappers
             if (!_doOnlyOnce.IsUnDo())
                 return;
             _logger.LogDebug("sharding core starting......");
-            
             _logger.LogDebug("sharding core initialize entity metadata......");
             InitializeEntityMetadata();
             _logger.LogDebug("sharding core initialize parallel table......");
@@ -63,7 +62,6 @@ namespace ShardingCore.Bootstrappers
 
                 var entityMetadataInitializer =(IEntityMetadataInitializer)_shardingProvider.CreateInstance(entityMetadataInitializerType);
                 entityMetadataInitializer.Initialize();
-                    
             }
         }
 

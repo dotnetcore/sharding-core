@@ -44,6 +44,8 @@ namespace ShardingCore.Core.ServiceProviders
             return (TService)GetRequiredService(typeof(TService),tryApplicationServiceProvider);
         }
 
+        public IServiceProvider ApplicationServiceProvider => _applicationServiceProvider;
+
         public IShardingScope CreateScope()
         {
             return new ShardingScope(_internalServiceProvider.CreateScope(), _applicationServiceProvider?.CreateScope());

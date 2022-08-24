@@ -43,6 +43,8 @@ namespace ShardingCore.Core.ServiceProviders
         /// <typeparam name="TService"></typeparam>
         /// <returns></returns>
          TService GetRequiredService<TService>(bool tryApplicationServiceProvider=true);
+        
+        IServiceProvider ApplicationServiceProvider { get; }
 
         IShardingScope CreateScope();
     }

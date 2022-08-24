@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using ShardingCore.Exceptions;
 using ShardingCore.Jobs.Abstaractions;
 using ShardingCore.Jobs.Cron;
 
@@ -20,6 +21,15 @@ namespace ShardingCore.Jobs.Impls
             JobInstance = job;
             JobName = job.JobName;
             JobCronExpressions = job.GetJobCronExpressions();
+            if (JobCronExpressions == null)
+            {
+                throw new ArgumentException($" {nameof(JobCronExpressions)} is null");
+            }
+
+            if (JobCronExpressions.Any(o => o is null))
+            {
+                throw new ArgumentException($"{nameof(JobCronExpressions)} has null element");
+            }
         }
         /// <summary>
         /// 保证多线程只有一个清理操作
@@ -79,6 +89,7 @@ namespace ShardingCore.Jobs.Impls
         /// </summary>
         public void CalcNextUtcTime()
         {
+            
             this.NextUtcTime= JobCronExpressions.Select(cron => new CronExpression(cron).GetTimeAfter(DateTime.UtcNow)).Min();
         }
     }
