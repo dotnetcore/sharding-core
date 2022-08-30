@@ -66,7 +66,10 @@ namespace Sample.MySql
             //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
             //     });
             services.AddMultiShardingDbContext<OtherDbContext>()
-                .UseRouteConfig(op => { op.AddShardingTableRoute<MyUserRoute>(); })
+                .UseRouteConfig(op =>
+                {
+                    op.AddShardingTableRoute<MyUserRoute>();
+                })
                 .UseConfig((sp,o) =>
                 {
                     o.ThrowIfQueryRouteNotMatch = false;

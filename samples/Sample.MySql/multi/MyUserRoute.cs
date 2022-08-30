@@ -5,6 +5,8 @@ namespace Sample.MySql.multi;
 
 public class MyUserRoute:AbstractSimpleShardingModKeyStringVirtualTableRoute<MyUser>
 {
+    protected override bool EnableHintRoute => true;
+
     public MyUserRoute() : base(1, 3)
     {
     }

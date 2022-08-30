@@ -90,16 +90,18 @@ namespace ShardingCore.Helpers
         {
             var contextType = typeof(TContext);
             var declaredConstructors = contextType.GetTypeInfo().DeclaredConstructors.ToList();
-            if (declaredConstructors.Count != 1)
+            if (declaredConstructors.Count(o => !o.IsStatic) != 1)
             {
                 throw new ArgumentException($"dbcontext : {contextType} declared constructor count more {contextType},if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface");
             }
-            if (declaredConstructors[0].GetParameters().Length != 1)
+
+            var defaultDeclaredConstructor = declaredConstructors.First(o=>!o.IsStatic);
+            if (defaultDeclaredConstructor.GetParameters().Length != 1)
             {
                 throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters more ,if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface");
             }
 
-            var paramType = declaredConstructors[0].GetParameters()[0].ParameterType;
+            var paramType = defaultDeclaredConstructor.GetParameters()[0].ParameterType;
             if (paramType != typeof(ShardingDbContextOptions) && paramType != typeof(DbContextOptions) && paramType != typeof(DbContextOptions<TContext>))
             {
                 throw new ArgumentException($"dbcontext : {contextType} declared constructor parameters should use {typeof(ShardingDbContextOptions)} or {typeof(DbContextOptions)} or {typeof(DbContextOptions<TContext>)},if u want support multi constructor params plz replace ${nameof(IDbContextCreator)} interface ");
