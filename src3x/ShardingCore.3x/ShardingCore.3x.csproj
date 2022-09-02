@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 
     <PropertyGroup>
@@ -29,16 +29,16 @@
         <Compile Remove="..\..\src\ShardingCore\obj\**" />
         <Compile Remove="..\..\src\ShardingCore\bin\**" />
         <Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\CompileParameter.cs">
-          <Link>Sharding\ShardingExecutors\CompileParameter.cs</Link>
+          <Link />Sharding\ShardingExecutors\CompileParameter.cs
         </Compile>
         <Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\CustomerQueryScope.cs">
-          <Link>Sharding\ShardingExecutors\CustomerQueryScope.cs</Link>
+          <Link />Sharding\ShardingExecutors\CustomerQueryScope.cs
         </Compile>
         <Compile Update="..\..\src\ShardingCore\Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs">
-          <Link>Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs</Link>
+          <Link />Sharding\MergeEngines\Executors\Enumerators\FirstOrDefaultEnumeratorExecutor.cs
         </Compile>
         <Compile Update="..\..\src\ShardingCore\Sharding\MergeContexts\Paginations\PaginationItem.cs">
-          <Link>Sharding\MergeContexts\Paginations\PaginationItem.cs</Link>
+          <Link />Sharding\MergeContexts\Paginations\PaginationItem.cs
         </Compile>
     </ItemGroup>
 
@@ -47,8 +47,7 @@
       <Compile Remove="..\..\src\ShardingCore\ShardingTableConfig.cs" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.27" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.27" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.27" />
     </ItemGroup>
 
 </Project>
