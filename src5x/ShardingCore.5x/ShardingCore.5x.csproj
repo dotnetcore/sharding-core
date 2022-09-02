@@ -34,8 +34,7 @@
 
 
   <ItemGroup>
-    
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.17" />
   </ItemGroup>
 
 </Project>
