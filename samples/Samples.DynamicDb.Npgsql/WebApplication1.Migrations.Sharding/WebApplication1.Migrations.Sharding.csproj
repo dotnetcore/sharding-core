@@ -6,10 +6,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.5" />
-		<PackageReference Include="ShardingCore" Version="6.6.0.9" />
-	</ItemGroup>
+	
 
 	<ItemGroup>
 		<ProjectReference Include="..\WebApplication1.Data\WebApplication1.Data.csproj" />
