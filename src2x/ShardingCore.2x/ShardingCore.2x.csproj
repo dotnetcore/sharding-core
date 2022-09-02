@@ -29,13 +29,13 @@
 		<Compile Remove="..\..\src\ShardingCore\obj\**" />
 		<Compile Remove="..\..\src\ShardingCore\bin\**" />
 		<Compile Update="..\..\src\ShardingCore\Sharding\ShardingExecutors\Abstractions\ICompileParameter.cs">
-		  <Link />Sharding\ShardingExecutors\Abstractions\ICompileParameter.cs
+			<Link>Sharding\ShardingExecutors\Abstractions\ICompileParameter.cs</Link>
 		</Compile>
 		<Compile Update="..\..\src\ShardingCore\Sharding\MergeEngines\EnumeratorStreamMergeEngines\Abstractions\AbstractStreamMergeEnumerable.cs">
-		  <Link />Sharding\MergeEngines\EnumeratorStreamMergeEngines\Abstractions\AbstractStreamMergeEnumerable.cs
+			<Link>Sharding\MergeEngines\EnumeratorStreamMergeEngines\Abstractions\AbstractStreamMergeEnumerable.cs</Link>
 		</Compile>
 		<Compile Update="..\..\src\ShardingCore\Sharding\MergeEngines\EnumeratorStreamMergeEngines\Enumerables\FirstOrDefaultStreamMergeEnumerable.cs">
-		  <Link />Sharding\MergeEngines\EnumeratorStreamMergeEngines\Enumerables\FirstOrDefaultStreamMergeEnumerable.cs
+			<Link>Sharding\MergeEngines\EnumeratorStreamMergeEngines\Enumerables\FirstOrDefaultStreamMergeEnumerable.cs</Link>
 		</Compile>
 	</ItemGroup>
 
