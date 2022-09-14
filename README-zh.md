@@ -172,17 +172,20 @@ dbcontext `AbstractShardingDbContext`和`IShardingTableDbContext`如果你是普
                     op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 }).UseConfig(op =>
                 {
-                    op.UseShardingQuery((conn, builder) =>
+                    op.UseShardingQuery((connStr, builder) =>
                     {
-                        builder.UseSqlServer(conn);
+                        //connStr is delegate input param
+                        builder.UseSqlServer(connStr);
                     });
-                    op.UseShardingTransaction((conn, builder) =>
+                    op.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(conn);
+                        //connection is delegate input param
+                        builder.UseSqlServer(connection);
                     });
+                    //use your data base connection string
                     op.AddDefaultDataSource(Guid.NewGuid().ToString("n"),
                         "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;");
-                }).EnsureConfig();
+                }).AddShardingCore();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

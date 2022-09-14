@@ -129,7 +129,8 @@ sharding table(spilt table eg. order_202101,order_202102,order_202103......),u n
 ### Step 4:Create route that data(Order) query mapping table name
 
 ```csharp
-Route constructor support dependency injection,that's life time scope is `Singleton`
+//Route constructor support dependency injection,that's life time scope is `Singleton`
+
     public class OrderVirtualTableRoute:AbstractSimpleShardingMonthKeyDateTimeVirtualTableRoute<Order>
     {
         //private readonly IServiceProvider _serviceProvider;
