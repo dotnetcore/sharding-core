@@ -86,6 +86,18 @@ namespace ShardingCore.Core.Internal.Visitors
                 Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempVariable<object>.Queryable));
             return queryableMemberReplaceExpression;
         }
+        private MethodCallExpression ReplaceMethodCallExpression(IQueryable queryable)
+        {
+            var dbContextReplaceQueryableVisitor = new DbContextReplaceQueryableVisitor(_dbContext);
+            var newExpression = dbContextReplaceQueryableVisitor.Visit(queryable.Expression);
+            var newQueryable = dbContextReplaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
+            var tempVariableGenericType = typeof(TempVariable<>).GetGenericType0(queryable.ElementType);
+            var tempVariable = Activator.CreateInstance(tempVariableGenericType, newQueryable);
+            // MemberExpression queryableMemberReplaceExpression =
+            //     Expression.Property(, nameof(TempVariable<object>.Queryable));
+            
+            return Expression.Call(ConstantExpression.Constant(tempVariable),tempVariableGenericType.GetMethod(nameof(TempVariable<object>.GetQueryable)),new Expression[0]);
+        }
 
         private MemberExpression ReplaceMemberExpression(DbContext dbContext)
         {
@@ -108,26 +120,35 @@ namespace ShardingCore.Core.Internal.Visitors
 #endif
                 if (notRoot)
                 {
-                    var entityType = node.Method.ReturnType.GenericTypeArguments[0];
-
-                    var whereCallExpression = ReplaceMethodCallExpression(node, entityType);
-                    return whereCallExpression;
+                    var objQueryable = Expression.Lambda(node).Compile().DynamicInvoke();
+                    if (objQueryable != null && objQueryable is IQueryable queryable)
+                    {
+                        return ReplaceMethodCallExpression(queryable);
+                        // var whereCallExpression = ReplaceMethodCallExpression(replaceMemberExpression);
+                        // return base.VisitMethodCall(whereCallExpression);;
+                        // Console.WriteLine("1");
+                    }
                 }
             }
 
             return base.VisitMethodCall(node);
         }
 
-        private MethodCallExpression ReplaceMethodCallExpression(MethodCallExpression methodCallExpression,
-            Type entityType)
+        // private MethodCallExpression ReplaceMethodCallExpression(MemberExpression memberExpression)
+        // {
+        //     var lambdaExpression = GetType().GetMethod(nameof(WhereTrueExpression)).MakeGenericMethod(new Type[] { queryable.ElementType }).Invoke(this,new object[]{});
+        //     MethodCallExpression whereCallExpression = Expression.Call(
+        //         typeof(Queryable),
+        //         nameof(Queryable.Where),
+        //         new Type[] { queryable.ElementType },
+        //         queryable.Expression, (LambdaExpression)lambdaExpression
+        //     );
+        //     return whereCallExpression;
+        // }
+
+        public Expression<Func<T, bool>> WhereTrueExpression<T>()
         {
-            MethodCallExpression whereCallExpression = Expression.Call(
-                typeof(IShardingQueryableExtension),
-                nameof(IShardingQueryableExtension.ReplaceDbContextQueryableWithType),
-                new Type[] { entityType },
-                methodCallExpression, Expression.Constant(_dbContext)
-            );
-            return whereCallExpression;
+            return t => true;
         }
 
 
@@ -138,6 +159,11 @@ namespace ShardingCore.Core.Internal.Visitors
             public TempVariable(IQueryable<T1> queryable)
             {
                 Queryable = queryable;
+            }
+
+            public IQueryable<T1> GetQueryable()
+            {
+                return Queryable;
             }
         }
 
