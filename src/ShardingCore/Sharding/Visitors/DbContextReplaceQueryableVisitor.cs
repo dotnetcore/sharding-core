@@ -102,10 +102,10 @@ namespace ShardingCore.Core.Internal.Visitors
             if (RootIsVisit&&node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
             {
 #if EFCORE2 || EFCORE3
-                var notRoot = node.Arguments.All(o => !(o is ConstantExpression constantExpression&&constantExpression.Value is IQueryable));
+                var notRoot = node.Arguments.IsEmpty();
 #endif
 #if !EFCORE2 && !EFCORE3
-                var notRoot = node.Arguments.All(o => !(o is QueryRootExpression));
+                var notRoot = node.Arguments.IsEmpty();
 #endif
                 if (notRoot)
                 {
@@ -131,12 +131,6 @@ namespace ShardingCore.Core.Internal.Visitors
             return whereCallExpression;
         }
 
-        public Expression<Func<T, bool>> WhereTrueExpression<T>()
-        {
-            return t => true;
-        }
-
-
         internal sealed class TempVariable<T1>
         {
             public IQueryable<T1> Queryable { get; }
@@ -144,20 +138,6 @@ namespace ShardingCore.Core.Internal.Visitors
             public TempVariable(IQueryable<T1> queryable)
             {
                 Queryable = queryable;
-            }
-
-            public IQueryable<T1> GetQueryable()
-            {
-                return Queryable;
-            }
-        }
-        internal sealed class TempMethodVariable<T1>
-        {
-            public IQueryable<T1> Queryable { get; }
-
-            public TempMethodVariable(Func<IQueryable<T1>> func)
-            {
-                Queryable = func();
             }
 
             public IQueryable<T1> GetQueryable()
