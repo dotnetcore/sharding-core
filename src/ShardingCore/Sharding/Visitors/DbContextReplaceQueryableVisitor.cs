@@ -33,42 +33,43 @@ namespace ShardingCore.Core.Internal.Visitors
             // Recurse down to see if we can simplify...
             //if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
             //{
-                var expression = Visit(memberExpression.Expression);
+            var expression = Visit(memberExpression.Expression);
 
-                // If we've ended up with a constant, and it's a property or a field,
-                // we can simplify ourselves to a constant
-                if (expression is ConstantExpression constantExpression)
+            // If we've ended up with a constant, and it's a property or a field,
+            // we can simplify ourselves to a constant
+            if (expression is ConstantExpression constantExpression)
+            {
+                object container = constantExpression.Value;
+                var member = memberExpression.Member;
+                if (member is FieldInfo fieldInfo)
                 {
-                    object container = constantExpression.Value;
-                    var member = memberExpression.Member;
-                    if (member is FieldInfo fieldInfo)
+                    object value = fieldInfo.GetValue(container);
+                    if (value is IQueryable queryable)
                     {
-                        object value = fieldInfo.GetValue(container);
-                        if (value is IQueryable queryable)
-                        {
-                            return ReplaceMemberExpression(queryable);
-                        }
-
-                        if (value is DbContext dbContext)
-                        {
-                            return ReplaceMemberExpression(dbContext);
-                        }
-                        //return Expression.Constant(value);
+                        return ReplaceMemberExpression(queryable);
                     }
 
-                    if (member is PropertyInfo propertyInfo)
+                    if (value is DbContext dbContext)
                     {
-                        object value = propertyInfo.GetValue(container, null);
-                        if (value is IQueryable queryable)
-                        {
-                            return ReplaceMemberExpression(queryable);
-                        }
-                        if (value is DbContext dbContext)
-                        {
-                            return ReplaceMemberExpression(dbContext);
-                        }
+                        return ReplaceMemberExpression(dbContext);
+                    }
+                    //return Expression.Constant(value);
+                }
+
+                if (member is PropertyInfo propertyInfo)
+                {
+                    object value = propertyInfo.GetValue(container, null);
+                    if (value is IQueryable queryable)
+                    {
+                        return ReplaceMemberExpression(queryable);
+                    }
+
+                    if (value is DbContext dbContext)
+                    {
+                        return ReplaceMemberExpression(dbContext);
                     }
                 }
+            }
             //}
 
             return base.VisitMember(memberExpression);
@@ -85,14 +86,50 @@ namespace ShardingCore.Core.Internal.Visitors
                 Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempVariable<object>.Queryable));
             return queryableMemberReplaceExpression;
         }
+
         private MemberExpression ReplaceMemberExpression(DbContext dbContext)
         {
             var tempVariableGenericType = typeof(TempDbVariable<>).GetGenericType0(dbContext.GetType());
             var tempVariable = Activator.CreateInstance(tempVariableGenericType, _dbContext);
             MemberExpression dbContextMemberReplaceExpression =
-                Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempDbVariable<object>.DbContext));
+                Expression.Property(ConstantExpression.Constant(tempVariable),
+                    nameof(TempDbVariable<object>.DbContext));
             return dbContextMemberReplaceExpression;
         }
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
+            {
+#if EFCORE2 || EFCORE3
+                var notRoot = node.Arguments.All(o => !(o is ConstantExpression constantExpression&&constantExpression.Value is IQueryable));
+#endif
+#if !EFCORE2 && !EFCORE3
+                var notRoot = node.Arguments.All(o => !(o is QueryRootExpression));
+#endif
+                if (notRoot)
+                {
+                    var entityType = node.Method.ReturnType.GenericTypeArguments[0];
+
+                    var whereCallExpression = ReplaceMethodCallExpression(node, entityType);
+                    return whereCallExpression;
+                }
+            }
+
+            return base.VisitMethodCall(node);
+        }
+
+        private MethodCallExpression ReplaceMethodCallExpression(MethodCallExpression methodCallExpression,
+            Type entityType)
+        {
+            MethodCallExpression whereCallExpression = Expression.Call(
+                typeof(IShardingQueryableExtension),
+                nameof(IShardingQueryableExtension.ReplaceDbContextQueryableWithType),
+                new Type[] { entityType },
+                methodCallExpression, Expression.Constant(_dbContext)
+            );
+            return whereCallExpression;
+        }
+
 
         internal sealed class TempVariable<T1>
         {
@@ -103,6 +140,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 Queryable = queryable;
             }
         }
+
         internal sealed class TempDbVariable<T1>
         {
             public T1 DbContext { get; }
@@ -112,7 +150,6 @@ namespace ShardingCore.Core.Internal.Visitors
                 DbContext = dbContext;
             }
         }
-
     }
 
 #if EFCORE2 || EFCORE3
@@ -170,9 +207,11 @@ namespace ShardingCore.Core.Internal.Visitors
             if (node is QueryRootExpression queryRootExpression)
             {
                 var dbContextDependencies =
-     typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as IDbContextDependencies;
+                    typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as
+                        IDbContextDependencies;
                 var targetIQ =
-     (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.EntityType.ClrType);
+                    (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource,
+                        queryRootExpression.EntityType.ClrType);
 
                 var newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
                 if (Source == null)
@@ -204,5 +243,4 @@ namespace ShardingCore.Core.Internal.Visitors
         }
     }
 #endif
-
 }

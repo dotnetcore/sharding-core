@@ -125,6 +125,12 @@ namespace ShardingCore.Extensions
             var newExpression = replaceQueryableVisitor.Visit(source.Expression);
             return replaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
         }
+        internal static IQueryable<TSource> ReplaceDbContextQueryableWithType<TSource>(this IQueryable<TSource> source, DbContext dbContext)
+        {
+            DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);
+            var newExpression = replaceQueryableVisitor.Visit(source.Expression);
+            return (IQueryable<TSource>)replaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
+        }
         internal static Expression ReplaceDbContextExpression(this Expression queryExpression, DbContext dbContext)
         {
             DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);

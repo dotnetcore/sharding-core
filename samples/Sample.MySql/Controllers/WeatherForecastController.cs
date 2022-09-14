@@ -16,6 +16,11 @@ using ShardingCore.TableCreator;
 
 namespace Sample.MySql.Controllers
 {
+    public class ssss
+    {
+        public string Id { get; set; }
+        public int C { get; set; }
+    }
     [ApiController]
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -30,6 +35,11 @@ namespace Sample.MySql.Controllers
             _otherDbContext = otherDbContext;
         }
 
+        public IQueryable<SysUserMod> GetAll()
+        {
+            
+            return _defaultTableDbContext.Set<SysUserMod>();
+        }
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -48,6 +58,9 @@ namespace Sample.MySql.Controllers
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
             var sysUserMods = _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Id).ThenBy(o=>o.Name);
+
+            var sysUserMods1 = _defaultTableDbContext.Set<SysUserMod>()
+                .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();
             var resultX = await _defaultTableDbContext.Set<SysUserMod>()
                     .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
                 var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");

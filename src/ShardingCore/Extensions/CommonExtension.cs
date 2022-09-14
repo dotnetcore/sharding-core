@@ -255,5 +255,12 @@ namespace ShardingCore.Extensions
                 type = type.BaseType;
             }
         }
+        
+        public static bool IsMethodReturnTypeQueryableType(this Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+            return typeof(IQueryable).IsAssignableFrom(type);
+        }
     }
 }

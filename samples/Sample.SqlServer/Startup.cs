@@ -71,6 +71,12 @@ namespace Sample.SqlServer
                             new ReadNode("X","Data Source=localhost;Initial Catalog=ShardingCoreDBXA123;Integrated Security=True;"),
                         }}
                     },ReadStrategyEnum.Loop);
+                }).AddServiceConfigure(s =>
+                {
+                    s.AddSingleton<ILoggerFactory>(sp => LoggerFactory.Create(builder =>
+                    {
+                        builder.AddConsole();
+                    }));
                 }).AddShardingCore();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
