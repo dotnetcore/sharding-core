@@ -35,20 +35,20 @@ namespace Sample.MySql.Controllers
             _otherDbContext = otherDbContext;
         }
 
-        public IQueryable<SysUserMod> GetAll()
+        public IQueryable<SysTest> GetAll()
         {
             
-            return _defaultTableDbContext.Set<SysUserMod>();
+            return _defaultTableDbContext.Set<SysTest>();
         }
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            OtherDbContext.CurrentId = "";
-            var myUsers0 = _otherDbContext.MyUsers.ToList();
-            OtherDbContext.CurrentId = "123";
-            var myUsers1 = _otherDbContext.MyUsers.ToList();
-            OtherDbContext.CurrentId = "456";
-            var myUsers2= _otherDbContext.MyUsers.ToList();
+             OtherDbContext.CurrentId = "";
+            // var myUsers0 = _otherDbContext.MyUsers.ToList();
+            // OtherDbContext.CurrentId = "123";
+            // var myUsers1 = _otherDbContext.MyUsers.ToList();
+            // OtherDbContext.CurrentId = "456";
+            // var myUsers2= _otherDbContext.MyUsers.ToList();
             
             // var sysUserModQueryable = _otherDbContext.MyUsers.Where(o => o.Id == "2");
             // var dbSetDiscoverExpressionVisitor = new DbSetDiscoverExpressionVisitor<MyUser>(_otherDbContext);
@@ -59,7 +59,7 @@ namespace Sample.MySql.Controllers
             // {
             var sysUserMods = _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Id).ThenBy(o=>o.Name);
 
-            var sysUserMods1 = _defaultTableDbContext.Set<SysUserMod>()
+            var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();
             var resultX = await _defaultTableDbContext.Set<SysUserMod>()
                     .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();

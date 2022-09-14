@@ -21,6 +21,7 @@ namespace ShardingCore.Core.Internal.Visitors
     internal class DbContextInnerMemberReferenceReplaceQueryableVisitor : ExpressionVisitor
     {
         private readonly DbContext _dbContext;
+        protected bool RootIsVisit = false;
 
         public DbContextInnerMemberReferenceReplaceQueryableVisitor(DbContext dbContext)
         {
@@ -86,18 +87,6 @@ namespace ShardingCore.Core.Internal.Visitors
                 Expression.Property(ConstantExpression.Constant(tempVariable), nameof(TempVariable<object>.Queryable));
             return queryableMemberReplaceExpression;
         }
-        private MethodCallExpression ReplaceMethodCallExpression(IQueryable queryable)
-        {
-            var dbContextReplaceQueryableVisitor = new DbContextReplaceQueryableVisitor(_dbContext);
-            var newExpression = dbContextReplaceQueryableVisitor.Visit(queryable.Expression);
-            var newQueryable = dbContextReplaceQueryableVisitor.Source.Provider.CreateQuery(newExpression);
-            var tempVariableGenericType = typeof(TempVariable<>).GetGenericType0(queryable.ElementType);
-            var tempVariable = Activator.CreateInstance(tempVariableGenericType, newQueryable);
-            // MemberExpression queryableMemberReplaceExpression =
-            //     Expression.Property(, nameof(TempVariable<object>.Queryable));
-            
-            return Expression.Call(ConstantExpression.Constant(tempVariable),tempVariableGenericType.GetMethod(nameof(TempVariable<object>.GetQueryable)),new Expression[0]);
-        }
 
         private MemberExpression ReplaceMemberExpression(DbContext dbContext)
         {
@@ -110,7 +99,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
+            if (RootIsVisit&&node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
             {
 #if EFCORE2 || EFCORE3
                 var notRoot = node.Arguments.All(o => !(o is ConstantExpression constantExpression&&constantExpression.Value is IQueryable));
@@ -120,31 +109,27 @@ namespace ShardingCore.Core.Internal.Visitors
 #endif
                 if (notRoot)
                 {
-                    var objQueryable = Expression.Lambda(node).Compile().DynamicInvoke();
-                    if (objQueryable != null && objQueryable is IQueryable queryable)
-                    {
-                        return ReplaceMethodCallExpression(queryable);
-                        // var whereCallExpression = ReplaceMethodCallExpression(replaceMemberExpression);
-                        // return base.VisitMethodCall(whereCallExpression);;
-                        // Console.WriteLine("1");
-                    }
+                    var entityType = node.Method.ReturnType.GenericTypeArguments[0];
+
+                    var whereCallExpression = ReplaceMethodCallExpression(node, entityType);
+                    return whereCallExpression;
                 }
             }
 
             return base.VisitMethodCall(node);
         }
 
-        // private MethodCallExpression ReplaceMethodCallExpression(MemberExpression memberExpression)
-        // {
-        //     var lambdaExpression = GetType().GetMethod(nameof(WhereTrueExpression)).MakeGenericMethod(new Type[] { queryable.ElementType }).Invoke(this,new object[]{});
-        //     MethodCallExpression whereCallExpression = Expression.Call(
-        //         typeof(Queryable),
-        //         nameof(Queryable.Where),
-        //         new Type[] { queryable.ElementType },
-        //         queryable.Expression, (LambdaExpression)lambdaExpression
-        //     );
-        //     return whereCallExpression;
-        // }
+        private MethodCallExpression ReplaceMethodCallExpression(MethodCallExpression methodCallExpression,
+            Type entityType)
+        {
+            MethodCallExpression whereCallExpression = Expression.Call(
+                typeof(IShardingQueryableExtension),
+                nameof(IShardingQueryableExtension.ReplaceDbContextQueryableWithType),
+                new Type[] { entityType },
+                methodCallExpression, Expression.Constant(_dbContext)
+            );
+            return whereCallExpression;
+        }
 
         public Expression<Func<T, bool>> WhereTrueExpression<T>()
         {
@@ -159,6 +144,20 @@ namespace ShardingCore.Core.Internal.Visitors
             public TempVariable(IQueryable<T1> queryable)
             {
                 Queryable = queryable;
+            }
+
+            public IQueryable<T1> GetQueryable()
+            {
+                return Queryable;
+            }
+        }
+        internal sealed class TempMethodVariable<T1>
+        {
+            public IQueryable<T1> Queryable { get; }
+
+            public TempMethodVariable(Func<IQueryable<T1>> func)
+            {
+                Queryable = func();
             }
 
             public IQueryable<T1> GetQueryable()
@@ -207,6 +206,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 if (Source == null)
                     Source = newQueryable;
                 // return base.Visit(Expression.Constant(newQueryable));
+                RootIsVisit = true;
                 return Expression.Constant(newQueryable);
             }
 
@@ -245,6 +245,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 //如何替换ef5的set
                 var replaceQueryRoot = new ReplaceSingleQueryRootExpressionVisitor();
                 replaceQueryRoot.Visit(newQueryable.Expression);
+                RootIsVisit = true;
                 return base.VisitExtension(replaceQueryRoot.QueryRootExpression);
             }
 

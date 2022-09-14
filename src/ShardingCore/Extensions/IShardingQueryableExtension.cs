@@ -134,7 +134,8 @@ namespace ShardingCore.Extensions
         internal static Expression ReplaceDbContextExpression(this Expression queryExpression, DbContext dbContext)
         {
             DbContextReplaceQueryableVisitor replaceQueryableVisitor = new DbContextReplaceQueryableVisitor(dbContext);
-            return replaceQueryableVisitor.Visit(queryExpression);
+            var expression = replaceQueryableVisitor.Visit(queryExpression);
+            return expression;
         }
     }
 }

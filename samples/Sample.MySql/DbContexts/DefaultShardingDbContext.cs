@@ -28,11 +28,11 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserModMap());
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                _configureGlobalFiltersMethodInfo?.MakeGenericMethod(entityType.ClrType)
-                    .Invoke(this, new object[] { modelBuilder, entityType });
-            }
+            // foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            // {
+            //     _configureGlobalFiltersMethodInfo?.MakeGenericMethod(entityType.ClrType)
+            //         .Invoke(this, new object[] { modelBuilder, entityType });
+            // }
 
             modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
             modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
