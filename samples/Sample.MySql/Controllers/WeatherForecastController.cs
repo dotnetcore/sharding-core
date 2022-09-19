@@ -1,18 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
-using ShardingCore.Extensions.ShardingQueryableExtensions;
-using ShardingCore.TableCreator;
 
 namespace Sample.MySql.Controllers
 {
@@ -27,12 +17,10 @@ namespace Sample.MySql.Controllers
     {
 
         private readonly DefaultShardingDbContext _defaultTableDbContext;
-        private readonly OtherDbContext _otherDbContext;
 
-        public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext,OtherDbContext otherDbContext)
+        public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
-            _otherDbContext = otherDbContext;
         }
 
         public IQueryable<SysTest> GetAll()
@@ -72,7 +60,8 @@ namespace Sample.MySql.Controllers
                 var shardingFirstOrDefaultAsync = await _defaultTableDbContext.Set<SysUserLogByMonth>().ToListAsync();
                 var shardingCountAsync = await _defaultTableDbContext.Set<SysUserMod>().CountAsync();
                 var shardingCountAsyn2c =  _defaultTableDbContext.Set<SysUserLogByMonth>().Count();
-                var count = _otherDbContext.Set<MyUser>().Count();
+              
+                    
                 // var dbConnection = _defaultTableDbContext.Database.GetDbConnection();
                 // if (dbConnection.State != ConnectionState.Open)
                 // {

@@ -23,8 +23,6 @@ namespace Sample.MySql
         {
             using (var scope=app.ApplicationServices.CreateScope())
             {
-                var otherDbContext =scope.ServiceProvider.GetService<OtherDbContext>();
-                var any = otherDbContext.MyUsers.Any();
                 var virtualDbContext =scope.ServiceProvider.GetService<DefaultShardingDbContext>();
                 if (!virtualDbContext.Set<SysUserMod>().Any())
                 {
