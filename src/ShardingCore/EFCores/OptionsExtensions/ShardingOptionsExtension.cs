@@ -7,8 +7,6 @@ using ShardingCore.Core.RuntimeContexts;
 
 namespace ShardingCore.EFCores.OptionsExtensions
 {
-
-
     /*
     * @Author: xjm
     * @Description:
@@ -16,6 +14,9 @@ namespace ShardingCore.EFCores.OptionsExtensions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
 
 #if EFCORE6
     public class ShardingOptionsExtension : IDbContextOptionsExtension
@@ -26,9 +27,10 @@ namespace ShardingCore.EFCores.OptionsExtensions
         {
             ShardingRuntimeContext = shardingRuntimeContext;
         }
+
         public void ApplyServices(IServiceCollection services)
         {
-            services.AddSingleton<IShardingRuntimeContext>(sp =>ShardingRuntimeContext);
+            services.AddSingleton<IShardingRuntimeContext>(sp => ShardingRuntimeContext);
         }
 
         public void Validate(IDbContextOptions options)
@@ -41,12 +43,14 @@ namespace ShardingCore.EFCores.OptionsExtensions
         private class ShardingOptionsExtensionInfo : DbContextOptionsExtensionInfo
         {
             private readonly ShardingOptionsExtension _shardingOptionsExtension;
+
             public ShardingOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
             {
                 _shardingOptionsExtension = (ShardingOptionsExtension)extension;
             }
 
-            public override int GetServiceProviderHashCode() => _shardingOptionsExtension.ShardingRuntimeContext.GetHashCode();
+            public override int GetServiceProviderHashCode() =>
+                _shardingOptionsExtension.ShardingRuntimeContext.GetHashCode();
 
             public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
 
@@ -60,7 +64,6 @@ namespace ShardingCore.EFCores.OptionsExtensions
     }
 #endif
 #if EFCORE3 || EFCORE5
-
      public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
         public IShardingRuntimeContext ShardingRuntimeContext { get; }
@@ -101,7 +104,6 @@ namespace ShardingCore.EFCores.OptionsExtensions
 
 #endif
 #if EFCORE2
-
     public class ShardingOptionsExtension: IDbContextOptionsExtension
     {
         public IShardingRuntimeContext ShardingRuntimeContext { get; }

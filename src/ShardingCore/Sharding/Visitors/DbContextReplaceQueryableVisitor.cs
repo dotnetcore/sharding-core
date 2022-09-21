@@ -101,12 +101,8 @@ namespace ShardingCore.Core.Internal.Visitors
         {
             if (RootIsVisit&&node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
             {
-#if EFCORE2 || EFCORE3
                 var notRoot = node.Arguments.IsEmpty();
-#endif
-#if !EFCORE2 && !EFCORE3
-                var notRoot = node.Arguments.IsEmpty();
-#endif
+
                 if (notRoot)
                 {
                     var entityType = node.Method.ReturnType.GenericTypeArguments[0];

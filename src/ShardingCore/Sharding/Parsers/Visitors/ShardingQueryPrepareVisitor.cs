@@ -23,6 +23,9 @@ namespace ShardingCore.Sharding.Parsers.Visitors
     /// Author: xjm
     /// Created: 2022/5/1 21:43:12
     /// Email: 326308290@qq.com
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
     internal class ShardingQueryPrepareVisitor : ExpressionVisitor
     {
         private readonly IShardingDbContext _shardingDbContext;

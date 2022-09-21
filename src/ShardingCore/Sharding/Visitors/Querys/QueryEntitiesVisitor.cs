@@ -17,6 +17,9 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
     * @Date: Saturday, 20 February 2021 11:14:35
     * @Email: 326308290@qq.com
     */
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
 #if EFCORE2 || EFCORE3
     /// <summary>
     /// 获取分表类型

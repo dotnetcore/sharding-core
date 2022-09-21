@@ -14,6 +14,9 @@ namespace ShardingCore.EFCores.OptionsExtensions
     * @Email: 326308290@qq.com
     */
 
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
 #if EFCORE6
     public class UnionAllMergeOptionsExtension : IDbContextOptionsExtension
     {

@@ -20,6 +20,9 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
     public class ShardingRelationalTransaction : RelationalTransaction
     {
         private readonly IShardingDbContext _shardingDbContext;

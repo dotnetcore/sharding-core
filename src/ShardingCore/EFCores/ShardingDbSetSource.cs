@@ -12,6 +12,9 @@ namespace ShardingCore.EFCores
     * @Date: Saturday, 14 August 2021 10:17:43
     * @Email: 326308290@qq.com
     */
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
 #if EFCORE5 || EFCORE6
     public class ShardingDbSetSource : IDbSetSource
     {

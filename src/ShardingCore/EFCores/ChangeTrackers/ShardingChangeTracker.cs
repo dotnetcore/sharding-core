@@ -19,8 +19,9 @@ namespace ShardingCore.EFCores.ChangeTrackers
         {
             _dbContext = context;
         }
+
 #if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
-        1
+    error
 #endif
 
         public override bool HasChanges()

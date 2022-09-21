@@ -26,6 +26,9 @@ namespace ShardingCore.EFCores
     * @Email: 326308290@qq.com
     */
 
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
     public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
         where TEntity : class
     {
