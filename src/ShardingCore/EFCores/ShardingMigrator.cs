@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +78,14 @@ namespace ShardingCore.EFCores
            await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,cancellationToken);
 
         }
+#if EFCORE6
+
+        public override string GenerateScript(string fromMigration = null, string toMigration = null,
+            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
+        {
+          return new ScriptMigrationGenerator(_shardingRuntimeContext, fromMigration, toMigration, options).GenerateScript();
+        }
+#endif
     }
 
 }
