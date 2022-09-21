@@ -98,7 +98,7 @@ namespace ShardingCore.Helpers
                     {
                         shardingMigrationManager.Current.CurrentDataSourceName = migrateUnit.DataSourceName;
                     
-                        var dbContextOptions = CreateDbContextOptions(shardingRuntimeContext,migrateUnit.ShellDbContext.GetType(),
+                        var dbContextOptions = CreateShellDbContextOptions(shardingRuntimeContext,migrateUnit.ShellDbContext.GetType(),
                             migrateUnit.DataSourceName);
 
                         using (var dbContext = dbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,
@@ -119,7 +119,7 @@ namespace ShardingCore.Helpers
             await TaskHelper.WhenAllFastFail(migrateTasks);
         }
         
-        private static DbContextOptions CreateDbContextOptions(IShardingRuntimeContext shardingRuntimeContext,Type dbContextType,string dataSourceName)
+        public static DbContextOptions CreateShellDbContextOptions(IShardingRuntimeContext shardingRuntimeContext,Type dbContextType,string dataSourceName)
         {
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();

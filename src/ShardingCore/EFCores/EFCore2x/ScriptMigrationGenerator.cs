@@ -1,4 +1,4 @@
-#if EFCORE6
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 
@@ -8,23 +8,20 @@ namespace ShardingCore.EFCores
     {
         private readonly string _fromMigration;
         private readonly string _toMigration;
-        private readonly MigrationsSqlGenerationOptions _options;
+        private readonly bool _idempotent;
 
         public ScriptMigrationGenerator(IShardingRuntimeContext shardingRuntimeContext, string fromMigration = null,
-            string toMigration = null,
-            MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default) : base(shardingRuntimeContext)
+            string toMigration = null, bool idempotent = false) : base(shardingRuntimeContext)
         {
             _fromMigration = fromMigration;
             _toMigration = toMigration;
-            _options = options;
+            _idempotent = idempotent;
         }
 
         protected override string GenerateScriptSql(IMigrator migrator)
         {
-            return migrator.GenerateScript(_fromMigration, _toMigration, _options);
+            return migrator.GenerateScript(_fromMigration, _toMigration, _idempotent);
         }
     }
 }
-
-
 #endif

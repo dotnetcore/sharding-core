@@ -35,6 +35,9 @@ namespace ShardingCore.EFCores
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
+#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+    error
+#endif
 
 #if  EFCORE6
         public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext,IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IModelRuntimeInitializer modelRuntimeInitializer, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IRelationalCommandDiagnosticsLogger commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, modelRuntimeInitializer, logger, commandLogger, databaseProvider)
@@ -78,13 +81,20 @@ namespace ShardingCore.EFCores
            await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,cancellationToken);
 
         }
-#if EFCORE6
+#if EFCORE6 || EFCORE5
 
         public override string GenerateScript(string fromMigration = null, string toMigration = null,
             MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
         {
           return new ScriptMigrationGenerator(_shardingRuntimeContext, fromMigration, toMigration, options).GenerateScript();
         }
+#endif
+#if EFCORE3 || EFCORE2
+        public override string GenerateScript(string fromMigration = null, string toMigration = null, bool idempotent = false)
+        {
+            return new ScriptMigrationGenerator(_shardingRuntimeContext, fromMigration, toMigration, idempotent).GenerateScript();
+        }
+        
 #endif
     }
 

@@ -28,6 +28,12 @@
         <Compile Include="..\..\src\ShardingCore\**\*.cs" />
         <Compile Remove="..\..\src\ShardingCore\obj\**" />
         <Compile Remove="..\..\src\ShardingCore\bin\**" />
+        <Compile Update="..\..\src\ShardingCore\EFCores\EFCore3x\ScriptMigrationGenerator.cs">
+          <Link>EFCores\EFCore3x\ScriptMigrationGenerator.cs</Link>
+        </Compile>
+        <Compile Update="..\..\src\ShardingCore\EFCores\EFCore2x\ScriptMigrationGenerator.cs">
+          <Link>EFCores\EFCore2x\ScriptMigrationGenerator.cs</Link>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

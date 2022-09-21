@@ -1,4 +1,4 @@
-#if EFCORE6
+#if EFCORE5
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 
@@ -25,6 +25,4 @@ namespace ShardingCore.EFCores
         }
     }
 }
-
-
 #endif
