@@ -54,7 +54,7 @@ namespace Sample.MySql
         public void ConfigureServices(IServiceCollection services)
         {
             // services.AddHostedService<AutoStart>();
-            services.AddControllers();
+            services.AddControllers(); 
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
             //     {

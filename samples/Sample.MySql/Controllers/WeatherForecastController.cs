@@ -43,7 +43,7 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-             OtherDbContext.CurrentId = "";
+             //OtherDbContext.CurrentId = "";
             // var myUsers0 = _otherDbContext.MyUsers.ToList();
             // OtherDbContext.CurrentId = "123";
             // var myUsers1 = _otherDbContext.MyUsers.ToList();
