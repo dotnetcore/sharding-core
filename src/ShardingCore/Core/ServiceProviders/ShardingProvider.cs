@@ -4,10 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace ShardingCore.Core.ServiceProviders
 {
 
-    public class ShardingProvider:IShardingProvider
+    public sealed class ShardingProvider:IShardingProvider
     {
         private readonly IServiceProvider _internalServiceProvider;
-        private  IServiceProvider _applicationServiceProvider;
+        private readonly  IServiceProvider _applicationServiceProvider;
 
         public ShardingProvider(IServiceProvider internalServiceProvider,IServiceProvider applicationServiceProvider)
         {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace ShardingCore.Core.ServiceProviders
 {
     
-    public class ShardingScope:IShardingScope
+    public sealed class ShardingScope:IShardingScope
     {
         private readonly IServiceScope _internalServiceScope;
         private readonly IServiceScope _applicationServiceScope;

@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
+using Sample.MySql.Shardings;
+using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 
 namespace Sample.MySql.Controllers
 {
@@ -17,15 +20,24 @@ namespace Sample.MySql.Controllers
     {
 
         private readonly DefaultShardingDbContext _defaultTableDbContext;
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext)
+        public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
+            _shardingRuntimeContext = shardingRuntimeContext;
         }
 
         public IQueryable<SysTest> GetAll()
         {
-            
+            var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
+            var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
+            //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
+            var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
+            //一定要先在路由里面添加尾巴
+            virtualTableRoute.Append("20220921");
+            shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
+
             return _defaultTableDbContext.Set<SysTest>();
         }
         [HttpGet]

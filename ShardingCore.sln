@@ -71,6 +71,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src6x", "src6x", "{BB80F31B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.6x", "src6x\ShardingCore.6x\ShardingCore.6x.csproj", "{1FF83CC3-A5F2-45E0-AA39-23C4DDF87D71}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.OracleIssue", "samples\Sample.OracleIssue\Sample.OracleIssue.csproj", "{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,10 @@ Global
 		{1FF83CC3-A5F2-45E0-AA39-23C4DDF87D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FF83CC3-A5F2-45E0-AA39-23C4DDF87D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FF83CC3-A5F2-45E0-AA39-23C4DDF87D71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,6 +218,7 @@ Global
 		{3E895438-E609-4860-8391-6897ED55DA06} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 		{BAB101D4-2BFF-44CE-90E3-8B72DDB266B8} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{1FF83CC3-A5F2-45E0-AA39-23C4DDF87D71} = {BB80F31B-37F1-44C2-BCFA-F45D1AC765FE}
+		{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}
