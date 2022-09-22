@@ -99,11 +99,17 @@ namespace ShardingCore.Sharding.Enumerators
             var list = new List<IComparable>(_mergeContext.Orders.Count());
             foreach (var order in _mergeContext.Orders)
             {
-                var value = _enumerator.ReallyCurrent.GetValueByExpression(order.PropertyExpression);
+                var (propertyType,value) = _enumerator.ReallyCurrent.GetValueByExpression(order.PropertyExpression);
                 if (value is IComparable comparable)
                     list.Add(comparable);
+                else if (propertyType.IsComparableType())
+                {
+                    list.Add((IComparable)value);
+                }
                 else
-                    throw new NotSupportedException($"order by value [{order}] must  implements IComparable");
+                {
+                    throw new NotSupportedException($"order by value [{order}] must  implements IComparable");  
+                }
             }
 
             return list;

@@ -46,7 +46,7 @@ namespace ShardingCore.Extensions
                   .SetValue(t,value);
             }
         }
-        public static object GetValueByExpression(this object obj, string propertyExpression)
+        public static (Type propertyType,object value) GetValueByExpression(this object obj, string propertyExpression)
         {
             var entityType = obj.GetType();
             PropertyInfo property;
@@ -78,8 +78,8 @@ namespace ShardingCore.Extensions
             {
                 throw new ShardingCoreException($"property:[{propertyExpression}] not in type:[{entityType}]");
             }
-
-            return property.GetValue(obj);
+            
+            return (property.PropertyType,property.GetValue(obj));
             //var lambda = Expression.Lambda(propertyAccess, parameter);
             //Delegate fn = lambda.Compile();
             //return fn.DynamicInvoke(obj);

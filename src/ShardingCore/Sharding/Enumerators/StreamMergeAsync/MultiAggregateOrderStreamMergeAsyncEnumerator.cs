@@ -56,7 +56,7 @@ namespace ShardingCore.Sharding.Enumerators
         {
             var first = enumerator.ReallyCurrent;
             return _mergeContext.SelectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty))
-                .Select(o => first.GetValueByExpression(o.PropertyName)).ToList();
+                .Select(o => first.GetValueByExpression(o.PropertyName).value).ToList();
         }
 #if !EFCORE2
         public async ValueTask<bool> MoveNextAsync()
@@ -85,7 +85,7 @@ namespace ShardingCore.Sharding.Enumerators
             var current = GetCurrentGroupValues(_queue.Peek());
             for (int i = 0; i < CurrentGroupValues.Count; i++)
             {
-                if (!CurrentGroupValues[i].Equals(current[i]))
+                if (!object.Equals(CurrentGroupValues[i],current[i]))
                     return false;
             }
 

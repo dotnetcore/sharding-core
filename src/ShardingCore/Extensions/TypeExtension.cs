@@ -19,6 +19,11 @@ namespace ShardingCore.Extensions
         {
             return !type.IsValueType || (Nullable.GetUnderlyingType(type) != null);
         }
+
+        public static bool IsComparableType(this Type type)
+        {
+            return typeof(IComparable).IsAssignableFrom(type);
+        }
         /// <summary>
         /// 检测是否是数字类型,包括nullable的数字类型
         /// </summary>
