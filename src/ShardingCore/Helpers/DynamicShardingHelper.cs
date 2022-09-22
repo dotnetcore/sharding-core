@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
-using ShardingCore.Core.ShardingMigrations.Abstractions;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.EFCores;
 using ShardingCore.Exceptions;
@@ -36,8 +35,11 @@ namespace ShardingCore.Helpers
         {
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
-            var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
-            dataSourceInitializer.InitConfigure(dataSourceName,createDatabase,createTable);
+            if (createDatabase || createTable)
+            {
+                var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
+                dataSourceInitializer.InitConfigure(dataSourceName,createDatabase,createTable);
+            }
         }
         /// <summary>
         /// 动态添加数据源
@@ -47,8 +49,7 @@ namespace ShardingCore.Helpers
         /// <param name="connectionString"></param>
         public static void DynamicAppendDataSourceOnly(IShardingRuntimeContext shardingRuntimeContext, string dataSourceName, string connectionString)
         {
-            var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
-            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource(dataSourceName, connectionString, false));
+            DynamicAppendDataSource(shardingRuntimeContext, dataSourceName, connectionString, false, false);
         }
 
         public static async Task DynamicMigrateWithDataSourcesAsync(IShardingRuntimeContext shardingRuntimeContext,

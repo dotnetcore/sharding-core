@@ -6,6 +6,7 @@ using Sample.MySql.multi;
 using Sample.MySql.Shardings;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Helpers;
 
 namespace Sample.MySql.Controllers
 {
@@ -57,7 +58,7 @@ namespace Sample.MySql.Controllers
             // Console.WriteLine("------------");
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
-            var sysUserMods = _defaultTableDbContext.Set<SysUserMod>().OrderBy(o=>o.Id).ThenBy(o=>o.Name);
+            var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
             var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();
