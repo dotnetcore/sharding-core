@@ -125,6 +125,21 @@ namespace ShardingCore.Core.Internal.Visitors
                         var propertyInfo = declaringType.GetProperty(memberName);
                         _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType, propertyInfo));
                         //memberExpression.Acc
+                    }else if (expression is MemberInitExpression memberInitExpression)
+                    {
+                        foreach (var memberBinding in memberInitExpression.Bindings)
+                        {
+                            if (memberBinding is MemberAssignment memberAssignment)
+                            {
+                                if (memberAssignment.Expression is MemberExpression bindMemberExpression)
+                                {
+                                    var declaringType = memberBinding.Member.DeclaringType;
+                                    var memberName = memberBinding.Member.Name;
+                                    var propertyInfo = declaringType.GetProperty(memberName);
+                                    _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType, propertyInfo));
+                                }
+                            }
+                        }
                     }
                     //if (expression != null)
                     //{

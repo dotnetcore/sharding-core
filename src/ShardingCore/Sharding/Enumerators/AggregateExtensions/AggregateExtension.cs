@@ -25,14 +25,36 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             var anonType = source.GetType();
             var allProperties = anonType.GetProperties();
             var allPropertyTypes= allProperties.Select(o=>o.PropertyType).ToArray();
-            var constantExpressions = allProperties.Select(o => Expression.Constant(o.GetValue(source))).ToArray();
+            if (anonType.IsAnonymousType())
+            {
+                var constantExpressions = allProperties.Select(o => Expression.Constant(o.GetValue(source))).ToArray();
+                var exp = Expression.New(
+                    anonType.GetConstructor(allPropertyTypes),
+                    constantExpressions);
+                var lambda = LambdaExpression.Lambda(exp);
+                TSource myObj = (TSource)lambda.Compile().DynamicInvoke();
+                return myObj;
+            }
+            else
+            {
+                var parameters = allProperties.Select(o => o.GetValue(source)).ToArray();
+                if (anonType.GetConstructors().Length == 1 &&
+                    anonType.GetConstructors()[0].GetParameters().Length == allPropertyTypes.Length)
+                {
+                    return (TSource)Activator.CreateInstance(anonType, parameters);
+                }
+                else
+                {
+                    var instance = (TSource)Activator.CreateInstance(anonType);
+                    foreach (var property in allProperties)
+                    {
+                        var value = property.GetValue(source);
+                        instance.SetPropertyValue(property.Name,value);
+                    }
 
-            var exp = Expression.New(
-                anonType.GetConstructor(allPropertyTypes),
-                constantExpressions);
-            var lambda = LambdaExpression.Lambda(exp);
-            TSource myObj = (TSource)lambda.Compile().DynamicInvoke();
-            return myObj;
+                    return instance;
+                }
+            }
 
         }
         [ExcludeFromCodeCoverage]

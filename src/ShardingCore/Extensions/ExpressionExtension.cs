@@ -25,10 +25,6 @@ namespace ShardingCore.Extensions
                 throw new Exception($"type:{typeof(T)} not found [{name}] properity ");
             }
 
-            var param_obj = Expression.Parameter(type);
-            var param_val = Expression.Parameter(typeof(object));
-            var body_obj = Expression.Convert(param_obj, type);
-            var body_val = Expression.Convert(param_val, p.PropertyType);
 
             //获取设置属性的值的方法
             var setMethod = p.GetSetMethod(true);
@@ -36,6 +32,10 @@ namespace ShardingCore.Extensions
             //如果只是只读,则setMethod==null
             if (setMethod != null)
             {
+                var param_obj = Expression.Parameter(type);
+                var param_val = Expression.Parameter(typeof(object));
+                var body_obj = Expression.Convert(param_obj, type);
+                var body_val = Expression.Convert(param_val, p.PropertyType);
                 var body = Expression.Call(param_obj, p.GetSetMethod(), body_val);
                 var setValue = Expression.Lambda<Action<T, object>>(body, param_obj, param_val).Compile();
                 setValue(t, value);

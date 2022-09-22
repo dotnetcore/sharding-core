@@ -15,6 +15,13 @@ namespace Sample.MySql.Controllers
         public string Id { get; set; }
         public int C { get; set; }
     }
+
+    public class abc
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public int count { get; set; }
+    }
     [ApiController]
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -58,6 +65,24 @@ namespace Sample.MySql.Controllers
             // Console.WriteLine("------------");
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
+            var resultX1 = await _defaultTableDbContext.Set<SysUserMod>()
+                                .Where(o => o.Id == "2" || o.Id == "3").GroupBy(o => new { o.Id,o.Name })
+                                .Select(o => new 
+                                {
+                                    id = o.Key.Id,
+                                    name = o.Key.Name,
+                                    count = o.Count()
+                                }).ToListAsync();
+            var resultX12 = await _defaultTableDbContext.Set<SysUserMod>()
+                .Where(o => o.Id == "2" || o.Id == "3").GroupBy(o => new { o.Id,o.Name })
+                .Select(o => new abc
+                {
+                    id = o.Key.Id,
+                    name = o.Key.Name,
+                    count = o.Count()
+                }).ToListAsync();
+            
+            
             var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
             var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
