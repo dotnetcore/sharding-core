@@ -132,7 +132,6 @@ namespace ShardingCore.Helpers
             dbContextOptionBuilder.UseShardingOptions(shardingRuntimeContext);
             return dbContextOptionBuilder.Options;
         }
-
         /// <summary>
         /// 动态添加读写分离链接字符串
         /// </summary>
@@ -140,16 +139,16 @@ namespace ShardingCore.Helpers
         /// <param name="dataSourceName"></param>
         /// <param name="connectionString"></param>
         /// <param name="readNodeName"></param>
+        /// <returns></returns>
         /// <exception cref="ShardingCoreInvalidOperationException"></exception>
-        public static void DynamicAppendReadWriteConnectionString(IShardingRuntimeContext shardingRuntimeContext, string dataSourceName,
+        public static bool DynamicAppendReadWriteConnectionString(IShardingRuntimeContext shardingRuntimeContext, string dataSourceName,
             string connectionString, string readNodeName=null)
         {
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             if (virtualDataSource.ConnectionStringManager is IReadWriteConnectionStringManager
                 readWriteAppendConnectionString)
             {
-                readWriteAppendConnectionString.AddReadConnectionString(dataSourceName, connectionString, readNodeName);
-                return;
+                return readWriteAppendConnectionString.AddReadConnectionString(dataSourceName, connectionString, readNodeName);
             }
 
             throw new ShardingCoreInvalidOperationException(

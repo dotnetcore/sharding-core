@@ -22,7 +22,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         /// 
         /// </summary>
         /// <param name="dataSourceRouteResult"></param>
-        /// <param name="allPhysicTables"></param>
         /// <param name="queryable"></param>
         /// <returns></returns>
         protected override List<TableRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable)

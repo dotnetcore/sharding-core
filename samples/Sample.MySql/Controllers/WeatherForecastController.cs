@@ -38,13 +38,13 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
-            var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
-            var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
-            //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
-            var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
-            //一定要先在路由里面添加尾巴
-            virtualTableRoute.Append("20220921");
-            shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
+            // var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
+            // var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
+            // //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
+            // var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
+            // //一定要先在路由里面添加尾巴
+            // virtualTableRoute.Append("20220921");
+            // shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
 
             return _defaultTableDbContext.Set<SysTest>();
         }
@@ -83,7 +83,7 @@ namespace Sample.MySql.Controllers
                 }).ToListAsync();
             
             
-            var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
+            // var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
             var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();

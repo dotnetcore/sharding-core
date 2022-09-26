@@ -13,6 +13,7 @@ using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Extensions.InternalExtensions;
 
@@ -77,6 +78,9 @@ namespace ShardingCore.EFCores
         {
             var clrType = mutableEntityType.ClrType;
             var entityMetadata = entityMetadataManager.TryGet(clrType);
+            if (entityMetadata == null)
+                throw new ShardingCoreInvalidOperationException($"not found entity type:[{clrType}]'s entity metadata");
+                
             var shardingEntity = entityMetadata.EntityType;
             var tableSeparator = entityMetadata.TableSeparator;
             var entity = modelBuilder.Entity(shardingEntity);
