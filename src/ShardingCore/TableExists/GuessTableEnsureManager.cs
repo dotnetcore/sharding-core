@@ -37,6 +37,7 @@ namespace ShardingCore.TableExists
                     break;
 
                 case "MySqlConnector.MySqlConnection":
+                case "MySql.Data.MySqlClient.MySqlConnection":
                     result = _tem_mysql.DoGetExistTables(connection, dataSourceName);
                     break;
 
