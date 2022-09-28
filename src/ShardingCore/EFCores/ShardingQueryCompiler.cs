@@ -38,7 +38,7 @@ namespace ShardingCore.EFCores
         }
 
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
@@ -59,7 +59,7 @@ namespace ShardingCore.EFCores
 
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
             return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);

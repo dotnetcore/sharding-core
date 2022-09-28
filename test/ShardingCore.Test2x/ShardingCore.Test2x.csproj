@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
@@ -16,8 +16,9 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
+
 	<ItemGroup>
-		<ProjectReference Include="..\..\src2x\ShardingCore.2x\ShardingCore.2x.csproj" />
+	  <ProjectReference Include="..\..\src\ShardingCore\ShardingCore.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -64,10 +64,10 @@ namespace ShardingCore.Extensions
             {
                 return null;
             }
-#if !EFCORE2
+#if !NETCOREAPP2_0
             return expression.Print();
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
                 return expression.ToString();
 #endif
         }

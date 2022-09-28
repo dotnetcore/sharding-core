@@ -14,10 +14,10 @@ namespace ShardingCore.EFCores.OptionsExtensions
     * @Email: 326308290@qq.com
     */
 
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
-#if EFCORE6
+#if NET6_0
     public class UnionAllMergeOptionsExtension : IDbContextOptionsExtension
     {
         public void ApplyServices(IServiceCollection services)
@@ -50,7 +50,7 @@ namespace ShardingCore.EFCores.OptionsExtensions
         }
     }
 #endif
-#if EFCORE3 || EFCORE5
+#if NETCOREAPP3_0 || NET5_0
 
      public class UnionAllMergeOptionsExtension: IDbContextOptionsExtension
     {
@@ -79,7 +79,7 @@ namespace ShardingCore.EFCores.OptionsExtensions
     }
 
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
 
     public class UnionAllMergeOptionsExtension: IDbContextOptionsExtension
     {

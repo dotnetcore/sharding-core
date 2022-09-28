@@ -1,5 +1,5 @@
 ﻿
-#if EFCORE6
+#if NET6_0
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

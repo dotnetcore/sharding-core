@@ -15,7 +15,7 @@ namespace ShardingCore.Core
     /// Email: 326308290@qq.com
     public interface IShardingModelCacheOption
     {
-#if !EFCORE2
+#if !NETCOREAPP2_0
         CacheItemPriority GetModelCachePriority();
         int GetModelCacheEntrySize();
 #endif

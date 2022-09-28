@@ -47,7 +47,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             return $"(has different tail:{HasDifferentTail},current table:[{string.Join(",", ReplaceTables.Select(o => $"{o.DataSourceName}.{o.Tail}.{o.EntityType}"))}])";
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public override int GetHashCode()
         {
@@ -55,7 +55,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
         }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
 
         public override int GetHashCode()
         {

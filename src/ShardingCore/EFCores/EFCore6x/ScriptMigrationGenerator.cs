@@ -1,4 +1,4 @@
-#if EFCORE6
+#if NET6_0
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 

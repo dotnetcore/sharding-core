@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.Abstractions
         void NotifyShardingTransaction();
         void Rollback();
         void Commit();
-#if !EFCORE2
+#if !NETCOREAPP2_0
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
         Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
 #endif

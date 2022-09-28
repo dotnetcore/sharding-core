@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Exceptions;
 
-#if EFCORE2
+#if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

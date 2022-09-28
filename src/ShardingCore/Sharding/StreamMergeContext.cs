@@ -35,7 +35,7 @@ namespace ShardingCore.Sharding
     * @Email: 326308290@qq.com
     */
     public class StreamMergeContext : IMergeParseContext, IDisposable, IPrint
-#if !EFCORE2
+#if !NETCOREAPP2_0
         , IAsyncDisposable
 #endif
     {
@@ -362,7 +362,7 @@ namespace ShardingCore.Sharding
                 dbContext.Dispose();
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async ValueTask DisposeAsync()
         {
@@ -402,7 +402,7 @@ namespace ShardingCore.Sharding
                 ReSetOrders(propertyOrders);
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async ValueTask<bool> DbContextDisposeAsync(DbContext dbContext)
         {
@@ -416,7 +416,7 @@ namespace ShardingCore.Sharding
             return false;
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
 
         public  Task<bool> DbContextDisposeAsync(DbContext dbContext)
         {

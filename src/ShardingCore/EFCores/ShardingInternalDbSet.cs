@@ -26,7 +26,7 @@ namespace ShardingCore.EFCores
     * @Email: 326308290@qq.com
     */
 
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
     public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
@@ -36,7 +36,7 @@ namespace ShardingCore.EFCores
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private LocalView<TEntity>? _localView;
 
-#if EFCORE5 || EFCORE6
+#if NET5_0 || NET6_0
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
@@ -44,7 +44,7 @@ namespace ShardingCore.EFCores
             _shardingRuntimeContext = context.GetShardingRuntimeContext();
         }
 #endif
-#if EFCORE2 || EFCORE3
+#if NETCOREAPP2_0 || NETCOREAPP3_0
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
             _context = (IShardingDbContext)context;
@@ -128,7 +128,7 @@ namespace ShardingCore.EFCores
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public override async ValueTask<EntityEntry<TEntity>> AddAsync(
             TEntity entity,
             CancellationToken cancellationToken = default)
@@ -137,7 +137,7 @@ namespace ShardingCore.EFCores
             return await genericDbContext.Set<TEntity>().AddAsync(entity, cancellationToken);
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public override async Task<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken =
  new CancellationToken())
         {
@@ -365,7 +365,7 @@ namespace ShardingCore.EFCores
             return base.Find(keyValues);
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public override ValueTask<TEntity> FindAsync(params object[] keyValues)
         {
             var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);
@@ -388,7 +388,7 @@ namespace ShardingCore.EFCores
             return base.FindAsync(keyValues, cancellationToken);
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public override Task<TEntity> FindAsync(params object[] keyValues)
         {
             var primaryKeyFindDbContext = GetDbContextByKeyValue(keyValues);

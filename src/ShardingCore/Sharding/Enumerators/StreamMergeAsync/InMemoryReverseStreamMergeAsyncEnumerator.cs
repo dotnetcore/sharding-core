@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return _inMemoryReallyCount;
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async ValueTask DisposeAsync()
         {
@@ -56,7 +56,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return _reverseEnumerator.MoveNext();
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public async Task<bool> MoveNext(CancellationToken cancellationToken)
         {
             if (_first)

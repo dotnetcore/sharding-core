@@ -58,19 +58,19 @@ namespace ShardingCore.Sharding.Enumerators
             return _mergeContext.SelectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty))
                 .Select(o => first.GetValueByExpression(o.PropertyName).value).ToList();
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public async ValueTask<bool> MoveNextAsync()
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
 #endif
         {
             if (_queue.IsEmpty())
                 return false;
-#if !EFCORE2
+#if !NETCOREAPP2_0
             var hasNext = await SetCurrentValueAsync();
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
             var hasNext = await SetCurrentValueAsync(cancellationToken);
 #endif
             if (hasNext)
@@ -91,10 +91,10 @@ namespace ShardingCore.Sharding.Enumerators
 
             return true;
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         private async ValueTask<bool> SetCurrentValueAsync()
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         private async Task<bool> SetCurrentValueAsync(CancellationToken cancellationToken = new CancellationToken())
 #endif
         {
@@ -106,10 +106,10 @@ namespace ShardingCore.Sharding.Enumerators
                 currentValues.Add(current);
                 var first = _queue.Poll();
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
                 if (await first.MoveNextAsync())
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
                 if (await first.MoveNext(cancellationToken))
 #endif
                 {
@@ -240,7 +240,7 @@ namespace ShardingCore.Sharding.Enumerators
             return CurrentValue;
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async ValueTask DisposeAsync()
         {

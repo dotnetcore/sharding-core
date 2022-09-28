@@ -37,17 +37,17 @@ namespace ShardingCore.Sharding.Enumerators
             _orderValues = HasElement() ? GetCurrentOrderValues() : new List<IComparable>(0);
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public async ValueTask<bool> MoveNextAsync()
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
 #endif
         {
-#if !EFCORE2
+#if !NETCOREAPP2_0
             var has = await _enumerator.MoveNextAsync();
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
             var has = await _enumerator.MoveNext(cancellationToken);
 #endif
             SetOrderValues();
@@ -134,7 +134,7 @@ namespace ShardingCore.Sharding.Enumerators
         {
             return _orderValues ?? new List<IComparable>(0);
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public  ValueTask DisposeAsync()
         {
             return _enumerator.DisposeAsync();

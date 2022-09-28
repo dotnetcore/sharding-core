@@ -16,7 +16,7 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeEngines;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.InMemoryMerge;
-#if EFCORE2
+#if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

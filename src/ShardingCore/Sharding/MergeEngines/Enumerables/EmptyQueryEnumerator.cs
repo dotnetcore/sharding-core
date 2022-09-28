@@ -9,7 +9,7 @@ namespace ShardingCore.Sharding.MergeEngines.Enumerables
     {
 
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public ValueTask DisposeAsync()
         {
             return new ValueTask();
@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.MergeEngines.Enumerables
         }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
         public Task<bool> MoveNext(CancellationToken cancellationToken)
         {
             return Task.FromResult(false);

@@ -25,14 +25,14 @@ namespace ShardingCore.Helpers
             if (obj.GetType() != this.GetType()) return false;
             return Equals((MigrationReplaceItem)obj);
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public override int GetHashCode()
         {
             return HashCode.Combine(SourceName, TargetName);
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
 
         public override int GetHashCode()
         {

@@ -12,10 +12,10 @@ namespace ShardingCore.EFCores
     * @Date: Saturday, 14 August 2021 10:17:43
     * @Email: 326308290@qq.com
     */
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
-#if EFCORE5 || EFCORE6
+#if NET5_0 || NET6_0
     public class ShardingDbSetSource : IDbSetSource
     {
 
@@ -55,7 +55,7 @@ namespace ShardingCore.EFCores
             => (c, name) => new ShardingInternalDbSet<TEntity>(c, name);
     }
 #endif
-#if EFCORE3
+#if NETCOREAPP3_0
     public class ShardingDbSetSource:IDbSetSource
     {
         
@@ -87,7 +87,7 @@ namespace ShardingCore.EFCores
 }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
 
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
