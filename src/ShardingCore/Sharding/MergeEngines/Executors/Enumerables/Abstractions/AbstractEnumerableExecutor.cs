@@ -29,73 +29,10 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerables.Abstractions
         {
         }
 
-        // protected abstract IStreamMergeCombine GetStreamMergeCombine();
-
         public override ICircuitBreaker CreateCircuitBreaker()
         {
             return new EnumerableCircuitBreaker(GetStreamMergeContext());
         }
-
-        // protected override void MergeParallelExecuteResult(
-        //     LinkedList<IStreamMergeAsyncEnumerator<TResult>> previewResults,
-        //     IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelResults, bool async)
-        // {
-        //     var previewResultsCount = previewResults.Count;
-        //     if (previewResultsCount > 1)
-        //     {
-        //         throw new ShardingCoreInvalidOperationException(
-        //             $"{typeof(TResult)} {nameof(previewResults)} has more than one element in container");
-        //     }
-        //
-        //     var parallelCount = parallelResults.Count();
-        //     if (parallelCount == 0)
-        //         return;
-        //     //聚合
-        //     if (previewResults is LinkedList<IStreamMergeAsyncEnumerator<TResult>>
-        //             previewInMemoryStreamEnumeratorResults &&
-        //         parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TResult>> parallelStreamEnumeratorResults)
-        //     {
-        //         var mergeAsyncEnumerators = new LinkedList<IStreamMergeAsyncEnumerator<TResult>>();
-        //         if (previewResultsCount == 1)
-        //         {
-        //             mergeAsyncEnumerators.AddLast(previewInMemoryStreamEnumeratorResults.First());
-        //         }
-        //
-        //         foreach (var parallelStreamEnumeratorResult in parallelStreamEnumeratorResults)
-        //         {
-        //             mergeAsyncEnumerators.AddLast(parallelStreamEnumeratorResult);
-        //         }
-        //
-        //         var combineStreamMergeAsyncEnumerator =
-        //             CombineInMemoryStreamMergeAsyncEnumerator(mergeAsyncEnumerators.ToArray());
-        //         // var streamMergeContext = GetStreamMergeContext();
-        //         // IStreamMergeAsyncEnumerator<TResult> inMemoryStreamMergeAsyncEnumerator =streamMergeContext.HasGroupQuery()&&streamMergeContext.GroupQueryMemoryMerge()?
-        //         //     new InMemoryGroupByOrderStreamMergeAsyncEnumerator<TResult>(streamMergeContext,combineStreamMergeAsyncEnumerator,async):
-        //         //     new InMemoryStreamMergeAsyncEnumerator<TResult>(combineStreamMergeAsyncEnumerator, async);
-        //        var inMemoryStreamMergeAsyncEnumerator= new InMemoryStreamMergeAsyncEnumerator<TResult>(combineStreamMergeAsyncEnumerator, async);
-        //         previewInMemoryStreamEnumeratorResults.Clear();
-        //         previewInMemoryStreamEnumeratorResults.AddLast(inMemoryStreamMergeAsyncEnumerator);
-        //         //合并
-        //         return;
-        //     }
-        //
-        //     throw new ShardingCoreInvalidOperationException(
-        //         $"{typeof(TResult)} is not {typeof(IStreamMergeAsyncEnumerator<TResult>)}");
-        // }
-
-        // /// <summary>
-        // /// 合并成一个迭代器
-        // /// </summary>
-        // /// <param name="streamsAsyncEnumerators"></param>
-        // /// <returns></returns>
-        // public abstract IStreamMergeAsyncEnumerator<TResult> CombineStreamMergeAsyncEnumerator(
-        //     IStreamMergeAsyncEnumerator<TResult>[] streamsAsyncEnumerators);
-        //
-        // public virtual IStreamMergeAsyncEnumerator<TResult> CombineInMemoryStreamMergeAsyncEnumerator(
-        //     IStreamMergeAsyncEnumerator<TResult>[] streamsAsyncEnumerators)
-        // {
-        //     return CombineStreamMergeAsyncEnumerator(streamsAsyncEnumerators);
-        // }
 
         /// <summary>
         /// 开启异步线程获取并发迭代器

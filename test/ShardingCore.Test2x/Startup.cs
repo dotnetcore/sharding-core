@@ -24,11 +24,6 @@ namespace ShardingCore.Test2x
     */
     public class Startup
     {
-        public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
-        {
-            builder.AddFilter((category, level) => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information).AddConsole();
-        });
-
         // 支持的形式：
         // ConfigureServices(IServiceCollection services)
         // ConfigureServices(IServiceCollection services, HostBuilderContext hostBuilderContext)
@@ -60,11 +55,11 @@ namespace ShardingCore.Test2x
                     op.ThrowIfQueryRouteNotMatch = false;
                     op.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(conStr);
                     });
                     op.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(connection);
                     });
 
                     op.AddDefaultDataSource("A",
