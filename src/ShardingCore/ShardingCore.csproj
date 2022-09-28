@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>netcoreapp2;netcoreapp3;net5;net6</TargetFrameworks>
-        <Version>$(NET6_0)</Version>
+        <Version>$(EFCORE)</Version>
 	    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;</DefineConstants>
         <LangVersion>latest</LangVersion>
