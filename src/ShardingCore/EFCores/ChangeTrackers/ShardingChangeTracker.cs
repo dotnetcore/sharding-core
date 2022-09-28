@@ -26,9 +26,9 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override bool HasChanges()
         {
-            if (_dbContext is ICurrentDbContextDiscover currentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return currentDbContextDiscover.GetCurrentDbContexts().Any(o =>
+                return shardingDbContext.GetCurrentDbContexts().Any(o =>
                     o.Value.GetCurrentContexts().Any(r => r.Value.ChangeTracker.HasChanges()));
             }
 
@@ -37,9 +37,9 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override IEnumerable<EntityEntry> Entries()
         {
-            if (_dbContext is ICurrentDbContextDiscover currentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return currentDbContextDiscover.GetCurrentDbContexts().SelectMany(o =>
+                return shardingDbContext.GetCurrentDbContexts().SelectMany(o =>
                     o.Value.GetCurrentContexts().SelectMany(cd => cd.Value.ChangeTracker.Entries()));
             }
 
@@ -48,9 +48,9 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override IEnumerable<EntityEntry<TEntity>> Entries<TEntity>()
         {
-            if (_dbContext is ICurrentDbContextDiscover currentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return currentDbContextDiscover.GetCurrentDbContexts().SelectMany(o =>
+                return shardingDbContext.GetCurrentDbContexts().SelectMany(o =>
                     o.Value.GetCurrentContexts().SelectMany(cd => cd.Value.ChangeTracker.Entries<TEntity>()));
             }
 
@@ -59,7 +59,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override void DetectChanges()
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext)
             {
                 Do(c => c.DetectChanges());
                 return;
@@ -69,7 +69,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override void AcceptAllChanges()
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext)
             {
                 Do(c => c.AcceptAllChanges());
                 return;
@@ -79,7 +79,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         private void Do(Action<ChangeTracker> action)
         {
-            var dataSourceDbContexts = ((ICurrentDbContextDiscover)_dbContext).GetCurrentDbContexts();
+            var dataSourceDbContexts = ((IShardingDbContext)_dbContext).GetCurrentDbContexts();
             foreach (var dataSourceDbContext in dataSourceDbContexts)
             {
                 var currentContexts = dataSourceDbContext.Value.GetCurrentContexts();
@@ -113,7 +113,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         public override void CascadeChanges()
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext)
             {
                 Do(c => c.CascadeChanges());
                 return;
@@ -125,7 +125,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 #if !NETCOREAPP2_0 && !NETCOREAPP3_0
         public override void Clear()
         {
-            if (_dbContext is ICurrentDbContextDiscover)
+            if (_dbContext is IShardingDbContext)
             {
                 Do(c => c.Clear());
                 return;

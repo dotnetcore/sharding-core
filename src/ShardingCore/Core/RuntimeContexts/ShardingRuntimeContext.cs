@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
@@ -72,8 +73,14 @@ namespace ShardingCore.Core.RuntimeContexts
         {
             GetRequiredService<IShardingBootstrapper>().AutoShardingCreate();
         }
+        private IDbContextTypeAware _dbContextTypeAware;
+        public IDbContextTypeAware GetDbContextTypeAware()
+        {
+            return _dbContextTypeAware??=GetRequiredService<IDbContextTypeAware>();
+        }
 
         private IShardingProvider _shardingProvider;
+
 
         public IShardingProvider GetShardingProvider()
         {
@@ -314,6 +321,7 @@ namespace ShardingCore.Core.RuntimeContexts
 
         private void InitFieldValue()
         {
+            GetDbContextTypeAware();
             GetShardingProvider();
             GetShardingConfigOptions();
             GetShardingRouteConfigOptions();

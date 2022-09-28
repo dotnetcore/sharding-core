@@ -131,7 +131,7 @@ namespace Sample.MySql
                     {
                         b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                     });
-                }).ReplaceService<ITableEnsureManager, MySqlTableEnsureManager>()
+                })
                 .AddShardingCore();
             // services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension
             //     .UseMutliDefaultSharding<DefaultShardingDbContext>);
