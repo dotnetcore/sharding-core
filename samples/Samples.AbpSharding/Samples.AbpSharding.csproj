@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-<PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="6.6.2" />
-    <PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="4.4.4" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="6.6.2" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="4.4.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\test\ShardingCore.Test5x\ShardingCore.Test5x.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\test\ShardingCore.Test\ShardingCore.Test.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -20,6 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src5x\ShardingCore.5x\ShardingCore.5x.csproj" />
+		<ProjectReference Include="..\..\src\ShardingCore\ShardingCore.csproj" />
 	</ItemGroup>
 </Project>

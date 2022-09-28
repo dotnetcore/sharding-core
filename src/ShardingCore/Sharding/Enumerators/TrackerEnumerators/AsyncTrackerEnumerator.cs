@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
     internal class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
     {
@@ -60,7 +60,7 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerators
     }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
 
     public class AsyncTrackerEnumerator<T> : IAsyncEnumerator<T>
     {

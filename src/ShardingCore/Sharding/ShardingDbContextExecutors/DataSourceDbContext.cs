@@ -377,7 +377,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                     throw;
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -421,7 +421,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 dataSourceDbContext.Value.Dispose();
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public async ValueTask DisposeAsync()
         {
             foreach (var dataSourceDbContext in _dataSourceDbContexts)

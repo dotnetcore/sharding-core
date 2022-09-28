@@ -20,27 +20,27 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
     public class ShardingRelationalTransaction : RelationalTransaction
     {
         private readonly IShardingDbContext _shardingDbContext;
-#if EFCORE6
+#if NET6_0
         public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned, ISqlGenerationHelper sqlGenerationHelper) : base(connection, transaction, transactionId, logger, transactionOwned, sqlGenerationHelper)
         {
             _shardingDbContext = shardingDbContext ?? throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
-#if EFCORE3 || EFCORE5
+#if NETCOREAPP3_0 || NET5_0
         public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
         {
             _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
         {
             _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
@@ -71,7 +71,7 @@ namespace ShardingCore.EFCores
             _shardingDbContext.NotifyShardingTransaction();
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
         
         public override async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {

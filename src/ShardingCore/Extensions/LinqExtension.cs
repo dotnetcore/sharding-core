@@ -16,7 +16,7 @@ namespace ShardingCore.Extensions
 
         //public static void ForEach<T>(this IEnumerable<T> source)
 
-#if !EFCORE5
+#if !NET5_0
         public static HashSet<TSource> ToHashSet<TSource>(
             this IEnumerable<TSource> source,
             IEqualityComparer<TSource> comparer = null)

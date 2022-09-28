@@ -20,7 +20,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
             _dbContext = context;
         }
 
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
 
@@ -100,7 +100,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
             }
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public override void TrackGraph<TState>(object rootEntity, TState state, Func<EntityEntryGraphNode<TState>, bool> callback) where TState : default
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
@@ -122,7 +122,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         }
 
 #endif
-#if !EFCORE2 && !EFCORE3
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0
         public override void Clear()
         {
             if (_dbContext is ICurrentDbContextDiscover)
@@ -134,7 +134,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
         public override void TrackGraph<TState>(object rootEntity, TState state, Func<EntityEntryGraphNode, TState, bool> callback)
         {
             if (_dbContext is IShardingDbContext shardingDbContext)

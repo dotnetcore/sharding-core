@@ -1,4 +1,4 @@
-﻿#if EFCORE3
+﻿#if NETCOREAPP3_0
 using System;
 using System.Collections.Generic;
 using System.Linq;

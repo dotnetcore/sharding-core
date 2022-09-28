@@ -1,4 +1,4 @@
-#if EFCORE3
+#if NETCOREAPP3_0
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 

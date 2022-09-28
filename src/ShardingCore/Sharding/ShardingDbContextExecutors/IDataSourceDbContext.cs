@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// 同数据源下的dbcontext管理者
     /// </summary>
     public interface IDataSourceDbContext : IDisposable
-#if !EFCORE2
+#if !NETCOREAPP2_0
         , IAsyncDisposable
 #endif
     {
@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         void Rollback();
         void Commit(int dataSourceCount);
-#if !EFCORE2
+#if !NETCOREAPP2_0
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
         Task CommitAsync(int dataSourceCount,CancellationToken cancellationToken = new CancellationToken());
 #endif

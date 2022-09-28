@@ -1,4 +1,4 @@
-﻿#if EFCORE5
+﻿#if NET5_0
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

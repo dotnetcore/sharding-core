@@ -18,10 +18,10 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
-#if EFCORE6
+#if NET6_0
 
     public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
     {
@@ -38,7 +38,7 @@ namespace ShardingCore.EFCores
         }
     }
 #endif
-#if EFCORE3 || EFCORE5
+#if NETCOREAPP3_0 || NET5_0
 
     public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
     {
@@ -55,7 +55,7 @@ namespace ShardingCore.EFCores
         }
     }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
 
     public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
     {

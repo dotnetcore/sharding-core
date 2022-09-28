@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
     /// Author: xjm
     /// Created: 2022/5/1 21:43:12
     /// Email: 326308290@qq.com
-#if !EFCORE2 && !EFCORE3 && !EFCORE5 && !EFCORE6
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
     error
 #endif
     internal class ShardingQueryPrepareVisitor : ExpressionVisitor
@@ -57,7 +57,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
                 shardingQueryableAsSequenceOptions,
                 shardingEntities, isNoTracking, isIgnoreFilter);
         }
-#if EFCORE2 || EFCORE3
+#if NETCOREAPP2_0 || NETCOREAPP3_0
         protected override Expression VisitConstant(ConstantExpression node)
         {
             if (node.Value is IQueryable queryable)
@@ -68,7 +68,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             return base.VisitConstant(node);
         }
 #endif
-#if EFCORE5 || EFCORE6
+#if NET5_0 || NET6_0
         protected override Expression VisitExtension(Expression node)
         {
             if (node is QueryRootExpression queryRootExpression)

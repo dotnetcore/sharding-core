@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-#if EFCORE2
+#if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

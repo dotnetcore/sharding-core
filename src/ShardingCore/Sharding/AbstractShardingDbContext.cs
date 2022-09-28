@@ -102,7 +102,7 @@ namespace ShardingCore.Sharding
 
 
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -118,7 +118,7 @@ namespace ShardingCore.Sharding
             return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
         }
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public override Task<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
         {
             if (IsExecutor)
@@ -430,10 +430,10 @@ namespace ShardingCore.Sharding
                 using (var tran = await Database.BeginTransactionAsync(cancellationToken))
                 {
                     i = await ShardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-#if EFCORE2
-                     tran.Commit();
+#if NETCOREAPP2_0
+                    tran.Commit();
 #endif
-#if !EFCORE2
+#if !NETCOREAPP2_0
                     await tran.CommitAsync(cancellationToken);
 #endif
                 }
@@ -460,7 +460,7 @@ namespace ShardingCore.Sharding
                 base.Dispose();
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public override async ValueTask DisposeAsync()
         {

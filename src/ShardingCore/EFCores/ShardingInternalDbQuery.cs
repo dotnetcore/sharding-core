@@ -13,7 +13,7 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if EFCORE2
+#if NETCOREAPP2_0
     
     public class ShardingInternalDbQuery<TQuery> : InternalDbQuery<TQuery> where TQuery : class
     {

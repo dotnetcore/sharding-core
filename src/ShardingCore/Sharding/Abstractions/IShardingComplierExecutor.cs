@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="query"></param>
         /// <returns></returns>
         TResult Execute<TResult>(IShardingDbContext shardingDbContext, Expression query);
-#if !EFCORE2
+#if !NETCOREAPP2_0
         /// <summary>
         /// execute query async
         /// </summary>
@@ -31,7 +31,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         TResult ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query, CancellationToken cancellationToken = new CancellationToken());
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         /// <summary>
         /// execute query async
         /// </summary>

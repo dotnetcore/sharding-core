@@ -1,4 +1,4 @@
-﻿#if EFCORE2
+﻿#if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

@@ -1,4 +1,4 @@
-#if EFCORE5
+#if NET5_0
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 

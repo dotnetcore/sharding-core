@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.Abstractions
     * @Email: 326308290@qq.com
     */
     public interface IShardingDbContextExecutor : IDisposable
-#if !EFCORE2
+#if !NETCOREAPP2_0
         , IAsyncDisposable
 
 #endif
@@ -78,7 +78,7 @@ namespace ShardingCore.Sharding.Abstractions
         void Commit();
 
         IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts();
-#if !EFCORE2
+#if !NETCOREAPP2_0
         /// <summary>
         /// rollback async
         /// </summary>

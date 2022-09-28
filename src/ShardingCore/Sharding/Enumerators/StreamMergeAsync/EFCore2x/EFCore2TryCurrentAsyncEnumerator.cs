@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x
+namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync.NETCOREAPP2_0x
 {
     /*
     * @Author: xjm
@@ -14,13 +14,13 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCore2x
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-#if EFCORE2
-    internal class EFCore2TryCurrentAsyncEnumerator<T>:IAsyncEnumerator<T>
+#if NETCOREAPP2_0
+    internal class NETCOREAPP2_0TryCurrentAsyncEnumerator<T>:IAsyncEnumerator<T>
     {
         private readonly IAsyncEnumerator<T> _asyncEnumerator;
         private bool currentMoved=false;
 
-        public EFCore2TryCurrentAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
+        public NETCOREAPP2_0TryCurrentAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
         {
             _asyncEnumerator = asyncEnumerator;
         }

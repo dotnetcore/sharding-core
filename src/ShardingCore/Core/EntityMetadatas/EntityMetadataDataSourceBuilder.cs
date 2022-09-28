@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-#if EFCORE2
+#if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

@@ -20,14 +20,14 @@ namespace ShardingCore.Sharding.Enumerators.TrackerEnumerables
             _shardingDbContext = shardingDbContext;
             _asyncEnumerable = asyncEnumerable;
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             return new AsyncTrackerEnumerator<T>(_shardingDbContext,_asyncEnumerable.GetAsyncEnumerator(cancellationToken));
         }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
         public IAsyncEnumerator<T> GetEnumerator()
         {
             return new AsyncTrackerEnumerator<T>(_shardingDbContext, _asyncEnumerable.GetEnumerator());

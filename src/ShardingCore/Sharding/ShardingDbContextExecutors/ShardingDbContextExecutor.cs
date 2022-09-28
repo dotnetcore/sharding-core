@@ -217,7 +217,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 dbContextCache.Value.Dispose();
             }
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {

@@ -27,7 +27,7 @@ namespace ShardingCore.EFCores
     {
         private readonly IRelationalConnection _relationalConnection;
         private readonly IShardingDbContext _shardingDbContext;
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public ShardingRelationalTransactionManager(IRelationalConnection relationalConnection)
         {
             _relationalConnection = relationalConnection;
@@ -35,7 +35,7 @@ namespace ShardingCore.EFCores
         }
 #endif
 
-#if EFCORE2
+#if NETCOREAPP2_0
         public ShardingRelationalTransactionManager(IRelationalConnection relationalConnection)
         {
             _relationalConnection = relationalConnection;
@@ -99,7 +99,7 @@ namespace ShardingCore.EFCores
             _shardingDbContext.NotifyShardingTransaction();
             return dbContextTransaction;
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public Task ResetStateAsync(CancellationToken cancellationToken = new CancellationToken())
         {
@@ -112,7 +112,7 @@ namespace ShardingCore.EFCores
             _shardingDbContext.NotifyShardingTransaction();
             return dbContextTransaction;
         }
-#if !EFCORE3
+#if !NETCOREAPP3_0
 
         public Task CommitTransactionAsync(CancellationToken cancellationToken = new CancellationToken())
         {

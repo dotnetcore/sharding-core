@@ -45,10 +45,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
 
             _currentEnumerator = _queue.IsEmpty() ? _enumerators.FirstOrDefault() : _queue.Peek();
         }
-#if !EFCORE2
+#if !NETCOREAPP2_0
         public async ValueTask<bool> MoveNextAsync()
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
         public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
 #endif
         {
@@ -61,11 +61,11 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             }
 
             var first = _queue.Poll();
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
             if (await first.MoveNextAsync())
 #endif
-#if EFCORE2
+#if NETCOREAPP2_0
 
             if (await first.MoveNext(cancellationToken))
 #endif
@@ -128,7 +128,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             return _currentEnumerator.GetCurrent();
         }
 
-#if !EFCORE2
+#if !NETCOREAPP2_0
 
         public async ValueTask DisposeAsync()
         {
