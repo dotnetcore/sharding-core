@@ -230,7 +230,7 @@ namespace ShardingCore
             services.TryAddSingleton<IShardingReadWriteManager, ShardingReadWriteManager>();
             services.TryAddSingleton<IShardingComparer, CSharpLanguageShardingComparer>();
 
-            services.TryAddSingleton<ITableEnsureManager, EmptyTableEnsureManager>();
+            services.TryAddSingleton<ITableEnsureManager, GuessTableEnsureManager>();
 
             services.TryAddShardingJob();
             return services;
