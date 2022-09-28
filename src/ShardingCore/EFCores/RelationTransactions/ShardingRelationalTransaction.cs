@@ -29,21 +29,28 @@ namespace ShardingCore.EFCores
 #if NET6_0
         public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned, ISqlGenerationHelper sqlGenerationHelper) : base(connection, transaction, transactionId, logger, transactionOwned, sqlGenerationHelper)
         {
-            _shardingDbContext = shardingDbContext ?? throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContext =
+ shardingDbContext ?? throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
 #if NETCOREAPP3_0 || NET5_0
-        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction, Guid transactionId, IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, transactionId, logger, transactionOwned)
+        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection,
+            DbTransaction transaction, Guid transactionId,
+            IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection,
+            transaction, transactionId, logger, transactionOwned)
         {
-            _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContext = shardingDbContext ??
+                                 throw new ShardingCoreInvalidOperationException(
+                                     $"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
 #if NETCOREAPP2_0
         public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
         {
-            _shardingDbContext = shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContext =
+ shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
         }
 
 #endif
@@ -54,9 +61,7 @@ namespace ShardingCore.EFCores
         //        base.ClearTransaction();
         //        _supportShardingTransaction.NotifyShardingTransaction(null);
         //    }
-        //}
-
-
+        //}f
         public override void Commit()
         {
             base.Commit();
@@ -72,7 +77,6 @@ namespace ShardingCore.EFCores
         }
 
 #if !NETCOREAPP2_0
-        
         public override async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await base.RollbackAsync(cancellationToken);
@@ -88,6 +92,13 @@ namespace ShardingCore.EFCores
             await _shardingDbContext.CommitAsync(cancellationToken);
             _shardingDbContext.NotifyShardingTransaction();
         }
+// #if !NETCOREAPP3_0
+//         public override void CreateSavepoint(string name)
+//         {
+//             AAA
+//             base.CreateSavepoint(name);
+//         }
+// #endif
 #endif
     }
 }

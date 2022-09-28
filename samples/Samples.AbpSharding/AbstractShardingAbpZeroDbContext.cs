@@ -28,9 +28,7 @@ namespace Samples.AbpSharding
 {
     public abstract class AbstractShardingAbpZeroDbContext<TTenant, TRole, TUser, TSelf>
         : AbpZeroDbContext<TTenant, TRole, TUser, TSelf>,
-        IShardingDbContext,
-        ISupportShardingReadWrite,
-        IShardingTableDbContext
+        IShardingDbContext
         where TTenant : AbpTenant<TUser>
         where TRole : AbpRole<TUser>
         where TUser : AbpUser<TUser>
@@ -650,5 +648,9 @@ namespace Samples.AbpSharding
 
         #endregion
 
+        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
+        {
+            return _shardingDbContextExecutor.GetCurrentDbContexts();
+        }
     }
 }

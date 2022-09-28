@@ -22,7 +22,7 @@ using ShardingCore.Sharding;
 namespace Samples.AbpSharding
 {
 
-    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext, ISupportShardingReadWrite
+    public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext
                                 where TDbContext : DbContext
     {
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
@@ -571,5 +571,9 @@ namespace Samples.AbpSharding
             return _shardingDbContextExecutor.GetVirtualDataSource();
         }
 
+        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
+        {
+            return _shardingDbContextExecutor.GetCurrentDbContexts();
+        }
     }
 }
