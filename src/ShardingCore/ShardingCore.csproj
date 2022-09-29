@@ -1,96 +1,96 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp2;netcoreapp3;net5;net6</TargetFrameworks>
+        <TargetFrameworks>netcoreapp2;netcoreapp3;netstandard2.0;netstandard2.1;net5;net6</TargetFrameworks>
         <Version>$(SHARDINGCORE)</Version>
-	    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;</DefineConstants>
         <LangVersion>latest</LangVersion>
-	    <RepositoryUrl>https://github.com/dotnetcore/sharding-core</RepositoryUrl>
-	    <PackageIcon>logo.png</PackageIcon>
+        <RepositoryUrl>https://github.com/dotnetcore/sharding-core</RepositoryUrl>
+        <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and '$(TargetFramework)' == 'netcoreapp2'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<DocumentationFile>bin\Release\ShardingCore.2x.xml</DocumentationFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.2x.xml</DocumentationFile>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and '$(TargetFramework)' == 'netcoreapp3'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<DocumentationFile>bin\Release\ShardingCore.3x.xml</DocumentationFile>
-		<LangVersion>latest</LangVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and '$(TargetFramework)' == 'net5'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<DocumentationFile>bin\Release\ShardingCore.5x.xml</DocumentationFile>
-		<LangVersion>latest</LangVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and '$(TargetFramework)' == 'net6'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<DocumentationFile>bin\Release\ShardingCore.6x.xml</DocumentationFile>
-		<LangVersion>latest</LangVersion>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <LangVersion>latest</LangVersion>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and ('$(TargetFramework)' == 'netcoreapp3' or '$(TargetFramework)' == 'netstandard2.0')">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.3x.xml</DocumentationFile>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6|AnyCPU'">
-	  <NoWarn>1701;1702;1591;</NoWarn>
-	</PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and ('$(TargetFramework)' == 'net5'  or '$(TargetFramework)' == 'netstandard2.1')">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.5x.xml</DocumentationFile>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'  and '$(TargetFramework)' == 'net6'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore.6x.xml</DocumentationFile>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6|AnyCPU'">
+        <NoWarn>1701;1702;1591;</NoWarn>
+    </PropertyGroup>
     <ItemGroup>
-      <Compile Remove="Core\VirtualRoutes\RouteConditions\**" />
-      <Compile Remove="Sharding\Abstractions\MergeParseContexts\**" />
-      <EmbeddedResource Remove="Core\VirtualRoutes\RouteConditions\**" />
-      <EmbeddedResource Remove="Sharding\Abstractions\MergeParseContexts\**" />
-      <None Remove="Core\VirtualRoutes\RouteConditions\**" />
-      <None Remove="Sharding\Abstractions\MergeParseContexts\**" />
+        <Compile Remove="Core\VirtualRoutes\RouteConditions\**"/>
+        <Compile Remove="Sharding\Abstractions\MergeParseContexts\**"/>
+        <EmbeddedResource Remove="Core\VirtualRoutes\RouteConditions\**"/>
+        <EmbeddedResource Remove="Sharding\Abstractions\MergeParseContexts\**"/>
+        <None Remove="Core\VirtualRoutes\RouteConditions\**"/>
+        <None Remove="Sharding\Abstractions\MergeParseContexts\**"/>
     </ItemGroup>
     <ItemGroup>
-      <None Include="..\..\Logo\logo.png">
-        <Pack>True</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
+        <None Include="..\..\Logo\logo.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
     </ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.*" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.*" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net5'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.*" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.*" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.*"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3'  or '$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.*"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net5'  or '$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.*"/>
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*"/>
+    </ItemGroup>
     <ItemGroup>
-      <Folder Include="Sharding\Visitors\GroupBys" />
+        <Folder Include="Sharding\Visitors\GroupBys"/>
     </ItemGroup>
 </Project>

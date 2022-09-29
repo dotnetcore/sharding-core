@@ -17,10 +17,10 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
     * @Date: Saturday, 20 February 2021 11:14:35
     * @Email: 326308290@qq.com
     */
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0
     /// <summary>
     /// 获取分表类型
     /// </summary>
@@ -117,7 +117,7 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
     }
 #endif
 
-#if NET5_0 || NET6_0
+#if NET5_0 || NETSTANDARD2_1 || NET6_0
     /// <summary>
     /// 获取分表类型
     /// </summary>

@@ -20,7 +20,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
             _dbContext = context;
         }
 
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
 
@@ -122,7 +122,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         }
 
 #endif
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0
+#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_0
         public override void Clear()
         {
             if (_dbContext is IShardingDbContext)

@@ -12,10 +12,10 @@ namespace ShardingCore.EFCores
     * @Date: Saturday, 14 August 2021 10:17:43
     * @Email: 326308290@qq.com
     */
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
-#if NET5_0 || NET6_0
+#if NET5_0 || NETSTANDARD2_1 || NET6_0
     public class ShardingDbSetSource : IDbSetSource
     {
 
@@ -55,7 +55,7 @@ namespace ShardingCore.EFCores
             => (c, name) => new ShardingInternalDbSet<TEntity>(c, name);
     }
 #endif
-#if NETCOREAPP3_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0
     public class ShardingDbSetSource:IDbSetSource
     {
         

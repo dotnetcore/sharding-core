@@ -32,14 +32,14 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextRelationModelThatIsShardingTable(this DbContext dbContext)
         {
-#if !NETCOREAPP2_0&&!NETCOREAPP3_0&&!NET5_0&&!NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
             throw new NotImplementedException();
 #endif
 #if NET6_0
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0 || NET5_0
+#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0 || NET5_0 || NETSTANDARD2_1
 
             var contextModel = dbContext.Model as Model;
 #endif
@@ -55,7 +55,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
  contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
@@ -64,7 +64,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)).Select(o=>o.Key).ToList();
@@ -109,14 +109,14 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextAllRelationModelWithoutShardingDataSourceOnly(this DbContext dbContext)
         {
-#if !NETCOREAPP2_0&&!NETCOREAPP3_0&&!NET5_0&&!NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
             throw new NotImplementedException();
 #endif
 #if NET6_0
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0 || NET5_0
+#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0 || NET5_0 || NETSTANDARD2_1
 
             var contextModel = dbContext.Model as Model;
 #endif
@@ -132,7 +132,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
  contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => !entityMetadataManager.IsShardingDataSource(m.EntityType.ClrType)||entityMetadataManager.TryGet(m.EntityType.ClrType)==null)).Select(o => o.Key).ToList();
@@ -141,7 +141,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             var list = entityTypes.Where(o => !entityMetadataManager.IsShardingDataSource(o.Value.ClrType) || entityMetadataManager.TryGet(o.Value.ClrType) == null).Select(o => o.Key).ToList();
@@ -157,14 +157,14 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveDbContextAllRelationModel(this DbContext dbContext)
         {
-#if !NETCOREAPP2_0&&!NETCOREAPP3_0&&!NET5_0&&!NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
             throw new NotImplementedException();
 #endif
 #if NET6_0
 
             var contextModel = dbContext.GetService<IDesignTimeModel>().Model; ;
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0 || NET5_0
+#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0 || NET5_0 || NETSTANDARD2_1
 
             var contextModel = dbContext.Model as Model;
 #endif
@@ -173,11 +173,11 @@ namespace ShardingCore.Extensions
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
             contextModelRelationalModel.Tables.Clear();
 #endif
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             contextModelRelationalModel.Tables.Clear();
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             entityTypes.Clear();
@@ -192,10 +192,10 @@ namespace ShardingCore.Extensions
         public static void RemoveDbContextRelationModelSaveOnlyThatIsNamedType(this DbContext dbContext,
             Type shardingType)
         {
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
             1
 #endif
-#if NETCOREAPP2_0 ||NETCOREAPP3_0 ||NET5_0
+#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0 ||NET5_0 || NETSTANDARD2_1
 
             var contextModel = dbContext.Model as Model;
 #endif
@@ -220,7 +220,7 @@ namespace ShardingCore.Extensions
             }
 #endif
 
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             
             var entityTypes = contextModel.GetEntityTypes();
@@ -239,7 +239,7 @@ namespace ShardingCore.Extensions
                 contextModelRelationalModel.Tables.Remove(valueTuples[i]);
             }
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             
@@ -270,7 +270,7 @@ namespace ShardingCore.Extensions
         /// <param name="dbContext"></param>
         public static void RemoveModelCache(this DbContext dbContext)
         {
-#if !NETCOREAPP2_0&&!NETCOREAPP3_0&&!NET5_0&&!NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
             throw new NotImplementedException();
 #endif
 #if NET6_0
@@ -281,13 +281,13 @@ namespace ShardingCore.Extensions
             object key2 = modelCacheKeyFactory.Create(dbContext,false);
             shardingModelSource.Remove(key2);
 #endif
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
             var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
             object key1 = modelCacheKeyFactory.Create(dbContext);
             shardingModelSource.Remove(key1);
 #endif
-#if NETCOREAPP3_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0
            
             var shardingModelSource = dbContext.GetService<IModelSource>()  as IShardingModelSource;
             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();

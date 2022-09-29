@@ -15,7 +15,7 @@ namespace ShardingCore.EFCores.OptionsExtensions
     * @Email: 326308290@qq.com
     */
 
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
 #if NET6_0
@@ -55,7 +55,7 @@ namespace ShardingCore.EFCores.OptionsExtensions
         }
     }
 #endif
-#if NETCOREAPP3_0 || NET5_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET5_0 || NETSTANDARD2_1
 
      public class ShardingWrapOptionsExtension: IDbContextOptionsExtension
     {

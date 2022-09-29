@@ -35,7 +35,7 @@ namespace ShardingCore.EFCores
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
 
@@ -46,14 +46,14 @@ namespace ShardingCore.EFCores
 
         }
 #endif
-#if NET5_0
+#if NET5_0 || NETSTANDARD2_1
         public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext, IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IConventionSetBuilder conventionSetBuilder, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, conventionSetBuilder, logger, commandLogger, databaseProvider)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
         }
 #endif
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0
         public ShardingMigrator(IShardingRuntimeContext shardingRuntimeContext, IMigrationsAssembly migrationsAssembly, IHistoryRepository historyRepository, IDatabaseCreator databaseCreator, IMigrationsSqlGenerator migrationsSqlGenerator, IRawSqlCommandBuilder rawSqlCommandBuilder, IMigrationCommandExecutor migrationCommandExecutor, IRelationalConnection connection, ISqlGenerationHelper sqlGenerationHelper, ICurrentDbContext currentContext, IDiagnosticsLogger<DbLoggerCategory.Migrations> logger, IDiagnosticsLogger<DbLoggerCategory.Database.Command> commandLogger, IDatabaseProvider databaseProvider) : base(migrationsAssembly, historyRepository, databaseCreator, migrationsSqlGenerator, rawSqlCommandBuilder, migrationCommandExecutor, connection, sqlGenerationHelper, currentContext, logger, commandLogger, databaseProvider)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
@@ -81,7 +81,7 @@ namespace ShardingCore.EFCores
            await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,cancellationToken);
 
         }
-#if NET6_0 || NET5_0
+#if NET6_0 || NET5_0 || NETSTANDARD2_1
 
         public override string GenerateScript(string fromMigration = null, string toMigration = null,
             MigrationsSqlGenerationOptions options = MigrationsSqlGenerationOptions.Default)
@@ -89,7 +89,7 @@ namespace ShardingCore.EFCores
           return new ScriptMigrationGenerator(_shardingRuntimeContext, fromMigration, toMigration, options).GenerateScript();
         }
 #endif
-#if NETCOREAPP3_0 || NETCOREAPP2_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NETCOREAPP2_0
         public override string GenerateScript(string fromMigration = null, string toMigration = null, bool idempotent = false)
         {
             return new ScriptMigrationGenerator(_shardingRuntimeContext, fromMigration, toMigration, idempotent).GenerateScript();

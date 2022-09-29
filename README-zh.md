@@ -44,9 +44,9 @@ Release  | EF Core | .NET  | .NET (Core)
 
 Release  | .NET (Core) 
 --- |  --- 
-[6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  6.0
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp3
+[6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  net6
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  net5 or netstandard2.1
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp3 or netstandard2.0
 [2.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp2
 
 

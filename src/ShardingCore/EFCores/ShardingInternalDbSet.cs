@@ -26,7 +26,7 @@ namespace ShardingCore.EFCores
     * @Email: 326308290@qq.com
     */
 
-#if !NETCOREAPP2_0 && !NETCOREAPP3_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NETSTANDARD2_1 && !NET5_0 && !NET6_0
     error
 #endif
     public class ShardingInternalDbSet<TEntity> : InternalDbSet<TEntity>
@@ -36,7 +36,7 @@ namespace ShardingCore.EFCores
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private LocalView<TEntity>? _localView;
 
-#if NET5_0 || NET6_0
+#if NET5_0 || NETSTANDARD2_1 || NET6_0
 
         public ShardingInternalDbSet(DbContext context, string entityTypeName) : base(context, entityTypeName)
         {
@@ -44,7 +44,7 @@ namespace ShardingCore.EFCores
             _shardingRuntimeContext = context.GetShardingRuntimeContext();
         }
 #endif
-#if NETCOREAPP2_0 || NETCOREAPP3_0
+#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0
         public ShardingInternalDbSet(DbContext context) : base(context)
         {
             _context = (IShardingDbContext)context;

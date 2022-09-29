@@ -112,7 +112,7 @@ namespace ShardingCore.EFCores
             _shardingDbContext.NotifyShardingTransaction();
             return dbContextTransaction;
         }
-#if !NETCOREAPP3_0
+#if !NETCOREAPP3_0 && !NETSTANDARD2_0
 
         public Task CommitTransactionAsync(CancellationToken cancellationToken = new CancellationToken())
         {
