@@ -22,6 +22,23 @@ namespace Sample.MySql.Controllers
         public string name { get; set; }
         public int count { get; set; }
     }
+
+    public class ABC
+    {
+        private readonly DefaultShardingDbContext _defaultTableDbContext;
+
+        public ABC(DefaultShardingDbContext defaultTableDbContext)
+        {
+            _defaultTableDbContext = defaultTableDbContext;
+        }
+
+        public IQueryable<SysTest> GetAll()
+        {
+            return _defaultTableDbContext.Set<SysTest>();
+        }
+
+        public virtual IQueryable<SysTest> Select => this.GetAll();
+    }
     [ApiController]
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -29,11 +46,13 @@ namespace Sample.MySql.Controllers
 
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
+        private readonly ABC _abc;
 
         public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
             _defaultTableDbContext = defaultTableDbContext;
             _shardingRuntimeContext = shardingRuntimeContext;
+            _abc=new ABC(_defaultTableDbContext);
         }
 
         public IQueryable<SysTest> GetAll()
@@ -86,7 +105,12 @@ namespace Sample.MySql.Controllers
             // var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
             var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
+                .Select(o => new ssss(){ Id = o.Id, C = _abc.Select.Count(x => x.Id == o.Id) }).ToList();
+            var sysUserMods2 = _defaultTableDbContext.Set<SysTest>()
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();
+            var sysTests = GetAll();
+            var sysUserMods3 = _defaultTableDbContext.Set<SysTest>()
+                .Select(o => new ssss(){ Id = o.Id, C = sysTests.Count(x => x.Id == o.Id) }).ToList();
             var resultX = await _defaultTableDbContext.Set<SysUserMod>()
                     .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
                 var resultY = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync(o => o.Id == "2" || o.Id == "3");

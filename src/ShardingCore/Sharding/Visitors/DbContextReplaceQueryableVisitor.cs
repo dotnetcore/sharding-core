@@ -18,7 +18,7 @@ namespace ShardingCore.Core.Internal.Visitors
     * @Email: 326308290@qq.com
     */
 
-    internal class DbContextInnerMemberReferenceReplaceQueryableVisitor : ExpressionVisitor
+    internal class DbContextInnerMemberReferenceReplaceQueryableVisitor : ShardingExpressionVisitor
     {
         private readonly DbContext _dbContext;
         protected bool RootIsVisit = false;
@@ -28,50 +28,29 @@ namespace ShardingCore.Core.Internal.Visitors
             _dbContext = dbContext;
         }
 
+        // public override Expression Visit(Expression node)
+        // {
+        //     Console.WriteLine("1");
+        //     return base.Visit(node);
+        // }
+
         protected override Expression VisitMember
             (MemberExpression memberExpression)
         {
             // Recurse down to see if we can simplify...
-            //if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
-            //{
-            var expression = Visit(memberExpression.Expression);
-
-            // If we've ended up with a constant, and it's a property or a field,
-            // we can simplify ourselves to a constant
-            if (expression is ConstantExpression constantExpression)
+            if (memberExpression.IsMemberQueryable()) //2x,3x 路由 单元测试 分表和不分表
             {
-                object container = constantExpression.Value;
-                var member = memberExpression.Member;
-                if (member is FieldInfo fieldInfo)
+                var expressionValue = GetExpressionValue(memberExpression);
+                if (expressionValue is IQueryable queryable)
                 {
-                    object value = fieldInfo.GetValue(container);
-                    if (value is IQueryable queryable)
-                    {
-                        return ReplaceMemberExpression(queryable);
-                    }
-
-                    if (value is DbContext dbContext)
-                    {
-                        return ReplaceMemberExpression(dbContext);
-                    }
-                    //return Expression.Constant(value);
+                    return ReplaceMemberExpression(queryable);
                 }
 
-                if (member is PropertyInfo propertyInfo)
+                if (expressionValue is DbContext dbContext)
                 {
-                    object value = propertyInfo.GetValue(container, null);
-                    if (value is IQueryable queryable)
-                    {
-                        return ReplaceMemberExpression(queryable);
-                    }
-
-                    if (value is DbContext dbContext)
-                    {
-                        return ReplaceMemberExpression(dbContext);
-                    }
+                    return ReplaceMemberExpression(dbContext);
                 }
-            }
-            //}
+           }
 
             return base.VisitMember(memberExpression);
         }
