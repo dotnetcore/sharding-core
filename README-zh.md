@@ -28,12 +28,26 @@
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 ## 依赖
 
+
+###  ShardingCore 6.7.0.0之前版本
+版本号:a.b.c.d其中,`a`表示efcore版本号
+
 Release  | EF Core | .NET  | .NET (Core) 
 --- | --- | --- | --- 
 [6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  6.0.0 | net 6.0 | 6.0+ 
 [5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0.10 | Standard 2.1 | 5.0+ 
 [3.x.x.x](https://www.nuget.org/packages/ShardingCore) | 3.1.18 | Standard 2.0 | 2.0+ 
 [2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | Standard 2.0 | 2.0+ 
+### ShardingCore 6.7.0.0之后
+
+版本号:a.b.c.d其中已无相关efcore选择，使用条件编译绑定.net平台,6.7.0.0之后如果您是netcoreapp2那么直接使用efcore2，如果是netcoreapp3那么直接使用efcore3如果是net5就直接用efcore6依次类推
+
+Release  | .NET (Core) 
+--- |  --- 
+[6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  6.0
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp3
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp2
 
 
 ## 快速开始

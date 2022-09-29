@@ -1,9 +1,6 @@
 :start
 ::定义版本
-set EFCORE2=2.6.0.36
-set EFCORE3=3.6.0.36
-set EFCORE5=5.6.0.36
-set EFCORE6=6.6.0.36
+set SHARDINGCORE=6.7.0.0
 
 ::删除所有bin与obj下的文件
 @echo off

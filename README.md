@@ -29,13 +29,24 @@ high performance lightweight solution for efcore sharding table and sharding dat
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 ## Dependency
 
+### Before ShardingCore 6.7.0.0
+
 Release  | EF Core | .NET  | .NET (Core) 
 --- | --- | --- | --- 
 [6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  6.0.0 | net 6.0 | 6.0+ 
 [5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0.10 | Standard 2.1 | 5.0+ 
 [3.x.x.x](https://www.nuget.org/packages/ShardingCore) | 3.1.18 | Standard 2.0 | 2.0+ 
 [2.x.x.x](https://www.nuget.org/packages/ShardingCore) | 2.2.6 | Standard 2.0 | 2.0+ 
+### After ShardingCore 6.7.0.0
 
+Use Condition Compile With NetFramework not
+
+Release  | .NET (Core) 
+--- |  --- 
+[6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  6.0
+[5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  5.0
+[3.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp3
+[2.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp2
 
 ## Quick start
 5 steps implement sharding by month and support auto create table by month
