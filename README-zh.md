@@ -42,12 +42,12 @@ Release  | EF Core | .NET  | .NET (Core)
 
 版本号:a.b.c.d其中已无相关efcore选择，使用条件编译绑定.net平台,6.7.0.0之后如果您是netcoreapp2那么直接使用efcore2，如果是netcoreapp3那么直接使用efcore3如果是net5就直接用efcore6依次类推
 
-Release  | .NET (Core) 
---- |  --- 
-[6.x.x.x](https://www.nuget.org/packages/ShardingCore) |  net6
-[5.x.x.x](https://www.nuget.org/packages/ShardingCore) |  net5 or netstandard2.1
-[3.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp3 or netstandard2.0
-[2.x.x.x](https://www.nuget.org/packages/ShardingCore) |  netcoreapp2
+Release  | EF Core | .NET (Core)
+--- | --- |  --- 
+[6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 6.x     | net6
+[6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 5.x     | net5 or netstandard2.1
+[6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 3.x     | netcoreapp3 or netstandard2.0
+[6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 2.x     | netcoreapp2
 
 
 ## 快速开始
