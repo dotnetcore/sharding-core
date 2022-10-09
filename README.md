@@ -11,7 +11,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - zero incursion
 
 ---
-- [Gitee](https://gitee.com/dotnetchina/sharding-core) 国内镜像
+- [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
 
 - [捐赠](#捐赠)
 

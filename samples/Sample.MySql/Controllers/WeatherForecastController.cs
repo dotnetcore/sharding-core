@@ -6,6 +6,7 @@ using Sample.MySql.multi;
 using Sample.MySql.Shardings;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
 
 namespace Sample.MySql.Controllers

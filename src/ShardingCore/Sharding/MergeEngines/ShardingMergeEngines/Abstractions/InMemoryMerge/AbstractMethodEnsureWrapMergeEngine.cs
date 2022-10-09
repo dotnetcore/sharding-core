@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.I
         protected abstract IExecutor<RouteQueryResult<TResult>> CreateExecutor();
         public virtual TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException(false);
+            return MergeResultAsync().WaitAndUnwrapException();
         }
 
         public  async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

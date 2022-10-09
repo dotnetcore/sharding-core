@@ -194,6 +194,7 @@ namespace Sample.MySql
                         defaultShardingDbContext.Database.Migrate();
                 }
             }
+            app.ApplicationServices.UseAutoTryCompensateTable();
             // using (var scope = app.ApplicationServices.CreateScope())
             // {
             //     var defaultShardingDbContext = scope.ServiceProvider.GetService<OtherDbContext>();

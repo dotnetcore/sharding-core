@@ -61,12 +61,12 @@
         <NoWarn>1701;1702;1591;</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Remove="Core\VirtualRoutes\RouteConditions\**"/>
-        <Compile Remove="Sharding\Abstractions\MergeParseContexts\**"/>
-        <EmbeddedResource Remove="Core\VirtualRoutes\RouteConditions\**"/>
-        <EmbeddedResource Remove="Sharding\Abstractions\MergeParseContexts\**"/>
-        <None Remove="Core\VirtualRoutes\RouteConditions\**"/>
-        <None Remove="Sharding\Abstractions\MergeParseContexts\**"/>
+        <Compile Remove="Core\VirtualRoutes\RouteConditions\**" />
+        <Compile Remove="Sharding\Abstractions\MergeParseContexts\**" />
+        <EmbeddedResource Remove="Core\VirtualRoutes\RouteConditions\**" />
+        <EmbeddedResource Remove="Sharding\Abstractions\MergeParseContexts\**" />
+        <None Remove="Core\VirtualRoutes\RouteConditions\**" />
+        <None Remove="Sharding\Abstractions\MergeParseContexts\**" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\..\Logo\logo.png">
@@ -75,22 +75,22 @@
         </None>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.*" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3'  or '$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.*" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net5'  or '$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.*"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.*" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.*"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Sharding\Visitors\GroupBys"/>
+        <Folder Include="Sharding\Visitors\GroupBys" />
     </ItemGroup>
 </Project>

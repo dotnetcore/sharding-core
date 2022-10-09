@@ -23,7 +23,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.I
         protected abstract IExecutor<TResult> CreateExecutor();
         public virtual TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException(false);
+            return MergeResultAsync().WaitAndUnwrapException();
         }
 
         public virtual async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())

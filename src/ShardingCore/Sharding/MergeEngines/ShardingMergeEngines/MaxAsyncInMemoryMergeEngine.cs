@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
 
         public TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException(false);
+            return MergeResultAsync().WaitAndUnwrapException();
         }
 
 
