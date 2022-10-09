@@ -55,6 +55,12 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// 默认数据源链接字符串
         /// </summary>
         public string DefaultConnectionString { get; private set; }
+
+        /// <summary>
+        /// 检测分片键的自动值是否有疑义
+        /// </summary>
+
+        public bool CheckShardingKeyValueGenerated { get; set; } = true;
         /// <summary>
         /// 添加默认数据源
         /// </summary>

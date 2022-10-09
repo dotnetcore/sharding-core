@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Logging;
+using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -16,9 +19,14 @@ namespace ShardingCore.Core.EntityMetadatas
     /// </summary>
     public class DefaultEntityMetadataManager : IEntityMetadataManager
     {
+        private readonly ShardingConfigOptions _shardingConfigOptions;
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches = new();
         private readonly ConcurrentDictionary<string/*logic table name*/, List<EntityMetadata>> _logicTableCaches = new();
 
+        public DefaultEntityMetadataManager(ShardingConfigOptions shardingConfigOptions)
+        {
+            _shardingConfigOptions = shardingConfigOptions;
+        }
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
         {
             return _caches.TryAdd(entityMetadata.EntityType, entityMetadata);
@@ -104,6 +112,33 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             if (_caches.TryGetValue(efEntityType.ClrType, out var metadata))
             {
+                if (_shardingConfigOptions.CheckShardingKeyValueGenerated)
+                {
+                    if (metadata.IsMultiDataSourceMapping)
+                    {
+                        foreach (var metadataProperty in metadata.ShardingDataSourceProperties)
+                        {
+                            var propertyName = metadataProperty.Key;
+                            var property = efEntityType.GetProperty(propertyName);
+                            if (property.ValueGenerated!=ValueGenerated.Never)
+                            {
+                                throw new ShardingCoreConfigException($"sharding data source key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                            }
+                        }
+                    }
+                    if (metadata.IsMultiTableMapping)
+                    {
+                        foreach (var metadataProperty in metadata.ShardingTableProperties)
+                        {
+                            var propertyName = metadataProperty.Key;
+                            var property = efEntityType.GetProperty(propertyName);
+                            if (property.ValueGenerated!=ValueGenerated.Never)
+                            {
+                                throw new ShardingCoreConfigException($"sharding table key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                            }
+                        }
+                    }
+                }
                 metadata.SetEntityModel(efEntityType);
                 if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
                 {
