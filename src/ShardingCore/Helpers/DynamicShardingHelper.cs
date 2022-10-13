@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
@@ -53,7 +55,7 @@ namespace ShardingCore.Helpers
         }
 
         public static async Task DynamicMigrateWithDataSourcesAsync(IShardingRuntimeContext shardingRuntimeContext,
-            List<string> allDataSourceNames,int? migrationParallelCount,CancellationToken cancellationToken = new CancellationToken())
+            List<string> allDataSourceNames,int? migrationParallelCount,string targetMigration = null,CancellationToken cancellationToken = new CancellationToken())
         {
             var dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
             var shardingProvider = shardingRuntimeContext.GetShardingProvider();
@@ -74,19 +76,19 @@ namespace ShardingCore.Helpers
                     foreach (var migrationUnits in partitionMigrationUnits)
                     {
                         var migrateUnits = migrationUnits.Select(o =>new MigrateUnit(shellDbContext,o)).ToList();
-                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,migrateUnits,cancellationToken);
+                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,migrateUnits,targetMigration,cancellationToken);
                     }
 
                     //包含默认默认的单独最后一次处理
                     if (allDataSourceNames.Contains(defaultDataSourceName))
                     {
-                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,new List<MigrateUnit>(){new MigrateUnit(shellDbContext,defaultDataSourceName)},cancellationToken);
+                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,new List<MigrateUnit>(){new MigrateUnit(shellDbContext,defaultDataSourceName)},targetMigration,cancellationToken);
                     }
                 }
             }
         }
         
-        private static async Task ExecuteMigrateUnitsAsync(IShardingRuntimeContext shardingRuntimeContext,List<MigrateUnit> migrateUnits,CancellationToken cancellationToken = new CancellationToken())
+        private static async Task ExecuteMigrateUnitsAsync(IShardingRuntimeContext shardingRuntimeContext,List<MigrateUnit> migrateUnits,string targetMigration=null,CancellationToken cancellationToken = new CancellationToken())
         {
             var shardingMigrationManager = shardingRuntimeContext.GetShardingMigrationManager();
             var dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
@@ -108,7 +110,8 @@ namespace ShardingCore.Helpers
                         {
                             if (( dbContext.Database.GetPendingMigrations()).Any())
                             {
-                                dbContext.Database.Migrate();
+                                var migrator = dbContext.GetService<IMigrator>();
+                                migrator.Migrate(targetMigration);
                             }
                         }
                     

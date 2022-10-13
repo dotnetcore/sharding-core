@@ -78,7 +78,7 @@ namespace ShardingCore.EFCores
         {
             var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             var allDataSourceNames =  virtualDataSource.GetAllDataSourceNames();
-           await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,cancellationToken);
+           await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,targetMigration,cancellationToken);
 
         }
 #if NET6_0 || NET5_0 || NETSTANDARD2_1
