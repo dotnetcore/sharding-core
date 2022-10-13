@@ -15,7 +15,7 @@ namespace ShardingCore.Test2x.Domain.Maps
         public void Configure(EntityTypeBuilder<SysUserMod> builder)
         {
             builder.HasKey(o => o.Id);
-            builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
+            builder.Property(o => o.Id).ValueGeneratedNever().IsRequired().HasMaxLength(128);
             builder.Property(o => o.Name).HasMaxLength(128);
             builder.ToTable(nameof(SysUserMod));
         }
