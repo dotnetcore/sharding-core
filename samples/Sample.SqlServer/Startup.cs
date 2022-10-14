@@ -10,9 +10,14 @@ using ShardingCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
+using ShardingCore.Sharding;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 
 namespace Sample.SqlServer
@@ -53,24 +58,6 @@ namespace Sample.SqlServer
                     op.AddDefaultDataSource("A",
                       "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"
                      );
-                    op.AddReadWriteNodeSeparation(sp =>new Dictionary<string, IEnumerable<ReadNode>>()
-                    {
-                        {"A",new List<ReadNode>()
-                        {
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A2","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A3","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A4","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A5","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A6","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("A1","Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"),
-                            new ReadNode("X","Data Source=localhost;Initial Catalog=ShardingCoreDBXA123;Integrated Security=True;"),
-                        }}
-                    },ReadStrategyEnum.Loop);
                 }).AddServiceConfigure(s =>
                 {
                     s.AddSingleton<ILoggerFactory>(sp => LoggerFactory.Create(builder =>
@@ -100,7 +87,6 @@ namespace Sample.SqlServer
             //    {
             //    }).End();
 
-            services.AddHealthChecks().AddDbContextCheck<DefaultShardingDbContext>();
             //services.Replace(ServiceDescriptor.Singleton<IDbContextCreator<DefaultShardingDbContext>, ActivatorDbContextCreator<DefaultShardingDbContext>>());
             //services.AddShardingDbContext<DefaultShardingDbContext, DefaultTableDbContext>(
             //    o => o.UseSqlServer("Data Source=localhost;Initial Catalog=ShardingCoreDB;Integrated Security=True;")
@@ -131,7 +117,15 @@ namespace Sample.SqlServer
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.ApplicationServices.UseAutoShardingCreate();
+
+            using (var serviceScope = app.ApplicationServices.CreateScope())
+            {
+                var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
+              
+                var migrator = defaultShardingDbContext.GetService<IMigrator>();
+                migrator.Migrate("InitialCreate");
+            }
+                app.ApplicationServices.UseAutoShardingCreate();
             app.ApplicationServices.UseAutoTryCompensateTable();
 
             app.UseRouting();

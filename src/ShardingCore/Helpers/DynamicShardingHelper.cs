@@ -108,7 +108,7 @@ namespace ShardingCore.Helpers
                                    new ShardingDbContextOptions(dbContextOptions,
                                        routeTailFactory.Create(string.Empty, false))))
                         {
-                            if (( dbContext.Database.GetPendingMigrations()).Any())
+                            if (targetMigration!=null||( dbContext.Database.GetPendingMigrations()).Any())
                             {
                                 var migrator = dbContext.GetService<IMigrator>();
                                 migrator.Migrate(targetMigration);
