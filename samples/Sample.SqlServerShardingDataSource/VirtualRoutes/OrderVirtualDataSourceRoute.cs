@@ -49,7 +49,7 @@ namespace Sample.SqlServerShardingDataSource.VirtualRoutes
 
         public override void Configure(EntityMetadataDataSourceBuilder<Order> builder)
         {
-            builder.ShardingProperty(o => o.Id);
+            builder.ShardingProperty(o => o.Area);
         }
     }
 }
