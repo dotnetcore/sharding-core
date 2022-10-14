@@ -50,7 +50,7 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var take = _streamMergeContext.GetTake();
-            var list = await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take, cancellationToken);
+            var list = await asyncEnumeratorStreamMergeEngine.ToStreamListAsync(take, cancellationToken).ConfigureAwait(false);
             return list.Single();
 
         }

@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
 
         public TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException();
+            return MergeResultAsync().WaitAndUnwrapException(false);
         }
 
 
@@ -95,7 +95,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
             }
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
             var executor = CreateExecutor<TR>();
-            var result = await ShardingExecutor.Instance.ExecuteAsync<RouteQueryResult<TR>>(GetStreamMergeContext(), executor, true, defaultSqlRouteUnits, cancellationToken);
+            var result = await ShardingExecutor.ExecuteAsync<RouteQueryResult<TR>>(GetStreamMergeContext(), executor, true, defaultSqlRouteUnits, cancellationToken).ConfigureAwait(false);
             return result.QueryResult;
         }
         protected IExecutor<RouteQueryResult<TR>> CreateExecutor<TR>()

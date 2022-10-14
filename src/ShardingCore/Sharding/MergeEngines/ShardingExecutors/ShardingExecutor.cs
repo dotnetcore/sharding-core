@@ -13,42 +13,31 @@ using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 
 namespace ShardingCore.Sharding.MergeEngines.ShardingExecutors
 {
-    internal class ShardingExecutor
+    internal static class ShardingExecutor
     {
-        private static readonly ShardingExecutor _instance;
 
-        private ShardingExecutor()
-        {
-        }
 
-        static ShardingExecutor()
-        {
-            _instance = new ShardingExecutor();
-        }
-
-        public static ShardingExecutor Instance => _instance;
-
-        public TResult Execute<TResult>(StreamMergeContext streamMergeContext,
+        public static TResult Execute<TResult>(StreamMergeContext streamMergeContext,
             IExecutor<TResult> executor, bool async, IEnumerable<ISqlRouteUnit> sqlRouteUnits,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            return ExecuteAsync<TResult>(streamMergeContext, executor, async, sqlRouteUnits, cancellationToken)
-                .WaitAndUnwrapException();
+            return ExecuteAsync(streamMergeContext, executor,async,sqlRouteUnits,cancellationToken).WaitAndUnwrapException(false);
         }
-        public  async Task<TResult> ExecuteAsync<TResult>(StreamMergeContext streamMergeContext,
+        public static async Task<TResult> ExecuteAsync<TResult>(StreamMergeContext streamMergeContext,
             IExecutor<TResult> executor, bool async, IEnumerable<ISqlRouteUnit> sqlRouteUnits,
             CancellationToken cancellationToken = new CancellationToken())
         {
             var resultGroups =
-                Execute0<TResult>(streamMergeContext, executor, async, sqlRouteUnits, cancellationToken);
-            var results =(await TaskHelper.WhenAllFastFail(resultGroups)).SelectMany(o => o)
+                Execute0<TResult>(streamMergeContext, executor, async, sqlRouteUnits, cancellationToken).ToArray();
+            var results = (await TaskHelper.WhenAllFastFail(resultGroups).ConfigureAwait(false)).SelectMany(o => o)
                 .ToList();
             if (results.IsEmpty())
                 throw new ShardingCoreException("sharding execute result empty");
-            return executor.GetShardingMerger().StreamMerge(results);
+            var streamMerge = executor.GetShardingMerger().StreamMerge(results);
+            return streamMerge;
         }
 
-        private Task<List<TResult>>[] Execute0<TResult>(StreamMergeContext streamMergeContext,
+        private static Task<List<TResult>>[] Execute0<TResult>(StreamMergeContext streamMergeContext,
             IExecutor<TResult> executor, bool async, IEnumerable<ISqlRouteUnit> sqlRouteUnits,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -87,7 +76,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingExecutors
         /// <param name="streamMergeContext"></param>
         /// <param name="sqlRouteUnits"></param>
         /// <returns></returns>
-        private IEnumerable<ISqlRouteUnit> ReOrderTableTails(StreamMergeContext streamMergeContext,
+        private static IEnumerable<ISqlRouteUnit> ReOrderTableTails(StreamMergeContext streamMergeContext,
             IEnumerable<ISqlRouteUnit> sqlRouteUnits)
         {
             if (streamMergeContext.IsSeqQuery())
@@ -106,7 +95,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingExecutors
         /// <param name="streamMergeContext"></param>
         /// <param name="sqlGroups"></param>
         /// <returns></returns>
-        protected DataSourceSqlExecutorUnit GetSqlExecutorGroups(StreamMergeContext streamMergeContext,
+        private static DataSourceSqlExecutorUnit GetSqlExecutorGroups(StreamMergeContext streamMergeContext,
             IGrouping<string, ISqlRouteUnit> sqlGroups)
         {
             var maxQueryConnectionsLimit = streamMergeContext.GetMaxQueryConnectionsLimit();

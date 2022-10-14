@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
 
         public TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException();
+            return MergeResultAsync().WaitAndUnwrapException(false);
         }
 
         public  async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
             }
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
             var executor = CreateExecutor();
-            var result =await ShardingExecutor.Instance.ExecuteAsync(GetStreamMergeContext(),executor,true,defaultSqlRouteUnits,cancellationToken);
+            var result =await ShardingExecutor.ExecuteAsync(GetStreamMergeContext(),executor,true,defaultSqlRouteUnits,cancellationToken).ConfigureAwait(false);
             var sum = result.QueryResult.Sum;
             var count = result.QueryResult.Count;
             // var resultList = await base.ExecuteAsync<AverageResult<TSelect>>(cancellationToken);

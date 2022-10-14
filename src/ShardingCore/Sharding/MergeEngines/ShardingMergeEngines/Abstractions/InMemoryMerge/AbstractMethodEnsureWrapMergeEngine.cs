@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.I
         protected abstract IExecutor<RouteQueryResult<TResult>> CreateExecutor();
         public virtual TResult MergeResult()
         {
-            return MergeResultAsync().WaitAndUnwrapException();
+            return MergeResultAsync().WaitAndUnwrapException(false);
         }
 
         public  async Task<TResult> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -29,7 +29,8 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.I
             }
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
             var executor = CreateExecutor();
-            var result =await ShardingExecutor.Instance.ExecuteAsync<RouteQueryResult<TResult>>(GetStreamMergeContext(),executor,true,defaultSqlRouteUnits,cancellationToken);
+            var result =await ShardingExecutor.ExecuteAsync<RouteQueryResult<TResult>>(GetStreamMergeContext(),
+                executor, true, defaultSqlRouteUnits, cancellationToken).ConfigureAwait(false);
             return result.QueryResult;
         }
     }

@@ -62,7 +62,7 @@ namespace ShardingCore.Sharding.MergeEngines
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var maxVirtualElementCount = skip.GetValueOrDefault() + 1;
-            var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1,maxVirtualElementCount, cancellationToken);
+            var list = await asyncEnumeratorStreamMergeEngine.ToFixedElementStreamListAsync(1,maxVirtualElementCount, cancellationToken).ConfigureAwait(false);
             if (list.VirtualElementCount >= maxVirtualElementCount)
                 return list.FirstOrDefault();
             return default;

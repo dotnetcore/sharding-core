@@ -71,7 +71,8 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.S
            
             var defaultSqlRouteUnits = GetDefaultSqlRouteUnits();
             var executor = CreateExecutor(async);
-            return ShardingExecutor.Instance.Execute<IStreamMergeAsyncEnumerator<TEntity>>(GetStreamMergeContext(),executor,async,defaultSqlRouteUnits,cancellationToken);
+            return ShardingExecutor.Execute<IStreamMergeAsyncEnumerator<TEntity>>(GetStreamMergeContext(), executor,
+                async, defaultSqlRouteUnits, cancellationToken);
         }
 
         // public abstract IShardingExecutor GetShardingExecutor();
