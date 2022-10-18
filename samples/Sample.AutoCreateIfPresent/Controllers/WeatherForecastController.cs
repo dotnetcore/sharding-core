@@ -52,6 +52,8 @@ public class WeatherForecastController : ControllerBase
     }
     public async Task<IActionResult> Query1()
     {
+        var s = Guid.NewGuid().ToString();
+        var anyAsync = await _defaultDbContext.Set<AreaDevice>().AnyAsync(o=>o.Area==s);
         var list = await _defaultDbContext.Set<AreaDevice>().ToListAsync();
         return Ok(list);
     }

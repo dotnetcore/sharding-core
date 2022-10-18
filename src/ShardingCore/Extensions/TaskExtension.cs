@@ -40,6 +40,12 @@ namespace ShardingCore.Extensions
                 throw new ArgumentNullException(nameof(task));
             task.GetAwaiter().GetResult();
         }
+        public static void WaitAndUnwrapException(this Task task,bool continueOnCapturedContext)
+        {
+            if (task == null)
+                throw new ArgumentNullException(nameof(task));
+            task.ConfigureAwait(continueOnCapturedContext).GetAwaiter().GetResult();
+        }
 
         /// <summary>
         /// Waits for the task to complete, unwrapping any exceptions.

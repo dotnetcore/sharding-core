@@ -76,13 +76,13 @@ namespace ShardingCore.Helpers
                     foreach (var migrationUnits in partitionMigrationUnits)
                     {
                         var migrateUnits = migrationUnits.Select(o =>new MigrateUnit(shellDbContext,o)).ToList();
-                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,migrateUnits,targetMigration,cancellationToken);
+                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,migrateUnits,targetMigration,cancellationToken).ConfigureAwait((false));
                     }
 
                     //包含默认默认的单独最后一次处理
                     if (allDataSourceNames.Contains(defaultDataSourceName))
                     {
-                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,new List<MigrateUnit>(){new MigrateUnit(shellDbContext,defaultDataSourceName)},targetMigration,cancellationToken);
+                        await ExecuteMigrateUnitsAsync(shardingRuntimeContext,new List<MigrateUnit>(){new MigrateUnit(shellDbContext,defaultDataSourceName)},targetMigration,cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -120,7 +120,7 @@ namespace ShardingCore.Helpers
 
                 },cancellationToken);
             }).ToArray();
-            await TaskHelper.WhenAllFastFail(migrateTasks);
+            await TaskHelper.WhenAllFastFail(migrateTasks).ConfigureAwait(false);
         }
         
         public static DbContextOptions CreateShellDbContextOptions(IShardingRuntimeContext shardingRuntimeContext,Type dbContextType,string dataSourceName)

@@ -105,7 +105,7 @@ namespace Sample.MySql.Controllers
             
             // var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
-            var sysUserMods1 = _defaultTableDbContext.Set<SysTest>()
+            var sysUserMods1 = _defaultTableDbContext.Set<SysTest>().UseConnectionMode(1)
                 .Select(o => new ssss(){ Id = o.Id, C = _abc.Select.Count(x => x.Id == o.Id) }).ToList();
             var sysUserMods2 = _defaultTableDbContext.Set<SysTest>()
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();

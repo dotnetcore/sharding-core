@@ -70,7 +70,7 @@ namespace ShardingCore.EFCores
 #endif
         public override void Migrate(string targetMigration = null)
         {
-            this.MigrateAsync(targetMigration).WaitAndUnwrapException();
+            this.MigrateAsync(targetMigration).WaitAndUnwrapException(false);
             // base.Migrate(targetMigration);
         }
 
@@ -78,7 +78,7 @@ namespace ShardingCore.EFCores
         {
             var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             var allDataSourceNames =  virtualDataSource.GetAllDataSourceNames();
-           await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,targetMigration,cancellationToken);
+           await DynamicShardingHelper.DynamicMigrateWithDataSourcesAsync(_shardingRuntimeContext, allDataSourceNames, null,targetMigration,cancellationToken).ConfigureAwait(false);
 
         }
 #if NET6_0 || NET5_0 || NETSTANDARD2_1
