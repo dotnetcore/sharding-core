@@ -83,16 +83,16 @@ namespace ShardingCore.EFCores
                     priority = CacheItemPriority.Normal;
                 }
             }
-            if (context is IShardingModelCacheOption shardingModelCacheOption)
-            {
-                priority = shardingModelCacheOption.GetModelCachePriority();
-                size = shardingModelCacheOption.GetModelCacheEntrySize();
-                waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
-            }
             var cache = Dependencies.MemoryCache;
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context);
             if (!cache.TryGetValue(cacheKey, out IModel model))
             {
+                if (context is IShardingModelCacheOption shardingModelCacheOption)
+                {
+                    priority = shardingModelCacheOption.GetModelCachePriority();
+                    size = shardingModelCacheOption.GetModelCacheEntrySize();
+                    waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
+                }
                 // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
                 var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)

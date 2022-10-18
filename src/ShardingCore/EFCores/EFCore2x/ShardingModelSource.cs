@@ -57,15 +57,14 @@ namespace ShardingCore.EFCores
             }
 
             int waitSeconds = 3;
-            if (context is IShardingModelCacheOption shardingModelCacheOption)
-            {
-                waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
-            }
 
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context);
             if (!_models.TryGetValue(cacheKey, out var model))
             {
-
+                if (context is IShardingModelCacheOption shardingModelCacheOption)
+                {
+                    waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
+                }
                 var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
