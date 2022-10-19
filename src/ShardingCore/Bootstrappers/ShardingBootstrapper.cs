@@ -25,21 +25,18 @@ namespace ShardingCore.Bootstrappers
     * @Date: Monday, 21 December 2020 09:10:07
     * @Email: 326308290@qq.com
     */
-    public class ShardingBootstrapper : IShardingBootstrapper
+    internal class ShardingBootstrapper : IShardingBootstrapper
     {
         private readonly IShardingProvider _shardingProvider;
-        private readonly IDbContextCreator _dbContextCreator;
         private readonly DoOnlyOnce _onlyOnce=new DoOnlyOnce();
-        public ShardingBootstrapper(IShardingProvider shardingProvider,IDbContextCreator dbContextCreator)
+        public ShardingBootstrapper(IShardingProvider shardingProvider)
         {
             _shardingProvider = shardingProvider;
-            _dbContextCreator = dbContextCreator;
         }
         public void AutoShardingCreate()
         {
             if (!_onlyOnce.IsUnDo())
                 return;
-            CheckRequirement();
             StartAutoShardingJob();
         }
 
@@ -50,29 +47,6 @@ namespace ShardingCore.Bootstrappers
             {
                 await jobRunnerService.StartAsync();
             }, TaskCreationOptions.LongRunning);
-        }
-        private void CheckRequirement()
-        {
-            try
-            {
-                using (var scope = _shardingProvider.CreateScope())
-                {
-                    using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
-                    {
-                        if (dbContext == null)
-                        {
-                            throw new ShardingCoreInvalidOperationException(
-                                $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ShardingCoreInvalidOperationException(
-                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
-                    ex);
-            }
         }
 
     }

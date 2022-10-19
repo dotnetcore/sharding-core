@@ -271,13 +271,12 @@ namespace ShardingCore
 
 
         /// <summary>
-        /// 启用定时任务自动创建表
+        /// 当前接口可以直接移除掉,定时任务会在shardingcore初始化的时候自动调用
         /// </summary>
         /// <param name="serviceProvider"></param>
+        [Obsolete("can remove this method,sharding core auto invoke.")]
         public static void UseAutoShardingCreate(this IServiceProvider serviceProvider)
         {
-            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
-            shardingRuntimeContext.UseAutoShardingCreate();
         }
 
         /// <summary>

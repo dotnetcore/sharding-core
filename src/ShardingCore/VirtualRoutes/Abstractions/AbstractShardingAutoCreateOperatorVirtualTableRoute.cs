@@ -81,6 +81,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
         /// <returns></returns>
         public abstract bool AutoCreateTableByTime();
 
+
         /// <summary>
         /// 显示错误日志
         /// </summary>
@@ -140,21 +141,24 @@ namespace ShardingCore.VirtualRoutes.Abstractions
 
             logger.LogInformation($"auto create table data source names:[{string.Join(",", dataSources)}]");
 
-            foreach (var dataSource in dataSources)
+            if (AutoCreateTableByTime())
             {
-                try
+                foreach (var dataSource in dataSources)
                 {
-                    logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
-                    logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                }
-                catch (Exception e)
-                {
-                    //ignore
-                    logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
-                    if (DoLogError)
-                        logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
-                }
+                    try
+                    {
+                        logger.LogInformation($"begin table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                        tableCreator.CreateTable(dataSource, typeof(TEntity), tail);
+                        logger.LogInformation($"succeed table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                    }
+                    catch (Exception e)
+                    {
+                        //ignore
+                        logger.LogInformation($"warning table tail:[{tail}],entity:[{typeof(TEntity).Name}]");
+                        if (DoLogError)
+                            logger.LogError(e, $"{dataSource} {typeof(TEntity).Name}'s create table error ");
+                    }
+                } 
             }
 
             return Task.CompletedTask;
@@ -162,7 +166,7 @@ namespace ShardingCore.VirtualRoutes.Abstractions
 
         public bool AppendJob()
         {
-            return AutoCreateTableByTime();
+            return true;
         }
     }
 }

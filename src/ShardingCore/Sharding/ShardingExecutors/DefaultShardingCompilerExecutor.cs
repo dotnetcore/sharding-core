@@ -10,7 +10,6 @@ using ShardingCore.Extensions;
 using ShardingCore.Sharding.Parsers.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.ShardingExtractParameters;
-using ShardingCore.ShardingExecutors;
 
 namespace ShardingCore.Sharding.ShardingExecutors
 {
