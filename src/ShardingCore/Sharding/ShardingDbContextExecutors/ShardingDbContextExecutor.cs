@@ -114,7 +114,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private DbContextOptions CreateParallelDbContextOptions(string dataSourceName,CreateDbContextStrategyEnum strategy)
         {
-            var dbContextOptionBuilder = DataSourceDbContext.CreateDbContextOptionBuilder(_shardingDbContext.GetType());
+            var dbContextOptionBuilder =_shardingRuntimeContext.GetDbContextOptionBuilderCreator().CreateDbContextOptionBuilder();
             var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName, CreateDbContextStrategyEnum.IndependentConnectionWrite==strategy);
             _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder).UseShardingOptions(_shardingRuntimeContext);
             return dbContextOptionBuilder.Options;

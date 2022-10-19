@@ -154,8 +154,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             try
             {
                 //先创建dbcontext option builder
-                var dbContextOptionsBuilder = CreateDbContextOptionBuilder(DbContextType).UseShardingOptions(_shardingRuntimeContext);
-
+                var dbContextOptionBuilderCreator = _shardingRuntimeContext.GetDbContextOptionBuilderCreator();
+                var dbContextOptionsBuilder = dbContextOptionBuilderCreator.CreateDbContextOptionBuilder().UseShardingOptions(_shardingRuntimeContext);
+            
                 if (IsDefault)
                 {
                     //如果是默认的需要使用shell的dbconnection为了保证可以使用事务
@@ -189,13 +190,6 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 oneByOne.Stop();
             }
-        }
-
-        public static DbContextOptionsBuilder CreateDbContextOptionBuilder(Type dbContextType)
-        {
-            Type type = typeof(DbContextOptionsBuilder<>);
-            type = type.MakeGenericType(dbContextType);
-            return (DbContextOptionsBuilder)Activator.CreateInstance(type);
         }
 
         /// <summary>

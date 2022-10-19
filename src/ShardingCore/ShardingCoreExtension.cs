@@ -31,6 +31,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.DbContextOptionBuilderCreator;
 using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.RuntimeContexts;
@@ -144,6 +145,7 @@ namespace ShardingCore
                 .TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
             services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
+            services.TryAddSingleton<IDbContextOptionBuilderCreator, ActivatorDbContextOptionBuilderCreator>();
 
 
             // services.TryAddSingleton<IDataSourceInitializer<TShardingDbContext>, DataSourceInitializer<TShardingDbContext>>();

@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
@@ -24,6 +26,7 @@ namespace Sample.AutoCreateIfPresent
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new OrderByHourMap());
             modelBuilder.ApplyConfiguration(new AreaDeviceMap());
+            Console.WriteLine(this.IsExecutor);
         }
 
         public IRouteTail RouteTail { get; set; }

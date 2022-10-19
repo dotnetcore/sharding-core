@@ -80,7 +80,6 @@ namespace ShardingCore.EFCores
                         shardingMigrationManager.Current.CurrentDataSourceName = migrateUnit.DataSourceName;
 
                         var dbContextOptions = DynamicShardingHelper.CreateShellDbContextOptions(shardingRuntimeContext,
-                            migrateUnit.ShellDbContext.GetType(),
                             migrateUnit.DataSourceName);
 
                         using (var dbContext = dbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,

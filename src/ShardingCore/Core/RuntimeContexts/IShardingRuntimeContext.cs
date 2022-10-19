@@ -2,6 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ShardingCore.Core.DbContextCreator;
+using ShardingCore.Core.DbContextOptionBuilderCreator;
 using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
@@ -31,6 +32,7 @@ namespace ShardingCore.Core.RuntimeContexts
         Type DbContextType { get; }
         IDbContextTypeAware GetDbContextTypeAware();
         IShardingProvider GetShardingProvider();
+        IDbContextOptionBuilderCreator GetDbContextOptionBuilderCreator();
         ShardingConfigOptions GetShardingConfigOptions();
         IShardingRouteConfigOptions GetShardingRouteConfigOptions();
         IShardingMigrationManager GetShardingMigrationManager();
