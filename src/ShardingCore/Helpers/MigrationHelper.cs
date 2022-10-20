@@ -66,10 +66,13 @@ namespace ShardingCore.Helpers
                 {
                     if (migrationResult.CommandType == MigrationCommandTypeEnum.TableCommand)
                     {
+                        if (migrationResult.IsShardingCommand)
+                        {
+                            migrationCommands.Remove(aAddCmd);
+                        }
                         //如果是分表
                         if (shardingCmds.IsNotEmpty())
                         {
-                            migrationCommands.Remove(aAddCmd);
                             //针对builder的原始表进行移除
                             shardingCmds.ForEach(aShardingCmd =>
                             {
@@ -154,6 +157,7 @@ namespace ShardingCore.Helpers
                 if (migrationResult.InDataSource && !string.IsNullOrWhiteSpace(absTableName) &&
                     existsShardingTables.ContainsKey(absTableName))
                 {
+                    migrationResult.IsShardingCommand = true;
                     var shardings = existsShardingTables[absTableName];
                     shardings.ForEach(aShardingTable =>
                     {
