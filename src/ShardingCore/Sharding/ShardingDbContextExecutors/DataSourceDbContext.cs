@@ -18,7 +18,6 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Infrastructures;
-
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding.ShardingDbContextExecutors
@@ -32,11 +31,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     */
     public class DataSourceDbContext : IDataSourceDbContext
     {
-
         private static readonly IComparer<string> _comparer = new NoShardingFirstComparer();
 
-        private  readonly ILogger<DataSourceDbContext> _logger;
         public Type DbContextType { get; }
+
         /// <summary>
         /// 当前是否是默认的dbcontext 也就是不分片的dbcontext
         /// </summary>
@@ -82,6 +80,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// shell dbcontext最外面的壳
         /// </summary>
         private readonly DbContext _shardingShellDbContext;
+
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
         /// <summary>
@@ -117,8 +116,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             bool isDefault,
             DbContext shardingShellDbContext,
             IDbContextCreator dbContextCreator,
-            ActualConnectionStringManager actualConnectionStringManager,
-            ILogger<DataSourceDbContext> logger)
+            ActualConnectionStringManager actualConnectionStringManager)
         {
             var shardingDbContext = (IShardingDbContext)shardingShellDbContext;
             DataSourceName = dataSourceName;
@@ -126,11 +124,10 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _shardingShellDbContext = shardingShellDbContext;
             _shardingRuntimeContext = shardingShellDbContext.GetShardingRuntimeContext();
             DbContextType = shardingShellDbContext.GetType();
-            _virtualDataSource =shardingDbContext
+            _virtualDataSource = shardingDbContext
                 .GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
-            this._logger = logger;
         }
 
         /// <summary>
@@ -155,8 +152,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 //先创建dbcontext option builder
                 var dbContextOptionBuilderCreator = _shardingRuntimeContext.GetDbContextOptionBuilderCreator();
-                var dbContextOptionsBuilder = dbContextOptionBuilderCreator.CreateDbContextOptionBuilder().UseShardingOptions(_shardingRuntimeContext);
-            
+                var dbContextOptionsBuilder = dbContextOptionBuilderCreator.CreateDbContextOptionBuilder()
+                    .UseShardingOptions(_shardingRuntimeContext);
+
                 if (IsDefault)
                 {
                     //如果是默认的需要使用shell的dbconnection为了保证可以使用事务
@@ -342,34 +340,17 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             if (IsDefault)
                 return;
-            try
-            {
-                CurrentDbContextTransaction?.Rollback();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "rollback error.");
-            }
+            CurrentDbContextTransaction?.Rollback();
         }
 
         /// <summary>
         /// 提交数据
         /// </summary>
-        /// <param name="dataSourceCount">如果只有一个数据源那么就直接报错否则就忽略</param>
-        public void Commit(int dataSourceCount)
+        public void Commit()
         {
             if (IsDefault)
                 return;
-            try
-            {
-                CurrentDbContextTransaction?.Commit();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "commit error.");
-                if (dataSourceCount == 1)
-                    throw;
-            }
+            CurrentDbContextTransaction?.Commit();
         }
 #if !NETCOREAPP2_0
         public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -377,35 +358,70 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             cancellationToken.ThrowIfCancellationRequested();
             if (IsDefault)
                 return;
-            try
-            {
-                if (CurrentDbContextTransaction != null)
-                    await CurrentDbContextTransaction.RollbackAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "rollback error.");
-            }
+            if (CurrentDbContextTransaction != null)
+                await CurrentDbContextTransaction.RollbackAsync(cancellationToken);
         }
 
-        public async Task CommitAsync(int dataSourceCount, CancellationToken cancellationToken =
- new CancellationToken())
+        public async Task CommitAsync(CancellationToken cancellationToken =
+            new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (IsDefault)
                 return;
-            try
-            {
-                if (CurrentDbContextTransaction != null)
-                    await CurrentDbContextTransaction.CommitAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "commit error.");
-                if (dataSourceCount == 1)
-                    throw;
-            }
+            if (CurrentDbContextTransaction != null)
+                await CurrentDbContextTransaction.CommitAsync(cancellationToken);
         }
+#if !NETCOREAPP3_0&&!NETSTANDARD2_0
+        // public void CreateSavepoint(string name)
+        // {
+        //     if (IsDefault)
+        //         return;
+        //     CurrentDbContextTransaction?.CreateSavepoint(name);
+        // }
+        //
+        // public async Task CreateSavepointAsync(string name,
+        //     CancellationToken cancellationToken = new CancellationToken())
+        // {
+        //     cancellationToken.ThrowIfCancellationRequested();
+        //     if (IsDefault)
+        //         return;
+        //     if (CurrentDbContextTransaction != null)
+        //         await CurrentDbContextTransaction.CreateSavepointAsync(name, cancellationToken);
+        // }
+        //
+        // public void RollbackToSavepoint(string name)
+        // {
+        //     if (IsDefault)
+        //         return;
+        //     CurrentDbContextTransaction?.RollbackToSavepoint(name);
+        // }
+        //
+        // public async Task RollbackToSavepointAsync(string name,
+        //     CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     cancellationToken.ThrowIfCancellationRequested();
+        //     if (IsDefault)
+        //         return;
+        //     if (CurrentDbContextTransaction != null)
+        //         await CurrentDbContextTransaction.RollbackToSavepointAsync(name, cancellationToken);
+        // }
+        //
+        // public void ReleaseSavepoint(string name)
+        // {
+        //     if (IsDefault)
+        //         return;
+        //     CurrentDbContextTransaction?.ReleaseSavepoint(name);
+        // }
+        //
+        // public async Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
+        // {
+        //     cancellationToken.ThrowIfCancellationRequested();
+        //     if (IsDefault)
+        //         return;
+        //     if (CurrentDbContextTransaction != null)
+        //         await CurrentDbContextTransaction.ReleaseSavepointAsync(name, cancellationToken);
+        // }
+#endif
 #endif
 
         public void Dispose()

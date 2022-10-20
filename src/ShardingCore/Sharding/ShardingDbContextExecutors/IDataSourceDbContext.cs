@@ -45,10 +45,18 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         IDictionary<string, DbContext> GetCurrentContexts();
 
         void Rollback();
-        void Commit(int dataSourceCount);
+        void Commit();
 #if !NETCOREAPP2_0
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
-        Task CommitAsync(int dataSourceCount,CancellationToken cancellationToken = new CancellationToken());
+        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
+#if !NETCOREAPP3_0&&!NETSTANDARD2_0
+        // void CreateSavepoint(string name);
+        // Task CreateSavepointAsync(string name, CancellationToken cancellationToken = new CancellationToken());
+        // void RollbackToSavepoint(string name);
+        // Task RollbackToSavepointAsync(string name,CancellationToken cancellationToken = default(CancellationToken));
+        // void ReleaseSavepoint(string name);
+        // Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default(CancellationToken));
+#endif
 #endif
 
     }

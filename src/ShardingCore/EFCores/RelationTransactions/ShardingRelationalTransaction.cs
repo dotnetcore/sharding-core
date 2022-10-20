@@ -92,13 +92,19 @@ namespace ShardingCore.EFCores
             await _shardingDbContext.CommitAsync(cancellationToken);
             _shardingDbContext.NotifyShardingTransaction();
         }
-// #if !NETCOREAPP3_0
-//         public override void CreateSavepoint(string name)
-//         {
-//             AAA
-//             base.CreateSavepoint(name);
-//         }
-// #endif
+#if !NETCOREAPP3_0&&!NETSTANDARD2_0
+        // public override void CreateSavepoint(string name)
+        // {
+        //     base.CreateSavepoint(name);
+        //     _shardingDbContext.CreateSavepoint(name);
+        // }
+        //
+        // public override async Task CreateSavepointAsync(string name, CancellationToken cancellationToken = new CancellationToken())
+        // {
+        //     await base.CreateSavepointAsync(name, cancellationToken);
+        //     await _shardingDbContext.CreateSavepointAsync(name,cancellationToken);
+        // }
+#endif
 #endif
     }
 }
