@@ -21,9 +21,9 @@ namespace ShardingCore.EFCores
 
         public override IEnumerator<TEntity> GetEnumerator()
         {
-            if (_dbContext is IShardingDbContext currentDbContextDiscover)
+            if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                var dataSourceDbContexts = currentDbContextDiscover.GetCurrentDbContexts();
+                var dataSourceDbContexts = shardingDbContext.GetShardingExecutor().GetCurrentDbContexts();
                 var enumerators = dataSourceDbContexts.SelectMany(o => o.Value.GetCurrentContexts().Select(cd=>cd.Value.Set<TEntity>().Local.GetEnumerator()));
                 return new MultiEnumerator<TEntity>(enumerators);
             }

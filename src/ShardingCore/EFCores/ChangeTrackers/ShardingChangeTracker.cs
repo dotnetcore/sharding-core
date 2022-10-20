@@ -28,7 +28,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return shardingDbContext.GetCurrentDbContexts().Any(o =>
+                return shardingDbContext.GetShardingExecutor().GetCurrentDbContexts().Any(o =>
                     o.Value.GetCurrentContexts().Any(r => r.Value.ChangeTracker.HasChanges()));
             }
 
@@ -39,7 +39,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return shardingDbContext.GetCurrentDbContexts().SelectMany(o =>
+                return shardingDbContext.GetShardingExecutor().GetCurrentDbContexts().SelectMany(o =>
                     o.Value.GetCurrentContexts().SelectMany(cd => cd.Value.ChangeTracker.Entries()));
             }
 
@@ -50,7 +50,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                return shardingDbContext.GetCurrentDbContexts().SelectMany(o =>
+                return shardingDbContext.GetShardingExecutor().GetCurrentDbContexts().SelectMany(o =>
                     o.Value.GetCurrentContexts().SelectMany(cd => cd.Value.ChangeTracker.Entries<TEntity>()));
             }
 
@@ -79,7 +79,7 @@ namespace ShardingCore.EFCores.ChangeTrackers
 
         private void Do(Action<ChangeTracker> action)
         {
-            var dataSourceDbContexts = ((IShardingDbContext)_dbContext).GetCurrentDbContexts();
+            var dataSourceDbContexts = ((IShardingDbContext)_dbContext).GetShardingExecutor().GetCurrentDbContexts();
             foreach (var dataSourceDbContext in dataSourceDbContexts)
             {
                 var currentContexts = dataSourceDbContext.Value.GetCurrentContexts();

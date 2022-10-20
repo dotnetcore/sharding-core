@@ -60,14 +60,6 @@ namespace ShardingCore.Sharding.MergeContexts
 
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
             
-            if (skip is < 0)
-            {
-                throw new ShardingCoreException($"queryable:{mergeQueryCompilerContext.GetQueryCombineResult().GetQueryCompilerContext().GetQueryExpression().ShardingPrint()} skip should >= 0");
-            }
-            if (take is < 0)
-            {
-                throw new ShardingCoreException($"queryable:{mergeQueryCompilerContext.GetQueryCombineResult().GetQueryCompilerContext().GetQueryExpression().ShardingPrint()} take should >= 0");
-            }
             //去除分页,获取前Take+Skip数量
             var reWriteQueryable = combineQueryable;
             if (take.HasValue || skip.HasValue)

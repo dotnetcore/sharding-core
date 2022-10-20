@@ -22,9 +22,9 @@ namespace ShardingCore.Sharding.MergeContexts
             IRewriteResult rewriteResult)
         {
             var shardingDbContext = mergeQueryCompilerContext.GetShardingDbContext();
-            var maxParallelExecuteCount =
-                shardingDbContext.GetVirtualDataSource().ConfigurationParams.MaxQueryConnectionsLimit;
-            var connectionMode = shardingDbContext.GetVirtualDataSource().ConfigurationParams.ConnectionMode;
+            var virtualDataSource = shardingDbContext.GetShardingExecutor().GetVirtualDataSource();
+            var maxParallelExecuteCount =virtualDataSource.ConfigurationParams.MaxQueryConnectionsLimit;
+            var connectionMode = virtualDataSource.ConfigurationParams.ConnectionMode;
             IComparer<string> shardingTailComparer = Comparer<string>.Default;
             bool sameWithTailComparer = true;
             bool sequenceQuery = false;

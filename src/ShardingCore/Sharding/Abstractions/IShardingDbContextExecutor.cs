@@ -17,20 +17,12 @@ namespace ShardingCore.Sharding.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public interface IShardingDbContextExecutor : IDisposable
+    public interface IShardingDbContextExecutor : IShardingTransaction,IReadWriteSwitch,ICurrentDbContextDiscover,IDisposable
 #if !NETCOREAPP2_0
         , IAsyncDisposable
 
 #endif
     {
-        /// <summary>
-        /// read write priority
-        /// </summary>
-        int ReadWriteSeparationPriority { get; set; }
-        /// <summary>
-        /// current db context open? ReadWriteSeparationPriority>Current.ReadWriteSeparationPriority
-        /// </summary>
-        bool ReadWriteSeparation { get; set; }
         /// <summary>
         /// has multi db context
         /// </summary>
@@ -55,51 +47,10 @@ namespace ShardingCore.Sharding.Abstractions
 
         IVirtualDataSource GetVirtualDataSource();
 
-
-
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
             CancellationToken cancellationToken = new CancellationToken());
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
-        /// <summary>
-        /// default data source CurrentTransaction change will call this method without default
-        /// </summary>
-        void NotifyShardingTransaction();
 
-
-
-        /// <summary>
-        /// rollback
-        /// </summary>
-        void Rollback();
-        /// <summary>
-        /// commit
-        /// </summary>
-        void Commit();
-
-        IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts();
-#if !NETCOREAPP2_0
-        /// <summary>
-        /// rollback async
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
-        /// <summary>
-        /// commit async
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
-        
-#if !NETCOREAPP3_0&&!NETSTANDARD2_0
-        // void CreateSavepoint(string name);
-        // Task CreateSavepointAsync(string name, CancellationToken cancellationToken = new CancellationToken());
-        // void RollbackToSavepoint(string name);
-        // Task RollbackToSavepointAsync(string name,CancellationToken cancellationToken = default(CancellationToken));
-        // void ReleaseSavepoint(string name);
-        // Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default(CancellationToken));
-#endif
-#endif
     }
 }

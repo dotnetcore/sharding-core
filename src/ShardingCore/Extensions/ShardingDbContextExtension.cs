@@ -21,7 +21,7 @@ namespace ShardingCore.Extensions
     {
         public static bool IsUseReadWriteSeparation(this IShardingDbContext shardingDbContext)
         {
-            return shardingDbContext.GetVirtualDataSource().UseReadWriteSeparation;
+            return shardingDbContext.GetShardingExecutor().GetVirtualDataSource().UseReadWriteSeparation;
         }
 
         public static bool SupportUnionAllMerge(this IShardingDbContext shardingDbContext)

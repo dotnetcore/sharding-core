@@ -58,6 +58,7 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
+            var shardingRouteManager = _shardingRuntimeContext.GetShardingRouteManager();
             // var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
             // var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
             // //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可

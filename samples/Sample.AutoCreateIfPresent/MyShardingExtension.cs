@@ -28,7 +28,7 @@ public static class MyShardingExtension
             var shardingRuntimeContext = shardingDbContext.GetShardingRuntimeContext();
             var entityType = typeof(TEntity);
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
-            var virtualDataSource = shardingDbContext.GetVirtualDataSource();
+            var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var dataSourceRouteManager = shardingRuntimeContext.GetDataSourceRouteManager();
             var tableRouteManager =shardingRuntimeContext.GetTableRouteManager();
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();

@@ -17,6 +17,7 @@ using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Reflection;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding;
 
 namespace Samples.AbpSharding
@@ -34,24 +35,6 @@ namespace Samples.AbpSharding
             {
                 _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
             }
-        }
-
-
-        /// <summary>
-        /// 读写分离优先级
-        /// </summary>
-        public int ReadWriteSeparationPriority
-        {
-            get => _shardingDbContextExecutor.ReadWriteSeparationPriority;
-            set => _shardingDbContextExecutor.ReadWriteSeparationPriority = value;
-        }
-        /// <summary>
-        /// 是否使用读写分离
-        /// </summary>
-        public bool ReadWriteSeparation
-        {
-            get => _shardingDbContextExecutor.ReadWriteSeparation;
-            set => _shardingDbContextExecutor.ReadWriteSeparation = value;
         }
 
         /// <summary>
@@ -91,6 +74,11 @@ namespace Samples.AbpSharding
             }
 
             return dbContext;
+        }
+
+        public IShardingDbContextExecutor GetShardingExecutor()
+        {
+            return _shardingDbContextExecutor;
         }
 
 
@@ -540,40 +528,6 @@ namespace Samples.AbpSharding
 
                 await base.DisposeAsync();
             }
-        }
-        public Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return _shardingDbContextExecutor.RollbackAsync(cancellationToken);
-        }
-
-        public Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return _shardingDbContextExecutor.CommitAsync(cancellationToken);
-        }
-
-        public void NotifyShardingTransaction()
-        {
-            _shardingDbContextExecutor.NotifyShardingTransaction();
-        }
-
-        public void Rollback()
-        {
-            _shardingDbContextExecutor.Rollback();
-        }
-
-        public void Commit()
-        {
-            _shardingDbContextExecutor.Commit();
-        }
-
-        public IVirtualDataSource GetVirtualDataSource()
-        {
-            return _shardingDbContextExecutor.GetVirtualDataSource();
-        }
-
-        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
-        {
-            return _shardingDbContextExecutor.GetCurrentDbContexts();
         }
     }
 }

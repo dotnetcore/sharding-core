@@ -27,11 +27,13 @@ namespace ShardingCore.EFCores
     {
         private readonly IRelationalConnection _relationalConnection;
         private readonly IShardingDbContext _shardingDbContext;
+        private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
 #if !NETCOREAPP2_0
         public ShardingRelationalTransactionManager(IRelationalConnection relationalConnection)
         {
             _relationalConnection = relationalConnection;
             _shardingDbContext = relationalConnection.Context as IShardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContextExecutor = _shardingDbContext.GetShardingExecutor();
         }
 #endif
 
@@ -40,6 +42,7 @@ namespace ShardingCore.EFCores
         {
             _relationalConnection = relationalConnection;
             _shardingDbContext = GetDbContext(relationalConnection) as IShardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContextExecutor = _shardingDbContext.GetShardingExecutor();
         }
         private DbContext GetDbContext(IRelationalConnection connection)
         {
@@ -81,7 +84,7 @@ namespace ShardingCore.EFCores
         public IDbContextTransaction BeginTransaction(IsolationLevel isolationLevel)
         {
             var dbContextTransaction = _relationalConnection.BeginTransaction(isolationLevel);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
 
@@ -89,14 +92,14 @@ namespace ShardingCore.EFCores
             CancellationToken cancellationToken = new CancellationToken())
         {
             var dbContextTransaction = await _relationalConnection.BeginTransactionAsync(isolationLevel, cancellationToken);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
 
         public IDbContextTransaction UseTransaction(DbTransaction transaction)
         {
             var dbContextTransaction = _relationalConnection.UseTransaction(transaction);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
 #if !NETCOREAPP2_0
@@ -109,7 +112,7 @@ namespace ShardingCore.EFCores
         public async Task<IDbContextTransaction> UseTransactionAsync(DbTransaction transaction, CancellationToken cancellationToken = new CancellationToken())
         {
             var dbContextTransaction = await _relationalConnection.UseTransactionAsync(transaction, cancellationToken);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
 #if !NETCOREAPP3_0 && !NETSTANDARD2_0
@@ -125,14 +128,14 @@ namespace ShardingCore.EFCores
         public IDbContextTransaction UseTransaction(DbTransaction transaction, Guid transactionId)
         {
             var dbContextTransaction = _relationalConnection.UseTransaction(transaction, transactionId);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
         public async Task<IDbContextTransaction> UseTransactionAsync(DbTransaction transaction, Guid transactionId,
             CancellationToken cancellationToken = new CancellationToken())
         {
             var dbContextTransaction = await _relationalConnection.UseTransactionAsync(transaction, transactionId, cancellationToken);
-            _shardingDbContext.NotifyShardingTransaction();
+            _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
 #endif

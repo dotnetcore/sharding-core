@@ -45,22 +45,23 @@ namespace ShardingCore.Extensions
         /// <summary>
         /// 设置读写分离
         /// </summary>
-        /// <param name="supportShardingReadWrite"></param>
+        /// <param name="shardingDbContext"></param>
         /// <param name="readOnly">是否是读数据源</param>
-        private static void SetReadWriteSeparation(this IShardingDbContext supportShardingReadWrite, bool readOnly)
+        private static void SetReadWriteSeparation(this IShardingDbContext shardingDbContext, bool readOnly)
         {
-            var shardingRuntimeContext = ((DbContext)supportShardingReadWrite).GetShardingRuntimeContext();
+            var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
+            var shardingDbContextExecutor = shardingDbContext.GetShardingExecutor();
             var shardingReadWriteManager = shardingRuntimeContext.GetService<IShardingReadWriteManager>();
             var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
             if (shardingReadWriteContext != null)
             {
-                if (shardingReadWriteContext.DefaultPriority > supportShardingReadWrite.ReadWriteSeparationPriority)
+                if (shardingReadWriteContext.DefaultPriority > shardingDbContextExecutor.ReadWriteSeparationPriority)
                 {
-                    supportShardingReadWrite.ReadWriteSeparationPriority = shardingReadWriteContext.DefaultPriority + 1;
+                    shardingDbContextExecutor.ReadWriteSeparationPriority=shardingReadWriteContext.DefaultPriority + 1;
                 }
             }
 
-            supportShardingReadWrite.ReadWriteSeparation = readOnly;
+            shardingDbContextExecutor.ReadWriteSeparation = readOnly;
         }
 
         public static void SetReadWriteSeparation(this ShardingReadWriteContext shardingReadWriteContext, int priority,
@@ -80,21 +81,22 @@ namespace ShardingCore.Extensions
             if (shardingDbContext.IsUseReadWriteSeparation())
             {
                 var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
+                var shardingDbContextExecutor = shardingDbContext.GetShardingExecutor();
                 var shardingReadWriteManager = shardingRuntimeContext.GetService<IShardingReadWriteManager>();
                 var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
                 if (shardingReadWriteContext != null)
                 {
-                    if (shardingReadWriteContext.DefaultPriority > shardingDbContext.ReadWriteSeparationPriority)
+                    if (shardingReadWriteContext.DefaultPriority > shardingDbContextExecutor.ReadWriteSeparationPriority)
                     {
                         return shardingReadWriteContext.DefaultReadEnable;
                     }
                     else
                     {
-                        return shardingDbContext.ReadWriteSeparation;
+                        return shardingDbContextExecutor.ReadWriteSeparation;
                     }
                 }
 
-                return shardingDbContext.ReadWriteSeparation;
+                return shardingDbContextExecutor.ReadWriteSeparation;
             }
 
             return false;

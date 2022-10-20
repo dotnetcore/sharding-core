@@ -8,6 +8,7 @@ using ShardingCore.Core.ShardingConfigurations.Abstractions;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeContexts;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
@@ -46,6 +47,15 @@ namespace ShardingCore.Sharding
 
         private void CheckMergeContext(IMergeQueryCompilerContext mergeQueryCompilerContext,IParseResult parseResult,IRewriteResult rewriteResult,IOptimizeResult optimizeResult)
         {
+            var paginationContext = parseResult.GetPaginationContext();
+            if (paginationContext.Skip is < 0)
+            {
+                throw new ShardingCoreException($"queryable skip should >= 0");
+            }
+            if (paginationContext.Take is < 0)
+            {
+                throw new ShardingCoreException($"queryable take should >= 0");
+            }
             if (!mergeQueryCompilerContext.IsEnumerableQuery())
             {
                 if ((nameof(Enumerable.Last)==mergeQueryCompilerContext.GetQueryMethodName()||nameof(Enumerable.LastOrDefault)==mergeQueryCompilerContext.GetQueryMethodName())&&parseResult.GetOrderByContext().PropertyOrders.IsEmpty())

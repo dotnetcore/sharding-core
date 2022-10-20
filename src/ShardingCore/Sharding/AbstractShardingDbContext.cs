@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
+using ShardingCore.Exceptions;
 
 namespace ShardingCore.Sharding
 {
@@ -40,22 +41,6 @@ namespace ShardingCore.Sharding
 
             IsExecutor = wrapOptionsExtension == null;
         }
-        /// <summary>
-        /// 读写分离优先级
-        /// </summary>
-        public int ReadWriteSeparationPriority
-        {
-            get => ShardingDbContextExecutor.ReadWriteSeparationPriority;
-            set => ShardingDbContextExecutor.ReadWriteSeparationPriority = value;
-        }
-        /// <summary>
-        /// 是否使用读写分离
-        /// </summary>
-        public bool ReadWriteSeparation
-        {
-            get => ShardingDbContextExecutor.ReadWriteSeparation;
-            set => ShardingDbContextExecutor.ReadWriteSeparation = value;
-        }
 
         /// <summary>
         /// 是否是真正的执行者
@@ -80,12 +65,11 @@ namespace ShardingCore.Sharding
             return ShardingDbContextExecutor.CreateGenericDbContext(entity);
         }
 
-        public IVirtualDataSource GetVirtualDataSource()
+        public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return ShardingDbContextExecutor.GetVirtualDataSource();
+            return ShardingDbContextExecutor;
         }
-
-
+        
         public override EntityEntry Add(object entity)
         {
             if (IsExecutor)
@@ -349,44 +333,6 @@ namespace ShardingCore.Sharding
             }
         }
 
-        //protected virtual void ApplyShardingConcepts()
-        //{
-        //    foreach (var entry in ChangeTracker.Entries().ToList())
-        //    {
-        //        ApplyShardingConcepts(entry);
-        //    }
-        //}
-
-        //protected virtual void ApplyShardingConcepts(EntityEntry entry)
-        //{
-
-        //    switch (entry.State)
-        //    {
-        //        case EntityState.Added:
-        //        case EntityState.Modified:
-        //        case EntityState.Deleted:
-        //            ApplyShardingConceptsForEntity(entry);
-        //            break;
-        //    }
-
-        //    //throw new ShardingCoreNotSupportedException($"entry.State:[{entry.State}]");
-        //}
-
-        //protected virtual void ApplyShardingConceptsForEntity(EntityEntry entry)
-        //{
-        //    var genericDbContext = CreateGenericDbContext(entry.Entity);
-        //    var entityState = entry.State;
-        //    entry.State = EntityState.Unchanged;
-        //    genericDbContext.Entry(entry.Entity).State = entityState;
-        //}
-        // public override int SaveChanges()
-        // {
-        //
-        //     if (IsExecutor)
-        //         return base.SaveChanges();
-        //     return this.SaveChanges(true);
-        // }
-
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             if (IsExecutor)
@@ -410,13 +356,6 @@ namespace ShardingCore.Sharding
             return i;
         }
 
-
-        // public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-        // {
-        //     if (IsExecutor)
-        //         return base.SaveChangesAsync(cancellationToken);
-        //     return this.SaveChangesAsync(true, cancellationToken);
-        // }
 
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
         {
@@ -475,36 +414,6 @@ namespace ShardingCore.Sharding
                 await base.DisposeAsync();
             }
         }
-        public Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return ShardingDbContextExecutor.RollbackAsync(cancellationToken);
-        }
-
-        public Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return ShardingDbContextExecutor.CommitAsync(cancellationToken);
-        }
 #endif
-
-        public void NotifyShardingTransaction()
-        {
-            ShardingDbContextExecutor.NotifyShardingTransaction();
-        }
-
-        public void Rollback()
-        {
-            ShardingDbContextExecutor.Rollback();
-        }
-
-        public void Commit()
-        {
-            ShardingDbContextExecutor.Commit();
-        }
-
-        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
-        {
-            return ShardingDbContextExecutor.GetCurrentDbContexts();
-        }
-        
     }
 }

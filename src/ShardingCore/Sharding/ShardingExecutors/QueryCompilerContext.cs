@@ -169,7 +169,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 hasQueryCompilerExecutor = _queryEntities.Keys.All(o => !_entityMetadataManager.IsSharding(o));
                 if (hasQueryCompilerExecutor.Value)
                 {
-                    var virtualDataSource = _shardingDbContext.GetVirtualDataSource();
+                    var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
                     var routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
                     
                     var strategy = !IsParallelQuery()

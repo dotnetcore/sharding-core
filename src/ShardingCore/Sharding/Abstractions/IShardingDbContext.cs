@@ -11,7 +11,7 @@ namespace ShardingCore.Sharding.Abstractions
     * @Date: Saturday, 14 August 2021 21:47:11
     * @Email: 326308290@qq.com
     */
-    public interface IShardingDbContext: IShardingTransaction,ISupportShardingReadWrite,ICurrentDbContextDiscover
+    public interface IShardingDbContext
     {
         /// <summary>
         /// create DbContext
@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <returns></returns>
         DbContext CreateGenericDbContext<T>(T entity) where T : class;
 
-        IVirtualDataSource GetVirtualDataSource();
+        IShardingDbContextExecutor GetShardingExecutor();
 
 
     }

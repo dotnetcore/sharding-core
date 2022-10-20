@@ -118,14 +118,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             IDbContextCreator dbContextCreator,
             ActualConnectionStringManager actualConnectionStringManager)
         {
-            var shardingDbContext = (IShardingDbContext)shardingShellDbContext;
             DataSourceName = dataSourceName;
             IsDefault = isDefault;
             _shardingShellDbContext = shardingShellDbContext;
             _shardingRuntimeContext = shardingShellDbContext.GetShardingRuntimeContext();
             DbContextType = shardingShellDbContext.GetType();
-            _virtualDataSource = shardingDbContext
-                .GetVirtualDataSource();
+            _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             _dbContextCreator = dbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
         }
@@ -372,55 +370,55 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 await CurrentDbContextTransaction.CommitAsync(cancellationToken);
         }
 #if !NETCOREAPP3_0&&!NETSTANDARD2_0
-        // public void CreateSavepoint(string name)
-        // {
-        //     if (IsDefault)
-        //         return;
-        //     CurrentDbContextTransaction?.CreateSavepoint(name);
-        // }
-        //
-        // public async Task CreateSavepointAsync(string name,
-        //     CancellationToken cancellationToken = new CancellationToken())
-        // {
-        //     cancellationToken.ThrowIfCancellationRequested();
-        //     if (IsDefault)
-        //         return;
-        //     if (CurrentDbContextTransaction != null)
-        //         await CurrentDbContextTransaction.CreateSavepointAsync(name, cancellationToken);
-        // }
-        //
-        // public void RollbackToSavepoint(string name)
-        // {
-        //     if (IsDefault)
-        //         return;
-        //     CurrentDbContextTransaction?.RollbackToSavepoint(name);
-        // }
-        //
-        // public async Task RollbackToSavepointAsync(string name,
-        //     CancellationToken cancellationToken = default(CancellationToken))
-        // {
-        //     cancellationToken.ThrowIfCancellationRequested();
-        //     if (IsDefault)
-        //         return;
-        //     if (CurrentDbContextTransaction != null)
-        //         await CurrentDbContextTransaction.RollbackToSavepointAsync(name, cancellationToken);
-        // }
-        //
-        // public void ReleaseSavepoint(string name)
-        // {
-        //     if (IsDefault)
-        //         return;
-        //     CurrentDbContextTransaction?.ReleaseSavepoint(name);
-        // }
-        //
-        // public async Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
-        // {
-        //     cancellationToken.ThrowIfCancellationRequested();
-        //     if (IsDefault)
-        //         return;
-        //     if (CurrentDbContextTransaction != null)
-        //         await CurrentDbContextTransaction.ReleaseSavepointAsync(name, cancellationToken);
-        // }
+        public void CreateSavepoint(string name)
+        {
+            if (IsDefault)
+                return;
+            CurrentDbContextTransaction?.CreateSavepoint(name);
+        }
+        
+        public async Task CreateSavepointAsync(string name,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (IsDefault)
+                return;
+            if (CurrentDbContextTransaction != null)
+                await CurrentDbContextTransaction.CreateSavepointAsync(name, cancellationToken);
+        }
+        
+        public void RollbackToSavepoint(string name)
+        {
+            if (IsDefault)
+                return;
+            CurrentDbContextTransaction?.RollbackToSavepoint(name);
+        }
+        
+        public async Task RollbackToSavepointAsync(string name,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (IsDefault)
+                return;
+            if (CurrentDbContextTransaction != null)
+                await CurrentDbContextTransaction.RollbackToSavepointAsync(name, cancellationToken);
+        }
+        
+        public void ReleaseSavepoint(string name)
+        {
+            if (IsDefault)
+                return;
+            CurrentDbContextTransaction?.ReleaseSavepoint(name);
+        }
+        
+        public async Task ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (IsDefault)
+                return;
+            if (CurrentDbContextTransaction != null)
+                await CurrentDbContextTransaction.ReleaseSavepointAsync(name, cancellationToken);
+        }
 #endif
 #endif
 

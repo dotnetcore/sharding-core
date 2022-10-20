@@ -45,24 +45,6 @@ namespace Samples.AbpSharding
                 _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
             }
         }
-
-        /// <summary>
-        /// 读写分离优先级
-        /// </summary>
-        public int ReadWriteSeparationPriority
-        {
-            get => _shardingDbContextExecutor.ReadWriteSeparationPriority;
-            set => _shardingDbContextExecutor.ReadWriteSeparationPriority = value;
-        }
-        /// <summary>
-        /// 是否使用读写分离
-        /// </summary>
-        public bool ReadWriteSeparation
-        {
-            get => _shardingDbContextExecutor.ReadWriteSeparation;
-            set => _shardingDbContextExecutor.ReadWriteSeparation = value;
-        }
-
         /// <summary>
         /// 是否是真正的执行者
         /// </summary>
@@ -521,34 +503,9 @@ namespace Samples.AbpSharding
             return dbContext;
         }
 
-        public virtual IVirtualDataSource GetVirtualDataSource()
+        public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return _shardingDbContextExecutor.GetVirtualDataSource();
-        }
-
-        public virtual Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return _shardingDbContextExecutor.RollbackAsync(cancellationToken);
-        }
-
-        public virtual Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            return _shardingDbContextExecutor.CommitAsync(cancellationToken);
-        }
-
-        public virtual void NotifyShardingTransaction()
-        {
-            _shardingDbContextExecutor.NotifyShardingTransaction();
-        }
-
-        public virtual void Rollback()
-        {
-            _shardingDbContextExecutor.Rollback();
-        }
-
-        public virtual void Commit()
-        {
-            _shardingDbContextExecutor.Commit();
+            return _shardingDbContextExecutor;
         }
 
         #endregion
@@ -647,10 +604,5 @@ namespace Samples.AbpSharding
         }
 
         #endregion
-
-        public IDictionary<string, IDataSourceDbContext> GetCurrentDbContexts()
-        {
-            return _shardingDbContextExecutor.GetCurrentDbContexts();
-        }
     }
 }
