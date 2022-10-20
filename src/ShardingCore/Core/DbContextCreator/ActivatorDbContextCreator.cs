@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core.ServiceProviders;
+using ShardingCore.Exceptions;
 using ShardingCore.Helpers;
 using ShardingCore.Sharding.Abstractions;
 
@@ -46,7 +47,16 @@ namespace ShardingCore.Core.DbContextCreator
 
         public virtual DbContext GetShellDbContext(IShardingProvider shardingProvider)
         {
-            return shardingProvider.GetService<TShardingDbContext>();
+            try
+            {
+                return shardingProvider.GetService<TShardingDbContext>();
+            }
+            catch (Exception ex)
+            {
+                throw new ShardingCoreInvalidOperationException(
+                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
+                    ex);
+            }
         }
     }
 }

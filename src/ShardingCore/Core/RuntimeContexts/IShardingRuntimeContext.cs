@@ -56,11 +56,8 @@ namespace ShardingCore.Core.RuntimeContexts
         IShardingPageManager GetShardingPageManager();
         IDataSourceInitializer GetDataSourceInitializer();
 
-        void CheckRequirement();
-        
         void GetOrCreateShardingRuntimeModel(DbContext dbContext);
          void Initialize();
-         void AutoShardingCreate();
         object GetService(Type serviceType);
         TService GetService<TService>();
         object GetRequiredService(Type serviceType);

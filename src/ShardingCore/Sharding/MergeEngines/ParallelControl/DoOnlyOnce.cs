@@ -13,7 +13,7 @@ namespace ShardingCore.Sharding.MergeEngines.ParallelControl
         
         private const int Did = 1;
         private const int UnDo = 0;
-        private int Status = UnDo;
+        private  int Status = UnDo;
         
         public bool IsUnDo()
         {

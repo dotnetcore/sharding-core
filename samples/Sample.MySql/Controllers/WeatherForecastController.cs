@@ -65,7 +65,6 @@ namespace Sample.MySql.Controllers
             // //一定要先在路由里面添加尾巴
             // virtualTableRoute.Append("20220921");
             // shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
-
             return _defaultTableDbContext.Set<SysTest>();
         }
         [HttpGet]

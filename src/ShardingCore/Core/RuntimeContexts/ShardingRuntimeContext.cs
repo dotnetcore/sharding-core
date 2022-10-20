@@ -23,6 +23,7 @@ using ShardingCore.DynamicDataSources;
 using ShardingCore.Exceptions;
 
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.MergeEngines.ParallelControl;
 using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 using ShardingCore.Sharding.ShardingComparision.Abstractions;
@@ -67,10 +68,11 @@ namespace ShardingCore.Core.RuntimeContexts
                 _serviceProvider = _serviceMap.BuildServiceProvider();
                 _serviceProvider.GetRequiredService<IShardingInitializer>().Initialize();
                 InitFieldValue();
+                AutoShardingCreate();
             }
         }
 
-        public void AutoShardingCreate()
+        private void AutoShardingCreate()
         {
             GetRequiredService<IShardingBootstrapper>().AutoShardingCreate();
         }
@@ -217,40 +219,6 @@ namespace ShardingCore.Core.RuntimeContexts
             return _dataSourceInitializer??=GetRequiredService<IDataSourceInitializer>();
         }
 
-        public void CheckRequirement()
-        {
-            if (isCheckRequirement)
-                return;
-
-            lock (CHECK_REQUIREMENT)
-            {
-                if (isCheckRequirement)
-                    return;
-                isCheckRequirement = true;
-                
-                try
-                {
-                    var shardingProvider = GetShardingProvider();
-                    using (var scope = shardingProvider.CreateScope())
-                    {
-                        using (var dbContext = _dbContextCreator.GetShellDbContext(scope.ServiceProvider))
-                        {
-                            if (dbContext == null)
-                            {
-                                throw new ShardingCoreInvalidOperationException(
-                                    $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}");
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ShardingCoreInvalidOperationException(
-                        $"cant get shell db context,plz override {nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)}",
-                        ex);
-                }
-            }
-        }
 
         public void GetOrCreateShardingRuntimeModel(DbContext dbContext)
         {

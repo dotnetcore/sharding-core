@@ -5,7 +5,6 @@ using Sample.ShardingConsole;
 using ShardingCore;
 using ShardingCore.Extensions;
 
-ShardingProvider.ShardingRuntimeContext.UseAutoShardingCreate();
 ShardingProvider.ShardingRuntimeContext.UseAutoTryCompensateTable();
 
 var dbContextOptionsBuilder = new DbContextOptionsBuilder<MyDbContext>();

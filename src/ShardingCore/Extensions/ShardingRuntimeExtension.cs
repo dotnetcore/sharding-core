@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,11 +11,6 @@ namespace ShardingCore.Extensions
 
     public static class ShardingRuntimeExtension
     {
-        public static void UseAutoShardingCreate(this IShardingRuntimeContext shardingRuntimeContext)
-        {
-            shardingRuntimeContext.CheckRequirement();
-            shardingRuntimeContext.AutoShardingCreate();
-        }
         /// <summary>
         /// 自动尝试补偿表
         /// </summary>
@@ -22,7 +18,6 @@ namespace ShardingCore.Extensions
         /// <param name="parallelCount"></param>
         public static void UseAutoTryCompensateTable(this IShardingRuntimeContext shardingRuntimeContext, int? parallelCount = null)
         {
-            shardingRuntimeContext.CheckRequirement();
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var dataSourceInitializer = shardingRuntimeContext.GetDataSourceInitializer();
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();

@@ -179,7 +179,6 @@ namespace Sample.MySql
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.ApplicationServices.UseAutoShardingCreate();
             // app.ApplicationServices.UseAutoTryCompensateTable();
            
             // app.ApplicationServices.UseAutoShardingCreate();

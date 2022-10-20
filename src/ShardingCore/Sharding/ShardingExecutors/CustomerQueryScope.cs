@@ -3,9 +3,6 @@ using ShardingCore.Core.QueryRouteManagers;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Parsers.Abstractions;
-using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
-using ShardingCore.Sharding.ShardingExecutors;
-using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
 /*
 * @Author: xjm
@@ -13,7 +10,7 @@ using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 * @Date: DATE TIME
 * @Email: 326308290@qq.com
 */
-namespace ShardingCore.ShardingExecutors
+namespace ShardingCore.Sharding.ShardingExecutors
 {
     internal class CustomerQueryScope:IDisposable
     {

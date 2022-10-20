@@ -34,7 +34,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// <typeparam name="TShardingDbContext"></typeparam>
     public class ShardingDbContextExecutor : IShardingDbContextExecutor
     {
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<ShardingDbContextExecutor> _logger;
         private readonly DbContext _shardingDbContext;
          
         //private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>> _dbContextCaches = new ConcurrentDictionary<string, ConcurrentDictionary<string, DbContext>>();
@@ -78,7 +78,8 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
             var shardingReadWriteManager = _shardingRuntimeContext.GetShardingReadWriteManager();
             var shardingProvider = _shardingRuntimeContext.GetShardingProvider();
-            _loggerFactory=shardingProvider.GetService<ILoggerFactory>();
+            var loggerFactory=shardingProvider.GetRequiredService<ILoggerFactory>();
+            _logger=loggerFactory.CreateLogger<ShardingDbContextExecutor>();
             _actualConnectionStringManager = new ActualConnectionStringManager(shardingReadWriteManager,_virtualDataSource);
         }
 
@@ -86,7 +87,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         private IDataSourceDbContext GetDataSourceDbContext(string dataSourceName)
         {
-            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _dbContextCreator, _actualConnectionStringManager,_loggerFactory.CreateLogger<DataSourceDbContext>()));
+            return _dbContextCaches.GetOrAdd(dataSourceName, dsname => new DataSourceDbContext(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext, _dbContextCreator, _actualConnectionStringManager));
 
         }
         /// <summary>
@@ -194,9 +195,20 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         public void Commit()
         {
+            int i = 0;
             foreach (var dbContextCache in _dbContextCaches)
             {
-                dbContextCache.Value.Commit(_dbContextCaches.Count);
+                try
+                {
+                    dbContextCache.Value.Commit();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "commit error.");
+                    if (i == 0)
+                        throw;
+                }
+                i++;
             }
 
             AutoUseWriteConnectionString();
@@ -231,9 +243,20 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         public async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            int i = 0;
             foreach (var dbContextCache in _dbContextCaches)
             {
-                await dbContextCache.Value.CommitAsync(_dbContextCaches.Count, cancellationToken);
+                try
+                {
+                    await dbContextCache.Value.CommitAsync(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "commit error.");
+                    if (i == 0)
+                        throw;
+                }
+                i++;
             }
 
             AutoUseWriteConnectionString();
