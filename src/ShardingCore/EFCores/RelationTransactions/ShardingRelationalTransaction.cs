@@ -32,6 +32,10 @@ namespace ShardingCore.EFCores
         {
             _shardingDbContext =
  shardingDbContext ?? throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContextExecutor = shardingDbContext.GetShardingExecutor() ??
+                                         throw new ShardingCoreInvalidOperationException(
+                                             $"{shardingDbContext.GetType()} cant get {nameof(IShardingDbContextExecutor)} from {nameof(shardingDbContext.GetShardingExecutor)}");
+
         }
 
 #endif
@@ -55,6 +59,10 @@ namespace ShardingCore.EFCores
         {
             _shardingDbContext =
  shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _shardingDbContextExecutor = shardingDbContext.GetShardingExecutor() ??
+                                         throw new ShardingCoreInvalidOperationException(
+                                             $"{shardingDbContext.GetType()} cant get {nameof(IShardingDbContextExecutor)} from {nameof(shardingDbContext.GetShardingExecutor)}");
+
         }
 
 #endif
