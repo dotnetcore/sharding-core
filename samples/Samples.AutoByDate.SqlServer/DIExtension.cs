@@ -15,7 +15,6 @@ namespace Samples.AutoByDate.SqlServer
     {
         public static IApplicationBuilder UseShardingCore(this IApplicationBuilder app)
         {
-            app.ApplicationServices.UseAutoShardingCreate();
             app.ApplicationServices.UseAutoTryCompensateTable();
             return app;
         }

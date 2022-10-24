@@ -14,7 +14,6 @@ namespace Sample.SqlServerShardingTable
     {
         public static void UseShardingCore(this IApplicationBuilder app)
         {
-            app.ApplicationServices.UseAutoShardingCreate();
             app.ApplicationServices.UseAutoTryCompensateTable();
         }
         public static void InitSeed(this IApplicationBuilder app)

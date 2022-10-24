@@ -50,7 +50,7 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.Services.UseAutoShardingCreate();
+// app.Services.UseAutoShardingCreate();
 app.Services.UseAutoTryCompensateTable();
 app.UseAuthorization();
 

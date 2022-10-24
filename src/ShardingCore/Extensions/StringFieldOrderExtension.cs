@@ -31,17 +31,17 @@ namespace ShardingCore.Extensions
             if (propertyName.Contains('.'))
             {
                 String[] childProperties = propertyName.Split('.');
-                property = entityType.GetProperty(childProperties[0]);
+                property = entityType.GetUltimateShadowingProperty(childProperties[0]);
                 propertyAccess = Expression.MakeMemberAccess(parameter, property);
                 for (int i = 1; i < childProperties.Length; i++)
                 {
-                    property = property.PropertyType.GetProperty(childProperties[i]);
+                    property = property.PropertyType.GetUltimateShadowingProperty(childProperties[i]);
                     propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
                 }
             }
             else
             {
-                property = entityType.GetProperty(propertyName);
+                property = entityType.GetUltimateShadowingProperty(propertyName);
                 propertyAccess = Expression.MakeMemberAccess(parameter, property);
             }
 

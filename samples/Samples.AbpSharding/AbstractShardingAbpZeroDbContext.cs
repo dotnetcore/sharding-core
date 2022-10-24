@@ -28,7 +28,7 @@ namespace Samples.AbpSharding
 {
     public abstract class AbstractShardingAbpZeroDbContext<TTenant, TRole, TUser, TSelf>
         : AbpZeroDbContext<TTenant, TRole, TUser, TSelf>,
-        IShardingDbContext
+        IShardingDbContext,IShardingTableDbContext
         where TTenant : AbpTenant<TUser>
         where TRole : AbpRole<TUser>
         where TUser : AbpUser<TUser>

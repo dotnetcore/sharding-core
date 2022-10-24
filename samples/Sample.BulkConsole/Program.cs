@@ -47,7 +47,6 @@ namespace Sample.BulkConsole
 
                 }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
             var serviceProvider = services.BuildServiceProvider();
-            serviceProvider.UseAutoShardingCreate();
             serviceProvider.UseAutoTryCompensateTable();
             using (var serviceScope = serviceProvider.CreateScope())
             {

@@ -48,7 +48,6 @@ namespace ShardingCoreBenchmark5x
                 }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
 
             var buildServiceProvider = services.BuildServiceProvider();
-            buildServiceProvider.UseAutoShardingCreate();
             buildServiceProvider.UseAutoTryCompensateTable();
             ICollection<Order> orders = new LinkedList<Order>();
 

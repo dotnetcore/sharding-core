@@ -50,7 +50,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
                 if (memberExpression.Member.DeclaringType == null)
                     return null;
-                var fromProperty = memberExpression.Member.DeclaringType.GetProperty(memberExpression.Member.Name);
+                var fromProperty = memberExpression.Member.DeclaringType.GetUltimateShadowingProperty(memberExpression.Member.Name);
                 return fromProperty;
             }
 
@@ -68,7 +68,7 @@ namespace ShardingCore.Core.Internal.Visitors
                     {
                         var declaringType = memberExpression.Member.DeclaringType;
                         var memberName = memberExpression.Member.Name;
-                        var propertyInfo = declaringType.GetProperty(memberName);
+                        var propertyInfo = declaringType.GetUltimateShadowingProperty(memberName);
                         _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType,
                             propertyInfo));
                     }
@@ -83,7 +83,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     var declaringType = node.Members[i].DeclaringType;
                     var memberName = node.Members[i].Name;
-                    var propertyInfo = declaringType.GetProperty(memberName);
+                    var propertyInfo = declaringType.GetUltimateShadowingProperty(memberName);
                     if (node.Arguments[i] is MethodCallExpression methodCallExpression)
                     {
                         var method = methodCallExpression.Method;

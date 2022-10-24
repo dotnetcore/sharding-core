@@ -70,7 +70,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
                 .Select(o => {
 
                         // property "Field1"
-                        var mi = typeof(TSource).GetProperty(o);
+                        var mi = typeof(TSource).GetUltimateShadowingProperty(o);
 
                         // original value "o.Field1"
                         var xOriginal = Expression.Property(xParameter, mi);
@@ -117,7 +117,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
-            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            PropertyInfo property = source.ElementType.GetUltimateShadowingProperty(propertyName);
 
             return source.Count(property);
         }
@@ -203,7 +203,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
 
-            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            PropertyInfo property = source.ElementType.GetUltimateShadowingProperty(propertyName);
             return source.SumByProperty(property);
         }
         /// <summary>
@@ -219,7 +219,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
 
-            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            PropertyInfo property = source.ElementType.GetUltimateShadowingProperty(propertyName);
             return source.SumByProperty<TSelect>(property);
         }
         //public static object Average(this IQueryable source, string member)
@@ -276,7 +276,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
-            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            PropertyInfo property = source.ElementType.GetUltimateShadowingProperty(propertyName);
 
             return source.Max(property);
         }
@@ -311,7 +311,7 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
 
-            PropertyInfo property = source.ElementType.GetProperty(propertyName);
+            PropertyInfo property = source.ElementType.GetUltimateShadowingProperty(propertyName);
             return source.Min(property);
         }
         public static object Min(this IQueryable source, PropertyInfo property)
@@ -353,8 +353,8 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averagePropertyName == null) throw new ArgumentNullException(nameof(averagePropertyName));
             if (countPropertyName == null) throw new ArgumentNullException(nameof(countPropertyName));
-            var averageProperty = source.ElementType.GetProperty(averagePropertyName);
-            var countProperty = source.ElementType.GetProperty(countPropertyName);
+            var averageProperty = source.ElementType.GetUltimateShadowingProperty(averagePropertyName);
+            var countProperty = source.ElementType.GetUltimateShadowingProperty(countPropertyName);
             return source.AverageWithCount(averageProperty, countProperty, resultType);
         }
         public static object AverageWithCount(this IQueryable source, PropertyInfo averageProperty, PropertyInfo countProperty, Type resultType)
@@ -431,8 +431,8 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (averagePropertyName == null) throw new ArgumentNullException(nameof(averagePropertyName));
             if (sumPropertyName == null) throw new ArgumentNullException(nameof(sumPropertyName));
-            var averageProperty = source.ElementType.GetProperty(averagePropertyName);
-            var sumProperty = source.ElementType.GetProperty(sumPropertyName);
+            var averageProperty = source.ElementType.GetUltimateShadowingProperty(averagePropertyName);
+            var sumProperty = source.ElementType.GetUltimateShadowingProperty(sumPropertyName);
             return source.AverageWithSum(averageProperty, sumProperty, resultType);
         }
         public static object AverageWithSum(this IQueryable source, PropertyInfo averageProperty, PropertyInfo sumProperty, Type resultType)

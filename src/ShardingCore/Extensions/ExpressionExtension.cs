@@ -19,7 +19,7 @@ namespace ShardingCore.Extensions
         public static void SetPropertyValue<T>(this T t, string name, object value)
         {
             Type type = t.GetType();
-            PropertyInfo p = type.GetProperty(name);
+            PropertyInfo p = type.GetUltimateShadowingProperty(name);
             if (p == null)
             {
                 throw new Exception($"type:{typeof(T)} not found [{name}] properity ");
@@ -56,7 +56,7 @@ namespace ShardingCore.Extensions
             if (propertyExpression.Contains("."))
             {
                 String[] childProperties = propertyExpression.Split('.');
-                property = entityType.GetProperty(childProperties[0]);
+                property = entityType.GetUltimateShadowingProperty(childProperties[0]);
                 //propertyAccess = Expression.MakeMemberAccess(parameter, property);
                 for (int i = 1; i < childProperties.Length; i++)
                 {
@@ -64,13 +64,13 @@ namespace ShardingCore.Extensions
                     {
                         throw new ShardingCoreException($"property:[{propertyExpression}] not in type:[{entityType}]");
                     }
-                    property = property.PropertyType.GetProperty(childProperties[i]);
+                    property = property.PropertyType.GetUltimateShadowingProperty(childProperties[i]);
                     //propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
                 }
             }
             else
             {
-                property = entityType.GetProperty(propertyExpression);
+                property = entityType.GetUltimateShadowingProperty(propertyExpression);
                 //propertyAccess = Expression.MakeMemberAccess(parameter, property);
             }
 

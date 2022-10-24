@@ -89,7 +89,7 @@ namespace ShardingCore.Core.Internal.Visitors
                     if (expression == null)
                         throw new NotSupportedException("sharding order not support ");
                     List<string> properties = new List<string>();
-                    GetProperty(properties, expression);
+                    GetPropertyInfo(properties, expression);
                     if (!properties.Any())
                         throw new NotSupportedException("sharding order only support property expression");
                     properties.Reverse();
@@ -122,7 +122,7 @@ namespace ShardingCore.Core.Internal.Visitors
                         
                         var declaringType = memberExpression.Member.DeclaringType;
                         var memberName = memberExpression.Member.Name;
-                        var propertyInfo = declaringType.GetProperty(memberName);
+                        var propertyInfo = declaringType.GetUltimateShadowingProperty(memberName);
                         _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType, propertyInfo));
                         //memberExpression.Acc
                     }else if (expression is MemberInitExpression memberInitExpression)
@@ -135,7 +135,7 @@ namespace ShardingCore.Core.Internal.Visitors
                                 {
                                     var declaringType = memberBinding.Member.DeclaringType;
                                     var memberName = memberBinding.Member.Name;
-                                    var propertyInfo = declaringType.GetProperty(memberName);
+                                    var propertyInfo = declaringType.GetUltimateShadowingProperty(memberName);
                                     _selectContext.SelectProperties.Add(new SelectOwnerProperty(declaringType, propertyInfo));
                                 }
                             }
@@ -151,12 +151,12 @@ namespace ShardingCore.Core.Internal.Visitors
 
             return base.VisitMethodCall(node);
         }
-        private void GetProperty(List<string> properties, MemberExpression memberExpression)
+        private void GetPropertyInfo(List<string> properties, MemberExpression memberExpression)
         {
             properties.Add(memberExpression.Member.Name);
             if (memberExpression.Expression is MemberExpression member)
             {
-                GetProperty(properties, member);
+                GetPropertyInfo(properties, member);
             }
         }
 

@@ -112,7 +112,6 @@ namespace ShardingCore.Test
         public void Configure(IServiceProvider serviceProvider)
         {
             //启动ShardingCore创建表任务
-            serviceProvider.UseAutoShardingCreate();
             //启动进行表补偿
             serviceProvider.UseAutoTryCompensateTable();
             // 有一些测试数据要初始化可以放在这里

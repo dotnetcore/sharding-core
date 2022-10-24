@@ -69,7 +69,7 @@ namespace Sample.SqlServer.UnionAllMerge
                 {
                     var tails = tableRouteResults.Select(o => o.ReplaceTables.FirstOrDefault(r => r.EntityType==entityMetadatas[0].EntityType)?.Tail).ToHashSet();
 
-                    var sqlGenerationHelper = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_sqlGenerationHelper") as ISqlGenerationHelper;
+                    var sqlGenerationHelper = ObjectExtension.GetTypeFieldValue(typeof(QuerySqlGenerator),this, "_sqlGenerationHelper") as ISqlGenerationHelper;
                     string newTableName = null;
                     if (tails.Count == 1)
                     {
@@ -80,7 +80,7 @@ namespace Sample.SqlServer.UnionAllMerge
                         newTableName = "(" + string.Join(" union all ", tails.Select(tail => $"select * from {sqlGenerationHelper.DelimitIdentifier($"{tableExpression.Name}{entityMetadatas[0].TableSeparator}{tail}", tableExpression.Schema)}")) + ")";
                     }
 
-                    var relationalCommandBuilder = typeof(QuerySqlGenerator).GetTypeFieldValue(this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
+                    var relationalCommandBuilder = ObjectExtension.GetTypeFieldValue(typeof(QuerySqlGenerator),this, "_relationalCommandBuilder") as IRelationalCommandBuilder;
                     relationalCommandBuilder.Append(newTableName).Append(this.AliasSeparator).Append(sqlGenerationHelper.DelimitIdentifier(tableExpression.Alias));
                     return tableExpression;
                 }

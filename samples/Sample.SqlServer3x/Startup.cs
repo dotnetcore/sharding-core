@@ -90,7 +90,6 @@ namespace Sample.SqlServer3x
                 app.UseDeveloperExceptionPage();
             }
 
-            app.ApplicationServices.UseAutoShardingCreate();
             app.ApplicationServices.UseAutoTryCompensateTable();
             app.UseRouting();
 

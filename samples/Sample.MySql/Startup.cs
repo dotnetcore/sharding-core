@@ -181,7 +181,6 @@ namespace Sample.MySql
             }
             // app.ApplicationServices.UseAutoTryCompensateTable();
            
-            // app.ApplicationServices.UseAutoShardingCreate();
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();

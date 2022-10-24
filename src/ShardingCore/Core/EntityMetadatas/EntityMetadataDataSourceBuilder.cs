@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using ShardingCore.Extensions;
 
 #if NETCOREAPP2_0
 using Microsoft.EntityFrameworkCore.Internal;
@@ -37,7 +38,7 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <returns></returns>
         public EntityMetadataDataSourceBuilder<TEntity> ShardingProperty(string propertyName)
         {
-            var propertyInfo = typeof(TEntity).GetProperty(propertyName);
+            var propertyInfo = typeof(TEntity).GetUltimateShadowingProperty(propertyName);
             _entityMetadata.SetShardingDataSourceProperty(propertyInfo);
             return this;
         }
@@ -49,7 +50,7 @@ namespace ShardingCore.Core.EntityMetadatas
         }
         public EntityMetadataDataSourceBuilder<TEntity> ShardingExtraProperty(string propertyName)
         {
-            var propertyInfo = typeof(TEntity).GetProperty(propertyName);
+            var propertyInfo = typeof(TEntity).GetUltimateShadowingProperty(propertyName);
             _entityMetadata.AddExtraSharingDataSourceProperty(propertyInfo);
             return this;
         }

@@ -125,7 +125,6 @@ namespace Sample.SqlServer
                 var migrator = defaultShardingDbContext.GetService<IMigrator>();
                 migrator.Migrate("InitialCreate");
             }
-                app.ApplicationServices.UseAutoShardingCreate();
             app.ApplicationServices.UseAutoTryCompensateTable();
 
             app.UseRouting();

@@ -50,7 +50,6 @@ namespace ShardingCore6x
                 }).AddShardingCore();
 
             var buildServiceProvider = services.BuildServiceProvider();
-            buildServiceProvider.UseAutoShardingCreate();
             buildServiceProvider.UseAutoTryCompensateTable();
             ICollection<Order> orders = new LinkedList<Order>();
 

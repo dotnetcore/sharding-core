@@ -23,7 +23,7 @@ namespace ShardingCore.Extensions.ShardingPageExtensions
             
             var entityQueryProvider = source.Provider as EntityQueryProvider??throw new ShardingCoreInvalidOperationException($"cant use sharding page that {nameof(IQueryable)} provider not {nameof(EntityQueryProvider)}");
 
-            var shardingQueryCompiler = entityQueryProvider.GetFieldValue("_queryCompiler") as ShardingQueryCompiler??throw new ShardingCoreInvalidOperationException($"cant use sharding page that {nameof(EntityQueryProvider)} not contains {nameof(ShardingQueryCompiler)} filed named _queryCompiler");
+            var shardingQueryCompiler = ObjectExtension.GetFieldValue(entityQueryProvider,"_queryCompiler") as ShardingQueryCompiler??throw new ShardingCoreInvalidOperationException($"cant use sharding page that {nameof(EntityQueryProvider)} not contains {nameof(ShardingQueryCompiler)} filed named _queryCompiler");
             var dbContextAvailable = shardingQueryCompiler as IShardingDbContextAvailable;
             if (dbContextAvailable == null)
             {
