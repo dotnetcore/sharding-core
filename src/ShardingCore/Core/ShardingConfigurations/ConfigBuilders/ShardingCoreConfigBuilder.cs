@@ -79,11 +79,12 @@ namespace ShardingCore.Core.ShardingConfigurations.ConfigBuilders
         [Obsolete("plz use AddShardingCore")]
         public void EnsureConfig()
         {
-             _services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeBuilder.Build(sp));
+             AddShardingCore();
         }
         public void AddShardingCore()
         {
-             _services.AddSingleton<IShardingRuntimeContext>(sp => _shardingRuntimeBuilder.Build(sp));
+            _services.AddSingleton<IShardingRuntimeContext<TShardingDbContext>>(sp => _shardingRuntimeBuilder.Build(sp));
+            _services.AddSingleton<IShardingRuntimeContext>(sp => sp.GetService<IShardingRuntimeContext<TShardingDbContext>>());
         }
         
     }

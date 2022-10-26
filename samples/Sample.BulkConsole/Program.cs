@@ -89,7 +89,16 @@ namespace Sample.BulkConsole
 
                 var b = DateTime.Now.Date.AddDays(-3);
                 var queryable = myShardingDbContext.Set<Order>().Select(o=>new {Id=o.Id,OrderNo=o.OrderNo, CreateTime =o.CreateTime });//.Where(o => o.CreateTime >= b);
-
+                var dateTime = DateTime.Now;
+                var dbContexts = myShardingDbContext.BulkShardingTableExpression<MyShardingDbContext,Order>(o=>o.CreateTime<=dateTime);
+                using (var dbContextTransaction = myShardingDbContext.Database.BeginTransaction())
+                {
+                    foreach (var dbContext in dbContexts)
+                    {
+                        dbContext.Set<Order>().Where(o=>o.CreateTime<=dateTime).BatchUpdate(a => new Order { OrderNo = "12345" });
+                    }
+                    dbContextTransaction.Commit();
+                }
                 var startNew1 = Stopwatch.StartNew();
 
 

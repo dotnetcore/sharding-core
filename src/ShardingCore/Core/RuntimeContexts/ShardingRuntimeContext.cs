@@ -31,7 +31,7 @@ using ShardingCore.TableCreator;
 
 namespace ShardingCore.Core.RuntimeContexts
 {
-    public sealed class ShardingRuntimeContext : IShardingRuntimeContext
+    public sealed class ShardingRuntimeContext<TDbContext> : IShardingRuntimeContext<TDbContext> where TDbContext:IShardingDbContext
     {
         private bool isInited = false;
         private object INIT_LOCK = new object();
@@ -42,12 +42,9 @@ namespace ShardingCore.Core.RuntimeContexts
         private IServiceCollection _serviceMap = new ServiceCollection();
 
         private IServiceProvider _serviceProvider;
-        public Type DbContextType { get; }
-        // private ILoggerFactory _applicationLoggerFactory;
-        public ShardingRuntimeContext(Type dbContextType)
-        {
-            DbContextType = dbContextType;
-        }
+
+        public Type DbContextType => typeof(TDbContext);
+     
 
         public void AddServiceConfig(Action<IServiceCollection> configure)
         {

@@ -174,12 +174,12 @@ namespace ShardingCore.Test
 
             await _virtualDbContext.AddRangeAsync(logDays);
             var bulkShardingExpression = _virtualDbContext.BulkShardingExpression<ShardingDefaultDbContext, Order>(o => new[] { "A", "B" }.Contains(o.Area));
+         
             Assert.Equal(2, bulkShardingExpression.Count);
             Assert.True(bulkShardingExpression.ContainsKey("A"));
             Assert.True(bulkShardingExpression.ContainsKey("B"));
 
             var bulkShardingTableExpression = _virtualDbContext.BulkShardingTableExpression<ShardingDefaultDbContext, SysUserMod>(o => o.Id == Guid.NewGuid().ToString());
-
             Assert.Equal(1, bulkShardingTableExpression.Count());
 
             var noShardingExpression = _virtualDbContext.BulkShardingExpression<ShardingDefaultDbContext, LogNoSharding>(o => o.Id == "123");

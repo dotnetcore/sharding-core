@@ -71,18 +71,18 @@ namespace ShardingCore
             return this;
         }
 
-        public IShardingRuntimeContext Build()
+        public IShardingRuntimeContext<TShardingDbContext> Build()
         {
             return Build(null);
         }
-        public IShardingRuntimeContext Build(IServiceProvider appServiceProvider)
+        public IShardingRuntimeContext<TShardingDbContext> Build(IServiceProvider appServiceProvider)
         {
             return Build(appServiceProvider, appServiceProvider?.GetService<ILoggerFactory>());
         }
         
-        public IShardingRuntimeContext Build(IServiceProvider appServiceProvider, ILoggerFactory loggerFactory)
+        public IShardingRuntimeContext<TShardingDbContext> Build(IServiceProvider appServiceProvider, ILoggerFactory loggerFactory)
         {
-            var shardingRuntimeContext = new ShardingRuntimeContext(typeof(TShardingDbContext));
+            var shardingRuntimeContext = new ShardingRuntimeContext<TShardingDbContext>();
             shardingRuntimeContext.AddServiceConfig(services =>
             {
                 // services.AddSingleton<IDbContextTypeCollector>(sp => new DbContextTypeCollector<TShardingDbContext>());

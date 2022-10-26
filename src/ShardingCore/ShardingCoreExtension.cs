@@ -106,14 +106,14 @@ namespace ShardingCore
         public static void UseDefaultSharding<TShardingDbContext>(this DbContextOptionsBuilder dbContextOptionsBuilder,
             IServiceProvider serviceProvider) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext<TShardingDbContext>>();
             dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
         }
 
         public static void UseDefaultSharding<TShardingDbContext>(IServiceProvider serviceProvider,
             DbContextOptionsBuilder dbContextOptionsBuilder) where TShardingDbContext : DbContext, IShardingDbContext
         {
-            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext>();
+            var shardingRuntimeContext = serviceProvider.GetRequiredService<IShardingRuntimeContext<TShardingDbContext>>();
             dbContextOptionsBuilder.UseDefaultSharding<TShardingDbContext>(shardingRuntimeContext);
         }
 
