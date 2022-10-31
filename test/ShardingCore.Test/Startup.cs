@@ -56,6 +56,7 @@ namespace ShardingCore.Test
                 })
                 .UseConfig(op =>
                 {
+                    //op.UseEntityFrameworkCoreProxies = true;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;
                     //忽略建表错误compensate table和table creator
