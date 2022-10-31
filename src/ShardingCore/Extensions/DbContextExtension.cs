@@ -324,7 +324,7 @@ namespace ShardingCore.Extensions
         public static TEntity GetAttachedEntity<TEntity>(this DbContext context, TEntity entity) where TEntity:class
         {
             if (entity == null) { throw new ArgumentNullException(nameof(entity)); }
-            var entityPrimaryKey = context.Model.FindEntityType(entity.GetType()).FindPrimaryKey();
+            var entityPrimaryKey = context.Model.FindRuntimeEntityType(entity.GetType()).FindPrimaryKey();
             if (entityPrimaryKey == null)
             {
                 return entity;
