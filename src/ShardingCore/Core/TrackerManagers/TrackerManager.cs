@@ -67,13 +67,16 @@ namespace ShardingCore.Core.TrackerManagers
 
         public Type TranslateEntityType(Type entityType)
         {
-            if (!_dbContextModels.ContainsKey(entityType))
+            if (_shardingConfigOptions.UseEntityFrameworkCoreProxies)
             {
-                if (_shardingConfigOptions.UseEntityFrameworkCoreProxies && entityType.BaseType != null)
+                if (!_dbContextModels.ContainsKey(entityType))
                 {
-                    if (_dbContextModels.ContainsKey(entityType.BaseType))
+                    if (entityType.BaseType != null)
                     {
-                        return entityType.BaseType;
+                        if (_dbContextModels.ContainsKey(entityType.BaseType))
+                        {
+                            return entityType.BaseType;
+                        }
                     }
                 }
             }
