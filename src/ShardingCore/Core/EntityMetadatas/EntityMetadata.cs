@@ -16,13 +16,16 @@ namespace ShardingCore.Core.EntityMetadatas
     /// 分表或者分库对象的元数据信息记录对象在ShardingCore框架下的一些简单的信息
     /// </summary>
     public class EntityMetadata
-    {private const string QueryFilter = "QueryFilter";
+    {
+        private const string QueryFilter = "QueryFilter";
+
         public EntityMetadata(Type entityType)
         {
             EntityType = entityType;
             ShardingDataSourceProperties = new Dictionary<string, PropertyInfo>();
             ShardingTableProperties = new Dictionary<string, PropertyInfo>();
         }
+
         /// <summary>
         /// 分表类型 sharding entity type
         /// </summary>
@@ -37,10 +40,12 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 是否分表
         /// </summary>
         public bool IsMultiTableMapping => null != ShardingTableProperty;
+
         /// <summary>
         /// 分库字段
         /// </summary>
         public PropertyInfo ShardingDataSourceProperty { get; private set; }
+
         /// <summary>
         /// 分库所有字段包括 ShardingDataSourceProperty
         /// </summary>
@@ -49,37 +54,39 @@ namespace ShardingCore.Core.EntityMetadatas
         /// <summary>
         /// 启动时是否建表 auto create data source when start app
         /// </summary>
-        public bool? AutoCreateDataSourceTable { get;  set; }
+        public bool? AutoCreateDataSourceTable { get; set; }
 
         /// <summary>
         /// 分表字段 sharding table property
         /// </summary>
         public PropertyInfo ShardingTableProperty { get; private set; }
+
         /// <summary>
         /// 分表所有字段包括 ShardingTableProperty
         /// </summary>
-        public IDictionary<string, PropertyInfo> ShardingTableProperties { get;}
+        public IDictionary<string, PropertyInfo> ShardingTableProperties { get; }
 
 
         /// <summary>
         /// 启动时是否建表 auto create table when start app
         /// </summary>
-        public bool? AutoCreateTable { get;  set; }
+        public bool? AutoCreateTable { get; set; }
 
         /// <summary>
         /// 分表隔离器 table sharding tail prefix
         /// </summary>
         public string TableSeparator { get; private set; } = "_";
-        
+
         /// <summary>
         /// 逻辑表名
         /// </summary>
         public string LogicTableName { get; private set; }
-        
+
         /// <summary>
         /// 主键
         /// </summary>
         public IReadOnlyList<PropertyInfo> PrimaryKeyProperties { get; private set; }
+
         /**
          * efcore query filter
          */
@@ -93,14 +100,14 @@ namespace ShardingCore.Core.EntityMetadatas
         public void SetEntityModel(IEntityType dbEntityType)
         {
             LogicTableName = dbEntityType.GetEntityTypeTableName();
-            QueryFilterExpression= dbEntityType.GetAnnotations().FirstOrDefault(o=>o.Name== QueryFilter)?.Value as LambdaExpression;
+            QueryFilterExpression =
+                dbEntityType.GetAnnotations().FirstOrDefault(o => o.Name == QueryFilter)?.Value as LambdaExpression;
             PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
                                    new List<PropertyInfo>();
-            IsSingleKey=PrimaryKeyProperties.Count == 1;
+            IsSingleKey = PrimaryKeyProperties.Count == 1;
         }
-        
-        
-        
+
+
         /// <summary>
         /// 设置分库字段
         /// </summary>
@@ -109,10 +116,12 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             Check.NotNull(propertyInfo, nameof(propertyInfo));
             if (ShardingDataSourceProperties.ContainsKey(propertyInfo.Name))
-                throw new ShardingCoreConfigException($"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
+                throw new ShardingCoreConfigException(
+                    $"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
             ShardingDataSourceProperty = propertyInfo;
             ShardingDataSourceProperties.Add(propertyInfo.Name, propertyInfo);
         }
+
         /// <summary>
         /// 添加额外分表字段
         /// </summary>
@@ -121,9 +130,11 @@ namespace ShardingCore.Core.EntityMetadatas
         public void AddExtraSharingDataSourceProperty(PropertyInfo propertyInfo)
         {
             if (ShardingDataSourceProperties.ContainsKey(propertyInfo.Name))
-                throw new ShardingCoreConfigException($"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
+                throw new ShardingCoreConfigException(
+                    $"same sharding data source property name:[{propertyInfo.Name}] don't repeat add");
             ShardingDataSourceProperties.Add(propertyInfo.Name, propertyInfo);
         }
+
         /// <summary>
         /// 设置分表字段
         /// </summary>
@@ -132,10 +143,12 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             Check.NotNull(propertyInfo, nameof(propertyInfo));
             if (ShardingTableProperties.ContainsKey(propertyInfo.Name))
-                throw new ShardingCoreConfigException($"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
+                throw new ShardingCoreConfigException(
+                    $"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
             ShardingTableProperty = propertyInfo;
             ShardingTableProperties.Add(propertyInfo.Name, propertyInfo);
         }
+
         /// <summary>
         /// 添加额外分表字段
         /// </summary>
@@ -144,7 +157,8 @@ namespace ShardingCore.Core.EntityMetadatas
         public void AddExtraSharingTableProperty(PropertyInfo propertyInfo)
         {
             if (ShardingTableProperties.ContainsKey(propertyInfo.Name))
-                throw new ShardingCoreConfigException($"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
+                throw new ShardingCoreConfigException(
+                    $"same sharding table property name:[{propertyInfo.Name}] don't repeat add");
             ShardingTableProperties.Add(propertyInfo.Name, propertyInfo);
         }
 
@@ -156,6 +170,7 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             TableSeparator = separator;
         }
+
         /// <summary>
         /// 启动时检查分库信息是否完整
         /// </summary>
@@ -165,11 +180,13 @@ namespace ShardingCore.Core.EntityMetadatas
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure");
             }
-            if(ShardingDataSourceProperty==null)
+
+            if (ShardingDataSourceProperty == null)
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
             }
         }
+
         /// <summary>
         /// 启动时检查分表信息是否完整
         /// </summary>
@@ -179,11 +196,13 @@ namespace ShardingCore.Core.EntityMetadatas
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure");
             }
+
             if (ShardingTableProperty == null)
             {
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure sharding property");
             }
         }
+
         /// <summary>
         /// 启动时检查对象信息是否完整
         /// </summary>
@@ -195,6 +214,7 @@ namespace ShardingCore.Core.EntityMetadatas
                 throw new ShardingCoreException($"not found  entity:{EntityType} configure");
             }
         }
+
         protected bool Equals(EntityMetadata other)
         {
             return Equals(EntityType, other.EntityType);

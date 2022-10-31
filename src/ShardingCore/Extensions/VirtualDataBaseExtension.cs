@@ -68,15 +68,15 @@ namespace ShardingCore.Extensions
 
 
         public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,string dataSourceName,
-            TEntity entity) where TEntity : class
+            TEntity entity,Type realEntityType) where TEntity : class
         {
-            var shardingRouteUnit = tableRouteManager.RouteTo(entity.GetType(),new ShardingTableRouteConfig(shardingTable: entity))[0];
+            var shardingRouteUnit = tableRouteManager.RouteTo(realEntityType,dataSourceName,new ShardingTableRouteConfig(shardingTable: entity))[0];
             return shardingRouteUnit.Tail;
         }
         public static string GetTableTail<TEntity>(this ITableRouteManager tableRouteManager,string dataSourceName,
-            object shardingKeyValue) where TEntity : class
+            object shardingKeyValue,Type realEntityType) where TEntity : class
         {
-            var shardingRouteUnit = tableRouteManager.RouteTo(typeof(TEntity),new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];
+            var shardingRouteUnit = tableRouteManager.RouteTo(realEntityType,dataSourceName,new ShardingTableRouteConfig(shardingKeyValue: shardingKeyValue))[0];
             return shardingRouteUnit.Tail;
         }
         public static bool IsVirtualDataSourceRoute(this Type routeType)

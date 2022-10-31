@@ -103,6 +103,7 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig(o =>
                 {
+                    o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false;
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
                     o.UseShardingQuery((conStr, builder) =>

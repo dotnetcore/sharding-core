@@ -14,6 +14,7 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.ShardingConfigurations;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
@@ -48,6 +49,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IDbContextCreator _dbContextCreator;
         private readonly IRouteTailFactory _routeTailFactory;
+        private readonly ITrackerManager _trackerManager;
         private readonly ActualConnectionStringManager _actualConnectionStringManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
 
@@ -77,6 +79,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _dbContextCreator = _shardingRuntimeContext.GetDbContextCreator();
             _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
             _routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
+            _trackerManager = _shardingRuntimeContext.GetTrackerManager();
             var shardingReadWriteManager = _shardingRuntimeContext.GetShardingReadWriteManager();
             var shardingProvider = _shardingRuntimeContext.GetShardingProvider();
             var loggerFactory = shardingProvider.GetRequiredService<ILoggerFactory>();
@@ -133,8 +136,9 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
-            var dataSourceName = GetDataSourceName(entity);
-            var tail = GetTableTail(dataSourceName, entity);
+            var realEntityType = _trackerManager.TranslateEntityType(entity.GetType());
+            var dataSourceName = GetDataSourceName(entity,realEntityType);
+            var tail = GetTableTail(dataSourceName, entity,realEntityType);
 
             return CreateDbContext(CreateDbContextStrategyEnum.ShareConnection, dataSourceName,
                 _routeTailFactory.Create(tail));
@@ -145,16 +149,16 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return _virtualDataSource;
         }
 
-        private string GetDataSourceName<TEntity>(TEntity entity) where TEntity : class
+        private string GetDataSourceName<TEntity>(TEntity entity,Type realEntityType) where TEntity : class
         {
-            return _dataSourceRouteManager.GetDataSourceName(entity);
+            return _dataSourceRouteManager.GetDataSourceName(entity,realEntityType);
         }
 
-        private string GetTableTail<TEntity>(string dataSourceName, TEntity entity) where TEntity : class
+        private string GetTableTail<TEntity>(string dataSourceName, TEntity entity,Type realEntityType) where TEntity : class
         {
-            if (!_entityMetadataManager.IsShardingTable(entity.GetType()))
+            if (!_entityMetadataManager.IsShardingTable(realEntityType))
                 return string.Empty;
-            return _tableRouteManager.GetTableTail(dataSourceName, entity);
+            return _tableRouteManager.GetTableTail(dataSourceName, entity,realEntityType);
         }
 
         #endregion

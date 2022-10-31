@@ -5,6 +5,7 @@ using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
 using Sample.MySql.Shardings;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
@@ -85,6 +86,11 @@ namespace Sample.MySql.Controllers
             // Console.WriteLine("------------");
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
+            
+            SysUserMod? resultX123 = await _defaultTableDbContext.Set<SysUserMod>()
+                .Where(o => o.Id == "2").FirstOrDefaultAsync();
+            _defaultTableDbContext.Update(resultX123);
+            _defaultTableDbContext.SaveChanges();
             var resultX1 = await _defaultTableDbContext.Set<SysUserMod>()
                                 .Where(o => o.Id == "2" || o.Id == "3").GroupBy(o => new { o.Id,o.Name })
                                 .Select(o => new 

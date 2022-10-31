@@ -18,5 +18,6 @@ namespace ShardingCore.Core.TrackerManagers
         bool AddDbContextModel(Type entityType,bool hasKey);
         bool EntityUseTrack(Type entityType);
         bool IsDbContextModel(Type entityType);
+        Type TranslateEntityType(Type entityType);
     }
 }

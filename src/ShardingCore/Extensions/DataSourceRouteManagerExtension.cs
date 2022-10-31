@@ -22,10 +22,10 @@ namespace ShardingCore.Extensions
     public static class DataSourceRouteManagerExtension
     {
         
-        public static string GetDataSourceName<TEntity>(this IDataSourceRouteManager dataSourceRouteManager,TEntity entity)where TEntity : class
+        public static string GetDataSourceName<TEntity>(this IDataSourceRouteManager dataSourceRouteManager,TEntity entity,Type realEntityType)where TEntity : class
         {
 
-            return dataSourceRouteManager.RouteTo(entity.GetType(),
+            return dataSourceRouteManager.RouteTo(realEntityType,
                 new ShardingDataSourceRouteConfig(shardingDataSource: entity))[0];
         }
 

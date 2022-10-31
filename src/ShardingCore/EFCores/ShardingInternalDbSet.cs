@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Exceptions;
@@ -107,6 +108,21 @@ namespace ShardingCore.EFCores
                 }
 
                 return _entityMetadataManager;
+            }
+        }
+
+        private ITrackerManager _trackerManager;
+
+        protected ITrackerManager TrackerManager
+        {
+            get
+            {
+                if (null == _trackerManager)
+                {
+                    _trackerManager = _shardingRuntimeContext.GetTrackerManager();
+                }
+
+                return _trackerManager;
             }
         }
 
@@ -445,7 +461,8 @@ namespace ShardingCore.EFCores
                     if (primaryKeyValue != null)
                     {
                         var dataSourceName = GetDataSourceName(primaryKeyValue);
-                        var tableTail = TableRouteManager.GetTableTail<TEntity>(dataSourceName, primaryKeyValue);
+                        var realEntityType = TrackerManager.TranslateEntityType(typeof(TEntity));
+                        var tableTail = TableRouteManager.GetTableTail<TEntity>(dataSourceName, primaryKeyValue,realEntityType);
                         var routeTail = _shardingRuntimeContext.GetRouteTailFactory().Create(tableTail);
                         return _context.GetShareDbContext(dataSourceName, routeTail);
                     }

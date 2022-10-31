@@ -19,6 +19,13 @@ namespace Sample.MySql.DbContexts
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //Database.SetCommandTimeout(30000);
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+
         private readonly MethodInfo? _configureGlobalFiltersMethodInfo =
             typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 

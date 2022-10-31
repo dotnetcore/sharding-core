@@ -13,6 +13,11 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions
     {
         /// <summary>
+        /// 是否使用代理模式
+        /// </summary>
+        public bool UseEntityFrameworkCoreProxies { get; set; } = false;
+
+        /// <summary>
         /// 写操作数据库后自动使用写库链接防止读库链接未同步无法查询到数据
         /// </summary>
         public bool AutoUseWriteConnectionStringAfterWriteDb { get; set; } = false;
