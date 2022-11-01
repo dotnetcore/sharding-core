@@ -85,7 +85,7 @@ namespace ShardingCore.Extensions
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             foreach (var entityType in entityTypes)
             {
-                if (entityType.GetFieldValue("_data") is List<object> _data)
+                if (entityType.Value.GetFieldValue("_data") is List<object> _data)
                 {
                     _data.Clear();
                 }
@@ -186,7 +186,7 @@ namespace ShardingCore.Extensions
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
             foreach (var entityType in entityTypes)
             {
-                if (entityType.GetFieldValue("_data") is List<object> _data)
+                if (entityType.Value.GetFieldValue("_data") is List<object> _data)
                 {
                     _data.Clear();
                 }
