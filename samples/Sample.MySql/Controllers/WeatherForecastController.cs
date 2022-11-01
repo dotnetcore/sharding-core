@@ -87,10 +87,10 @@ namespace Sample.MySql.Controllers
             // using (var tran = _defaultTableDbContext.Database.BeginTransaction())
             // {
             
-            SysUserMod? resultX123 = await _defaultTableDbContext.Set<SysUserMod>()
-                .Where(o => o.Id == "2").FirstOrDefaultAsync();
-            _defaultTableDbContext.Update(resultX123);
-            _defaultTableDbContext.SaveChanges();
+            // SysUserMod? resultX123 = await _defaultTableDbContext.Set<SysUserMod>()
+            //     .Where(o => o.Id == "2").FirstOrDefaultAsync();
+            // _defaultTableDbContext.Update(resultX123);
+            // _defaultTableDbContext.SaveChanges();
             var resultX1 = await _defaultTableDbContext.Set<SysUserMod>()
                                 .Where(o => o.Id == "2" || o.Id == "3").GroupBy(o => new { o.Id,o.Name })
                                 .Select(o => new 

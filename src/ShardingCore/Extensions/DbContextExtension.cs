@@ -47,6 +47,14 @@ namespace ShardingCore.Extensions
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if NET6_0
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
             var valueTuples =
                 contextModelRelationalModel.Tables.Where(o =>o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
@@ -56,6 +64,14 @@ namespace ShardingCore.Extensions
             }
 #endif
 #if NET5_0 || NETSTANDARD2_1
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
  contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => entityMetadataManager.IsShardingTable(m.EntityType.ClrType))).Select(o => o.Key).ToList();
@@ -67,6 +83,13 @@ namespace ShardingCore.Extensions
 #if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var list = entityTypes.Where(o=>entityMetadataManager.IsShardingTable(o.Value.ClrType)).Select(o=>o.Key).ToList();
             for (int i = 0; i < list.Count; i++)
             {
@@ -124,6 +147,14 @@ namespace ShardingCore.Extensions
             var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
 
 #if NET6_0
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var contextModelRelationalModel = contextModel.GetRelationalModel() as RelationalModel;
             var valueTuples =
                 contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => !entityMetadataManager.IsShardingDataSource(m.EntityType.ClrType) ||entityMetadataManager.TryGet(m.EntityType.ClrType)==null)).Select(o => o.Key).ToList();
@@ -133,6 +164,14 @@ namespace ShardingCore.Extensions
             }
 #endif
 #if NET5_0 || NETSTANDARD2_1
+            var entityTypes = contextModel.GetEntityTypes();
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var contextModelRelationalModel = contextModel.RelationalModel as RelationalModel;
             var valueTuples =
  contextModelRelationalModel.Tables.Where(o => o.Value.EntityTypeMappings.Any(m => !entityMetadataManager.IsShardingDataSource(m.EntityType.ClrType)||entityMetadataManager.TryGet(m.EntityType.ClrType)==null)).Select(o => o.Key).ToList();
@@ -142,8 +181,16 @@ namespace ShardingCore.Extensions
             }
 #endif
 #if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
+            
             var entityTypes =
                 contextModel.GetFieldValue("_entityTypes") as SortedDictionary<string, EntityType>;
+            foreach (var entityType in entityTypes)
+            {
+                if (entityType.GetFieldValue("_data") is List<object> _data)
+                {
+                    _data.Clear();
+                }
+            }
             var list = entityTypes.Where(o => !entityMetadataManager.IsShardingDataSource(o.Value.ClrType) || entityMetadataManager.TryGet(o.Value.ClrType) == null).Select(o => o.Key).ToList();
             for (int i = 0; i < list.Count; i++)
             {

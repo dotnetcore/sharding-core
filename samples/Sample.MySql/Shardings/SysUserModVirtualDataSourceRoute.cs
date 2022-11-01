@@ -9,14 +9,14 @@ public class SysUserModVirtualDataSourceRoute:AbstractShardingOperatorVirtualDat
 {
     public override string ShardingKeyToDataSourceName(object shardingKey)
     {
-        return $"{shardingKey}";
+        return $"{((string)shardingKey=="ds1"?"ds1":"ds2")}";
     }
 
     public override List<string> GetAllDataSourceNames()
     {
         return new List<string>()
         {
-            "ds0", "ds1", "ds2"
+             "ds1", "ds2"
         };
     }
 

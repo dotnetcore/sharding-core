@@ -16,7 +16,6 @@ using ShardingCore.Core.VirtualRoutes.Abstractions;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
-
 using ShardingCore.Sharding.Abstractions;
 using ShardingCore.TableExists.Abstractions;
 
@@ -24,7 +23,7 @@ namespace ShardingCore.DynamicDataSources
 {
     public class DataSourceInitializer : IDataSourceInitializer
     {
-        private  readonly ILogger<DataSourceInitializer> _logger ;
+        private readonly ILogger<DataSourceInitializer> _logger;
 
         private readonly IShardingProvider _shardingProvider;
         private readonly IDbContextCreator _dbContextCreator;
@@ -48,7 +47,7 @@ namespace ShardingCore.DynamicDataSources
             IEntityMetadataManager entityMetadataManager,
             IShardingTableCreator shardingTableCreator,
             ITableEnsureManager tableEnsureManager,
-            ILogger<DataSourceInitializer> logger )
+            ILogger<DataSourceInitializer> logger)
         {
             _shardingProvider = shardingProvider;
             _dbContextCreator = dbContextCreator;
@@ -63,7 +62,7 @@ namespace ShardingCore.DynamicDataSources
             _logger = logger;
         }
 
-        public void InitConfigure(string dataSourceName,bool createDatabase,bool createTable)
+        public void InitConfigure(string dataSourceName, bool createDatabase, bool createTable)
         {
             using (var shardingScope = _shardingProvider.CreateScope())
             {
@@ -72,38 +71,32 @@ namespace ShardingCore.DynamicDataSources
                     var isDefault = _virtualDataSource.IsDefault(dataSourceName);
                     if (createDatabase)
                     {
-                        EnsureCreated(isDefault,shellDbContext,dataSourceName);
+                        EnsureCreated(isDefault, shellDbContext, dataSourceName);
                     }
 
                     if (createTable)
                     {
-                        var existTables = _tableEnsureManager.GetExistTables((IShardingDbContext)shellDbContext,dataSourceName);
+                        var existTables =
+                            _tableEnsureManager.GetExistTables((IShardingDbContext)shellDbContext, dataSourceName);
                         var allShardingEntities = _entityMetadataManager.GetAllShardingEntities();
                         foreach (var entityType in allShardingEntities)
                         {
-                            //如果是默认数据源
-                            if (_virtualDataSource.IsDefault(dataSourceName))
+                            var entityMetadata = _entityMetadataManager.TryGet(entityType);
+                            if (entityMetadata.IsShardingDataSource())
                             {
-                                if (_entityMetadataManager.IsShardingTable(entityType))
+                                var virtualDataSourceRoute = _dataSourceRouteManager.GetRoute(entityType);
+                                //如果是分库对象就要判断是否含有当前数据源
+                                if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
                                 {
-                                    var virtualTableRoute = _tableRouteManager.GetRoute(entityType);
-                                    CreateDataTable(dataSourceName, virtualTableRoute, existTables);
+                                    CreateDataTable(dataSourceName, entityMetadata, existTables);
                                 }
                             }
+                            //不是分库对象
                             else
                             {
-                                //非默认数据源
-                                if (_entityMetadataManager.IsShardingDataSource(entityType))
+                                if (_virtualDataSource.IsDefault(dataSourceName))
                                 {
-                                    var virtualDataSourceRoute = _dataSourceRouteManager.GetRoute(entityType);
-                                    if (virtualDataSourceRoute.GetAllDataSourceNames().Contains(dataSourceName))
-                                    {
-                                        if (_entityMetadataManager.IsShardingTable(entityType))
-                                        {
-                                            var virtualTableRoute = _tableRouteManager.GetRoute(entityType);
-                                            CreateDataTable(dataSourceName, virtualTableRoute,existTables);
-                                        }
-                                    }
+                                    CreateDataTable(dataSourceName, entityMetadata, existTables);
                                 }
                             }
                         }
@@ -111,6 +104,7 @@ namespace ShardingCore.DynamicDataSources
                 }
             }
         }
+
         private void EnsureCreated(bool isDefault, DbContext context,
             string dataSourceName)
         {
@@ -128,7 +122,7 @@ namespace ShardingCore.DynamicDataSources
                     {
                         dbContext.RemoveDbContextAllRelationModelWithoutShardingDataSourceOnly();
                     }
-        
+
                     dbContext.Database.EnsureCreated();
                 }
             }
@@ -138,17 +132,18 @@ namespace ShardingCore.DynamicDataSources
                     $"{nameof(IDbContextCreator)}.{nameof(IDbContextCreator.GetShellDbContext)} db context type not impl {nameof(IShardingDbContext)}");
             }
         }
-        private void CreateDataTable(string dataSourceName, IVirtualTableRoute tableRoute, ISet<string> existTables)
+
+        // private void CreateDataTable(string dataSourceName, IVirtualTableRoute tableRoute, ISet<string> existTables)
+        private void CreateDataTable(string dataSourceName, EntityMetadata entityMetadata, ISet<string> existTables)
         {
-            var entityMetadata = tableRoute.EntityMetadata;
-            foreach (var tail in tableRoute.GetTails())
+            if (!entityMetadata.IsShardingTable())
             {
-                var physicTableName = $"{entityMetadata.LogicTableName}{entityMetadata.TableSeparator}{tail}";
+                var physicTableName = $"{entityMetadata.LogicTableName}";
                 try
                 {
                     //添加物理表
                     if (!existTables.Contains(physicTableName))
-                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
+                        _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, string.Empty);
                 }
                 catch (Exception e)
                 {
@@ -159,7 +154,28 @@ namespace ShardingCore.DynamicDataSources
                     }
                 }
             }
+            else
+            {
+                var tableRoute = _tableRouteManager.GetRoute(entityMetadata.EntityType);
+                foreach (var tail in tableRoute.GetTails())
+                {
+                    var physicTableName = $"{entityMetadata.LogicTableName}{entityMetadata.TableSeparator}{tail}";
+                    try
+                    {
+                        //添加物理表
+                        if (!existTables.Contains(physicTableName))
+                            _tableCreator.CreateTable(dataSourceName, entityMetadata.EntityType, tail);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!_shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
+                        {
+                            _logger.LogWarning(e,
+                                $"table :{physicTableName} will created.");
+                        }
+                    }
+                }
+            }
         }
-        
     }
 }

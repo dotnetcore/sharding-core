@@ -11,7 +11,7 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.MySql.DbContexts
 {
-    public class DefaultShardingDbContext:AbstractShardingDbContext, IShardingTableDbContext
+    public class DefaultShardingDbContext : AbstractShardingDbContext, IShardingTableDbContext
     {
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
@@ -20,14 +20,15 @@ namespace Sample.MySql.DbContexts
             //Database.SetCommandTimeout(30000);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseLazyLoadingProxies();
-        }
+        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        // {
+        //     base.OnConfiguring(optionsBuilder);
+        //     optionsBuilder.UseLazyLoadingProxies();
+        // }
 
         private readonly MethodInfo? _configureGlobalFiltersMethodInfo =
-            typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
+            typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters),
+                BindingFlags.Instance | BindingFlags.NonPublic);
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,7 +41,7 @@ namespace Sample.MySql.DbContexts
             modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
         }
 
-        
+
         protected void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType)
             where TEntity : class
         {
@@ -53,17 +54,18 @@ namespace Sample.MySql.DbContexts
         {
             Expression<Func<TEntity, bool>>? expression = null;
             if (typeof(TEntity) == typeof(SysTest))
-            {  
+            {
                 expression = e => ((IUser)e).UserId == "123";
-              
-            }  if (typeof(TEntity) == typeof(SysUserMod))
-            {  
+            }
+
+            if (typeof(TEntity) == typeof(SysUserMod))
+            {
                 expression = e => ((IAge)e).Age == 99;
-              
             }
 
             return expression;
         }
+
         public IRouteTail RouteTail { get; set; }
     }
 }

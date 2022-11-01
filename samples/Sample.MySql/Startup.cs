@@ -103,8 +103,8 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig(o =>
                 {
-                    o.UseEntityFrameworkCoreProxies = true;
-                    o.ThrowIfQueryRouteNotMatch = false;
+                    // o.UseEntityFrameworkCoreProxies = true;
+                    o.ThrowIfQueryRouteNotMatch = false; 
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
                     o.UseShardingQuery((conStr, builder) =>
                     {
@@ -185,14 +185,14 @@ namespace Sample.MySql
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-                // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
-                {
-                        defaultShardingDbContext.Database.Migrate();
-                }
-            }
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
+            //     {
+            //             defaultShardingDbContext.Database.Migrate();
+            //     }
+            // }
             app.ApplicationServices.UseAutoTryCompensateTable();
             // using (var scope = app.ApplicationServices.CreateScope())
             // {
