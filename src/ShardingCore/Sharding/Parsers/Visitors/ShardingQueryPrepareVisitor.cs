@@ -78,6 +78,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             return base.VisitExtension(node);
         }
 #endif
+
         private void TryAddShardingEntities(Type entityType, IQueryable queryable)
         {
             if (!shardingEntities.ContainsKey(entityType))
@@ -130,10 +131,14 @@ namespace ShardingCore.Sharding.Parsers.Visitors
                 case nameof(EntityFrameworkQueryableExtensions.AsNoTracking): isNoTracking = true; break;
                 case nameof(EntityFrameworkQueryableExtensions.AsTracking): isNoTracking = false; break;
                 case nameof(EntityFrameworkQueryableExtensions.IgnoreQueryFilters): isIgnoreFilter = true; break;
-                case nameof(EntityFrameworkQueryableExtensions.Include):
-                case nameof(EntityFrameworkQueryableExtensions.ThenInclude): DiscoverQueryEntities(node); break;
+                // case nameof(EntityFrameworkQueryableExtensions.Include):
+                // case nameof(EntityFrameworkQueryableExtensions.ThenInclude): DiscoverQueryEntities(node); break;
                 default:
                     {
+                        if (node.Method.ReturnType.IsMethodReturnTypeQueryableType()&&node.Method.ReturnType.IsGenericType)
+                        {
+                            DiscoverQueryEntities(node);
+                        }
                         var customerExpression = DiscoverCustomerQueryEntities(node);
                         if (customerExpression != null)
                         {
@@ -199,6 +204,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             for (var i = 0; i < genericArguments.Length; i++)
             {
                 var genericArgument = genericArguments[i];
+                
                 if (typeof(IEnumerable).IsAssignableFrom(genericArgument))
                 {
                     var arguments = genericArgument.GetGenericArguments();

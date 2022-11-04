@@ -107,8 +107,14 @@ namespace Sample.MySql.Controllers
                     name = o.Key.Name,
                     count = o.Count()
                 }).ToListAsync();
-            
-            
+         var x=await   (from ut in _defaultTableDbContext.Set<SysTest>()
+             from uu in _defaultTableDbContext.Set<SysUserMod>()
+             where ut.Id == uu.Id
+                select ut).FirstOrDefaultAsync();
+         var x1=await   (from ut in _defaultTableDbContext.Set<SysUserMod>()
+                from uu in _defaultTableDbContext.Set<SysTest>()
+                    where ut.Id == uu.Id
+                select ut).FirstOrDefaultAsync();
             // var firstOrDefault = _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw($"select * from {nameof(SysUserMod)}").FirstOrDefault();
 
             var sysUserMods1 = _defaultTableDbContext.Set<SysTest>().UseConnectionMode(1)
