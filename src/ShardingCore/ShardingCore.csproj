@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>net6;</TargetFrameworks>
+        <TargetFrameworks>net6;net7;</TargetFrameworks>
         <Version>$(SHARDINGCORE7)</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;SHARDINGCORE7;</DefineConstants>
