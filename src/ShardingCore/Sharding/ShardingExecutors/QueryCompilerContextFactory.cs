@@ -28,6 +28,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
         private static readonly IQueryableCombine _constantQueryableCombine;
         private static readonly IQueryableCombine _selectQueryableCombine;
         private static readonly IQueryableCombine _whereQueryableCombine;
+        private static readonly IQueryableCombine _executeUpdateQueryableCombine;
+        private static readonly IQueryableCombine _executeDeleteQueryableCombine;
 
         static QueryCompilerContextFactory()
         {
@@ -36,6 +38,8 @@ namespace ShardingCore.Sharding.ShardingExecutors
             _constantQueryableCombine = new ConstantQueryableCombine();
             _selectQueryableCombine = new SelectQueryableCombine();
             _whereQueryableCombine = new WhereQueryableCombine();
+            _executeUpdateQueryableCombine = new ExecuteUpdateQueryableCombine();
+            _executeDeleteQueryableCombine = new ExecuteDeleteQueryableCombine();
         }
 
         public QueryCompilerContextFactory(IDataSourceRouteRuleEngineFactory dataSourceRouteRuleEngineFactory,ITableRouteRuleEngineFactory tableRouteRuleEngineFactory,ILogger<QueryCompilerContextFactory> logger)
@@ -114,6 +118,10 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     case nameof(Queryable.LongCount):
                     case nameof(Queryable.Any):
                         return _whereQueryableCombine;
+                    case "ExecuteUpdate":
+                        return _executeUpdateQueryableCombine;
+                    case "ExecuteDelete":
+                        return _executeDeleteQueryableCombine;
                     case nameof(Queryable.All):
                         return _allQueryableCombine;
                     case nameof(Queryable.Max):
