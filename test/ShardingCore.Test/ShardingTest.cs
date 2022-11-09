@@ -282,7 +282,7 @@ namespace ShardingCore.Test
         {
             _virtualDbContext.ReadWriteSeparationReadOnly();
             var connectionString1 = _connectionStringManager.GetConnectionString(_virtualDataSource.DefaultDataSourceName, true);
-            Assert.Equal(connectionString1, "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
+            Assert.Equal(connectionString1, "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;TrustServerCertificate=True;");
             _virtualDbContext.ReadWriteSeparationWriteOnly();
         }
         //[Fact]

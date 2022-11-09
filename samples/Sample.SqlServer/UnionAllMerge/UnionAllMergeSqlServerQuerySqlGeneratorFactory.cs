@@ -16,16 +16,18 @@ namespace Sample.SqlServer.UnionAllMerge
     public class UnionAllMergeSqlServerQuerySqlGeneratorFactory<TShardingDbContext> : IQuerySqlGeneratorFactory, IUnionAllMergeQuerySqlGeneratorFactory
     where TShardingDbContext : DbContext, IShardingDbContext
     {
+        private readonly IRelationalTypeMappingSource _typeMappingSource;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public UnionAllMergeSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext)
+        public UnionAllMergeSqlServerQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies, IRelationalTypeMappingSource typeMappingSource, IShardingRuntimeContext shardingRuntimeContext)
         {
+            _typeMappingSource = typeMappingSource;
             _shardingRuntimeContext = shardingRuntimeContext;
             Dependencies = dependencies;
         }
 
         public QuerySqlGeneratorDependencies Dependencies { get; }
-        public QuerySqlGenerator Create() => new UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies,_shardingRuntimeContext);
+        public QuerySqlGenerator Create() => new UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext>(Dependencies, _typeMappingSource, _shardingRuntimeContext);
     }
 
     public class UnionAllMergeSqlServerQuerySqlGenerator<TShardingDbContext> : SqlServerQuerySqlGenerator
@@ -35,13 +37,19 @@ namespace Sample.SqlServer.UnionAllMerge
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IUnionAllMergeManager _unionAllMergeManager;
 
-        public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext)
-            : base(dependencies)
+        public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies, IRelationalTypeMappingSource typeMappingSource, IShardingRuntimeContext shardingRuntimeContext) : base(dependencies, typeMappingSource)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
             _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             _unionAllMergeManager = shardingRuntimeContext.GetRequiredService<IUnionAllMergeManager>();
         }
+        //public UnionAllMergeSqlServerQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext)
+        //    : base(dependencies)
+        //{
+        //    _shardingRuntimeContext = shardingRuntimeContext;
+        //    _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
+        //    _unionAllMergeManager = shardingRuntimeContext.GetRequiredService<IUnionAllMergeManager>();
+        //}
 
         protected override Expression VisitTable(TableExpression tableExpression)
         {
@@ -89,5 +97,6 @@ namespace Sample.SqlServer.UnionAllMerge
             var result = base.VisitTable(tableExpression);
             return result;
         }
+
     }
 }

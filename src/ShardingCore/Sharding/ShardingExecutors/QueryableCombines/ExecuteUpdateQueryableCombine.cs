@@ -12,7 +12,7 @@ namespace ShardingCore.Sharding.ShardingExecutors.QueryableCombines
     {
         public override IQueryable DoCombineQueryable(IQueryable queryable, Expression secondExpression, IQueryCompilerContext queryCompilerContext)
         {
-            if (!(secondExpression is ConstantExpression))
+            if (!(secondExpression is UnaryExpression where && where.Operand is LambdaExpression lambdaExpression))
             {
                 throw new ShardingCoreInvalidOperationException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }

@@ -56,8 +56,14 @@ namespace Sample.SqlServer
                         builder.UseLoggerFactory(loggerFactory).UseUnionAllMerge<DefaultShardingDbContext>();
                     });
                     op.AddDefaultDataSource("A",
-                      "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;"
+                      "Data Source=localhost;Initial Catalog=ShardingCoreDBXA;Integrated Security=True;TrustServerCertificate=True;"
                      );
+                    op.UseShardingMigrationConfigure(o =>
+                    {
+                        o.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
+                    });
+
+
                 }).AddServiceConfigure(s =>
                 {
                     s.AddSingleton<ILoggerFactory>(sp => LoggerFactory.Create(builder =>
@@ -121,9 +127,7 @@ namespace Sample.SqlServer
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
                 var defaultShardingDbContext = serviceScope.ServiceProvider.GetService<DefaultShardingDbContext>();
-              
-                var migrator = defaultShardingDbContext.GetService<IMigrator>();
-                migrator.Migrate("InitialCreate");
+                defaultShardingDbContext.Database.Migrate();
             }
             app.ApplicationServices.UseAutoTryCompensateTable();
 

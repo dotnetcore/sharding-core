@@ -390,6 +390,23 @@ namespace Sample.SqlServer.Controllers
                 .FirstOrDefaultAsync();
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get8()
+        
+        {
+            
+            
+            var resultx112331tt2 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "3").FirstOrDefaultAsync();
+            var xx=await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Id == "3")
+                .ExecuteUpdateAsync(
+                 s => s.SetProperty(b => b.Name, b => b.Name + "1"));
+            var xx1 = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Name == "name_3")
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(b => b.Age, b => b.Age + 1));
+         
+
+            return Ok();
+        }
 
     }
 }
