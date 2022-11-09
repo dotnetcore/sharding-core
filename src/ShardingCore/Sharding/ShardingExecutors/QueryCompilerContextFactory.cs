@@ -9,6 +9,7 @@ using ShardingCore.Sharding.ShardingExecutors.QueryableCombines;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using ShardingCore.Core;
 using ShardingCore.Extensions.InternalExtensions;
 
@@ -118,10 +119,12 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     case nameof(Queryable.LongCount):
                     case nameof(Queryable.Any):
                         return _whereQueryableCombine;
-                    case "ExecuteUpdate":
+#if SHARDINGCORE7
+                    case nameof(RelationalQueryableExtensions.ExecuteUpdate):
                         return _executeUpdateQueryableCombine;
-                    case "ExecuteDelete":
+                    case nameof(RelationalQueryableExtensions.ExecuteDelete):
                         return _executeDeleteQueryableCombine;
+#endif
                     case nameof(Queryable.All):
                         return _allQueryableCombine;
                     case nameof(Queryable.Max):

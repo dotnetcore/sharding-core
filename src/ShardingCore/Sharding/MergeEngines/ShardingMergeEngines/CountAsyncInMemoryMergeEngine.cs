@@ -19,28 +19,6 @@ namespace ShardingCore.Sharding.StreamMergeEngines
         public CountAsyncInMemoryMergeEngine(StreamMergeContext streamStreamMergeContext) : base(streamStreamMergeContext)
         {
         }
-        //
-        // protected override int DoMergeResult(List<RouteQueryResult<int>> resultList)
-        // {
-        //
-        //     if (_shardingPageManager.Current != null)
-        //     {
-        //         int r = 0;
-        //         foreach (var routeQueryResult in resultList)
-        //         {
-        //             _shardingPageManager.Current.RouteQueryResults.Add(new RouteQueryResult<long>(routeQueryResult.DataSourceName, routeQueryResult.TableRouteResult, routeQueryResult.QueryResult));
-        //             r += routeQueryResult.QueryResult;
-        //         }
-        //
-        //         return r;
-        //     }
-        //     return resultList.Sum(o => o.QueryResult);
-        // }
-        //
-        // protected override IExecutor<RouteQueryResult<int>> CreateExecutor0(bool async)
-        // {
-        //     return new CountMethodExecutor<TEntity>(GetStreamMergeContext());
-        // }
         protected override IExecutor<RouteQueryResult<int>> CreateExecutor()
         {
             return new CountMethodExecutor<TEntity>(GetStreamMergeContext());
