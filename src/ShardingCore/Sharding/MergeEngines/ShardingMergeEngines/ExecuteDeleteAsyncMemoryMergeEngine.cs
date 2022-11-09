@@ -1,3 +1,4 @@
+#if SHARDINGCORE7
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.InMemoryMerge;
@@ -16,3 +17,5 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines
         }
     }
 }
+
+#endif
