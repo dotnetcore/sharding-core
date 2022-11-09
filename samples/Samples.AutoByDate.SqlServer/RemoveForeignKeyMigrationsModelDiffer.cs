@@ -20,9 +20,6 @@ namespace Samples.AutoByDate.SqlServer
         {
             nameof(SysUserLog1ByDay)
         };
-        public RemoveForeignKeyMigrationsModelDiffer(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotations, IChangeDetector changeDetector, IUpdateAdapterFactory updateAdapterFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
-        {
-        }
 
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel? source, IRelationalModel? target)
         {
@@ -33,6 +30,10 @@ namespace Samples.AutoByDate.SqlServer
                 operation.ForeignKeys?.Clear();
             }
             return sourceOperations;
+        }
+
+        public RemoveForeignKeyMigrationsModelDiffer(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotations, IChangeDetector changeDetector, IUpdateAdapterFactory updateAdapterFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
+        {
         }
     }
 }

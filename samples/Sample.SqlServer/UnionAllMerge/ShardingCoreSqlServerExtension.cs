@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core.ShardingConfigurations;
-using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.EFCores;
 using ShardingCore.Sharding.Abstractions;
 
 namespace Sample.SqlServer.UnionAllMerge

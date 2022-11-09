@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.EFCores;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 

@@ -1,4 +1,4 @@
-﻿#if NET5_0 || NETSTANDARD2_1
+﻿#if (NET5_0 || NETSTANDARD2_1)&&SHARDINGCORE2_6
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
-using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.EFCores;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;

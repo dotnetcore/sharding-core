@@ -1,4 +1,4 @@
-#if NET6_0
+#if NET6_0&&SHARDINGCORE2_6
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 

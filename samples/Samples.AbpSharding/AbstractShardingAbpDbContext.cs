@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ShardingCore.EFCores.OptionsExtensions;
+using ShardingCore.EFCores;
 using ShardingCore.Helpers;
 using ShardingCore.Utils;
 using Volo.Abp.Domain.Entities;

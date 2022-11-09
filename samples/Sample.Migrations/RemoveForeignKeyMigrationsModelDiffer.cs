@@ -22,9 +22,6 @@ namespace Sample.Migrations
     [SuppressMessage("Usage", "EF1001:Internal EF Core API usage.", Justification = "<挂起>")]
     public class RemoveForeignKeyMigrationsModelDiffer:MigrationsModelDiffer
     {
-        public RemoveForeignKeyMigrationsModelDiffer(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotations, IChangeDetector changeDetector, IUpdateAdapterFactory updateAdapterFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
-        {
-        }
 
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel? source, IRelationalModel? target)
         {
@@ -35,6 +32,10 @@ namespace Sample.Migrations
                 operation.ForeignKeys?.Clear();
             }
             return sourceOperations;
+        }
+
+        public RemoveForeignKeyMigrationsModelDiffer(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotations, IChangeDetector changeDetector, IUpdateAdapterFactory updateAdapterFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
+        {
         }
     }
 }
