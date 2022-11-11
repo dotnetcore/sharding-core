@@ -71,12 +71,12 @@ namespace Sample.SqlServerShardingTable
             //            }
             //        };
             //    },ReadStrategyEnum.Loop,defaultEnable:true).End();
-            services.AddShardingDbContext<MyDbContext>().AddEntityConfig(op =>
+            services.AddShardingDbContext<MyDbContext>().UseRouteConfig(op =>
             {
                 op.AddShardingTableRoute<SysUserVirtualTableRoute>();
                 op.AddShardingTableRoute<OrderVirtualTableRoute>();
                 op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-            }).AddConfig(op =>
+            }).UseConfig(op =>
             {
                 //当无法获取路由时会返回默认值而不是报错
                 op.ThrowIfQueryRouteNotMatch = false;
@@ -94,15 +94,15 @@ namespace Sample.SqlServerShardingTable
                 {
                     return new Dictionary<string, IEnumerable<string>>()
                     {
-                        //{
-                        //    "ds0", new List<string>()
-                        //    {
-                        //        "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
-                        //    }
-                        //}
+                        {
+                            "ds0", new List<string>()
+                            {
+                                "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
+                            }
+                        }
                     };
                 }, ReadStrategyEnum.Loop, defaultEnable: true);
-            }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
+            }).AddShardingCore();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -113,7 +113,16 @@ namespace Sample.SqlServerShardingTable
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseShardingCore();
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var myDbContext = scope.ServiceProvider.GetService<MyDbContext>();
+                //如果没有迁移那么就直接创建表和库
+                myDbContext.Database.EnsureCreated();
+                //如果有迁移使用下面的
+                // myDbContext.Database.Migrate();
+            }
+            app.ApplicationServices.UseAutoTryCompensateTable();
+            // app.UseShardingCore();
             app.UseRouting();
 
             app.UseAuthorization();

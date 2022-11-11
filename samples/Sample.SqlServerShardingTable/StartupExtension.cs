@@ -12,10 +12,10 @@ namespace Sample.SqlServerShardingTable
 {
     public static class StartupExtension
     {
-        public static void UseShardingCore(this IApplicationBuilder app)
-        {
-            app.ApplicationServices.UseAutoTryCompensateTable();
-        }
+        // public static void UseShardingCore(this IApplicationBuilder app)
+        // {
+        //     app.ApplicationServices.UseAutoTryCompensateTable();
+        // }
         public static void InitSeed(this IApplicationBuilder app)
         {
             using (var serviceScope = app.ApplicationServices.CreateScope())
