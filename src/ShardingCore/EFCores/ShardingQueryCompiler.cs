@@ -11,6 +11,9 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 
@@ -20,17 +23,32 @@ namespace ShardingCore.EFCores
     /// <summary>
     /// 当前查询编译拦截
     /// </summary>
-    public class ShardingQueryCompiler : IQueryCompiler,IShardingDbContextAvailable
+    public class ShardingQueryCompiler : QueryCompiler,IShardingDbContextAvailable
     {
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
 
-        public ShardingQueryCompiler(ICurrentDbContext currentContext,IShardingRuntimeContext shardingRuntimeContext)
+#if !NETCOREAPP2_0
+        public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) 
+            : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
+        {
+            _shardingDbContext = currentContext.Context as IShardingDbContext ??
+                                 throw new ShardingCoreException("db context operator is not IShardingDbContext");
+            _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
+        } 
+#endif
+#if NETCOREAPP2_0
+        
+
+        public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IQueryModelGenerator queryModelGenerator) 
+            : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, queryModelGenerator)
         {
             _shardingDbContext = currentContext.Context as IShardingDbContext ??
                                  throw new ShardingCoreException("db context operator is not IShardingDbContext");
             _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
         }
+#endif
+     
 
         public TResult Execute<TResult>(Expression query)
         {
