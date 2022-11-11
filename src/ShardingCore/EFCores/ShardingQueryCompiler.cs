@@ -27,7 +27,7 @@ namespace ShardingCore.EFCores
     {
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
-
+//
 #if !NETCOREAPP2_0
         public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) 
             : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
@@ -48,9 +48,15 @@ namespace ShardingCore.EFCores
             _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
         }
 #endif
-     
+        // public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,ICurrentDbContext currentContext)
+        // {
+        //      _shardingDbContext = currentContext.Context as IShardingDbContext ??
+        //                           throw new ShardingCoreException("db context operator is not IShardingDbContext");
+        //      _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
+        //     
+        // }
 
-        public TResult Execute<TResult>(Expression query)
+        public override TResult Execute<TResult>(Expression query)
         {
             return _shardingCompilerExecutor.Execute<TResult>(_shardingDbContext, query);
         }
@@ -58,19 +64,19 @@ namespace ShardingCore.EFCores
 
 #if !NETCOREAPP2_0
 
-        public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
+        public override TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
 
         [ExcludeFromCodeCoverage]
-        public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
+        public override Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
 
         [ExcludeFromCodeCoverage]
-        public Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query)
+        public override Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
@@ -78,30 +84,30 @@ namespace ShardingCore.EFCores
 #endif
 
 #if NETCOREAPP2_0
-        public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
+        public override IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
             return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);
         }
 
-        public Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
+        public override Task<TResult> ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query, cancellationToken);
         }
         
         [ExcludeFromCodeCoverage]
-        public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
+        public override Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
         
         [ExcludeFromCodeCoverage]
-        public Func<QueryContext, IAsyncEnumerable<TResult>> CreateCompiledAsyncEnumerableQuery<TResult>(Expression query)
+        public override Func<QueryContext, IAsyncEnumerable<TResult>> CreateCompiledAsyncEnumerableQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
         
         [ExcludeFromCodeCoverage]
-        public Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
+        public override Func<QueryContext, Task<TResult>> CreateCompiledAsyncTaskQuery<TResult>(Expression query)
         {
             throw new NotImplementedException();
         }
