@@ -60,7 +60,7 @@ namespace Sample.SqlServerShardingDataSource
                                 o =>
                                     $"Data Source=localhost;Initial Catalog=EFCoreShardingDataSourceOnly{o};Integrated Security=True;");
                     });
-                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().AddShardingCore();
+                }).AddShardingCore();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,7 +71,16 @@ namespace Sample.SqlServerShardingDataSource
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseShardingCore();
+            //建议补偿表在迁移后面
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                var myDbContext = scope.ServiceProvider.GetService<MyDbContext>();
+                //如果没有迁移那么就直接创建表和库
+                myDbContext.Database.EnsureCreated();
+                //如果有迁移使用下面的
+                // myDbContext.Database.Migrate();
+            }
+            app.ApplicationServices.UseAutoTryCompensateTable();
             app.UseRouting();
 
             app.UseAuthorization();

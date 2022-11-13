@@ -2,7 +2,6 @@
 
 namespace Sample.AutoCreateIfPresent
 {
-    [Table("aaa")]
     public class AreaDevice
     {
         public string Id { get; set; }
