@@ -1,7 +1,7 @@
 :start
 ::定义版本
-set SHARDINGCORE7=7.0.0.2
-set SHARDINGCORE2_6=6.8.0.7
+set SHARDINGCORE7=7.0.0.3
+set SHARDINGCORE2_6=6.8.0.8
 
 ::删除所有bin与obj下的文件
 @echo off
