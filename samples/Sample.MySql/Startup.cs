@@ -98,11 +98,14 @@ namespace Sample.MySql
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig(o =>
                 {
+                    o.AddShardingTableRoute<DynamicTableRoute>();
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
-                }).UseConfig(o =>
+                }).UseConfig((sp,o) =>
                 {
+                    var loggerFactory1= sp.GetService<ILoggerFactory>();
+                    var loggerFactory2 = sp.ApplicationServiceProvider.GetService<ILoggerFactory>();
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false; 
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;

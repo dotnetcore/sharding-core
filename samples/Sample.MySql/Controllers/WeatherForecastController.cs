@@ -168,5 +168,23 @@ namespace Sample.MySql.Controllers
             Console.WriteLine("-----------------------------------------------------------------------------------------------------");
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get2()
+        {
+          var sql=  from a in _defaultTableDbContext.Set<DynamicTable>()
+                join b in _defaultTableDbContext.Set<SysTest>()
+                    on a.Id equals b.Id  into t1
+                from aa1 in t1.DefaultIfEmpty()
+                // join bc in _defaultTableDbContext.Set<SysTest>()
+                //     on a.Id equals bc.Id  into t2
+                // from aa2 in t2.DefaultIfEmpty()
+                select new
+                {
+                    ID = a.Id
+                };
+          var listAsync =await sql.ToListAsync();
+          // var sysUserMods = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            return Ok();
+        }
     }
 }
