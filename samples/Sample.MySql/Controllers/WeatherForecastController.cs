@@ -171,20 +171,18 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get2()
         {
-          // var sql=  from a in _defaultTableDbContext.Set<DynamicTable>()
-          //       join b in _defaultTableDbContext.Set<SysTest>()
-          //           on a.Id equals b.Id  into t1
-          //       from aa1 in t1.DefaultIfEmpty()
-          //       // join bc in _defaultTableDbContext.Set<SysTest>()
-          //       //     on a.Id equals bc.Id  into t2
-          //       // from aa2 in t2.DefaultIfEmpty()
-          //       select new
-          //       {
-          //           ID = a.Id
-          //       };
-          // var listAsync =await sql.ToListAsync();
-          var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
-          var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            var dateTime = new DateTime(2021,1,1);
+            var sql=  from a in _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Time==dateTime)
+                join b in _defaultTableDbContext.Set<SysTest>()
+                    on a.Id equals b.Id  into t1
+                from aa1 in t1.DefaultIfEmpty()
+                select new
+                {
+                    ID = a.Id
+                };
+          var listAsync =await sql.ToListAsync();
+          // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+          // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }
     }

@@ -50,6 +50,10 @@ Release  | EF Core | .NET (Core)
 [6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 2.x     | netcoreapp2
 
 
+## 如何选择版本
+- 如果你的efcore版本小于等于6,那么就是使用shardingcore 6.x.x.x的最新版本
+- 如果你的efcore版本等于7,那么就是使用shardingcore 7.x.x.x的最新版本
+
 ## 快速开始
 5步实现按月分表,且支持自动化建表建库
 ### 第一步安装依赖

@@ -48,6 +48,10 @@ Release  | EF Core | .NET (Core)
 [6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 3.x     | netcoreapp3 or netstandard2.0 
 [6.7.0.0+](https://www.nuget.org/packages/ShardingCore)| 2.x     | netcoreapp2                  
 
+## How Choose Version
+- if u efcore version <=6 use shardingcore 6.x.x.x last version
+- if u efcore version ==6 use shardingcore 7.x.x.x last version
+
 ## Quick start
 5 steps implement sharding by month and support auto create table by month
 ### Step 1: Install the package
