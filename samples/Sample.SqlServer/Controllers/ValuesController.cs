@@ -407,6 +407,16 @@ namespace Sample.SqlServer.Controllers
 
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get9()
+
+        {
+
+            var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select *from systest where id='3'").FirstOrDefaultAsync();
+            
+
+            return Ok();
+        }
 
     }
 }

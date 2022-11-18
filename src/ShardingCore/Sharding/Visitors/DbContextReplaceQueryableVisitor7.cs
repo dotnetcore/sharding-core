@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -156,11 +157,23 @@ namespace ShardingCore.Core.Internal.Visitors
                 var newQueryable = targetIQ.Provider.CreateQuery(targetIQ.Expression);
                 if (Source == null)
                     Source = newQueryable;
-                //如何替换ef5的set
-                var replaceQueryRoot = new ReplaceSingleQueryRootExpressionVisitor();
-                replaceQueryRoot.Visit(newQueryable.Expression);
                 RootIsVisit = true;
-                return base.VisitExtension(replaceQueryRoot.QueryRootExpression);
+
+                if (queryRootExpression is FromSqlQueryRootExpression fromSqlQueryRootExpression)
+                {
+                    var sqlQueryRootExpression = new FromSqlQueryRootExpression(newQueryable.Provider as IAsyncQueryProvider,
+                        fromSqlQueryRootExpression.EntityType, fromSqlQueryRootExpression.Sql,
+                        fromSqlQueryRootExpression.Argument);
+
+                    return base.VisitExtension(sqlQueryRootExpression);
+                }
+                else
+                {
+                    //如何替换ef5的set
+                    var replaceQueryRoot = new ReplaceSingleQueryRootExpressionVisitor();
+                    replaceQueryRoot.Visit(newQueryable.Expression);
+                    return base.VisitExtension(replaceQueryRoot.QueryRootExpression);
+                }
             }
 
             return base.VisitExtension(node);
