@@ -13,7 +13,7 @@ using ShardingCore.Sharding.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 using ShardingCore.Sharding.Visitors.Selects;
 
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Query.Sql;
 #endif
 

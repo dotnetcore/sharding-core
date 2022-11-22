@@ -17,10 +17,10 @@ namespace ShardingCore.Extensions.InternalExtensions
         /// <returns></returns>
         public static string GetEntityTypeTableName(this IEntityType entityType)
         {
-#if !NETCOREAPP2_0
+#if !EFCORE2
             var tableName = entityType.GetTableName();
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
             var tableName = entityType.Relational().TableName;
 #endif
             return tableName;

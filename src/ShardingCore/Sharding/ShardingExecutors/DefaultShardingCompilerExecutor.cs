@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         }
         
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
 
         public TResult ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query,
             CancellationToken cancellationToken = new CancellationToken())
@@ -65,7 +65,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         }
 #endif
 
-#if NETCOREAPP2_0
+#if EFCORE2
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IShardingDbContext shardingDbContext, Expression query)
         {
             //预解析表达式

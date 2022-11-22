@@ -16,7 +16,7 @@ using ShardingCore.Extensions.InternalExtensions;
 using ShardingCore.Sharding.MergeEngines;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.InMemoryMerge;
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 
@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ContainsAsyncInMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);
 
-#if SHARDINGCORE7
+#if EFCORE7
                 case nameof(RelationalQueryableExtensions.ExecuteUpdate):
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteUpdateAsyncMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);

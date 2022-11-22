@@ -134,7 +134,7 @@ namespace ShardingCore.Core.Internal.Visitors
         }
     }
 
-#if NETCOREAPP2_0 || NETCOREAPP3_0 || NETSTANDARD2_0
+#if EFCORE2 || EFCORE3 || NETSTANDARD2_0
     internal class DbContextReplaceQueryableVisitor : DbContextInnerMemberReferenceReplaceQueryableVisitor
     {
         private readonly DbContext _dbContext;
@@ -174,7 +174,7 @@ namespace ShardingCore.Core.Internal.Visitors
     }
 #endif
 
-#if NET5_0 || NETSTANDARD2_1 || NET6_0
+#if EFCORE5 || NETSTANDARD2_1 || EFCORE6
     internal class DbContextReplaceQueryableVisitor : DbContextInnerMemberReferenceReplaceQueryableVisitor
     {
         private readonly DbContext _dbContext;

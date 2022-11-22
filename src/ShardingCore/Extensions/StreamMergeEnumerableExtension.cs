@@ -10,10 +10,10 @@ namespace ShardingCore.Extensions
     {
         public static async Task<List<TEntity>> ToStreamListAsync<TEntity>(this IAsyncEnumerable<TEntity> source, int? take=null,CancellationToken cancellationToken=default)
         {
-#if NETCOREAPP2_0
+#if EFCORE2
             var list = await source.ToList<TEntity>(cancellationToken);
 #endif
-#if !NETCOREAPP2_0
+#if !EFCORE2
             var list = new List<TEntity>(take??4);
             await foreach (var element in source.WithCancellation(cancellationToken))
             {
@@ -45,7 +45,7 @@ namespace ShardingCore.Extensions
         public static async Task<FixedElementCollection<TEntity>> ToFixedElementStreamListAsync<TEntity>(this IAsyncEnumerable<TEntity> source,int capacity,int maxVirtualElementCount,CancellationToken cancellationToken=default)
         {
             var fixedElementCollection = new FixedElementCollection<TEntity>(capacity);
-#if NETCOREAPP2_0
+#if EFCORE2
             var asyncEnumerator = source.GetEnumerator();
             while (await asyncEnumerator.MoveNext(cancellationToken))
             {
@@ -56,7 +56,7 @@ namespace ShardingCore.Extensions
                 }
             }
 #endif
-#if !NETCOREAPP2_0
+#if !EFCORE2
             await foreach (var element in source.WithCancellation(cancellationToken))
             {
                 fixedElementCollection.Add(element);

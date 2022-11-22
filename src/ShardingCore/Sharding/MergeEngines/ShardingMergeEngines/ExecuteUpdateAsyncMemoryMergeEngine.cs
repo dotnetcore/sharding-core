@@ -1,4 +1,4 @@
-#if SHARDINGCORE7
+#if EFCORE7
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.Methods;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.InMemoryMerge;

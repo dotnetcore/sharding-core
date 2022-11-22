@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.Enumerators.StreamMergeAsync;
-using ShardingCore.Sharding.Enumerators.StreamMergeAsync.NETCOREAPP2_0x;
+using ShardingCore.Sharding.Enumerators.StreamMergeAsync.EFCORE2x;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.Executors.CircuitBreakers;
 using ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions;
 using ShardingCore.Sharding.ShardingExecutors;
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif
 
@@ -65,14 +65,14 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Enumerables.Abstractions
         /// <returns></returns>
         public async Task<IAsyncEnumerator<TEntity>> GetAsyncEnumerator0(IQueryable<TEntity> newQueryable)
         {
-#if !NETCOREAPP2_0
+#if !EFCORE2
             var enumator = newQueryable.AsAsyncEnumerable().GetAsyncEnumerator();
             await enumator.MoveNextAsync();
             return enumator;
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
             var enumator =
-                new NETCOREAPP2_0TryCurrentAsyncEnumerator<TEntity>(newQueryable.AsAsyncEnumerable().GetEnumerator());
+                new EFCORE2TryCurrentAsyncEnumerator<TEntity>(newQueryable.AsAsyncEnumerable().GetEnumerator());
             await enumator.MoveNext();
             return enumator;
 #endif

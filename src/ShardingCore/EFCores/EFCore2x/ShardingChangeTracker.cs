@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP2_0&&SHARDINGCORE2_6
+﻿#if EFCORE2&&SHARDINGCORE2_6
 using System;
 using System.Collections.Generic;
 using System.Linq;

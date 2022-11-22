@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
-#if NETCOREAPP3_0 || NETSTANDARD2_0
+#if EFCORE3 || NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
 #endif
@@ -20,7 +20,7 @@ namespace ShardingCore.Sharding
 {
     internal class ShardingEntityFrameworkQueryableExtensions
     {
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public static TResult ExecuteAsync<TSource, TResult>(
             MethodInfo operatorMethodInfo,
             IQueryable<TSource> source,
@@ -90,7 +90,7 @@ namespace ShardingCore.Sharding
 
 #endif
 
-#if NETCOREAPP2_0
+#if EFCORE2
         
 
     public static Task<TResult> ExecuteAsync<TSource, TResult>(

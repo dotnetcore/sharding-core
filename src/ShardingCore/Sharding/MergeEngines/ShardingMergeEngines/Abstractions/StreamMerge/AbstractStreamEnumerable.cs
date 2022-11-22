@@ -4,7 +4,7 @@ using System.Threading;
 using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.MergeEngines.Executors.Abstractions;
 using ShardingCore.Sharding.MergeEngines.ShardingExecutors;
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Extensions.Internal;
 #endif
 
@@ -27,7 +27,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.S
         }
 
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public IAsyncEnumerator<TEntity> GetAsyncEnumerator(
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -35,7 +35,7 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingMergeEngines.Abstractions.S
         }
 #endif
 
-#if NETCOREAPP2_0
+#if EFCORE2
         IAsyncEnumerator<TEntity> IAsyncEnumerable<TEntity>.GetEnumerator()
         {
             return GetStreamMergeAsyncEnumerator(true);

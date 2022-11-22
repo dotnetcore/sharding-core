@@ -1,5 +1,5 @@
 ﻿
-#if SHARDINGCORE7
+#if EFCORE7
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

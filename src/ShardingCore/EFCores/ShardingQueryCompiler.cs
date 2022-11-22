@@ -28,7 +28,7 @@ namespace ShardingCore.EFCores
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingCompilerExecutor _shardingCompilerExecutor;
 //
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IEvaluatableExpressionFilter evaluatableExpressionFilter, IModel model) 
             : base(queryContextFactory, compiledQueryCache, compiledQueryCacheKeyGenerator, database, logger, currentContext, evaluatableExpressionFilter, model)
         {
@@ -37,7 +37,7 @@ namespace ShardingCore.EFCores
             _shardingCompilerExecutor = shardingRuntimeContext.GetShardingCompilerExecutor();
         } 
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
         
 
         public ShardingQueryCompiler(IShardingRuntimeContext shardingRuntimeContext,IQueryContextFactory queryContextFactory, ICompiledQueryCache compiledQueryCache, ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator, IDatabase database, IDiagnosticsLogger<DbLoggerCategory.Query> logger, ICurrentDbContext currentContext, IQueryModelGenerator queryModelGenerator) 
@@ -62,7 +62,7 @@ namespace ShardingCore.EFCores
         }
 
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
 
         public override TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
@@ -83,7 +83,7 @@ namespace ShardingCore.EFCores
 
 #endif
 
-#if NETCOREAPP2_0
+#if EFCORE2
         public override IAsyncEnumerable<TResult> ExecuteAsync<TResult>(Expression query)
         {
             return _shardingCompilerExecutor.ExecuteAsync<TResult>(_shardingDbContext, query);

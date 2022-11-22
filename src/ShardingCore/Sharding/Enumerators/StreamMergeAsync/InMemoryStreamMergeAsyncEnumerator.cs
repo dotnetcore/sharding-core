@@ -33,10 +33,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         private async Task<IEnumerator<T>> GetAllRowsAsync(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
             var list = new List<T>();
-#if !NETCOREAPP2_0
+#if !EFCORE2
             while (await streamMergeAsyncEnumerator.MoveNextAsync())
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
             while (await streamMergeAsyncEnumerator.MoveNext(new CancellationToken()))
 #endif
             {
@@ -48,10 +48,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         private IEnumerator<T> GetAllRows(IStreamMergeAsyncEnumerator<T> streamMergeAsyncEnumerator)
         {
             var list = new List<T>();
-#if !NETCOREAPP2_0
+#if !EFCORE2
             while ( streamMergeAsyncEnumerator.MoveNext())
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
             while (streamMergeAsyncEnumerator.MoveNext())
 #endif
             {
@@ -75,7 +75,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             return _inMemoryReallyCount;
         }
-#if !NETCOREAPP2_0
+#if !EFCORE2
 
         public ValueTask DisposeAsync()
         {
@@ -133,7 +133,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             return _inMemoryEnumerator.Current;
         }
-#if NETCOREAPP2_0
+#if EFCORE2
         public void Dispose()
         {
             _inMemoryEnumerator?.Dispose();

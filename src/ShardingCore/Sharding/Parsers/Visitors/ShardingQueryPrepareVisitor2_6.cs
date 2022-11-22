@@ -55,7 +55,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
                 shardingQueryableAsSequenceOptions,
                 shardingEntities, isNoTracking, isIgnoreFilter);
         }
-#if NETCOREAPP2_0 || NETSTANDARD2_0 || NETCOREAPP3_0
+#if EFCORE2 || NETSTANDARD2_0 || EFCORE3
         protected override Expression VisitConstant(ConstantExpression node)
         {
             if (node.Value is IQueryable queryable)
@@ -66,7 +66,7 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             return base.VisitConstant(node);
         }
 #endif
-#if NET5_0 || NETSTANDARD2_1 || NET6_0
+#if EFCORE5 || NETSTANDARD2_1 || EFCORE6
         protected override Expression VisitExtension(Expression node)
         {
             if (node is QueryRootExpression queryRootExpression)

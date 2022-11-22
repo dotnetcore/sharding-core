@@ -1,4 +1,4 @@
-#if  NET6_0 && SHARDINGCORE2_6
+#if  EFCORE6 && SHARDINGCORE2_6
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using System;

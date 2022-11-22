@@ -17,7 +17,7 @@ namespace ShardingCore.Sharding.Abstractions
         /// <param name="queryCompilerContext"></param>
         /// <returns></returns>
         TResult Execute<TResult>(IQueryCompilerContext queryCompilerContext);
-#if !NETCOREAPP2_0
+#if !EFCORE2
         /// <summary>
         /// execute query async
         /// </summary>
@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.Abstractions
 #endif
 
 
-#if NETCOREAPP2_0
+#if EFCORE2
         /// <summary>
         /// execute query async
         /// </summary>

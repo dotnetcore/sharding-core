@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>net6;net7;</TargetFrameworks>
-        <Version>7.0.0.5</Version>
+        <Version>$(EFCORE7)</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-        <DefineConstants>TRACE;DEBUG;SHARDINGCORE7;</DefineConstants>
+        <DefineConstants>TRACE;DEBUG;EFCORE7;</DefineConstants>
         <LangVersion>latest</LangVersion>
         <RepositoryUrl>https://github.com/dotnetcore/sharding-core</RepositoryUrl>
         <PackageIcon>logo.png</PackageIcon>
@@ -34,7 +34,6 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
     </ItemGroup>
     <ItemGroup>

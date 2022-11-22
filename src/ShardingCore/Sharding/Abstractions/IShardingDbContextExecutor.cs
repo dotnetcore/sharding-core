@@ -18,7 +18,7 @@ namespace ShardingCore.Sharding.Abstractions
     * @Email: 326308290@qq.com
     */
     public interface IShardingDbContextExecutor : IShardingTransaction,IReadWriteSwitch,ICurrentDbContextDiscover,IDisposable
-#if !NETCOREAPP2_0
+#if !EFCORE2
         , IAsyncDisposable
 
 #endif

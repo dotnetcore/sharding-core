@@ -34,20 +34,20 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             else
                 _enumerator = new MultiOrderStreamMergeAsyncEnumerator<T>(_mergeContext, sources);
         }
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public async ValueTask<bool> MoveNextAsync()
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
         public async Task<bool> MoveNext(CancellationToken cancellationToken = new CancellationToken())
 #endif
         {
             //如果合并数据的时候不需要跳过也没有take多少那么就是直接next
             while (_skip.GetValueOrDefault() > this.realSkip)
             {
-#if !NETCOREAPP2_0
+#if !EFCORE2
                 var has = await _enumerator.MoveNextAsync();
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
                 var has = await _enumerator.MoveNext(cancellationToken);
 #endif
 
@@ -56,10 +56,10 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
                     return false;
             }
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
             var next = await _enumerator.MoveNextAsync();
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
             var next = await _enumerator.MoveNext(cancellationToken);
 #endif
 
@@ -129,7 +129,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             _enumerator.Dispose();
         }
-#if !NETCOREAPP2_0
+#if !EFCORE2
 
         public ValueTask DisposeAsync()
         {

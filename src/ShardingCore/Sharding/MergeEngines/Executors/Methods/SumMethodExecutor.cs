@@ -51,12 +51,12 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.Methods
             if (!resultType.IsNumericType())
                 throw new ShardingCoreException(
                     $"not support {GetStreamMergeContext().MergeQueryCompilerContext.GetQueryExpression().ShardingPrint()} result {resultType}");
-#if !NETCOREAPP2_0
+#if !EFCORE2
             return ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEntity, Task<TEntity>>(
                 ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEntity>)queryable,
                 (Expression)null, cancellationToken);
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
            return ShardingEntityFrameworkQueryableExtensions.ExecuteAsync<TEntity, TEntity>(ShardingQueryableMethods.GetSumWithoutSelector(resultType), (IQueryable<TEntity>)queryable, cancellationToken);
 #endif
         }

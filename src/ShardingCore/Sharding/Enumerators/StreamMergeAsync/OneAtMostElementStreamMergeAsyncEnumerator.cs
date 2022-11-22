@@ -30,7 +30,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
             _moveIndex++;
             return HasElement();
         }
-#if !NETCOREAPP2_0 && !NETSTANDARD2_0 && !NETCOREAPP3_0 && !NET5_0 && !NETSTANDARD2_1
+#if !EFCORE2 && !NETSTANDARD2_0 && !EFCORE3 && !EFCORE5 && !NETSTANDARD2_1
         public  ValueTask DisposeAsync()
         {
             return ValueTask.CompletedTask;
@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         }
 
 #endif
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET5_0 || NETSTANDARD2_1
+#if EFCORE3 || NETSTANDARD2_0 || EFCORE5 || NETSTANDARD2_1
         public  ValueTask DisposeAsync()
         {
             return new ValueTask();
@@ -100,7 +100,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         {
             return _constantElement;
         }
-#if NETCOREAPP2_0
+#if EFCORE2
         public void Dispose()
         {
         }

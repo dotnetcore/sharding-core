@@ -110,7 +110,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                 .Invoke(_nativeTrackQueryExecutor, new object[] { queryCompilerContext, result });
         }
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public TResult ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -132,7 +132,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             return ResultTrackExecute(result, queryCompilerContext, TrackAsyncEnumerable, TrackAsync);
         }
 #endif
-#if NETCOREAPP2_0
+#if EFCORE2
 
         public IAsyncEnumerable<TResult> ExecuteAsync<TResult>(IQueryCompilerContext queryCompilerContext)
         {

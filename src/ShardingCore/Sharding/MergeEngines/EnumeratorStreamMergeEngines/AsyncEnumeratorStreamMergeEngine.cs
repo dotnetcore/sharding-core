@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         }
 
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         }
 #endif
 
-#if NETCOREAPP2_0
+#if EFCORE2
         IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
         {
             if (!_mergeContext.TryPrepareExecuteContinueQuery(() => new EmptyQueryEnumerator<T>(),out var emptyQueryEnumerator))

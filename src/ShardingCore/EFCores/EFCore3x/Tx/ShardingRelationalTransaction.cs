@@ -1,4 +1,4 @@
-﻿#if (NETCOREAPP3_0 || NETSTANDARD2_0)&&SHARDINGCORE2_6
+﻿#if (EFCORE3 || NETSTANDARD2_0)&&SHARDINGCORE2_6
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -52,7 +52,7 @@ namespace ShardingCore.EFCores
             _shardingDbContextExecutor.NotifyShardingTransaction();
         }
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public override async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             await base.RollbackAsync(cancellationToken);

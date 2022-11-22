@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.Enumerators
             }
             return false;
         }
-#if !NETCOREAPP2_0
+#if !EFCORE2
         public async ValueTask DisposeAsync()
         {
             if (_asyncEnumerator)
@@ -111,7 +111,7 @@ namespace ShardingCore.Sharding.Enumerators
             if (_syncEnumerator) return _syncSource.Current;
             return default;
         }
-#if NETCOREAPP2_0
+#if EFCORE2
         public void Dispose()
         {
             _asyncSource?.Dispose();

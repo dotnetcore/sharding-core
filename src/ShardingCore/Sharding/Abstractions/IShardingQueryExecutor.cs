@@ -5,7 +5,7 @@ using ShardingCore.Sharding.Enumerators;
 using ShardingCore.Sharding.ShardingExecutors;
 using ShardingCore.Sharding.ShardingExecutors.Abstractions;
 
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

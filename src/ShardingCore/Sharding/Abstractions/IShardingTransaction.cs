@@ -18,10 +18,10 @@ namespace ShardingCore.Sharding.Abstractions
         void NotifyShardingTransaction();
         void Rollback();
         void Commit();
-#if !NETCOREAPP2_0
+#if !EFCORE2
         Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
         Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
-#if !NETCOREAPP3_0 && !NETSTANDARD2_0
+#if !EFCORE3 && !NETSTANDARD2_0
         void CreateSavepoint(string name);
         Task CreateSavepointAsync(string name, CancellationToken cancellationToken = new CancellationToken());
         void RollbackToSavepoint(string name);

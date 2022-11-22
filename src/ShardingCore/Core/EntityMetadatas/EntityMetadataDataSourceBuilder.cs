@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Extensions;
 
-#if NETCOREAPP2_0
+#if EFCORE2
 using Microsoft.EntityFrameworkCore.Internal;
 #endif
 

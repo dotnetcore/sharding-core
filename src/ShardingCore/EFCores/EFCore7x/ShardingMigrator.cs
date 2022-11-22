@@ -1,5 +1,5 @@
 
-#if  SHARDINGCORE7
+#if  EFCORE7
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;

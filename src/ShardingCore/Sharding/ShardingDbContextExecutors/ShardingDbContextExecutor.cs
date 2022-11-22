@@ -245,7 +245,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 dbContextCache.Value.Dispose();
             }
         }
-#if !NETCOREAPP2_0
+#if !EFCORE2
 
         public async Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
         {
@@ -279,7 +279,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             AutoUseWriteConnectionString();
         }
 
-#if !NETCOREAPP3_0 && !NETSTANDARD2_0
+#if !EFCORE3 && !NETSTANDARD2_0
 
         public void CreateSavepoint(string name)
         {

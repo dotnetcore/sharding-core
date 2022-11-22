@@ -1,4 +1,4 @@
-﻿#if (NETCOREAPP3_0 || NETSTANDARD2_0 )&&SHARDINGCORE2_6
+﻿#if (EFCORE3 || NETSTANDARD2_0 )&&SHARDINGCORE2_6
 using System;
 using System.Collections.Generic;
 using System.Linq;

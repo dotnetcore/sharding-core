@@ -105,7 +105,6 @@ namespace ShardingCore.Test
                     };
                     }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
                 })
-                .ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>()
                 .AddShardingCore();
         }
 

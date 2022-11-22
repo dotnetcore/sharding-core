@@ -1,4 +1,4 @@
-﻿#if SHARDINGCORE7
+﻿#if EFCORE7
 
 using System;
 using System.Collections.Generic;

@@ -22,7 +22,7 @@ namespace ShardingCore.Sharding.Abstractions
 //        void NotifyShardingTransaction();
 //        void Rollback();
 //        void Commit();
-//#if !NETCOREAPP2_0
+//#if !EFCORE2
 //        Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken());
 //        Task CommitAsync(CancellationToken cancellationToken = new CancellationToken());
 //#endif

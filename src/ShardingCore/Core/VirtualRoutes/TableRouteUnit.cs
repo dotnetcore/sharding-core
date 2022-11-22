@@ -25,7 +25,7 @@ namespace ShardingCore.Core.VirtualRoutes
             return ReferenceEquals(this, obj) || obj is TableRouteUnit other && Equals(other);
         }
 
-#if !NETCOREAPP2_0
+#if !EFCORE2
         
         public override int GetHashCode()
         {
@@ -33,7 +33,7 @@ namespace ShardingCore.Core.VirtualRoutes
         }
 #endif
         
-#if NETCOREAPP2_0
+#if EFCORE2
         public override int GetHashCode()
         {
             unchecked
