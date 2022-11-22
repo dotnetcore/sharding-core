@@ -1,8 +1,9 @@
 using System;
 
-namespace ShardingCore.Core.DbContextTypeAwares;
-
-public interface IDbContextTypeAware
+namespace ShardingCore.Core.DbContextTypeAwares
 {
-    Type GetContextType();
+    public interface IDbContextTypeAware
+    {
+        Type GetContextType();
+    }
 }

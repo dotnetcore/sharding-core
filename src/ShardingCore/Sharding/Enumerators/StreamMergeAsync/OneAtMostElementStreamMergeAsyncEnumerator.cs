@@ -46,7 +46,7 @@ namespace ShardingCore.Sharding.Enumerators.StreamMergeAsync
         }
 
 #endif
-#if EFCORE3 || NETSTANDARD2_0 || EFCORE5 || NETSTANDARD2_1
+#if EFCORE3 || EFCORE5
         public  ValueTask DisposeAsync()
         {
             return new ValueTask();
