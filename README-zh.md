@@ -36,6 +36,11 @@
 版本号第二位是efcore版本号使用对应的版本号即可
 最后两位版本号使用最大即可
 
+efcore7使用shardingcore7.7.x.x，
+efcore6使用shardingcore7.6.x.x，
+efcore5使用shardingcore7.5.x.x，
+efcore3使用shardingcore7.3.x.x，
+efcore2使用shardingcore7.2.x.x
 
 ## 依赖
 
