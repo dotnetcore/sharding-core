@@ -10,7 +10,7 @@
         <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.9" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
         <PackageReference Include="Xunit.DependencyInjection" Version="8.5.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
@@ -19,7 +19,6 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src2_6\ShardingCore.2_6\ShardingCore.2_6.csproj" />
       <ProjectReference Include="..\..\src6\ShardingCore6\ShardingCore6.csproj" />
     </ItemGroup>
 

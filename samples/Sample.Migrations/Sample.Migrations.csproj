@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src2_6\ShardingCore.2_6\ShardingCore.2_6.csproj" />
     <ProjectReference Include="..\..\src6\ShardingCore6\ShardingCore6.csproj" />
   </ItemGroup>
 

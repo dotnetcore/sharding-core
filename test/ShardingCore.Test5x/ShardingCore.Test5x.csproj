@@ -9,7 +9,7 @@
 	<ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="5.0.17" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.9" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.1" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="Xunit.DependencyInjection" Version="7.1.0" />
@@ -20,7 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src2_6\ShardingCore.2_6\ShardingCore.2_6.csproj" />
 		<ProjectReference Include="..\..\src5\ShardingCore5\ShardingCore5.csproj" />
 	</ItemGroup>
 </Project>

@@ -8,7 +8,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 		<PackageReference Include="Xunit.DependencyInjection" Version="7.1.0" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -19,7 +19,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src2\ShardingCore2\ShardingCore2.csproj" />
-	  <ProjectReference Include="..\..\src2_6\ShardingCore.2_6\ShardingCore.2_6.csproj" />
 	</ItemGroup>
 
 </Project>

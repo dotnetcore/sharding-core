@@ -1,4 +1,3 @@
-#if SHARDINGCORE2_6
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
     * @Date: Saturday, 20 February 2021 11:14:35
     * @Email: 326308290@qq.com
     */
-#if EFCORE2 || EFCORE3 || NETSTANDARD2_0
+#if EFCORE2 || EFCORE3
     /// <summary>
     /// 获取分表类型
     /// </summary>
@@ -115,7 +114,7 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
     }
 #endif
 
-#if EFCORE5 || NETSTANDARD2_1 || EFCORE6
+#if EFCORE5|| EFCORE6 || EFCORE7
     /// <summary>
     /// 获取分表类型
     /// </summary>
@@ -138,7 +137,11 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
         {
             if (node is QueryRootExpression queryRootExpression)
             {
-                _shardingEntities.Add(queryRootExpression.EntityType.ClrType);
+#if EFCORE7
+                _shardingEntities.Add(queryRootExpression.ElementType);
+#else   
+                _shardingEntities.Add(queryRootExpression.EntityType.ClrType);  
+#endif
             }
             return base.VisitExtension(node);
         }
@@ -213,4 +216,3 @@ namespace ShardingCore.Core.Internal.Visitors.Querys
 #endif
 }
 
-#endif
