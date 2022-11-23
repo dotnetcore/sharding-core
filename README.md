@@ -29,8 +29,11 @@ high performance lightweight solution for efcore sharding table and sharding dat
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 
 ## How Choose Version
-- if u efcore version <=6 use shardingcore 6.x.x.x last version
-- if u efcore version ==6 use shardingcore 7.x.x.x last version
+- shardingcore lastversion.efcoreversion.x.x
+
+first version is shardingcore version
+second version is efcore version 
+other version use last version
 
 ## Dependency
 

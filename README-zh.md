@@ -28,9 +28,15 @@
 [中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 
 ## 如何选择版本
-- 如果你的efcore版本小于等于6,那么就是使用shardingcore 6.x.x.x的最新版本
-- 如果你的efcore版本等于7,那么就是使用shardingcore 7.x.x.x的最新版本
-- 
+
+## How Choose Version
+- shardingcore 最新版本.efcore版本.x.x
+
+版本号第一位是shardingcore的版本号使用最大的即可
+版本号第二位是efcore版本号使用对应的版本号即可
+最后两位版本号使用最大即可
+
+
 ## 依赖
 
 
