@@ -1,4 +1,4 @@
-#if (EFCORE5 || NETSTANDARD2_1 ) && SHARDINGCORE2_6
+#if EFCORE5
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using System;

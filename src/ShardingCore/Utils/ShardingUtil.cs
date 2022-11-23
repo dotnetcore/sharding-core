@@ -10,7 +10,6 @@ using ShardingCore.Core;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.Internal;
 using ShardingCore.Core.Internal.Visitors;
-using ShardingCore.Core.Internal.Visitors.Querys;
 using ShardingCore.Core.TrackerManagers;
 using ShardingCore.Core.VirtualDatabase;
 using ShardingCore.Core.VirtualRoutes;

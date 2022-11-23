@@ -1,5 +1,4 @@
-
-#if EFCORE2&&SHARDINGCORE2_6
+#if EFCORE2
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;

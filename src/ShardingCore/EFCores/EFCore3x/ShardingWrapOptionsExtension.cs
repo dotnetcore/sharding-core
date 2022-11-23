@@ -1,4 +1,4 @@
-﻿#if (EFCORE3 || NETSTANDARD2_0) && SHARDINGCORE2_6 
+﻿#if EFCORE3
 using System;
 using System.Collections.Generic;
 using System.Text;

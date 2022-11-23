@@ -1,4 +1,4 @@
-﻿#if EFCORE2 && SHARDINGCORE2_6
+﻿#if EFCORE2
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Internal;

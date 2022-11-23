@@ -1,4 +1,4 @@
-﻿#if EFCORE6&&SHARDINGCORE2_6
+﻿#if EFCORE6
 using System;
 using System.Collections.Generic;
 using System.Linq;
