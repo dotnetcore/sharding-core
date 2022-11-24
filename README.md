@@ -31,15 +31,19 @@ high performance lightweight solution for efcore sharding table and sharding dat
 ## How Choose Version
 - shardingcore lastversion.efcoreversion.x.x
 
-first version is shardingcore version
-second version is efcore version 
-other version use last version
+- first version is shardingcore version
+- second version is efcore version 
+- other version use last version
 
-efcore7 use shardingcore7.7.x.x，
-efcore6 use shardingcore7.6.x.x，
-efcore5 use shardingcore7.5.x.x，
-efcore3 use shardingcore7.3.x.x，
-efcore2 use shardingcore7.2.x.x
+- efcore7 use shardingcore7.7.x.x
+
+- efcore6 use shardingcore7.6.x.x
+
+- efcore5 use shardingcore7.5.x.x
+
+- efcore3 use shardingcore7.3.x.x
+
+- efcore2 use shardingcore7.2.x.x
 
 ## Dependency
 
