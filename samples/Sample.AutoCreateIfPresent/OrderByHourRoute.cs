@@ -27,12 +27,13 @@ namespace Sample.AutoCreateIfPresent
         private readonly IShardingTableCreator _shardingTableCreator;
         private readonly ConcurrentDictionary<string, object?> _tails = new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         private readonly object _lock = new object();
+        private readonly object _initLock = new object();
+        private bool _inited = false;
 
         public OrderByHourRoute(IVirtualDataSource virtualDataSource, IShardingTableCreator shardingTableCreator)
         {
             _virtualDataSource = virtualDataSource;
             _shardingTableCreator = shardingTableCreator;
-            InitTails();
         }
 
         private void InitTails()
@@ -82,6 +83,17 @@ namespace Sample.AutoCreateIfPresent
         /// <returns></returns>
         public override List<string> GetTails()
         {
+            if (!_inited)
+            {
+                lock(_initLock)
+                {
+                    if (!_inited)
+                    {
+                        InitTails();
+                        _inited = true;
+                    }
+                }
+            }
             return _tails.Keys.ToList();
         }
 
