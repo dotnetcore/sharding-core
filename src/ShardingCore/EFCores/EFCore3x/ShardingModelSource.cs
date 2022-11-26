@@ -49,9 +49,7 @@ namespace ShardingCore.EFCores
             DbContext context,
             IConventionSetBuilder conventionSetBuilder)
         {
-            var priority = CacheItemPriority.High;
-            var size = 200;
-            var waitSeconds = 3;
+            CacheItemPriority? setPriority = null;
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
                 if (shardingTableDbContext.RouteTail is null)
@@ -65,22 +63,19 @@ namespace ShardingCore.EFCores
                 }
                 else if (shardingTableDbContext.RouteTail is ISingleQueryRouteTail singleQueryRouteTail && singleQueryRouteTail.IsShardingTableQuery())
                 {
-                    priority = CacheItemPriority.Normal;
+                    setPriority = CacheItemPriority.Normal;
                 }
             }
             var cache = Dependencies.MemoryCache;
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context);
             if (!cache.TryGetValue(cacheKey, out IModel model))
             {
-                if (context is IShardingModelCacheOption shardingModelCacheOption)
-                {
-                    priority = shardingModelCacheOption.GetModelCachePriority();
-                    size = shardingModelCacheOption.GetModelCacheEntrySize();
-                    waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
-                }
-                // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
-
-                var cacheLockObject = _shardingRuntimeContext.GetModelCacheLockerProvider().GetCacheLockObject(cacheKey);
+                
+                var modelCacheLockerProvider = _shardingRuntimeContext.GetModelCacheLockerProvider();
+                var priority = setPriority ?? modelCacheLockerProvider.GetCacheItemPriority();
+                var size = modelCacheLockerProvider.GetCacheEntrySize();
+                var waitSeconds = modelCacheLockerProvider.GetModelCacheLockObjectSeconds();
+                var cacheLockObject = modelCacheLockerProvider.GetCacheLockObject(cacheKey);
                 var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {

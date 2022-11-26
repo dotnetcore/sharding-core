@@ -1,5 +1,4 @@
-﻿
-#if EFCORE7
+﻿#if EFCORE7
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -14,12 +13,12 @@ using ShardingCore.Core.RuntimeContexts;
 
 namespace ShardingCore.EFCores
 {
-
     public class ShardingModelSource : ModelSource
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ShardingModelSource(ModelSourceDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies)
+        public ShardingModelSource(ModelSourceDependencies dependencies, IShardingRuntimeContext shardingRuntimeContext)
+            : base(dependencies)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
             Check.NotNull(dependencies, nameof(dependencies));
@@ -44,55 +43,60 @@ namespace ShardingCore.EFCores
             ModelCreationDependencies modelCreationDependencies,
             bool designTime)
         {
-            var priority = CacheItemPriority.High;
-            var size = 200;
-            var waitSeconds = 3;
+            CacheItemPriority? setPriority = null;
             if (context is IShardingTableDbContext shardingTableDbContext)
             {
                 if (shardingTableDbContext.RouteTail is null)
                 {
-                    throw new ShardingCoreInvalidOperationException("db context model is inited before RouteTail set value");
+                    throw new ShardingCoreInvalidOperationException(
+                        "db context model is inited before RouteTail set value");
                 }
+
                 if (shardingTableDbContext.RouteTail is INoCacheRouteTail)
                 {
-                    var noCacheModel = this.CreateModel(context, modelCreationDependencies.ConventionSetBuilder, modelCreationDependencies.ModelDependencies);
-                    noCacheModel = modelCreationDependencies.ModelRuntimeInitializer.Initialize(noCacheModel, designTime, modelCreationDependencies.ValidationLogger);
+                    var noCacheModel = this.CreateModel(context, modelCreationDependencies.ConventionSetBuilder,
+                        modelCreationDependencies.ModelDependencies);
+                    noCacheModel = modelCreationDependencies.ModelRuntimeInitializer.Initialize(noCacheModel,
+                        designTime, modelCreationDependencies.ValidationLogger);
                     return noCacheModel;
                 }
-                else 
-                if (shardingTableDbContext.RouteTail is ISingleQueryRouteTail singleQueryRouteTail && singleQueryRouteTail.IsShardingTableQuery())
+                else if (shardingTableDbContext.RouteTail is ISingleQueryRouteTail singleQueryRouteTail &&
+                         singleQueryRouteTail.IsShardingTableQuery())
                 {
-                    priority = CacheItemPriority.Normal;
+                    setPriority = CacheItemPriority.Normal;
                 }
             }
+
             var cache = Dependencies.MemoryCache;
             var cacheKey = Dependencies.ModelCacheKeyFactory.Create(context, designTime);
             if (!cache.TryGetValue(cacheKey, out IModel model))
             {
-                if (context is IShardingModelCacheOption shardingModelCacheOption)
-                {
-                    priority = shardingModelCacheOption.GetModelCachePriority();
-                    size = shardingModelCacheOption.GetModelCacheEntrySize();
-                    waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
-                }
-                var cacheLockObject = _shardingRuntimeContext.GetModelCacheLockerProvider().GetCacheLockObject(cacheKey);
+                var modelCacheLockerProvider = _shardingRuntimeContext.GetModelCacheLockerProvider();
+
+                var priority = setPriority ?? modelCacheLockerProvider.GetCacheItemPriority();
+                var size = modelCacheLockerProvider.GetCacheEntrySize();
+                var waitSeconds = modelCacheLockerProvider.GetModelCacheLockObjectSeconds();
+                var cacheLockObject = modelCacheLockerProvider.GetCacheLockObject(cacheKey);
                 // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
                 var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
                     throw new ShardingCoreInvalidOperationException("cache model timeout");
                 }
+
                 try
                 {
                     if (!cache.TryGetValue(cacheKey, out model))
                     {
                         model = CreateModel(
-                            context, modelCreationDependencies.ConventionSetBuilder, modelCreationDependencies.ModelDependencies);
+                            context, modelCreationDependencies.ConventionSetBuilder,
+                            modelCreationDependencies.ModelDependencies);
 
                         model = modelCreationDependencies.ModelRuntimeInitializer.Initialize(
                             model, designTime, modelCreationDependencies.ValidationLogger);
 
-                        model = cache.Set(cacheKey, model, new MemoryCacheEntryOptions { Size = size, Priority = priority });
+                        model = cache.Set(cacheKey, model,
+                            new MemoryCacheEntryOptions { Size = size, Priority = priority });
                     }
                 }
                 finally

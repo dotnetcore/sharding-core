@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <Version>7.2.0.7</Version>
+        <Version>7.2.0.8</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE2;</DefineConstants>
         <LangVersion>9.0</LangVersion>

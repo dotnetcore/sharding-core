@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Extensions.Caching.Memory;
 using ShardingCore.Core.ShardingConfigurations;
 using ShardingCore.Exceptions;
 
@@ -26,6 +27,23 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
                 _locks.Add(new object()); 
             }
         }
+
+        public int GetModelCacheLockObjectSeconds()
+        {
+            return _shardingConfigOptions.ModelCacheLockObjectSeconds;
+        }
+
+#if !EFCORE2
+        public CacheItemPriority GetCacheItemPriority()
+        {
+            return _shardingConfigOptions.CacheItemPriority;
+        }
+
+        public int GetCacheEntrySize()
+        {
+            return _shardingConfigOptions.CacheEntrySize;
+        }
+#endif
         public object GetCacheLockObject(object modelCacheKey)
         {
             if (modelCacheKey == null)

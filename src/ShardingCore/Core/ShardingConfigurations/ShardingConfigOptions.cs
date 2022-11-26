@@ -3,6 +3,7 @@ using ShardingCore.Sharding.ReadWriteConfigurations;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using Microsoft.Extensions.Caching.Memory;
 using ShardingCore.Core.ServiceProviders;
 
 namespace ShardingCore.Core.ShardingConfigurations
@@ -12,6 +13,20 @@ namespace ShardingCore.Core.ShardingConfigurations
     /// </summary>
     public class ShardingConfigOptions
     {
+        /// <summary>
+        /// 模型缓存锁等待时间
+        /// </summary>
+        public int ModelCacheLockObjectSeconds { get; set; } = 3;
+#if !EFCORE2
+        /// <summary>
+        /// 模型缓存的优先级
+        /// </summary>
+        public CacheItemPriority CacheItemPriority { get; set; } = CacheItemPriority.High;
+        /// <summary>
+        /// efcore缓存最多限制10240个，单个缓存size设置为10那么就意味可以最多统一时间缓存1024个(缓存过期了那么还是会可以缓存进去的)
+        /// </summary>
+        public int CacheEntrySize { get; set; } = 10;
+#endif
         /// <summary>
         /// 模型缓存锁等级
         /// </summary>
