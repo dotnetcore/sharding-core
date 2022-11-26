@@ -56,6 +56,7 @@ namespace ShardingCore.Test6x
                 })
                 .UseConfig(op =>
                 {
+                    op.CacheModelLockConcurrencyLevel = Environment.ProcessorCount;
                     //op.UseEntityFrameworkCoreProxies = true;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;

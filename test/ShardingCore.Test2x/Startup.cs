@@ -51,6 +51,7 @@ namespace ShardingCore.Test2x
                 .UseConfig(op =>
                 {
 
+                    op.CacheModelLockConcurrencyLevel = Environment.ProcessorCount;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;
                     op.UseShardingQuery((conStr, builder) =>
