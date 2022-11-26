@@ -104,7 +104,9 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig((sp,o) =>
                 {
-                    o.CacheModelLockConcurrencyLevel = 31;
+                    o.CacheModelLockConcurrencyLevel = 1024;
+                    o.CacheEntrySize = 1;
+                    o.ModelCacheLockObjectSeconds = 10;
                     o.CheckShardingKeyValueGenerated = false;
                     var loggerFactory1= sp.GetService<ILoggerFactory>();
                     var loggerFactory2 = sp.ApplicationServiceProvider.GetService<ILoggerFactory>();
