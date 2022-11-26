@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions
 {
     /// <summary>
-    /// 
+    /// 不缓存的模型
     /// </summary>
     /// Author: xjm
     /// Created: 2022/4/15 13:22:07

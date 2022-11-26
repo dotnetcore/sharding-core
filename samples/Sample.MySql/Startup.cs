@@ -104,6 +104,8 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig((sp,o) =>
                 {
+                    o.CacheModelLockConcurrencyLevel = 31;
+                    o.CheckShardingKeyValueGenerated = false;
                     var loggerFactory1= sp.GetService<ILoggerFactory>();
                     var loggerFactory2 = sp.ApplicationServiceProvider.GetService<ILoggerFactory>();
                     // o.UseEntityFrameworkCoreProxies = true;
@@ -111,18 +113,18 @@ namespace Sample.MySql
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
                     o.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
                             // .UseLoggerFactory(efLogger)
                             // .EnableSensitiveDataLogging()
-                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
                         builder
-                            .UseMySql(connection, new MySqlServerVersion(new Version()))
+                            .UseMySql(connection, new MySqlServerVersion(new Version()));
                             // .UseLoggerFactory(efLogger)
                             // .EnableSensitiveDataLogging()
-                            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
                         "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");

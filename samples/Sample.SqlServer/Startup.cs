@@ -13,6 +13,8 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails;
 using ShardingCore.Extensions;
@@ -70,7 +72,7 @@ namespace Sample.SqlServer
                     {
                         builder.AddConsole();
                     }));
-                }).AddShardingCore();
+                }).ReplaceService<ILoggerFactory,NullLoggerFactory>().AddShardingCore();
             //services.AddShardingDbContext<DefaultShardingDbContext1>(
             //        (conn, o) =>
             //            o.UseSqlServer(conn).UseLoggerFactory(efLogger)

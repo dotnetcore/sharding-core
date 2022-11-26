@@ -15,16 +15,18 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ShardingCore.Core.RuntimeContexts;
 
 namespace ShardingCore.EFCores
 {
 
-    public class ShardingModelSource : ModelSource, IShardingModelSource
+    public class ShardingModelSource : ModelSource
     {
-        private readonly object _syncObject = new();
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ShardingModelSource(ModelSourceDependencies dependencies) : base(dependencies)
+        public ShardingModelSource(ModelSourceDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
             Check.NotNull(dependencies, nameof(dependencies));
             Dependencies = dependencies;
         }
@@ -107,8 +109,10 @@ namespace ShardingCore.EFCores
                     size = shardingModelCacheOption.GetModelCacheEntrySize();
                     waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
                 }
+
+                var cacheLockObject = _shardingRuntimeContext.GetModelCacheLockerProvider().GetCacheLockObject(cacheKey);
                 // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
-                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
+                var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
                     throw new ShardingCoreInvalidOperationException("cache model timeout");
@@ -128,41 +132,41 @@ namespace ShardingCore.EFCores
                 }
                 finally
                 {
-                    Monitor.Exit(_syncObject);
+                    Monitor.Exit(cacheLockObject);
                 }
             }
 
             return model;
         }
 
-        public IModelCacheKeyFactory GetModelCacheKeyFactory()
-        {
-            return Dependencies.ModelCacheKeyFactory;
-        }
+        // public IModelCacheKeyFactory GetModelCacheKeyFactory()
+        // {
+        //     return Dependencies.ModelCacheKeyFactory;
+        // }
+        //
+        // public object GetSyncObject()
+        // {
+        //     return _syncObject;
+        // }
 
-        public object GetSyncObject()
-        {
-            return _syncObject;
-        }
-
-        public void Remove(object key)
-        {
-            var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(3));
-            if (!acquire)
-            {
-                throw new ShardingCoreInvalidOperationException("cache model timeout");
-            }
-            try
-            {
-
-                var cache = Dependencies.MemoryCache;
-                cache.Remove(key);
-            }
-            finally
-            {
-                Monitor.Exit(_syncObject);
-            }
-        }
+        // public void Remove(object key)
+        // {
+        //     var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(3));
+        //     if (!acquire)
+        //     {
+        //         throw new ShardingCoreInvalidOperationException("cache model timeout");
+        //     }
+        //     try
+        //     {
+        //
+        //         var cache = Dependencies.MemoryCache;
+        //         cache.Remove(key);
+        //     }
+        //     finally
+        //     {
+        //         Monitor.Exit(_syncObject);
+        //     }
+        // }
     }
 }
 #endif

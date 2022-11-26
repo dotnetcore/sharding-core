@@ -7,6 +7,7 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.DbContextOptionBuilderCreator;
 using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ModelCacheLockerProviders;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ServiceProviders;
@@ -78,6 +79,13 @@ namespace ShardingCore.Core.RuntimeContexts
         {
             return _dbContextTypeAware??=GetRequiredService<IDbContextTypeAware>();
         }
+
+        private IModelCacheLockerProvider _modelCacheLockerProvider;
+        public IModelCacheLockerProvider GetModelCacheLockerProvider()
+        {
+            return _modelCacheLockerProvider??=GetRequiredService<IModelCacheLockerProvider>();
+        }
+
 
         private IShardingProvider _shardingProvider;
 
@@ -317,6 +325,7 @@ namespace ShardingCore.Core.RuntimeContexts
             GetUnionAllMergeManager();
             GetShardingPageManager();
             GetDataSourceInitializer();
+            GetModelCacheLockerProvider();
         }
     }
 }

@@ -13,6 +13,10 @@ namespace ShardingCore.Core.ShardingConfigurations
     public class ShardingConfigOptions
     {
         /// <summary>
+        /// 模型缓存锁等级
+        /// </summary>
+        public int CacheModelLockConcurrencyLevel { get; set; } = 1;
+        /// <summary>
         /// 是否使用代理模式
         /// </summary>
         public bool UseEntityFrameworkCoreProxies { get; set; } = false;

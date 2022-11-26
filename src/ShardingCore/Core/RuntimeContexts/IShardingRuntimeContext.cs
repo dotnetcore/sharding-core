@@ -5,6 +5,7 @@ using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.DbContextOptionBuilderCreator;
 using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.ModelCacheLockerProviders;
 using ShardingCore.Core.QueryRouteManagers.Abstractions;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.ServiceProviders;
@@ -30,6 +31,7 @@ namespace ShardingCore.Core.RuntimeContexts
     public interface IShardingRuntimeContext
     {
         Type DbContextType { get; }
+        IModelCacheLockerProvider GetModelCacheLockerProvider();
         IDbContextTypeAware GetDbContextTypeAware();
         IShardingProvider GetShardingProvider();
         IDbContextOptionBuilderCreator GetDbContextOptionBuilderCreator();

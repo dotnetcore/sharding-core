@@ -10,20 +10,22 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using ShardingCore.Core.RuntimeContexts;
 
 namespace ShardingCore.EFCores
 {
-    public  class ShardingModelSource: ModelSource, IShardingModelSource
+    public  class ShardingModelSource: ModelSource
     {
-        private readonly object _syncObject = new object();
+        private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly ConcurrentDictionary<object, Lazy<IModel>> _models = new ConcurrentDictionary<object, Lazy<IModel>>();
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public ShardingModelSource( ModelSourceDependencies dependencies):base(dependencies)
+        public ShardingModelSource( ModelSourceDependencies dependencies,IShardingRuntimeContext shardingRuntimeContext):base(dependencies)
         {
+            _shardingRuntimeContext = shardingRuntimeContext;
             Check.NotNull(dependencies, nameof(dependencies));
 
             Dependencies = dependencies;
@@ -65,7 +67,8 @@ namespace ShardingCore.EFCores
                 {
                     waitSeconds = shardingModelCacheOption.GetModelCacheLockObjectSeconds();
                 }
-                var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(waitSeconds));
+                var cacheLockObject = _shardingRuntimeContext.GetModelCacheLockerProvider().GetCacheLockObject(cacheKey);
+                var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
                     throw new ShardingCoreInvalidOperationException("cache model timeout");
@@ -82,37 +85,11 @@ namespace ShardingCore.EFCores
                 }
                 finally
                 {
-                    Monitor.Exit(_syncObject);
+                    Monitor.Exit(cacheLockObject);
                 }
             }
 
             return model.Value;
-        }
-        
-        public IModelCacheKeyFactory GetModelCacheKeyFactory()
-        {
-            return Dependencies.ModelCacheKeyFactory;
-        }
-        public object GetSyncObject()
-        {
-            return _syncObject;
-        }
-
-        public void Remove(object key)
-        {
-            var acquire = Monitor.TryEnter(_syncObject, TimeSpan.FromSeconds(3));
-            if (!acquire)
-            {
-                throw new ShardingCoreInvalidOperationException("cache model timeout");
-            }
-            try
-            {
-                _models.TryRemove(key, out var x);
-            }
-            finally
-            {
-                Monitor.Exit(_syncObject);
-            }
         }
     }
 }

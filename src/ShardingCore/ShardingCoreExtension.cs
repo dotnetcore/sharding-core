@@ -32,6 +32,7 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.DbContextOptionBuilderCreator;
 using ShardingCore.Core.DbContextTypeAwares;
+using ShardingCore.Core.ModelCacheLockerProviders;
 using ShardingCore.Core.QueryTrackers;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.ShardingConfigurations.ConfigBuilders;
@@ -137,6 +138,7 @@ namespace ShardingCore
             services.TryAddSingleton<IDbContextTypeAware>(sp=>new DbContextTypeAware(typeof(TShardingDbContext)));
             services.TryAddSingleton<IShardingInitializer, ShardingInitializer>();
             services.TryAddSingleton<IShardingBootstrapper, ShardingBootstrapper>();
+            services.TryAddSingleton<IModelCacheLockerProvider, DefaultModelCacheLockerProvider>();
             services.TryAddSingleton<IDataSourceInitializer, DataSourceInitializer>();
             services.TryAddSingleton<ITableRouteManager, TableRouteManager>();
             services

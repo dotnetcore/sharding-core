@@ -89,6 +89,7 @@ namespace Sample.AutoCreateIfPresent
         public override void Configure(EntityMetadataTableBuilder<AreaDevice> builder)
         {
             builder.ShardingProperty(o => o.Area);
+            builder.TableSeparator(string.Empty);
         }
 
         public override Func<string, bool> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)

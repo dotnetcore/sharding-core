@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
@@ -91,6 +92,19 @@ namespace Sample.MySql.Controllers
             //     .Where(o => o.Id == "2").FirstOrDefaultAsync();
             // _defaultTableDbContext.Update(resultX123);
             // _defaultTableDbContext.SaveChanges();
+            Stopwatch sp = Stopwatch.StartNew();
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
+            sp.Stop();
+            Console.WriteLine(sp.ElapsedMilliseconds);
+            sp.Restart();
+            var sysUserMods11 = await _defaultTableDbContext.Set<SysUserMod>().AsNoTracking().ToListAsync();
+            sp.Stop();
+            Console.WriteLine(sp.ElapsedMilliseconds);
+            sp.Restart();
+            var sysUserMods22 = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
+            sp.Stop();
+            Console.WriteLine(sp.ElapsedMilliseconds);
+            
             var resultX1 = await _defaultTableDbContext.Set<SysUserMod>()
                                 .Where(o => o.Id == "2" || o.Id == "3").GroupBy(o => new { o.Id,o.Name })
                                 .Select(o => new 

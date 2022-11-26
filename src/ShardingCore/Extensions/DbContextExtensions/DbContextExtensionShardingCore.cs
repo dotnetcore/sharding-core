@@ -315,52 +315,52 @@ namespace ShardingCore.Extensions
         /// 移除模型缓存
         /// </summary>
         /// <param name="dbContext"></param>
-        public static void RemoveModelCache(this DbContext dbContext)
-        {
-#if !EFCORE2  && !EFCORE3 && !EFCORE5 && !EFCORE6 && !EFCORE7
-            throw new NotImplementedException();
-#endif
-#if EFCORE6 || EFCORE7
-            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
-            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
-            object key1 = modelCacheKeyFactory.Create(dbContext,true);
-            shardingModelSource.Remove(key1);
-            object key2 = modelCacheKeyFactory.Create(dbContext,false);
-            shardingModelSource.Remove(key2);
-#endif
-#if EFCORE5
-            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
-            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
-            object key1 = modelCacheKeyFactory.Create(dbContext);
-            shardingModelSource.Remove(key1);
-#endif
-#if EFCORE3
-           
-            var shardingModelSource = dbContext.GetService<IModelSource>()  as IShardingModelSource;
-            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
-            object key1 = modelCacheKeyFactory.Create(dbContext);
-            shardingModelSource.Remove(key1);
-#endif
+//         public static void RemoveModelCache(this DbContext dbContext)
+//         {
+// #if !EFCORE2  && !EFCORE3 && !EFCORE5 && !EFCORE6 && !EFCORE7
+//             throw new NotImplementedException();
+// #endif
+// #if EFCORE6 || EFCORE7
+//             var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+//             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+//             object key1 = modelCacheKeyFactory.Create(dbContext,true);
+//             shardingModelSource.Remove(key1);
+//             object key2 = modelCacheKeyFactory.Create(dbContext,false);
+//             shardingModelSource.Remove(key2);
+// #endif
+// #if EFCORE5
+//             var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+//             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+//             object key1 = modelCacheKeyFactory.Create(dbContext);
+//             shardingModelSource.Remove(key1);
+// #endif
+// #if EFCORE3
+//            
+//             var shardingModelSource = dbContext.GetService<IModelSource>()  as IShardingModelSource;
+//             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+//             object key1 = modelCacheKeyFactory.Create(dbContext);
+//             shardingModelSource.Remove(key1);
+// #endif
+//
+// #if EFCORE2
+//
+//             var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+//             var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
+//             object key1 = modelCacheKeyFactory.Create(dbContext);
+//             shardingModelSource.Remove(key1);
+// #endif
+//         }
 
-#if EFCORE2
-
-            var shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
-            var modelCacheKeyFactory = shardingModelSource.GetModelCacheKeyFactory();
-            object key1 = modelCacheKeyFactory.Create(dbContext);
-            shardingModelSource.Remove(key1);
-#endif
-        }
-
-        /// <summary>
-        /// 获取模型创建的锁
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <returns></returns>
-        public static object GetModelCacheSyncObject(this DbContext dbContext)
-        {
-            IShardingModelSource shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
-            return shardingModelSource.GetSyncObject();
-        }
+        // /// <summary>
+        // /// 获取模型创建的锁
+        // /// </summary>
+        // /// <param name="dbContext"></param>
+        // /// <returns></returns>
+        // public static object GetModelCacheSyncObject(this DbContext dbContext)
+        // {
+        //     IShardingModelSource shardingModelSource = dbContext.GetService<IModelSource>() as IShardingModelSource;
+        //     return shardingModelSource.GetSyncObject();
+        // }
 
 
         public static IEnumerable<object> GetPrimaryKeyValues<TEntity>(TEntity entity,IKey primaryKey) where TEntity : class
