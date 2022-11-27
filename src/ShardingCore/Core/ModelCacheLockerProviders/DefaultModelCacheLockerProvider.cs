@@ -60,7 +60,8 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
             }
 
             var hashCode = (modelCacheKey.ToString() ?? "").GetHashCode();
-            var index = Math.Abs(hashCode % _locks.Count);
+            var lockIndex = hashCode % _locks.Count;
+            var index = lockIndex >= 0 ? lockIndex : Math.Abs(lockIndex);
             return _locks[index];
         }
     }
