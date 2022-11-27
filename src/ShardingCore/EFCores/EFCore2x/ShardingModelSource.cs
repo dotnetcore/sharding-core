@@ -63,7 +63,7 @@ namespace ShardingCore.EFCores
             if (!_models.TryGetValue(cacheKey, out var model))
             {
                 var modelCacheLockerProvider = _shardingRuntimeContext.GetModelCacheLockerProvider();
-                var waitSeconds = modelCacheLockerProvider.GetModelCacheLockObjectSeconds();
+                var waitSeconds = modelCacheLockerProvider.GetCacheModelLockObjectSeconds();
                 var cacheLockObject = modelCacheLockerProvider.GetCacheLockObject(cacheKey);
                 var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)

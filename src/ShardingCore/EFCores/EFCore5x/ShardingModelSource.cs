@@ -91,7 +91,7 @@ namespace ShardingCore.EFCores
 
                 var priority = setPriority ?? modelCacheLockerProvider.GetCacheItemPriority();
                 var size = modelCacheLockerProvider.GetCacheEntrySize();
-                var waitSeconds = modelCacheLockerProvider.GetModelCacheLockObjectSeconds();
+                var waitSeconds = modelCacheLockerProvider.GetCacheModelLockObjectSeconds();
                 var cacheLockObject = modelCacheLockerProvider.GetCacheLockObject(cacheKey);
                 // Make sure OnModelCreating really only gets called once, since it may not be thread safe.
                 var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));

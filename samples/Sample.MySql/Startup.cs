@@ -106,7 +106,7 @@ namespace Sample.MySql
                 {
                     o.CacheModelLockConcurrencyLevel = 1024;
                     o.CacheEntrySize = 1;
-                    o.ModelCacheLockObjectSeconds = 10;
+                    o.CacheModelLockObjectSeconds = 10;
                     o.CheckShardingKeyValueGenerated = false;
                     var loggerFactory1= sp.GetService<ILoggerFactory>();
                     var loggerFactory2 = sp.ApplicationServiceProvider.GetService<ILoggerFactory>();

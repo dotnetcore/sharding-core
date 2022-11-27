@@ -4,7 +4,7 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
 {
     public interface IModelCacheLockerProvider
     {
-        int GetModelCacheLockObjectSeconds();
+        int GetCacheModelLockObjectSeconds();
 #if !EFCORE2
         CacheItemPriority GetCacheItemPriority();
         int GetCacheEntrySize();

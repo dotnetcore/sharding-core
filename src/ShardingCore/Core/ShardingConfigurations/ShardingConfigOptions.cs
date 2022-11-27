@@ -16,6 +16,8 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <summary>
         /// 模型缓存锁等待时间
         /// </summary>
+        public int CacheModelLockObjectSeconds { get; set; } = 3;
+        [Obsolete("plz use CacheModelLockObjectSeconds")]
         public int ModelCacheLockObjectSeconds { get; set; } = 3;
 #if !EFCORE2
         /// <summary>
