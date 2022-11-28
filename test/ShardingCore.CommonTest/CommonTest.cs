@@ -1,11 +1,44 @@
 using System.Diagnostics;
 using ShardingCore.Core.Collections;
+using ShardingCore.Helpers;
 using Xunit;
 
 namespace ShardingCore.CommonTest
 {
     public class CommonTest
     {
+        [Fact]
+        public void TestHashCode()
+        {
+            var list = new List<string>();
+            for (int i = 0; i < 100000; i++)
+            {
+                list.Add(Guid.NewGuid().ToString()+Guid.NewGuid().ToString()+Guid.NewGuid().ToString()+Guid.NewGuid().ToString());
+            }
+            Stopwatch sp =Stopwatch.StartNew();
+            for (int i = 0; i < 100000; i++)
+            {
+                
+                ShardingCoreHelper.GetStringHashCode(list[i]);
+            }
+            sp.Stop();
+            var x = sp.ElapsedMilliseconds;
+            sp.Restart();
+            for (int i = 0; i < 100000; i++)
+            {
+                list[i].GetHashCode();
+            }
+            sp.Stop();
+            var y = sp.ElapsedMilliseconds;
+            sp.Restart();
+            for (int i = 0; i < 100000; i++)
+            {
+                ShardingCoreHelper.GetStringHashCode(list[i]);
+            }
+            sp.Stop();
+            var z = sp.ElapsedMilliseconds;
+
+        }
         [Fact]
         public void TestList()
         {

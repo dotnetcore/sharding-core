@@ -10,7 +10,7 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
     public class DefaultModelCacheLockerProvider : IModelCacheLockerProvider
     {
         private readonly ShardingConfigOptions _shardingConfigOptions;
-        private readonly List<object> _locks;
+        private readonly object[] _locks;
 
         public DefaultModelCacheLockerProvider(ShardingConfigOptions shardingConfigOptions)
         {
@@ -21,10 +21,10 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
                     $"{shardingConfigOptions.CacheModelLockConcurrencyLevel} should > 0");
             }
 
-            _locks = new List<object>(shardingConfigOptions.CacheModelLockConcurrencyLevel);
+            _locks = new object [shardingConfigOptions.CacheModelLockConcurrencyLevel];
             for (int i = 0; i < shardingConfigOptions.CacheModelLockConcurrencyLevel; i++)
             {
-                _locks.Add(new object());
+                _locks[i] = new object();
             }
         }
 
@@ -54,14 +54,13 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
                     $"modelCacheKey is null cant {nameof(GetCacheLockObject)}");
             }
 
-            if (_locks.Count == 1)
+            if (_locks.Length == 1)
             {
                 return _locks[0];
             }
 
             var hashCode = (modelCacheKey.ToString() ?? "").GetHashCode();
-            var lockIndex = hashCode % _locks.Count;
-            var index = lockIndex >= 0 ? lockIndex : Math.Abs(lockIndex);
+            var index = Math.Abs(hashCode % _locks.Length);
             return _locks[index];
         }
     }

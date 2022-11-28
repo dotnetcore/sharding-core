@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Caching.Memory;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
@@ -8,6 +10,7 @@ using Sample.MySql.Shardings;
 using ShardingCore;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
+using ShardingCore.Core.ModelCacheLockerProviders;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.EFCores;
 using ShardingCore.Extensions;
@@ -54,47 +57,8 @@ namespace Sample.MySql
         public void ConfigureServices(IServiceCollection services)
         {
             // services.AddHostedService<AutoStart>();
-            services.AddControllers(); 
-            // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
-            //     ,op =>
-            //     {
-            //         op.EnsureCreatedWithOutShardingTable = true;
-            //         op.CreateShardingTableOnStart = true;
-            //         op.UseShardingOptionsBuilder((connection, builder) => builder.UseMySql(connection,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger),
-            //             (conStr,builder)=> builder.UseMySql(conStr,new MySqlServerVersion("5.7.15")).UseLoggerFactory(efLogger));
-            //         op.AddShardingTableRoute<SysUserModVirtualTableRoute>();
-            //         op.AddShardingTableRoute<SysUserSalaryVirtualTableRoute>();
-            //     });
-            // services.AddMultiShardingDbContext<OtherDbContext>()
-            //     .UseRouteConfig(op =>
-            //     {
-            //         op.AddShardingTableRoute<MyUserRoute>();
-            //     })
-            //     .UseConfig((sp,o) =>
-            //     {
-            //         o.ThrowIfQueryRouteNotMatch = false;
-            //         o.UseShardingQuery((conStr, builder) =>
-            //         {
-            //             builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
-            //                 .UseLoggerFactory(efLogger)
-            //                 .EnableSensitiveDataLogging()
-            //                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            //         });
-            //         o.UseShardingTransaction((connection, builder) =>
-            //         {
-            //             builder
-            //                 .UseMySql(connection, new MySqlServerVersion(new Version()))
-            //                 .UseLoggerFactory(efLogger)
-            //                 .EnableSensitiveDataLogging()
-            //                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            //         });
-            //         o.UseShardingMigrationConfigure(b =>
-            //         {
-            //             b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
-            //         });
-            //         o.AddDefaultDataSource("ds0",
-            //             "server=127.0.0.1;port=3306;database=dbdbdx;userid=root;password=root;");
-            //     }).ReplaceService<ITableEnsureManager, MySqlTableEnsureManager>().AddShardingCore();
+            services.AddControllers();
+            services.AddSingleton<IMemoryCache>(sp => new MemoryCache(new MemoryCacheOptions { SizeLimit = 102400 }));
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig(o =>
                 {
@@ -104,6 +68,11 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig((sp,o) =>
                 {
+                    var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();
+                    o.UseExecutorDbContextConfigure(b =>
+                    {
+                        b.UseMemoryCache(memoryCache);
+                    });
                     o.CacheModelLockConcurrencyLevel = 1024;
                     o.CacheEntrySize = 1;
                     o.CacheModelLockObjectSeconds = 10;
@@ -139,7 +108,7 @@ namespace Sample.MySql
                     {
                         b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                     });
-                })
+                }).ReplaceService<IModelCacheLockerProvider,DicModelCacheLockerProvider>()
                 .AddShardingCore();
             // services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension
             //     .UseMutliDefaultSharding<DefaultShardingDbContext>);
