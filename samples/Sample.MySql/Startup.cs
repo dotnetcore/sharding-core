@@ -59,12 +59,22 @@ namespace Sample.MySql
             // services.AddHostedService<AutoStart>();
             services.AddControllers();
             services.AddSingleton<IMemoryCache>(sp => new MemoryCache(new MemoryCacheOptions { SizeLimit = 102400 }));
+            //
+            // Action<IServiceProvider, DbContextOptionsBuilder> optionsBuilder = null;
+            // services.AddDbContext<DefaultShardingDbContext>(optionsBuilder);
+            // services.AddDbContext<DefaultShardingDbContext>((sp,builder) =>
+            // {
+            //     optionsBuilder(sp, builder);
+            // });
+            //
+            
+            
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig(o =>
                 {
                     o.AddShardingTableRoute<DynamicTableRoute>();
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
-                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    // o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                 }).UseConfig((sp,o) =>
                 {
@@ -73,6 +83,7 @@ namespace Sample.MySql
                     {
                         b.UseMemoryCache(memoryCache);
                     });
+                    o.UseEntityFrameworkCoreProxies = true;
                     o.CacheModelLockConcurrencyLevel = 1024;
                     o.CacheEntrySize = 1;
                     o.CacheModelLockObjectSeconds = 10;
@@ -82,12 +93,13 @@ namespace Sample.MySql
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false; 
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
+
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
-                            // .UseLoggerFactory(efLogger)
-                            // .EnableSensitiveDataLogging()
-                            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                        // .UseLoggerFactory(efLogger)
+                        // .EnableSensitiveDataLogging()
+                        //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
@@ -98,11 +110,11 @@ namespace Sample.MySql
                             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                        "server=127.0.0.1;port=3306;database=dbdbd02;userid=root;password=root;");
                     o.AddExtraDataSource(sp => new Dictionary<string, string>()
                     {
-                        { "ds1", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;" },
-                        { "ds2", "server=127.0.0.1;port=3306;database=dbdbd2;userid=root;password=root;" }
+                        { "ds1", "server=127.0.0.1;port=3306;database=dbdbd12;userid=root;password=root;" },
+                        { "ds2", "server=127.0.0.1;port=3306;database=dbdbd22;userid=root;password=root;" }
                     });
                     o.UseShardingMigrationConfigure(b =>
                     {

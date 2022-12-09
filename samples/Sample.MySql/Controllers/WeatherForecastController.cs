@@ -73,6 +73,17 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+
+
+            var x2 = await (from ut in _defaultTableDbContext.Set<SysTest>()
+                    join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()
+                        on ut.Id equals uu.Id
+                    select new { a = ut, b = uu }).Select(o=>new {x=o}).Select(o=>new{x=o})
+                .Select(o => new
+                {
+                    o.x.x.a.Id
+                }).OrderBy(o => o.Id).ToListAsync();
+            Console.WriteLine("123");
              //OtherDbContext.CurrentId = "";
             // var myUsers0 = _otherDbContext.MyUsers.ToList();
             // OtherDbContext.CurrentId = "123";
@@ -92,6 +103,7 @@ namespace Sample.MySql.Controllers
             //     .Where(o => o.Id == "2").FirstOrDefaultAsync();
             // _defaultTableDbContext.Update(resultX123);
             // _defaultTableDbContext.SaveChanges();
+            
             Stopwatch sp = Stopwatch.StartNew();
             var sysUserMods = await _defaultTableDbContext.Set<SysUserMod>().ToListAsync();
             sp.Stop();
@@ -195,6 +207,16 @@ namespace Sample.MySql.Controllers
                     ID = a.Id
                 };
           var listAsync =await sql.ToListAsync();
+          // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+          // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get3()
+        {
+            var sysUserMods = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync();
+            _defaultTableDbContext.SysUserMod.Remove(sysUserMods);
+            _defaultTableDbContext.SaveChanges();
           // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
           // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();

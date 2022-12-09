@@ -146,7 +146,8 @@ namespace Sample.SqlServer.Controllers
 
 
             var unionUserIds = await _defaultTableDbContext.Set<SysUserMod>().Select(o => new UnionUserId() { UserId = o.Id })
-                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId })).UseUnionAllMerge().ToListAsync();
+                .Union(_defaultTableDbContext.Set<SysUserSalary>().Select(o => new UnionUserId() { UserId = o.UserId }))
+                .UseUnionAllMerge().ToListAsync();
 
 
 

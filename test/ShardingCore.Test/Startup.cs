@@ -56,6 +56,7 @@ namespace ShardingCore.Test
                 })
                 .UseConfig(op =>
                 {
+                    op.AutoUseWriteConnectionStringAfterWriteDb = true;
                     op.CacheModelLockConcurrencyLevel = Environment.ProcessorCount;
                     //op.UseEntityFrameworkCoreProxies = true;
                     //当无法获取路由时会返回默认值而不是报错

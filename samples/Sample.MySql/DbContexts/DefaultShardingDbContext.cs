@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.Domain.Maps;
@@ -14,6 +15,7 @@ namespace Sample.MySql.DbContexts
     public class DefaultShardingDbContext : AbstractShardingDbContext, IShardingTableDbContext
     {
         public DbSet<DynamicTable> DynamicTables { get; set; }
+        public DbSet<SysUserMod> SysUserMod { get; set; }
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
             //切记不要在构造函数中使用会让模型提前创建的方法
@@ -68,5 +70,6 @@ namespace Sample.MySql.DbContexts
         }
 
         public IRouteTail RouteTail { get; set; }
+      
     }
 }

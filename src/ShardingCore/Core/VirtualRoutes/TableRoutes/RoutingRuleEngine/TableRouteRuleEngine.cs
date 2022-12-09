@@ -54,6 +54,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             var queryEntities = tableRouteRuleContext.QueryEntities;
 
 
+            bool onlyShardingDataSource = true;
             foreach (var shardingEntityKv in queryEntities)
             {
                 var shardingEntity = shardingEntityKv.Key;
@@ -61,6 +62,8 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                 {
                     continue;
                 }
+
+                onlyShardingDataSource = false;
 
                 var shardingRouteUnits = GetEntityRouteUnit(tableRouteRuleContext.DataSourceRouteResult, shardingEntity,
                     shardingEntityKv.Value ?? tableRouteRuleContext.Queryable);
@@ -130,6 +133,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                             sqlRouteUnits.Add(new SqlRouteUnit(dataSourceName, tableRouteResult));
                         }
                     }
+                }else if (onlyShardingDataSource)
+                {
+                    var tableRouteResult = new TableRouteResult(queryEntities.Keys.Select(o=>new TableRouteUnit(dataSourceName,String.Empty,o )).ToList());
+                    sqlRouteUnits.Add(new SqlRouteUnit(dataSourceName, tableRouteResult));
                 }
             }
 
