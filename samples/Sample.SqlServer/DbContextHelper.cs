@@ -11,7 +11,7 @@ namespace Sample.SqlServer
         public static DbContext CreateDbContextByString(string connectionString,IShardingRuntimeContext shardingRuntimeContext)
         {
             var dbContextOptionsBuilder = new DbContextOptionsBuilder<DefaultShardingDbContext>();
-            dbContextOptionsBuilder.UseSqlServer(connectionString).UseSharding<DefaultShardingDbContext>(shardingRuntimeContext);
+            dbContextOptionsBuilder.UseSqlServer(connectionString).UseSharding(shardingRuntimeContext);
             return new DefaultShardingDbContext(dbContextOptionsBuilder.Options);
         }
     }

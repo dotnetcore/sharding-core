@@ -24,7 +24,7 @@ namespace ShardingCore.EFCores
     /// <summary>
     /// manage transaction
     /// </summary>
-    public class ShardingRelationalTransactionManager<TShardingDbContext> : IRelationalTransactionManager where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionManager : IRelationalTransactionManager 
     {
         private readonly IRelationalConnection _relationalConnection;
         private readonly IShardingDbContext _shardingDbContext;

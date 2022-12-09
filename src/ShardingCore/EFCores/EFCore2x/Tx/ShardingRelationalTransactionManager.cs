@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -24,26 +25,21 @@ namespace ShardingCore.EFCores
     /// <summary>
     /// manage transaction
     /// </summary>
-    public class ShardingRelationalTransactionManager<TShardingDbContext> : IRelationalTransactionManager where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionManager : IRelationalTransactionManager
     {
         private readonly IRelationalConnection _relationalConnection;
+        private readonly ICurrentDbContext _currentDbContext;
         private readonly IShardingDbContext _shardingDbContext;
         private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
 
 
 
-        public ShardingRelationalTransactionManager(IRelationalConnection relationalConnection)
+        public ShardingRelationalTransactionManager(IRelationalConnection relationalConnection,ICurrentDbContext currentDbContext)
         {
             _relationalConnection = relationalConnection;
-            _shardingDbContext = GetDbContext(relationalConnection) as IShardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+            _currentDbContext = currentDbContext;
+            _shardingDbContext = currentDbContext.Context as IShardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
             _shardingDbContextExecutor = _shardingDbContext.GetShardingExecutor();
-        }
-        private DbContext GetDbContext(IRelationalConnection connection)
-        {
-            var namedConnectionStringResolver = ((RelationalConnectionDependencies)connection.GetPropertyValue("Dependencies")).ConnectionStringResolver;
-            var serviceProvider = (IServiceProvider)namedConnectionStringResolver.GetPropertyValue("ApplicationServiceProvider");
-            var dbContext = (DbContext)serviceProvider.GetService(typeof(TShardingDbContext));
-            return dbContext;
         }
 
         public void ResetState()
@@ -77,6 +73,11 @@ namespace ShardingCore.EFCores
         public IDbContextTransaction BeginTransaction(IsolationLevel isolationLevel)
         {
             var dbContextTransaction = _relationalConnection.BeginTransaction(isolationLevel);
+            
+            if (dbContextTransaction is ShardingRelationalTransaction shardingRelationalTransaction)
+            {
+                shardingRelationalTransaction.SetShardingDbContext(_shardingDbContext);
+            }
             _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }
@@ -85,6 +86,11 @@ namespace ShardingCore.EFCores
             CancellationToken cancellationToken = new CancellationToken())
         {
             var dbContextTransaction = await _relationalConnection.BeginTransactionAsync(isolationLevel, cancellationToken);
+            
+            if (dbContextTransaction is ShardingRelationalTransaction shardingRelationalTransaction)
+            {
+                shardingRelationalTransaction.SetShardingDbContext(_shardingDbContext);
+            }
             _shardingDbContextExecutor.NotifyShardingTransaction();
             return dbContextTransaction;
         }

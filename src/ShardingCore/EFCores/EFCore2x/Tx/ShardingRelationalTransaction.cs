@@ -23,16 +23,32 @@ namespace ShardingCore.EFCores
     */
     public class ShardingRelationalTransaction : RelationalTransaction
     {
-        private readonly IShardingDbContext _shardingDbContext;
-        private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
-        public ShardingRelationalTransaction(IShardingDbContext shardingDbContext, IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
+        private  IShardingDbContext _shardingDbContext;
+        private  IShardingDbContextExecutor _shardingDbContextExecutor;
+        private bool _inited = false;
+        public ShardingRelationalTransaction(IRelationalConnection connection, DbTransaction transaction,IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger, bool transactionOwned) : base(connection, transaction, logger, transactionOwned)
         {
+
+        }
+
+        private void CheckInit()
+        {
+            if (_inited)
+            {
+                throw new ShardingCoreInvalidOperationException($"cant repat init {nameof(ShardingRelationalTransaction)}");
+            }
+
+        }
+        public void SetShardingDbContext(IShardingDbContext shardingDbContext)
+        {
+            CheckInit();
             _shardingDbContext =
- shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
+                shardingDbContext??throw new ShardingCoreInvalidOperationException($"should implement {nameof(IShardingDbContext)}");
             _shardingDbContextExecutor = shardingDbContext.GetShardingExecutor() ??
                                          throw new ShardingCoreInvalidOperationException(
                                              $"{shardingDbContext.GetType()} cant get {nameof(IShardingDbContextExecutor)} from {nameof(shardingDbContext.GetShardingExecutor)}");
-
+            
+            _inited = true;
         }
 
         //protected override void ClearTransaction()

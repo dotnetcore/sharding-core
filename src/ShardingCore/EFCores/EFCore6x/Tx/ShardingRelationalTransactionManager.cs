@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
@@ -25,7 +26,7 @@ namespace ShardingCore.EFCores
     /// <summary>
     /// manage transaction
     /// </summary>
-    public class ShardingRelationalTransactionManager<TShardingDbContext> : IRelationalTransactionManager where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionManager : IRelationalTransactionManager
     {
         private readonly IRelationalConnection _relationalConnection;
         private readonly IShardingDbContext _shardingDbContext;

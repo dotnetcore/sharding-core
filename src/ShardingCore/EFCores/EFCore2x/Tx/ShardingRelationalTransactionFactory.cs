@@ -21,7 +21,7 @@ namespace ShardingCore.EFCores
     */
 
 
-    public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionFactory: RelationalTransactionFactory
     {
         private readonly RelationalTransactionFactoryDependencies _dependencies;
         public ShardingRelationalTransactionFactory(RelationalTransactionFactoryDependencies dependencies) : base(dependencies)
@@ -32,17 +32,8 @@ namespace ShardingCore.EFCores
             , IDiagnosticsLogger<DbLoggerCategory.Database.Transaction> logger,
             bool transactionOwned)
         {
-            var shardingDbContext = GetDbContext(connection) as IShardingDbContext;
-            return new ShardingRelationalTransaction(shardingDbContext, connection, transaction, logger,
+            return new ShardingRelationalTransaction(connection, transaction, logger,
                 transactionOwned);
-        }
-
-        private DbContext GetDbContext(IRelationalConnection connection)
-        {
-            var namedConnectionStringResolver = ((RelationalConnectionDependencies)connection.GetPropertyValue("Dependencies")).ConnectionStringResolver;
-            var serviceProvider = (IServiceProvider)namedConnectionStringResolver.GetPropertyValue("ApplicationServiceProvider");
-            var dbContext = (DbContext)serviceProvider.GetService(typeof(TShardingDbContext));
-            return dbContext;
         }
     }
 }

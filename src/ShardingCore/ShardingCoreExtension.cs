@@ -126,7 +126,7 @@ namespace ShardingCore
             var contextOptionsBuilder = virtualDataSource.ConfigurationParams
                 .UseDbContextOptionsBuilder(connectionString, dbContextOptionsBuilder)
                 .UseShardingMigrator()
-                .UseSharding<TShardingDbContext>(shardingRuntimeContext);
+                .UseSharding(shardingRuntimeContext);
 
             virtualDataSource.ConfigurationParams.UseShellDbContextOptionBuilder(contextOptionsBuilder);
             return dbContextOptionsBuilder;
@@ -210,18 +210,17 @@ namespace ShardingCore
             return services;
         }
 
-        public static DbContextOptionsBuilder UseSharding<TShardingDbContext>(
+        public static DbContextOptionsBuilder UseSharding(
             this DbContextOptionsBuilder optionsBuilder, IShardingRuntimeContext shardingRuntimeContext)
-            where TShardingDbContext : DbContext, IShardingDbContext
         {
             return optionsBuilder.UseShardingWrapMark().UseShardingOptions(shardingRuntimeContext)
                 .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IChangeTrackerFactory, ShardingChangeTrackerFactory>()
                 .ReplaceService<IDbContextTransactionManager,
-                    ShardingRelationalTransactionManager<TShardingDbContext>>()
+                    ShardingRelationalTransactionManager>()
                 .ReplaceService<IRelationalTransactionFactory,
-                    ShardingRelationalTransactionFactory<TShardingDbContext>>();
+                    ShardingRelationalTransactionFactory>();
         }
 
         public static DbContextOptionsBuilder UseShardingMigrator(

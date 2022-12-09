@@ -20,7 +20,7 @@ namespace ShardingCore.EFCores
     * @Email: 326308290@qq.com
     */
 
-    public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionFactory: RelationalTransactionFactory
     {
         private readonly RelationalTransactionFactoryDependencies _dependencies;
         public ShardingRelationalTransactionFactory(RelationalTransactionFactoryDependencies dependencies) : base(dependencies)

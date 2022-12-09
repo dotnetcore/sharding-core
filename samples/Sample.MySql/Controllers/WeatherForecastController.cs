@@ -73,7 +73,10 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-
+            using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
+            {
+                
+            }
 
             var x2 = await (from ut in _defaultTableDbContext.Set<SysTest>()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()

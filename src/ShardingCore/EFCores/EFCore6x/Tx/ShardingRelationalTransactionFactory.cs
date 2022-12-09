@@ -21,7 +21,7 @@ namespace ShardingCore.EFCores
     */
 
 
-    public class ShardingRelationalTransactionFactory<TShardingDbContext> : RelationalTransactionFactory where TShardingDbContext : DbContext, IShardingDbContext
+    public class ShardingRelationalTransactionFactory : RelationalTransactionFactory
     {
         private readonly RelationalTransactionFactoryDependencies _dependencies;
         public ShardingRelationalTransactionFactory(RelationalTransactionFactoryDependencies dependencies) : base(dependencies)
