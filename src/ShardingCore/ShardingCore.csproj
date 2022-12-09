@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-        <Version>7.7.0.9</Version>
+        <Version>7.7.0.10</Version>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <DefineConstants>TRACE;DEBUG;EFCORE7;</DefineConstants>
         <LangVersion>latest</LangVersion>
