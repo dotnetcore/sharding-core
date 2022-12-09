@@ -54,7 +54,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             var queryEntities = tableRouteRuleContext.QueryEntities;
 
 
-            bool onlyShardingDataSource = true;
+            bool onlyShardingDataSource = queryEntities.All(o=>_entityMetadataManager.IsOnlyShardingDataSource(o.Key));
             foreach (var shardingEntityKv in queryEntities)
             {
                 var shardingEntity = shardingEntityKv.Key;
@@ -63,7 +63,6 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     continue;
                 }
 
-                onlyShardingDataSource = false;
 
                 var shardingRouteUnits = GetEntityRouteUnit(tableRouteRuleContext.DataSourceRouteResult, shardingEntity,
                     shardingEntityKv.Value ?? tableRouteRuleContext.Queryable);
