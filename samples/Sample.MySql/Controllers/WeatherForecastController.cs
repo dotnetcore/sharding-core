@@ -6,6 +6,7 @@ using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
 using Sample.MySql.Shardings;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
@@ -73,6 +74,13 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
+            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(SysUserMod));
+            virtualDataSourceRoute.AddDataSourceName("2023");
+            var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
+            dataSourceInitializer.InitConfigure("2023",true,true);
             using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
             {
                 
@@ -221,6 +229,18 @@ namespace Sample.MySql.Controllers
             _defaultTableDbContext.SysUserMod.Remove(sysUserMods);
             _defaultTableDbContext.SaveChanges();
           // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+          // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get4()
+        {
+            var sql=from a in _defaultTableDbContext.Set<TestMod>()
+                join b in _defaultTableDbContext.Set<TestModItem>()
+                    on a.Id equals b.MainId
+                select a;
+            var xx = await sql.ToListAsync();
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
           // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }

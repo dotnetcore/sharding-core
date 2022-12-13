@@ -46,7 +46,9 @@ namespace ShardingCore.Core.EntityMetadatas
 
         public bool IsOnlyShardingTable(Type entityType)
         {
-            return IsShardingTable(entityType) && !IsShardingDataSource(entityType);
+            if (!_caches.TryGetValue(entityType, out var entityMetadata))
+                return false;
+            return entityMetadata.IsMultiTableMapping&&!entityMetadata.IsMultiDataSourceMapping;
         }
 
         /// <summary>
@@ -63,7 +65,9 @@ namespace ShardingCore.Core.EntityMetadatas
 
         public bool IsOnlyShardingDataSource(Type entityType)
         {
-            return IsShardingDataSource(entityType) && !IsShardingTable(entityType);
+            if (!_caches.TryGetValue(entityType, out var entityMetadata))
+                return false;
+            return entityMetadata.IsMultiDataSourceMapping&&!entityMetadata.IsMultiTableMapping;
         }
 
         /// <summary>

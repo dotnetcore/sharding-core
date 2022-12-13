@@ -15,6 +15,7 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.EFCores;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
+using ShardingCore.Sharding.ParallelTables;
 using ShardingCore.Sharding.ReadWriteConfigurations;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
@@ -76,6 +77,13 @@ namespace Sample.MySql
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     // o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
+                    o.AddShardingTableRoute<TestModRoute>();
+                    o.AddShardingTableRoute<TestModItemRoute>();
+                    o.AddParallelTableGroupNode(new ParallelTableGroupNode(new List<ParallelTableComparerType>()
+                    {
+                        new ParallelTableComparerType(typeof(TestMod)),
+                        new ParallelTableComparerType(typeof(TestModItem)),
+                    }));
                 }).UseConfig((sp,o) =>
                 {
                     var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();

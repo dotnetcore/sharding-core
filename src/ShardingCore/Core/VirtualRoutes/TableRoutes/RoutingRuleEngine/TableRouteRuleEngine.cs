@@ -7,6 +7,7 @@ using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.MergeEngines.Common;
 using ShardingCore.Sharding.MergeEngines.Common.Abstractions;
+using ShardingCore.Sharding.ParallelTables;
 
 
 namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
@@ -21,12 +22,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
     {
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
+        private readonly IParallelTableManager _parallelTableManager;
 
         public TableRouteRuleEngine(ITableRouteManager tableRouteManager,
-            IEntityMetadataManager entityMetadataManager)
+            IEntityMetadataManager entityMetadataManager,IParallelTableManager parallelTableManager)
         {
             _tableRouteManager = tableRouteManager;
             _entityMetadataManager = entityMetadataManager;
+            _parallelTableManager = parallelTableManager;
         }
 
         private List<TableRouteUnit> GetEntityRouteUnit(DataSourceRouteResult dataSourceRouteResult,
@@ -108,12 +111,14 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                 if (routeMaps.ContainsKey(dataSourceName))
                 {
                     var routeMap = routeMaps[dataSourceName];
-                    var tableRouteResults = routeMap.Select(o => o.Value).Cartesian()
-                        .Select(o => new TableRouteResult(o.ToList())).Where(o => !o.IsEmpty).ToList();
+                    var routeResults = routeMap.Select(o => o.Value).Cartesian()
+                        .Select(o => new TableRouteResult(o.ToList())).Where(o => !o.IsEmpty).ToArray();
+
+                    var tableRouteResults = GetTableRouteResults(tableRouteRuleContext, routeResults);
                     if (tableRouteResults.IsNotEmpty())
                     {
                         dataSourceCount++;
-                        if (tableRouteResults.Count > 1)
+                        if (tableRouteResults.Length > 1)
                         {
                             isCrossTable = true;
                         }
@@ -153,5 +158,18 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             // return sqlRouteUnits;
             // return routeMaps.Select(o => o.Value).Cartesian().Where(o=>o).Select(o => new TableRouteResult(o,_shardingDatabaseProvider.GetShardingDbContextType()));
         }
+        private TableRouteResult[] GetTableRouteResults(TableRouteRuleContext tableRouteRuleContext,TableRouteResult[] routeResults)
+        {
+            if (tableRouteRuleContext.QueryEntities.Count > 1&& routeResults.Length>0)
+            {
+                var queryShardingTables = tableRouteRuleContext.QueryEntities.Keys.Where(o => _entityMetadataManager.IsShardingTable(o)).ToArray();
+                if (queryShardingTables.Length > 1 && _parallelTableManager.IsParallelTableQuery(queryShardingTables))
+                {
+                    return routeResults.Where(o => !o.HasDifferentTail).ToArray();
+                }
+            }
+            return routeResults;
+        }
     }
+    
 }

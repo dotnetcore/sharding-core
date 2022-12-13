@@ -19,6 +19,13 @@ namespace Sample.MySql.Shardings
         {
             _logger = logger;
         }
+
+        protected override List<string> CalcTailsOnStart()
+        {
+            var tails = base.CalcTailsOnStart();
+            return tails;
+        }
+
         public override DateTime GetBeginTime()
         {
             return new DateTime(2021, 1, 01);
