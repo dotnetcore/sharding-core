@@ -1,4 +1,4 @@
-#if EFCORE7
+#if EFCORE6
 
 using System.Collections.Generic;
 using System.Threading;

@@ -190,6 +190,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             return i;
         }
 
+        public DbContext GetShellDbContext()
+        {
+            return _shardingDbContext;
+        }
+
         public void NotifyShardingTransaction()
         {
             foreach (var dbContextCache in _dbContextCaches)
@@ -355,5 +360,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
             }
         }
+        
+        
     }
 }

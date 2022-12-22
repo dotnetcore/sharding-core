@@ -108,7 +108,7 @@ namespace ShardingCore.Extensions
                         new Dictionary<DbContext, IEnumerable<TEntity>>()
                         {
                             {
-                                shardingDbContext.CreateGenericDbContext(entitiesArray[0]),
+                                shardingDbContext.GetShardingExecutor().CreateGenericDbContext(entitiesArray[0]),
                                 entitiesArray
                             }
                         }

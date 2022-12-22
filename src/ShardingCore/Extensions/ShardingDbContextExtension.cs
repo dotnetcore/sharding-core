@@ -39,7 +39,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static DbContext GetShareDbContext(this IShardingDbContext shardingDbContext,string dataSourceName,IRouteTail routeTail)
         {
-            return shardingDbContext.GetDbContext(dataSourceName, CreateDbContextStrategyEnum.ShareConnection, routeTail);
+            return shardingDbContext.GetShardingExecutor().CreateDbContext(CreateDbContextStrategyEnum.ShareConnection,dataSourceName, routeTail);
         }
         
         /// <summary>
@@ -51,7 +51,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static DbContext GetIndependentWriteDbContext(this IShardingDbContext shardingDbContext,string dataSourceName,IRouteTail routeTail)
         {
-            return shardingDbContext.GetDbContext(dataSourceName, CreateDbContextStrategyEnum.IndependentConnectionWrite, routeTail);
+            return shardingDbContext.GetShardingExecutor().CreateDbContext(CreateDbContextStrategyEnum.IndependentConnectionWrite,dataSourceName, routeTail);
         }
         /// <summary>
         /// 获取独立生命周期的读连接字符串的db context
@@ -62,7 +62,7 @@ namespace ShardingCore.Extensions
         /// <returns></returns>
         public static DbContext GetIndependentQueryDbContext(this IShardingDbContext shardingDbContext,string dataSourceName,IRouteTail routeTail)
         {
-            return shardingDbContext.GetDbContext(dataSourceName, CreateDbContextStrategyEnum.IndependentConnectionQuery, routeTail);
+            return shardingDbContext.GetShardingExecutor().CreateDbContext(CreateDbContextStrategyEnum.IndependentConnectionQuery,dataSourceName, routeTail);
         }
     }
 }

@@ -128,7 +128,7 @@ namespace ShardingCore.Sharding
         {
             var routeTail = _routeTailFactory.Create(sqlRouteUnit.TableRouteResult);
 
-            var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName, CreateDbContextStrategyEnum.IndependentConnectionQuery, routeTail);
+            var dbContext = GetShardingDbContext().GetShardingExecutor().CreateDbContext(CreateDbContextStrategyEnum.IndependentConnectionQuery,sqlRouteUnit.DataSourceName, routeTail);
             _parallelDbContexts.TryAdd(dbContext, null);
 
             return dbContext;

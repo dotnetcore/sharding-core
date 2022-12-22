@@ -1,4 +1,4 @@
-#if EFCORE7
+#if EFCORE2
 
 using System.Collections.Generic;
 using System.Threading;
@@ -40,12 +40,13 @@ namespace ShardingCore.EFCores
             return stateManager.GetOrCreateEntry(entity,entityType);
         }
 
-        public override InternalEntityEntry StartTrackingFromQuery(IEntityType baseEntityType, object entity, in ValueBuffer valueBuffer)
+        public override InternalEntityEntry StartTrackingFromQuery(IEntityType baseEntityType, object entity, in ValueBuffer valueBuffer,
+            ISet<IForeignKey> handledForeignKeys)
         {
             var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
             var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
             var stateManager = dbContextDependencies.StateManager;
-            return stateManager.StartTrackingFromQuery(baseEntityType, entity, in valueBuffer);
+            return stateManager.StartTrackingFromQuery(baseEntityType, entity, in valueBuffer, handledForeignKeys);
         }
 
         public override InternalEntityEntry TryGetEntry(object entity, bool throwOnNonUniqueness = true)
@@ -56,12 +57,12 @@ namespace ShardingCore.EFCores
             return stateManager.TryGetEntry(entity, throwOnNonUniqueness);
         }
 
-        public override InternalEntityEntry TryGetEntry(object entity, IEntityType entityType, bool throwOnTypeMismatch = true)
+        public override InternalEntityEntry TryGetEntry(object entity, IEntityType entityType)
         {
             var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
             var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
             var stateManager = dbContextDependencies.StateManager;
-            return stateManager.TryGetEntry(entity, entityType, throwOnTypeMismatch);
+            return stateManager.TryGetEntry(entity, entityType);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -95,7 +96,7 @@ namespace ShardingCore.EFCores
                 using (var tran = await _currentDbContext.Database.BeginTransactionAsync(cancellationToken))
                 {
                     i = await _currentShardingDbContext.GetShardingExecutor().SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-                    await tran.CommitAsync(cancellationToken);
+                    tran.Commit();
                 }
             }
             else

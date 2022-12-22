@@ -74,17 +74,17 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
-            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
-            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
-            var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(SysUserMod));
-            virtualDataSourceRoute.AddDataSourceName("2023");
-            var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
-            dataSourceInitializer.InitConfigure("2023",true,true);
-            using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                
-            }
+            // var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            // virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
+            // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            // var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(SysUserMod));
+            // virtualDataSourceRoute.AddDataSourceName("2023");
+            // var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
+            // dataSourceInitializer.InitConfigure("2023",true,true);
+            // using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
+            // {
+            //     
+            // }
 
             var x2 = await (from ut in _defaultTableDbContext.Set<SysTest>()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()

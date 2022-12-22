@@ -214,11 +214,13 @@ namespace ShardingCore
             this DbContextOptionsBuilder optionsBuilder, IShardingRuntimeContext shardingRuntimeContext)
         {
             return optionsBuilder.UseShardingWrapMark().UseShardingOptions(shardingRuntimeContext)
-                .ReplaceService<IDbSetSource, ShardingDbSetSource>()
+                // .ReplaceService<IDbSetSource, ShardingDbSetSource>()
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
                 .ReplaceService<IChangeTrackerFactory, ShardingChangeTrackerFactory>()
                 .ReplaceService<IDbContextTransactionManager,
                     ShardingRelationalTransactionManager>()
+                .ReplaceService<IStateManager,
+                    ShardingStateManager>()
                 .ReplaceService<IRelationalTransactionFactory,
                     ShardingRelationalTransactionFactory>();
         }

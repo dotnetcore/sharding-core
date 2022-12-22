@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.Update;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Migrations;
 using ShardingCore.Core.RuntimeContexts;
@@ -12,7 +13,8 @@ namespace Sample.MySql
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
-        public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider annotationProvider, IMySqlOptions options,IShardingRuntimeContext shardingRuntimeContext) : base(dependencies, annotationProvider, options)
+
+        public ShardingMySqlMigrationsSqlGenerator(IShardingRuntimeContext shardingRuntimeContext,MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, IMySqlOptions options) : base(dependencies, commandBatchPreparer, options)
         {
             _shardingRuntimeContext = shardingRuntimeContext;
         }

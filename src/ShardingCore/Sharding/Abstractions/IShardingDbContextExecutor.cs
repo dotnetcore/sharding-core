@@ -52,5 +52,7 @@ namespace ShardingCore.Sharding.Abstractions
 
         int SaveChanges(bool acceptAllChangesOnSuccess);
 
+        DbContext GetShellDbContext();
+
     }
 }
