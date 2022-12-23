@@ -15,13 +15,11 @@ namespace ShardingCore.EFCores
 {
     public class ShardingStateManager:StateManager
     {
-        private readonly DbContext _currentDbContext;
         private readonly IShardingDbContext _currentShardingDbContext;
 
         public ShardingStateManager(StateManagerDependencies dependencies) : base(dependencies)
         {
-            _currentDbContext=dependencies.CurrentContext.Context;
-            _currentShardingDbContext = (IShardingDbContext)_currentDbContext;
+            _currentShardingDbContext = (IShardingDbContext)Context;
         }
 
         public override InternalEntityEntry GetOrCreateEntry(object entity)
@@ -69,9 +67,9 @@ namespace ShardingCore.EFCores
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (_currentDbContext.Database.AutoTransactionsEnabled&&_currentDbContext.Database.CurrentTransaction==null&&_currentShardingDbContext.GetShardingExecutor().IsMultiDbContext)
+            if (Context.Database.AutoTransactionsEnabled&&Context.Database.CurrentTransaction==null&&_currentShardingDbContext.GetShardingExecutor().IsMultiDbContext)
             {
-                using (var tran = _currentDbContext.Database.BeginTransaction())
+                using (var tran = Context.Database.BeginTransaction())
                 {
                     i = _currentShardingDbContext.GetShardingExecutor().SaveChanges(acceptAllChangesOnSuccess);
                     tran.Commit();
@@ -90,9 +88,9 @@ namespace ShardingCore.EFCores
             //ApplyShardingConcepts();
             int i = 0;
             //如果是内部开的事务就内部自己消化
-            if (_currentDbContext.Database.AutoTransactionsEnabled && _currentDbContext.Database.CurrentTransaction==null && _currentShardingDbContext.GetShardingExecutor().IsMultiDbContext)
+            if (Context.Database.AutoTransactionsEnabled && Context.Database.CurrentTransaction==null && _currentShardingDbContext.GetShardingExecutor().IsMultiDbContext)
             {
-                using (var tran = await _currentDbContext.Database.BeginTransactionAsync(cancellationToken))
+                using (var tran = await Context.Database.BeginTransactionAsync(cancellationToken))
                 {
                     i = await _currentShardingDbContext.GetShardingExecutor().SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
                     await tran.CommitAsync(cancellationToken);

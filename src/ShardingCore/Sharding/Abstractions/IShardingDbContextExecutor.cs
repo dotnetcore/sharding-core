@@ -24,6 +24,22 @@ namespace ShardingCore.Sharding.Abstractions
 #endif
     {
         /// <summary>
+        /// 使用对象创建db context的前执行
+        /// </summary>
+        event EventHandler<EntityCreateDbContextBeforeEventArgs> EntityCreateDbContextBefore;
+        /// <summary>
+        /// 使用对象创建db context的后执行
+        /// </summary>
+        event EventHandler<EntityCreateDbContextAfterEventArgs> EntityCreateDbContextAfter;
+        /// <summary>
+        /// 使用tail创建db context的前执行
+        /// </summary>
+        event EventHandler<CreateDbContextBeforeEventArgs> CreateDbContextBefore;
+        /// <summary>
+        /// 使用tail创建db context的后执行
+        /// </summary>
+        event EventHandler<CreateDbContextAfterEventArgs> CreateDbContextAfter;
+        /// <summary>
         /// has multi db context
         /// </summary>
         bool IsMultiDbContext { get; }
