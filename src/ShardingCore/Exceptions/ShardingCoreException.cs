@@ -16,7 +16,10 @@ namespace ShardingCore.Exceptions
     [ExcludeFromCodeCoverage]
     public class ShardingCoreException : Exception
     {
-
+        public ShardingCoreException()
+        {
+            
+        }
         public ShardingCoreException(string message) : base(message)
         {
         }

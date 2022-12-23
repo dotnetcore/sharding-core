@@ -1,5 +1,6 @@
 #if EFCORE7
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
+using ShardingCore.Exceptions;
 using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.EFCores
@@ -33,33 +35,25 @@ namespace ShardingCore.EFCores
         public override InternalEntityEntry GetOrCreateEntry(object entity, IEntityType entityType)
         {
             var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
+            var findEntityType = genericDbContext.Model.FindEntityType(entity.GetType());
             var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
             var stateManager = dbContextDependencies.StateManager;
-            return stateManager.GetOrCreateEntry(entity,entityType);
+            return stateManager.GetOrCreateEntry(entity, findEntityType);
         }
 
         public override InternalEntityEntry StartTrackingFromQuery(IEntityType baseEntityType, object entity, in ValueBuffer valueBuffer)
         {
-            var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
-            var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
-            var stateManager = dbContextDependencies.StateManager;
-            return stateManager.StartTrackingFromQuery(baseEntityType, entity, in valueBuffer);
+            throw new ShardingCoreNotImplementedException();
         }
 
         public override InternalEntityEntry TryGetEntry(object entity, bool throwOnNonUniqueness = true)
         {
-            var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
-            var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
-            var stateManager = dbContextDependencies.StateManager;
-            return stateManager.TryGetEntry(entity, throwOnNonUniqueness);
+            throw new ShardingCoreNotImplementedException();
         }
 
         public override InternalEntityEntry TryGetEntry(object entity, IEntityType entityType, bool throwOnTypeMismatch = true)
         {
-            var genericDbContext = _currentShardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
-            var dbContextDependencies = genericDbContext.GetService<IDbContextDependencies>();
-            var stateManager = dbContextDependencies.StateManager;
-            return stateManager.TryGetEntry(entity, entityType, throwOnTypeMismatch);
+            throw new ShardingCoreNotImplementedException();
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
