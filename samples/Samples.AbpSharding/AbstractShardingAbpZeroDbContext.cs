@@ -43,465 +43,23 @@ namespace Samples.AbpSharding
             if (wrapOptionsExtension != null)
             {
                 _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
+                _shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
+                {
+                    CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
+                };
+                _shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
+                {
+                    var shardingDbContextExecutor = (IShardingDbContextExecutor)sender;
+                    var argsDbContext = args.DbContext;
+                    var shellDbContext = shardingDbContextExecutor.GetShellDbContext();
+                    FillDbContextInject(shellDbContext, argsDbContext);
+                };
             }
         }
-        /// <summary>
-        /// 是否是真正的执行者
-        /// </summary>
-        protected bool isExecutor => _shardingDbContextExecutor == null;
-
-        /// <summary>
-        /// 路由表
-        /// </summary>
         public IRouteTail RouteTail { get; set; }
-
-
-        public override EntityEntry Add(object entity)
-        {
-            if (isExecutor)
-                base.Add(entity);
-            return CreateGenericDbContext(entity).Add(entity);
-        }
-
-        public override EntityEntry<TEntity> Add<TEntity>(TEntity entity)
-        {
-            if (isExecutor)
-                return base.Add(entity);
-            return CreateGenericDbContext(entity).Add(entity);
-        }
-
-
-        public override ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (isExecutor)
-                return base.AddAsync(entity, cancellationToken);
-            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
-        }
-
-        public override ValueTask<EntityEntry> AddAsync(object entity, CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (isExecutor)
-                return base.AddAsync(entity, cancellationToken);
-            return CreateGenericDbContext(entity).AddAsync(entity, cancellationToken);
-        }
-
-        public override void AddRange(params object[] entities)
-        {
-            if (isExecutor)
-            {
-                base.AddRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AddRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override void AddRange(IEnumerable<object> entities)
-        {
-            if (isExecutor)
-            {
-                base.AddRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AddRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override async Task AddRangeAsync(params object[] entities)
-        {
-            if (isExecutor)
-            {
-                await base.AddRangeAsync(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
-            }
-        }
-
-        public override async Task AddRangeAsync(IEnumerable<object> entities, CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (isExecutor)
-            {
-                await base.AddRangeAsync(entities, cancellationToken);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                await group.Key.AddRangeAsync(group.Select(o => o.Entity));
-            }
-        }
-
-        public override EntityEntry<TEntity> Attach<TEntity>(TEntity entity)
-        {
-            if (isExecutor)
-                return base.Attach(entity);
-            return CreateGenericDbContext(entity).Attach(entity);
-        }
-
-        public override EntityEntry Attach(object entity)
-        {
-            if (isExecutor)
-                return base.Attach(entity);
-            return CreateGenericDbContext(entity).Attach(entity);
-        }
-
-        public override void AttachRange(params object[] entities)
-        {
-            if (isExecutor)
-            {
-                base.AttachRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AttachRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override void AttachRange(IEnumerable<object> entities)
-        {
-            if (isExecutor)
-            {
-                base.AttachRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.AttachRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
-        {
-            if (isExecutor)
-                return base.Entry(entity);
-            return CreateGenericDbContext(entity).Entry(entity);
-        }
-
-        public override EntityEntry Entry(object entity)
-        {
-            if (isExecutor)
-                return base.Entry(entity);
-            return CreateGenericDbContext(entity).Entry(entity);
-        }
-
-        public override EntityEntry<TEntity> Update<TEntity>(TEntity entity)
-        {
-            if (isExecutor)
-                return base.Update(entity);
-            return CreateGenericDbContext(entity).Update(entity);
-        }
-
-        public override EntityEntry Update(object entity)
-        {
-            if (isExecutor)
-                return base.Update(entity);
-            return CreateGenericDbContext(entity).Update(entity);
-        }
-
-        public override void UpdateRange(params object[] entities)
-        {
-            if (isExecutor)
-            {
-                base.UpdateRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override void UpdateRange(IEnumerable<object> entities)
-        {
-            if (isExecutor)
-            {
-                base.UpdateRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.UpdateRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override EntityEntry<TEntity> Remove<TEntity>(TEntity entity)
-        {
-            if (isExecutor)
-                return base.Remove(entity);
-            return CreateGenericDbContext(entity).Remove(entity);
-        }
-
-        public override EntityEntry Remove(object entity)
-        {
-            if (isExecutor)
-                return base.Remove(entity);
-            return CreateGenericDbContext(entity).Remove(entity);
-        }
-
-        public override void RemoveRange(params object[] entities)
-        {
-            if (isExecutor)
-            {
-                base.RemoveRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override void RemoveRange(IEnumerable<object> entities)
-        {
-            if (isExecutor)
-            {
-                base.RemoveRange(entities);
-                return;
-            }
-            var groups = entities.Select(o =>
-            {
-                var dbContext = CreateGenericDbContext(o);
-                return new
-                {
-                    DbContext = dbContext,
-                    Entity = o
-                };
-            }).GroupBy(g => g.DbContext);
-
-            foreach (var group in groups)
-            {
-                group.Key.RemoveRange(group.Select(o => o.Entity));
-            }
-        }
-
-        public override int SaveChanges()
-        {
-
-            if (isExecutor)
-                return base.SaveChanges();
-            return this.SaveChanges(true);
-        }
-
-        public override int SaveChanges(bool acceptAllChangesOnSuccess)
-        {
-            if (isExecutor)
-                return base.SaveChanges(acceptAllChangesOnSuccess);
-            //ApplyShardingConcepts();
-            int i = 0;
-            //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction == null && _shardingDbContextExecutor.IsMultiDbContext)
-            {
-                using (var tran = Database.BeginTransaction())
-                {
-                    i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
-                    tran.Commit();
-                }
-            }
-            else
-            {
-                i = _shardingDbContextExecutor.SaveChanges(acceptAllChangesOnSuccess);
-            }
-
-            return i;
-        }
-
-
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (isExecutor)
-                return base.SaveChangesAsync(cancellationToken);
-            return this.SaveChangesAsync(true, cancellationToken);
-        }
-
-        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (isExecutor)
-                return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-            //ApplyShardingConcepts();
-            int i = 0;
-            //如果是内部开的事务就内部自己消化
-            if (Database.CurrentTransaction == null && _shardingDbContextExecutor.IsMultiDbContext)
-            {
-                using (var tran = await Database.BeginTransactionAsync(cancellationToken))
-                {
-                    i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-
-                    await tran.CommitAsync(cancellationToken);
-                }
-            }
-            else
-            {
-                i = await _shardingDbContextExecutor.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-            }
-
-
-            return i;
-        }
-
-        public override void Dispose()
-        {
-
-            if (isExecutor)
-            {
-                base.Dispose();
-            }
-            else
-            {
-                _shardingDbContextExecutor.Dispose();
-                base.Dispose();
-            }
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            if (isExecutor)
-            {
-                await base.DisposeAsync();
-            }
-            else
-            {
-                await _shardingDbContextExecutor.DisposeAsync();
-
-                await base.DisposeAsync();
-            }
-        }
-
 
         #region Sharding Core 方法实现
 
-        /// <summary>
-        /// 根据查询获取DbContext
-        /// </summary>
-        /// <param name="dataSourceName"></param>
-        /// <param name="strategy"></param>
-        /// <param name="routeTail"></param>
-        /// <returns></returns>
-        public DbContext GetDbContext(string dataSourceName, CreateDbContextStrategyEnum strategy, IRouteTail routeTail)
-        {
-            var dbContext = _shardingDbContextExecutor.CreateDbContext(
-                strategy,
-                dataSourceName,
-                routeTail
-                );
-
-            this.FillDbContextInject(dbContext);
-
-            return dbContext;
-        }
-
-        /// <summary>
-        /// 根据对象创建通用的dbcontext
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
-        {
-            CheckAndSetShardingKeyThatSupportAutoCreate(entity);
-
-            var dbContext = _shardingDbContextExecutor.CreateGenericDbContext(entity);
-
-            this.FillDbContextInject(dbContext);
-
-            return dbContext;
-        }
 
         public IShardingDbContextExecutor GetShardingExecutor()
         {
@@ -559,50 +117,69 @@ namespace Samples.AbpSharding
         /// <summary>
         /// 填充DbContext需要的依赖项
         /// </summary>
+        /// <param name="shellDbContext"></param>
         /// <param name="dbContext"></param>
-        protected virtual void FillDbContextInject(DbContext dbContext)
+        protected virtual void FillDbContextInject(DbContext shellDbContext,DbContext dbContext)
         {
-            if (dbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpDbContext)
+            if (shellDbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpShellDbContext&& dbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpDbContext)
             {
                 // AbpZeroCommonDbContext
                 if (abpDbContext.EntityHistoryHelper == null)
                 {
-                    abpDbContext.EntityHistoryHelper = this.EntityHistoryHelper;
+                    abpDbContext.EntityHistoryHelper = abpShellDbContext.EntityHistoryHelper;
                 }
 
                 // AbpDbContext
                 if (abpDbContext.AbpSession == null)
                 {
-                    abpDbContext.AbpSession = this.AbpSession;
+                    abpDbContext.AbpSession = abpShellDbContext.AbpSession;
                 }
                 if (abpDbContext.EntityChangeEventHelper == null)
                 {
-                    abpDbContext.EntityChangeEventHelper = this.EntityChangeEventHelper;
+                    abpDbContext.EntityChangeEventHelper = abpShellDbContext.EntityChangeEventHelper;
                 }
                 if (abpDbContext.Logger == null)
                 {
-                    abpDbContext.Logger = this.Logger;
+                    abpDbContext.Logger = abpShellDbContext.Logger;
                 }
                 if (abpDbContext.EventBus == null)
                 {
-                    abpDbContext.EventBus = this.EventBus;
+                    abpDbContext.EventBus = abpShellDbContext.EventBus;
                 }
                 if (abpDbContext.GuidGenerator == null)
                 {
-                    abpDbContext.GuidGenerator = this.GuidGenerator;
+                    abpDbContext.GuidGenerator = abpShellDbContext.GuidGenerator;
                 }
                 if (abpDbContext.CurrentUnitOfWorkProvider == null)
                 {
-                    abpDbContext.CurrentUnitOfWorkProvider = this.CurrentUnitOfWorkProvider;
+                    abpDbContext.CurrentUnitOfWorkProvider = abpShellDbContext.CurrentUnitOfWorkProvider;
                 }
                 if (abpDbContext.MultiTenancyConfig == null)
                 {
-                    abpDbContext.MultiTenancyConfig = this.MultiTenancyConfig;
+                    abpDbContext.MultiTenancyConfig = abpShellDbContext.MultiTenancyConfig;
                 }
-                abpDbContext.SuppressAutoSetTenantId = this.SuppressAutoSetTenantId;
+                abpDbContext.SuppressAutoSetTenantId = abpShellDbContext.SuppressAutoSetTenantId;
             }
         }
 
         #endregion
+
+        public override void Dispose()
+        {
+
+            _shardingDbContextExecutor?.Dispose();
+            base.Dispose();
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            if(_shardingDbContextExecutor!=null)
+            {
+                await _shardingDbContextExecutor.DisposeAsync();
+            }
+
+            await base.DisposeAsync();
+        }
+
     }
 }
