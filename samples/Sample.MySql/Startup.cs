@@ -104,17 +104,17 @@ namespace Sample.MySql
 
                     o.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
-                        // .UseLoggerFactory(efLogger)
-                        // .EnableSensitiveDataLogging()
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                        .UseLoggerFactory(efLogger)
+                        .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
                         builder
-                            .UseMySql(connection, new MySqlServerVersion(new Version()));
-                            // .UseLoggerFactory(efLogger)
-                            // .EnableSensitiveDataLogging()
+                            .UseMySql(connection, new MySqlServerVersion(new Version()))
+                            .UseLoggerFactory(efLogger)
+                            .EnableSensitiveDataLogging();
                             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
