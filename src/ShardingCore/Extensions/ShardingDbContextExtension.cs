@@ -14,11 +14,24 @@ using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.EFCores;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 
 namespace ShardingCore.Extensions
 {
     public static class ShardingDbContextExtension
     {
+        public static IShardingDbContextExecutor? CreateShardingDbContextExecutor<TDbContext>(
+            this TDbContext shellDbContext)
+        where TDbContext:DbContext,IShardingDbContext
+        {
+            var shardingWrapOptionsExtension = shellDbContext.GetService<IDbContextOptions>().FindExtension<ShardingWrapOptionsExtension>();
+            if (shardingWrapOptionsExtension != null)
+            {
+                return new ShardingDbContextExecutor(shellDbContext);
+            }
+
+            return default;
+        }
         public static bool IsUseReadWriteSeparation(this IShardingDbContext shardingDbContext)
         {
             return shardingDbContext.GetShardingExecutor().GetVirtualDataSource().UseReadWriteSeparation;

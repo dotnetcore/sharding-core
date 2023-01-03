@@ -105,7 +105,7 @@ namespace Sample.MySql
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
-                        .UseLoggerFactory(efLogger)
+                            .UseLoggerFactory(efLogger)
                         .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });

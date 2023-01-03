@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.EFCores;
+using ShardingCore.Extensions;
 
 namespace ShardingCore.Sharding
 {
@@ -23,35 +25,33 @@ namespace ShardingCore.Sharding
     /// </summary>
     public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext
     {
-        protected IShardingDbContextExecutor ShardingDbContextExecutor { get; }
-
-
-        public AbstractShardingDbContext(DbContextOptions options) : base(options)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="options"></param>
+        protected AbstractShardingDbContext(DbContextOptions options) : base(options)
         {
-            var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
-            if (wrapOptionsExtension != null)
-            {
-                ShardingDbContextExecutor = new ShardingDbContextExecutor(this);
-            }
+           
         }
-        
+
+        private IShardingDbContextExecutor _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return ShardingDbContextExecutor;
+            return _shardingDbContextExecutor??=this.CreateShardingDbContextExecutor();
         }
 
         public override void Dispose()
         {
-            ShardingDbContextExecutor?.Dispose();
+            _shardingDbContextExecutor?.Dispose();
             base.Dispose();
         }
 #if !EFCORE2
 
         public override async ValueTask DisposeAsync()
         {
-            if (ShardingDbContextExecutor!=null)
+            if (_shardingDbContextExecutor!=null)
             {
-                await ShardingDbContextExecutor.DisposeAsync();
+                await _shardingDbContextExecutor.DisposeAsync();
             }
 
             await base.DisposeAsync();

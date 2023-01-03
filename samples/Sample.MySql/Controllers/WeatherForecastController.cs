@@ -255,5 +255,16 @@ namespace Sample.MySql.Controllers
             // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get7()
+        {
+            var sysUserMod = await _defaultTableDbContext.Set<SysUserMod>().FindAsync("101");
+            sysUserMod.Age = new Random().Next(1,999);
+            _defaultTableDbContext.Update(sysUserMod);
+            _defaultTableDbContext.SaveChanges();
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
     }
 }

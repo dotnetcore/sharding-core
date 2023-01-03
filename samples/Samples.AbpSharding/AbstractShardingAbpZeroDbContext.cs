@@ -34,36 +34,35 @@ namespace Samples.AbpSharding
         where TUser : AbpUser<TUser>
         where TSelf : AbpZeroDbContext<TTenant, TRole, TUser, TSelf>
     {
-        private readonly IShardingDbContextExecutor _shardingDbContextExecutor;
 
         protected AbstractShardingAbpZeroDbContext(DbContextOptions<TSelf> options)
             : base(options)
         {
-            var wrapOptionsExtension = options.FindExtension<ShardingWrapOptionsExtension>();
-            if (wrapOptionsExtension != null)
-            {
-                _shardingDbContextExecutor = new ShardingDbContextExecutor(this);
-                _shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
-                {
-                    CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
-                };
-                _shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
-                {
-                    var shardingDbContextExecutor = (IShardingDbContextExecutor)sender;
-                    var argsDbContext = args.DbContext;
-                    var shellDbContext = shardingDbContextExecutor.GetShellDbContext();
-                    FillDbContextInject(shellDbContext, argsDbContext);
-                };
-            }
         }
         public IRouteTail RouteTail { get; set; }
 
         #region Sharding Core 方法实现
 
 
+        private  IShardingDbContextExecutor _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return _shardingDbContextExecutor;
+            return _shardingDbContextExecutor??=DoCreateShardingDbContextExecutor();
+        }
+        private IShardingDbContextExecutor DoCreateShardingDbContextExecutor()
+        {
+            var shardingDbContextExecutor = this.CreateShardingDbContextExecutor()!;
+            
+            shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
+            {
+                CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
+            };
+            shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
+            {
+                var argsDbContext = args.DbContext;
+                FillDbContextInject(argsDbContext);
+            };
+            return shardingDbContextExecutor;
         }
 
         #endregion
@@ -117,48 +116,47 @@ namespace Samples.AbpSharding
         /// <summary>
         /// 填充DbContext需要的依赖项
         /// </summary>
-        /// <param name="shellDbContext"></param>
         /// <param name="dbContext"></param>
-        protected virtual void FillDbContextInject(DbContext shellDbContext,DbContext dbContext)
+        protected virtual void FillDbContextInject(DbContext dbContext)
         {
-            if (shellDbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpShellDbContext&& dbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpDbContext)
+            if ( dbContext is AbpZeroCommonDbContext<TRole, TUser, TSelf> abpDbContext)
             {
                 // AbpZeroCommonDbContext
                 if (abpDbContext.EntityHistoryHelper == null)
                 {
-                    abpDbContext.EntityHistoryHelper = abpShellDbContext.EntityHistoryHelper;
+                    abpDbContext.EntityHistoryHelper = this.EntityHistoryHelper;
                 }
 
                 // AbpDbContext
                 if (abpDbContext.AbpSession == null)
                 {
-                    abpDbContext.AbpSession = abpShellDbContext.AbpSession;
+                    abpDbContext.AbpSession = this.AbpSession;
                 }
                 if (abpDbContext.EntityChangeEventHelper == null)
                 {
-                    abpDbContext.EntityChangeEventHelper = abpShellDbContext.EntityChangeEventHelper;
+                    abpDbContext.EntityChangeEventHelper = this.EntityChangeEventHelper;
                 }
                 if (abpDbContext.Logger == null)
                 {
-                    abpDbContext.Logger = abpShellDbContext.Logger;
+                    abpDbContext.Logger = this.Logger;
                 }
                 if (abpDbContext.EventBus == null)
                 {
-                    abpDbContext.EventBus = abpShellDbContext.EventBus;
+                    abpDbContext.EventBus = this.EventBus;
                 }
                 if (abpDbContext.GuidGenerator == null)
                 {
-                    abpDbContext.GuidGenerator = abpShellDbContext.GuidGenerator;
+                    abpDbContext.GuidGenerator = this.GuidGenerator;
                 }
                 if (abpDbContext.CurrentUnitOfWorkProvider == null)
                 {
-                    abpDbContext.CurrentUnitOfWorkProvider = abpShellDbContext.CurrentUnitOfWorkProvider;
+                    abpDbContext.CurrentUnitOfWorkProvider = this.CurrentUnitOfWorkProvider;
                 }
                 if (abpDbContext.MultiTenancyConfig == null)
                 {
-                    abpDbContext.MultiTenancyConfig = abpShellDbContext.MultiTenancyConfig;
+                    abpDbContext.MultiTenancyConfig = this.MultiTenancyConfig;
                 }
-                abpDbContext.SuppressAutoSetTenantId = abpShellDbContext.SuppressAutoSetTenantId;
+                abpDbContext.SuppressAutoSetTenantId = this.SuppressAutoSetTenantId;
             }
         }
 
