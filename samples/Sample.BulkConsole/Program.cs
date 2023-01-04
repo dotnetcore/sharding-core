@@ -25,6 +25,7 @@ namespace Sample.BulkConsole
         });
         static void Main(string[] args)
         {
+            var s = Guid.NewGuid().ToString("n");
             var services = new ServiceCollection();
             services.AddLogging();
 

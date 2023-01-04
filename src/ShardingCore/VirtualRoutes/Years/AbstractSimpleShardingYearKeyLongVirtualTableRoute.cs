@@ -31,7 +31,8 @@ namespace ShardingCore.VirtualRoutes.Years
          
             var tails=new List<string>();
             //提前创建表
-            var nowTimeStamp = DateTime.Now.Date;
+            var now = DateTime.Now;
+            var nowTimeStamp = new DateTime(now.Year,1,1);
             if (beginTime > nowTimeStamp)
                 throw new ArgumentException("begin time error");
             var currentTimeStamp = beginTime;
