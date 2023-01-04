@@ -27,7 +27,7 @@ namespace ShardingCore.VirtualRoutes.Years
         /// <returns></returns>
         protected override List<string> CalcTailsOnStart()
         {
-            var beginTime = GetBeginTime().Date;
+            var beginTime = new DateTime(GetBeginTime().Year,1,1);
          
             var tails=new List<string>();
             //提前创建表
