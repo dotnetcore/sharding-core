@@ -25,6 +25,7 @@ namespace ShardingCore.Sharding
     /// </summary>
     public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext
     {
+        private bool _createExecutor = false;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -34,11 +35,21 @@ namespace ShardingCore.Sharding
            
         }
 
-        private IShardingDbContextExecutor _shardingDbContextExecutor;
+        private IShardingDbContextExecutor? _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return _shardingDbContextExecutor??=this.CreateShardingDbContextExecutor();
+            if (!_createExecutor)
+            {
+                _shardingDbContextExecutor=this.CreateShardingDbContextExecutor();
+                _createExecutor = true;
+            }
+            return _shardingDbContextExecutor;
         }
+
+        /// <summary>
+        /// 当前dbcontext是否是执行的dbcontext
+        /// </summary>
+        public bool IsExecutor => GetShardingExecutor() == default;
 
         public override void Dispose()
         {

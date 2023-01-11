@@ -20,7 +20,7 @@ namespace ShardingCore.Extensions
 {
     public static class ShardingDbContextExtension
     {
-        public static IShardingDbContextExecutor? CreateShardingDbContextExecutor<TDbContext>(
+        public static IShardingDbContextExecutor CreateShardingDbContextExecutor<TDbContext>(
             this TDbContext shellDbContext)
         where TDbContext:DbContext,IShardingDbContext
         {

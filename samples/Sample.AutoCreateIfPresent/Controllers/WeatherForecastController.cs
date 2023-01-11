@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ShardingCore.Extensions;
+using ShardingCore.Extensions.ShardingQueryableExtensions;
 
 namespace Sample.AutoCreateIfPresent.Controllers;
 
