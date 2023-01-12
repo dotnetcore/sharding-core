@@ -1,24 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.Extensions;
 using ShardingCore.Sharding.Abstractions;
-using ShardingCore.Sharding.ShardingDbContextExecutors;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using ShardingCore.EFCores;
-using ShardingCore.Helpers;
-using ShardingCore.Utils;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Reflection;
-using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
-using ShardingCore.Exceptions;
-using ShardingCore.Sharding;
 
 namespace Samples.AbpSharding
 {
