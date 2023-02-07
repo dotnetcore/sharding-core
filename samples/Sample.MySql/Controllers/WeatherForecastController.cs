@@ -9,6 +9,7 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
 
@@ -73,6 +74,8 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var s = Guid.NewGuid().ToString();
+            var page =await _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Id==s).OrderByDescending(o=>o.Time).ToShardingPageAsync(1,2);
             // var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             // virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
             // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
