@@ -279,6 +279,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 dbContextCache.Value.Dispose();
             }
+            _dbContextCaches.Clear();
         }
 #if !EFCORE2
 
@@ -374,6 +375,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 await dbContextCache.Value.DisposeAsync();
             }
+            _dbContextCaches.Clear();
         }
 #endif
 

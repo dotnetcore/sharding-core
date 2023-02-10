@@ -428,6 +428,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 dataSourceDbContext.Value.Dispose();
             }
+            _dataSourceDbContexts.Clear();
         }
 #if !EFCORE2
         public async ValueTask DisposeAsync()
@@ -436,6 +437,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 await dataSourceDbContext.Value.DisposeAsync();
             }
+            _dataSourceDbContexts.Clear();
         }
 #endif
     }
