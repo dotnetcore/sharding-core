@@ -37,10 +37,10 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             }
             else
             {
-                var parameters = allProperties.Select(o => o.GetValue(source)).ToArray();
                 if (anonType.GetConstructors().Length == 1 &&
                     anonType.GetConstructors()[0].GetParameters().Length == allPropertyTypes.Length)
                 {
+                    var parameters = allProperties.Select(o => o.GetValue(source)).ToArray();
                     return (TSource)Activator.CreateInstance(anonType, parameters);
                 }
                 else

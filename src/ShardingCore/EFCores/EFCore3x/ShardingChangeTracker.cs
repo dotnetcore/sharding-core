@@ -92,7 +92,7 @@ namespace ShardingCore.EFCores
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                var genericDbContext = shardingDbContext.CreateGenericDbContext(rootEntity);
+                var genericDbContext = shardingDbContext.GetShardingExecutor().CreateGenericDbContext(rootEntity);
                 genericDbContext.ChangeTracker.TrackGraph(rootEntity,callback);
                 // Do(c => c.TrackGraph(rootEntity,callback));
             }
@@ -102,7 +102,7 @@ namespace ShardingCore.EFCores
         {
             if (_dbContext is IShardingDbContext shardingDbContext)
             {
-                var genericDbContext = shardingDbContext.CreateGenericDbContext(rootEntity);
+                var genericDbContext = shardingDbContext.GetShardingExecutor().CreateGenericDbContext(rootEntity);
                 genericDbContext.ChangeTracker.TrackGraph(rootEntity,state,callback);
                 // Do(c => c.TrackGraph(rootEntity,callback));
             }

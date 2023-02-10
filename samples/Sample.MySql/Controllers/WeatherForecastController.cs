@@ -9,6 +9,7 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
 
@@ -61,30 +62,31 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
-            var shardingRouteManager = _shardingRuntimeContext.GetShardingRouteManager();
-            // var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
-            // var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
-            // //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
-            // var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
-            // //一定要先在路由里面添加尾巴
-            // virtualTableRoute.Append("20220921");
-            // shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
+            var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
+            var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
+            //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
+            var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
+            //一定要先在路由里面添加尾巴
+            virtualTableRoute.Append("20220921");
+            shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
             return _defaultTableDbContext.Set<SysTest>();
         }
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
-            virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
-            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
-            var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(SysUserMod));
-            virtualDataSourceRoute.AddDataSourceName("2023");
-            var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
-            dataSourceInitializer.InitConfigure("2023",true,true);
-            using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
-            {
-                
-            }
+            var s = Guid.NewGuid().ToString();
+            var page =await _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Id==s).OrderByDescending(o=>o.Time).ToShardingPageAsync(1,2);
+            // var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
+            // virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
+            // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            // var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(typeof(SysUserMod));
+            // virtualDataSourceRoute.AddDataSourceName("2023");
+            // var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
+            // dataSourceInitializer.InitConfigure("2023",true,true);
+            // using (var dbContextTransaction = _defaultTableDbContext.Database.BeginTransaction())
+            // {
+            //     
+            // }
 
             var x2 = await (from ut in _defaultTableDbContext.Set<SysTest>()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()
@@ -242,6 +244,28 @@ namespace Sample.MySql.Controllers
             var xx = await sql.ToListAsync();
             // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
           // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get6()
+        {
+            var sysUserMod = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync();
+            sysUserMod.Age = new Random().Next(1,999);
+            _defaultTableDbContext.Update(sysUserMod);
+            _defaultTableDbContext.SaveChanges();
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get7()
+        {
+            var sysUserMod = await _defaultTableDbContext.Set<SysUserMod>().FindAsync("101");
+            sysUserMod.Age = new Random().Next(1,999);
+            _defaultTableDbContext.Update(sysUserMod);
+            _defaultTableDbContext.SaveChanges();
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }
     }

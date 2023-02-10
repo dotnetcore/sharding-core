@@ -74,8 +74,8 @@ namespace Sample.MySql
                 .UseRouteConfig(o =>
                 {
                     o.AddShardingTableRoute<DynamicTableRoute>();
-                    o.AddShardingTableRoute<SysUserLogByMonthRoute>();
-                    // o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
+                    o.AddShardingTableRoute<SysUserLogByMonthRoute>(); 
+                    o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     o.AddShardingTableRoute<TestModRoute>();
                     o.AddShardingTableRoute<TestModItemRoute>();
@@ -104,25 +104,25 @@ namespace Sample.MySql
 
                     o.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
-                        // .UseLoggerFactory(efLogger)
-                        // .EnableSensitiveDataLogging()
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                            .UseLoggerFactory(efLogger)
+                        .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
                         builder
-                            .UseMySql(connection, new MySqlServerVersion(new Version()));
-                            // .UseLoggerFactory(efLogger)
-                            // .EnableSensitiveDataLogging()
+                            .UseMySql(connection, new MySqlServerVersion(new Version()))
+                            .UseLoggerFactory(efLogger)
+                            .EnableSensitiveDataLogging();
                             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
-                        "server=127.0.0.1;port=3306;database=dbdbd02;userid=root;password=root;");
+                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     o.AddExtraDataSource(sp => new Dictionary<string, string>()
                     {
-                        { "ds1", "server=127.0.0.1;port=3306;database=dbdbd12;userid=root;password=root;" },
-                        { "ds2", "server=127.0.0.1;port=3306;database=dbdbd22;userid=root;password=root;" }
+                        { "ds1", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;" },
+                        { "ds2", "server=127.0.0.1;port=3306;database=dbdbd2;userid=root;password=root;" }
                     });
                     o.UseShardingMigrationConfigure(b =>
                     {

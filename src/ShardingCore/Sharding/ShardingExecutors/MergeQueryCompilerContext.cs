@@ -191,7 +191,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                         var strategy = !IsParallelQuery()
                             ? CreateDbContextStrategyEnum.ShareConnection
                             : CreateDbContextStrategyEnum.IndependentConnectionQuery;
-                        var dbContext = GetShardingDbContext().GetDbContext(sqlRouteUnit.DataSourceName,strategy , routeTailFactory.Create(sqlRouteUnit.TableRouteResult));
+                        var dbContext = GetShardingDbContext().GetShardingExecutor().CreateDbContext(strategy,sqlRouteUnit.DataSourceName, routeTailFactory.Create(sqlRouteUnit.TableRouteResult));
                         _queryCompilerExecutor = new QueryCompilerExecutor(dbContext, GetQueryExpression());
                     }
                 }

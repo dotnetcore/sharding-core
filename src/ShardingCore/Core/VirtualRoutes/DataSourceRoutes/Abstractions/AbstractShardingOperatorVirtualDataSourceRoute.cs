@@ -71,7 +71,7 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
             var dataSources = allDataSourceNames.Where(o => o== shardingKeyToDataSource).ToList();
             if (dataSources.IsEmpty())
             {
-                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingTableProperty.Name}] ->【{shardingKey}】 all data sources ->[{string.Join(",", allDataSourceNames.Select(o=>o))}]");
+                throw new ShardingCoreException($"sharding key route not match {EntityMetadata.EntityType} -> [{EntityMetadata.ShardingDataSourceProperty.Name}] ->【{shardingKey}】 all data sources ->[{string.Join(",", allDataSourceNames.Select(o=>o))}]");
             }
 
             if (dataSources.Count > 1)

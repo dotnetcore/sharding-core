@@ -40,10 +40,10 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
 
-            modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
-            modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
-            modelBuilder.Entity<TestMod>().ToTable(nameof(TestMod));
-            modelBuilder.Entity<TestModItem>().ToTable(nameof(TestModItem));
+            // modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
+            // modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
+            // modelBuilder.Entity<TestMod>().ToTable(nameof(TestMod));
+            // modelBuilder.Entity<SysTest>().ToTable("xxx");
         }
 
 

@@ -13,7 +13,7 @@ namespace ShardingCore.Core.QueryTrackers
     {
         public object Track(object entity, IShardingDbContext shardingDbContext)
         {
-            var genericDbContext = shardingDbContext.CreateGenericDbContext(entity);
+            var genericDbContext = shardingDbContext.GetShardingExecutor().CreateGenericDbContext(entity);
             var attachedEntity = genericDbContext.GetAttachedEntity(entity);
             if (attachedEntity == null)
                 genericDbContext.Attach(entity);

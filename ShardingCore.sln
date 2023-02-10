@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.ShardingConsole", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.OracleIssue", "samples\Sample.OracleIssue\Sample.OracleIssue.csproj", "{BF4FEA2A-3F09-47D8-9BF7-4261D8D1671D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test6x", "test\ShardingCore.Test6x\ShardingCore.Test6x.csproj", "{8ED3A191-5A29-4599-B383-9FD225CC0BA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore.Test6x", "test\ShardingCore.Test6x\ShardingCore.Test6x.csproj", "{8ED3A191-5A29-4599-B383-9FD225CC0BA2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src6", "src6", "{585A790B-8B19-430F-BEB7-9F7D1A3AAFAA}"
 EndProject

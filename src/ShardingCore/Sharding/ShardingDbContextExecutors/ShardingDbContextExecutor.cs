@@ -35,6 +35,13 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
     /// <typeparam name="TShardingDbContext"></typeparam>
     public class ShardingDbContextExecutor : IShardingDbContextExecutor
     {
+        
+
+        public event EventHandler<EntityCreateDbContextBeforeEventArgs> EntityCreateDbContextBefore;
+        public event EventHandler<EntityCreateDbContextAfterEventArgs> EntityCreateDbContextAfter;
+        public event EventHandler<CreateDbContextBeforeEventArgs> CreateDbContextBefore;
+        public event EventHandler<CreateDbContextAfterEventArgs> CreateDbContextAfter;
+        
         private readonly ILogger<ShardingDbContextExecutor> _logger;
         private readonly DbContext _shardingDbContext;
 
@@ -106,19 +113,29 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         public DbContext CreateDbContext(CreateDbContextStrategyEnum strategy, string dataSourceName,
             IRouteTail routeTail)
         {
+            if (CreateDbContextBefore != null)
+            {
+                CreateDbContextBefore.Invoke(this,new CreateDbContextBeforeEventArgs(strategy,dataSourceName,routeTail));
+            }
+
+            DbContext dbContext;
             if (CreateDbContextStrategyEnum.ShareConnection == strategy)
             {
                 var dataSourceDbContext = GetDataSourceDbContext(dataSourceName);
-                return dataSourceDbContext.CreateDbContext(routeTail);
+                dbContext= dataSourceDbContext.CreateDbContext(routeTail);
             }
             else
             {
                 var parallelDbContextOptions = CreateParallelDbContextOptions(dataSourceName, strategy);
-                var dbContext =
+                 dbContext =
                     _dbContextCreator.CreateDbContext(_shardingDbContext, parallelDbContextOptions, routeTail);
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-                return dbContext;
             }
+            if (CreateDbContextAfter != null)
+            {
+                CreateDbContextAfter.Invoke(this,new CreateDbContextAfterEventArgs(strategy,dataSourceName,routeTail,dbContext));
+            }
+            return dbContext;
         }
 
         private DbContextOptions CreateParallelDbContextOptions(string dataSourceName,
@@ -136,12 +153,25 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
         public DbContext CreateGenericDbContext<TEntity>(TEntity entity) where TEntity : class
         {
+            
+            if (EntityCreateDbContextBefore != null)
+            {
+                EntityCreateDbContextBefore.Invoke(this,new EntityCreateDbContextBeforeEventArgs(entity));
+            }
+            
             var realEntityType = _trackerManager.TranslateEntityType(entity.GetType());
             var dataSourceName = GetDataSourceName(entity,realEntityType);
             var tail = GetTableTail(dataSourceName, entity,realEntityType);
 
-            return CreateDbContext(CreateDbContextStrategyEnum.ShareConnection, dataSourceName,
+            var dbContext = CreateDbContext(CreateDbContextStrategyEnum.ShareConnection, dataSourceName,
                 _routeTailFactory.Create(tail));
+            
+            if (EntityCreateDbContextAfter != null)
+            {
+                EntityCreateDbContextAfter.Invoke(this,new EntityCreateDbContextAfterEventArgs(entity,dbContext));
+            }
+
+            return dbContext;
         }
 
         public IVirtualDataSource GetVirtualDataSource()
@@ -188,6 +218,11 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
 
             AutoUseWriteConnectionString();
             return i;
+        }
+
+        public DbContext GetShellDbContext()
+        {
+            return _shardingDbContext;
         }
 
         public void NotifyShardingTransaction()
@@ -355,5 +390,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
                 }
             }
         }
+        
+        
     }
 }

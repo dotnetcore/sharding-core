@@ -23,7 +23,7 @@ public class DbSetDiscoverExpressionVisitor<TEntity>:ExpressionVisitor where TEn
             var dbContextDependencies =
                 typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as IDbContextDependencies;
             var targetIQ =
-                ((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.EntityType.ClrType);
+                ((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource, queryRootExpression.ElementType);
             DbSet = (DbSet<TEntity>)targetIQ;
         }
         return base.VisitExtension(node);

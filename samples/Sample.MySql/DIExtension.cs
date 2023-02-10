@@ -38,12 +38,13 @@ namespace Sample.MySql
                         });
                     }
                     var userModMonths = new List<SysUserLogByMonth>();
+                    var begin = new DateTime(2021, 1, 01);
                     foreach (var id in ids)
                     {
                         userModMonths.Add(new SysUserLogByMonth()
                         {
                             Id = id.ToString(),
-                            Time = DateTime.Now
+                            Time = begin.AddHours(id*12)
                         });
                     }
 
