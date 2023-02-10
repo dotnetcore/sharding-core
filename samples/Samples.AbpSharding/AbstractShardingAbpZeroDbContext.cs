@@ -14,6 +14,7 @@ using Abp.Domain.Entities;
 using Abp.EntityFrameworkCore;
 using Abp.MultiTenancy;
 using Abp.Zero.EntityFrameworkCore;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources;
@@ -43,25 +44,34 @@ namespace Samples.AbpSharding
 
         #region Sharding Core 方法实现
 
+        private bool _createExecutor = false;
 
         private  IShardingDbContextExecutor _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return _shardingDbContextExecutor??=DoCreateShardingDbContextExecutor();
+            if (!_createExecutor)
+            {
+                _shardingDbContextExecutor=this.DoCreateShardingDbContextExecutor();
+                _createExecutor = true;
+            }
+            return _shardingDbContextExecutor;
         }
         private IShardingDbContextExecutor DoCreateShardingDbContextExecutor()
         {
-            var shardingDbContextExecutor = this.CreateShardingDbContextExecutor()!;
+            var shardingDbContextExecutor = this.CreateShardingDbContextExecutor();
+            if (shardingDbContextExecutor != null)
+            {
+                shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
+                {
+                    CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
+                };
+                shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
+                {
+                    var argsDbContext = args.DbContext;
+                    FillDbContextInject(argsDbContext);
+                };
+            }
             
-            shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
-            {
-                CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
-            };
-            shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
-            {
-                var argsDbContext = args.DbContext;
-                FillDbContextInject(argsDbContext);
-            };
             return shardingDbContextExecutor;
         }
 

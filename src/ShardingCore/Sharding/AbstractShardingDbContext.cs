@@ -35,7 +35,7 @@ namespace ShardingCore.Sharding
            
         }
 
-        private IShardingDbContextExecutor? _shardingDbContextExecutor;
+        private IShardingDbContextExecutor _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
             if (!_createExecutor)

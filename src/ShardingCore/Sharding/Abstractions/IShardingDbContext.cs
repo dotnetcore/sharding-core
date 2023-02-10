@@ -13,6 +13,10 @@ namespace ShardingCore.Sharding.Abstractions
     */
     public interface IShardingDbContext
     {
+        /// <summary>
+        /// 获取分片执行者
+        /// </summary>
+        /// <returns></returns>
         IShardingDbContextExecutor GetShardingExecutor();
 
 

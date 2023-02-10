@@ -4,6 +4,9 @@ using ShardingCore.Sharding.Abstractions;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using ShardingCore.EFCores;
+using ShardingCore.Sharding.ShardingDbContextExecutors;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Reflection;
@@ -14,6 +17,7 @@ namespace Samples.AbpSharding
     public abstract class AbstractShardingAbpDbContext<TDbContext> : AbpDbContext<TDbContext>, IShardingDbContext
                                 where TDbContext : DbContext
     {
+        private bool _createExecutor = false;
         protected AbstractShardingAbpDbContext(DbContextOptions<TDbContext> options) : base(options)
         {
         }
@@ -22,27 +26,41 @@ namespace Samples.AbpSharding
         private IShardingDbContextExecutor _shardingDbContextExecutor;
         public IShardingDbContextExecutor GetShardingExecutor()
         {
-            return _shardingDbContextExecutor??=DoCreateShardingDbContextExecutor();
+            if (!_createExecutor)
+            {
+                _shardingDbContextExecutor=this.DoCreateShardingDbContextExecutor();
+                _createExecutor = true;
+            }
+            return _shardingDbContextExecutor;
         }
 
         private IShardingDbContextExecutor DoCreateShardingDbContextExecutor()
         {
-            var shardingDbContextExecutor = this.CreateShardingDbContextExecutor()!;
-            
-            shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
+            var shardingDbContextExecutor = this.CreateShardingDbContextExecutor();
+            if (shardingDbContextExecutor != null)
             {
-                CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
-            };
-            shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
-            {
-                var argsDbContext = args.DbContext;
-              
-                if (argsDbContext is AbpDbContext<TDbContext> abpDbContext&&
-                    abpDbContext.LazyServiceProvider == null)
+                
+                shardingDbContextExecutor.EntityCreateDbContextBefore += (sender, args) =>
                 {
-                    abpDbContext.LazyServiceProvider = this.LazyServiceProvider;
-                }
-            };
+                    CheckAndSetShardingKeyThatSupportAutoCreate(args.Entity);
+                };
+                shardingDbContextExecutor.CreateDbContextAfter += (sender, args) =>
+                {
+                    var dbContext = args.DbContext;
+                    if (dbContext is AbpDbContext<TDbContext> abpDbContext && abpDbContext.LazyServiceProvider == null)
+                    {
+                        abpDbContext.LazyServiceProvider = this.LazyServiceProvider;
+                        if (dbContext is IAbpEfCoreDbContext abpEfCoreDbContext)
+                        {
+                            abpEfCoreDbContext.Initialize(
+                                new AbpEfCoreDbContextInitializationContext(
+                                    this.UnitOfWorkManager.Current
+                                )
+                            );
+                        }
+                    }
+                };
+            }
             return shardingDbContextExecutor;
         }
 
