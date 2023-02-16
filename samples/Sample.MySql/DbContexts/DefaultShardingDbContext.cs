@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.Domain.Maps;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
+using ShardingCore.EFCores;
+using ShardingCore.Extensions;
 using ShardingCore.Sharding;
 using ShardingCore.Sharding.Abstractions;
 
@@ -16,6 +18,7 @@ namespace Sample.MySql.DbContexts
     {
         public DbSet<DynamicTable> DynamicTables { get; set; }
         public DbSet<SysUserMod> SysUserMod { get; set; }
+
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
             //切记不要在构造函数中使用会让模型提前创建的方法
@@ -23,11 +26,11 @@ namespace Sample.MySql.DbContexts
             //Database.SetCommandTimeout(30000);
         }
 
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        // {
-        //     base.OnConfiguring(optionsBuilder);
-        //     optionsBuilder.UseLazyLoadingProxies();
-        // }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            this.GetShardingRuntimeContext().GetOrCreateShardingRuntimeModel(this);
+        }
 
         private readonly MethodInfo? _configureGlobalFiltersMethodInfo =
             typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters),
@@ -72,6 +75,5 @@ namespace Sample.MySql.DbContexts
         }
 
         public IRouteTail RouteTail { get; set; }
-      
     }
 }

@@ -20,12 +20,15 @@ namespace ShardingCore.Extensions
 {
     public static class ShardingDbContextExtension
     {
+        public static bool IsShellDbContext(this DbContext dbContext)
+        {
+            return dbContext.GetService<IDbContextOptions>().FindExtension<ShardingWrapOptionsExtension>()!=null;
+        }
         public static IShardingDbContextExecutor CreateShardingDbContextExecutor<TDbContext>(
             this TDbContext shellDbContext)
         where TDbContext:DbContext,IShardingDbContext
         {
-            var shardingWrapOptionsExtension = shellDbContext.GetService<IDbContextOptions>().FindExtension<ShardingWrapOptionsExtension>();
-            if (shardingWrapOptionsExtension != null)
+            if (shellDbContext.IsShellDbContext())
             {
                 return new ShardingDbContextExecutor(shellDbContext);
             }

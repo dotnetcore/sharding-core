@@ -224,6 +224,7 @@ namespace ShardingCore
                 .UseShardingMigrator()
                 .UseShardingOptions(shardingRuntimeContext)
                 .ReplaceService<IQueryCompiler, ShardingQueryCompiler>()
+                .ReplaceService<IDbSetInitializer, ShardingDbSetInitializer>()
                 .ReplaceService<IChangeTrackerFactory, ShardingChangeTrackerFactory>()
                 .ReplaceService<IDbContextTransactionManager,ShardingRelationalTransactionManager>()
                 .ReplaceService<IStateManager,ShardingStateManager>()
