@@ -26,11 +26,6 @@ namespace Sample.MySql.DbContexts
             //Database.SetCommandTimeout(30000);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-            this.GetShardingRuntimeContext().GetOrCreateShardingRuntimeModel(this);
-        }
 
         private readonly MethodInfo? _configureGlobalFiltersMethodInfo =
             typeof(DefaultShardingDbContext).GetMethod(nameof(ConfigureGlobalFilters),
