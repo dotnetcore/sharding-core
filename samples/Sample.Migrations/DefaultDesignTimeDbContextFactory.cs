@@ -41,9 +41,9 @@ namespace Sample.Migrations
                    op.UseShardingMigrationConfigure(op =>
                    {
                        op.ReplaceService<IMigrationsSqlGenerator,
-                           ShardingSqlServerMigrationsSqlGenerator<DefaultShardingTableDbContext>>();
+                           ShardingSqlServerMigrationsSqlGenerator>();
                    });
-                }).ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>().EnsureConfig();
+                }).EnsureConfig();
             _serviceProvider = services.BuildServiceProvider();
         }
 

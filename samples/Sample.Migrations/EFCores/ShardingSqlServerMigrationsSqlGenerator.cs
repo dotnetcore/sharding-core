@@ -13,7 +13,7 @@ namespace Sample.Migrations.EFCores
     /// <summary>
     /// https://github.com/Coldairarrow/EFCore.Sharding/blob/master/src/EFCore.Sharding.SqlServer/ShardingSqlServerMigrationsSqlGenerator.cs
     /// </summary>
-    public class ShardingSqlServerMigrationsSqlGenerator<TShardingDbContext> : SqlServerMigrationsSqlGenerator where TShardingDbContext:DbContext,IShardingDbContext
+    public class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
 
