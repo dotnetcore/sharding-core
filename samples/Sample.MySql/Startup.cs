@@ -86,11 +86,11 @@ namespace Sample.MySql
                     }));
                 }).UseConfig((sp,o) =>
                 {
-                    var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();
-                    o.UseExecutorDbContextConfigure(b =>
-                    {
-                        b.UseMemoryCache(memoryCache);
-                    });
+                    // var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();
+                    // o.UseExecutorDbContextConfigure(b =>
+                    // {
+                    //     b.UseMemoryCache(memoryCache);
+                    // });
                     o.UseEntityFrameworkCoreProxies = true;
                     o.CacheModelLockConcurrencyLevel = 1024;
                     o.CacheEntrySize = 1;

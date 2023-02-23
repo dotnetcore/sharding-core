@@ -276,7 +276,7 @@ namespace ShardingCore
         }
 
         /// <summary>
-        /// 自动尝试补偿表
+        /// 自动尝试补偿表，自行判断缺少的分片对象(包括分表或者分库)并且会自动创建对应的数据
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="parallelCount"></param>

@@ -30,9 +30,7 @@ namespace ShardingCore.Core.ModelCacheLockerProviders
 
         public int GetCacheModelLockObjectSeconds()
         {
-            if (_shardingConfigOptions.ModelCacheLockObjectSeconds == 3)
-                return _shardingConfigOptions.CacheModelLockObjectSeconds;
-            return _shardingConfigOptions.ModelCacheLockObjectSeconds;
+            return _shardingConfigOptions.CacheModelLockObjectSeconds;
         }
 
 #if !EFCORE2

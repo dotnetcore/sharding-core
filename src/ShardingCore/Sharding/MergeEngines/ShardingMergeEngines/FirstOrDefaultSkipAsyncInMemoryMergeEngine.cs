@@ -25,7 +25,7 @@ namespace ShardingCore.Sharding.MergeEngines
         }
         public TEntity MergeResult()
         {
-            //将toke改成1
+            //将take改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
             var list = asyncEnumeratorStreamMergeEngine.ToStreamList();
             return list.FirstOrDefault();
@@ -33,7 +33,7 @@ namespace ShardingCore.Sharding.MergeEngines
 
         public async Task<TEntity> MergeResultAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            //将toke改成1
+            //将take改成1
             var asyncEnumeratorStreamMergeEngine = new AsyncEnumeratorStreamMergeEngine<TEntity>(_streamMergeContext);
 
             var take = _streamMergeContext.GetTake();

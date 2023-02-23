@@ -9,6 +9,9 @@ namespace ShardingCore.Sharding.Abstractions
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
+    /// <summary>
+    /// 实现该接口让dbContext支持分表功能
+    /// </summary>
     public interface IShardingTableDbContext
     {
         /// <summary>

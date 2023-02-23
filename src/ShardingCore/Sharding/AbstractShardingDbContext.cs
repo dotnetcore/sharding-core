@@ -21,7 +21,7 @@ namespace ShardingCore.Sharding
     */
 
     /// <summary>
-    /// 分表分库的dbcontext
+    /// 分表分库的dbContext
     /// </summary>
     public abstract class AbstractShardingDbContext : DbContext, IShardingDbContext
     {
@@ -36,6 +36,10 @@ namespace ShardingCore.Sharding
         }
 
         private IShardingDbContextExecutor _shardingDbContextExecutor;
+        /// <summary>
+        /// 分片执行者
+        /// </summary>
+        /// <returns></returns>
         public IShardingDbContextExecutor GetShardingExecutor()
         {
             if (!_createExecutor)
