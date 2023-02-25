@@ -11,8 +11,13 @@ namespace ShardingCore.Core.EntityMetadatas
     /// <typeparam name="TEntity"></typeparam>
     public interface IEntityMetadataTableConfiguration<TEntity>where TEntity : class
     {
+        
         /// <summary>
-        /// 配置对象的分表信息
+        /// 配置分表的一些信息
+        /// 1.ShardingProperty 哪个字段分表
+        /// 2.TableSeparator 分表的后缀和表名的连接符
+        /// 3.AutoCreateTable 启动时是否需要创建对应的分表信息
+        /// 3.ShardingExtraProperty 额外分片字段
         /// </summary>
         /// <param name="builder"></param>
          void Configure(EntityMetadataTableBuilder<TEntity> builder);
