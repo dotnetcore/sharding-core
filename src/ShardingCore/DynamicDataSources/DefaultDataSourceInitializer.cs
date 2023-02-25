@@ -150,7 +150,7 @@ namespace ShardingCore.DynamicDataSources
                     if (!_shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                     {
                         _logger.LogWarning(e,
-                            $"table :{physicTableName} will created.");
+                            $"table :{physicTableName} maybe created.");
                     }
                 }
             }
@@ -171,7 +171,7 @@ namespace ShardingCore.DynamicDataSources
                         if (!_shardingConfigOptions.IgnoreCreateTableError.GetValueOrDefault())
                         {
                             _logger.LogWarning(e,
-                                $"table :{physicTableName} will created.");
+                                $"table :{physicTableName} maybe created.");
                         }
                     }
                 }
