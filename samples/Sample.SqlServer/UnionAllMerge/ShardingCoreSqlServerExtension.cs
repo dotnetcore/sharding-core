@@ -1,4 +1,5 @@
 ﻿using System;
+using EntityFrameworkCore.UseRowNumberForPaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
@@ -15,12 +16,12 @@ namespace Sample.SqlServer.UnionAllMerge
         {
             option.UseShardingQuery((conStr, builder) =>
             {
-                builder.UseSqlServer(conStr).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                builder.UseSqlServer(conStr, i => i.UseRowNumberForPaging()).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 builderConfigure?.Invoke(builder);
             });
             option.UseShardingTransaction((connection, builder) =>
             {
-                builder.UseSqlServer(connection).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                builder.UseSqlServer(connection, i => i.UseRowNumberForPaging()).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 builderConfigure?.Invoke(builder);
             });
         }

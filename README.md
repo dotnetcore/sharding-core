@@ -45,7 +45,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
 - efcore2 use shardingcore7.2.x.x
 
-## Abp.VNext、WTM
+## Abp.VNext、WTM、FURION
 - [ShardingFrameWork](https://github.com/xuejmnet/ShardingWithFramework) demos
 
 ## Dependency

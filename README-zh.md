@@ -42,7 +42,7 @@
 - efcore2使用shardingcore7.2.x.x
 
 
-## Abp.VNext、WTM 框架集成
+## Abp.VNext、WTM、FURION 框架集成
 - [ShardingFrameWork](https://github.com/xuejmnet/ShardingWithFramework) demos
 
 ## 依赖
