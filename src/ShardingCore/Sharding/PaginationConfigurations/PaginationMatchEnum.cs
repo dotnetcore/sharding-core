@@ -1,8 +1,7 @@
 using System;
 
 namespace ShardingCore.Sharding.PaginationConfigurations
-{
-    /*
+{ /*
     * @Author: xjm
     * @Description:
     * @Date: Wednesday, 01 September 2021 21:27:25
@@ -12,15 +11,15 @@ namespace ShardingCore.Sharding.PaginationConfigurations
     public enum PaginationMatchEnum
     {
         /// <summary>
-        /// ±ØĞëÊÇµ±Ç°¶ÔÏóµÄÊôĞÔ
+        /// å¿…é¡»æ˜¯å½“å‰å¯¹è±¡çš„å±æ€§
         /// </summary>
         Owner = 1,
         /// <summary>
-        /// Ö»ÒªÃû³ÆÒ»Ñù¾Í¿ÉÒÔÁË
+        /// åªè¦åç§°ä¸€æ ·å°±å¯ä»¥äº†
         /// </summary>
         Named = 1 << 1,
         /// <summary>
-        /// ½öµÚÒ»¸öÆ¥Åä¾Í¿ÉÒÔÁË
+        /// ä»…ç¬¬ä¸€ä¸ªåŒ¹é…å°±å¯ä»¥äº†
         /// </summary>
         PrimaryMatch = 1 << 2
     }

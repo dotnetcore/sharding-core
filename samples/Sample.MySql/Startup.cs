@@ -101,7 +101,7 @@ namespace Sample.MySql
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false; 
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
-
+                    
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
