@@ -18,6 +18,8 @@ namespace Sample.MySql.DbContexts
     {
         public DbSet<DynamicTable> DynamicTables { get; set; }
         public DbSet<SysUserMod> SysUserMod { get; set; }
+        public DbSet<TestMod> TestMods { get; set; }
+        public DbSet<Test> Tests { get; set; }
 
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {

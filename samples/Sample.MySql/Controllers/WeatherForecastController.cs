@@ -44,6 +44,18 @@ namespace Sample.MySql.Controllers
 
         public virtual IQueryable<SysTest> Select => this.GetAll();
     }
+    
+    /// <summary>
+    /// 接口限速
+    /// </summary>
+    public class RateLimitAttribute : Attribute
+    {
+
+        public RateLimitAttribute(int limitCount = 1)
+        {
+            Console.WriteLine("------------RateLimitAttribute----------");
+        }
+    }
     [ApiController]
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -70,6 +82,16 @@ namespace Sample.MySql.Controllers
             virtualTableRoute.Append("20220921");
             shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
             return _defaultTableDbContext.Set<SysTest>();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Getxx()
+        {
+            var test = new Test();
+            test.UtcTime=DateTime.Now;
+          await  _defaultTableDbContext.AddAsync(test);
+            var saveChangesAsync = await _defaultTableDbContext.SaveChangesAsync();
+            return Ok(saveChangesAsync);
         }
         [HttpGet]
         public async Task<IActionResult> Get()

@@ -79,6 +79,7 @@ namespace Sample.MySql
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     o.AddShardingTableRoute<TestModRoute>();
                     o.AddShardingTableRoute<TestModItemRoute>();
+                    o.AddShardingTableRoute<TestTableRoute>();
                     o.AddParallelTableGroupNode(new ParallelTableGroupNode(new List<ParallelTableComparerType>()
                     {
                         new ParallelTableComparerType(typeof(TestMod)),
@@ -105,7 +106,7 @@ namespace Sample.MySql
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
-                            .UseLoggerFactory(efLogger)
+                            .UseLoggerFactory(loggerFactory1)
                         .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
@@ -113,7 +114,7 @@ namespace Sample.MySql
                     {
                         builder
                             .UseMySql(connection, new MySqlServerVersion(new Version()))
-                            .UseLoggerFactory(efLogger)
+                            .UseLoggerFactory(loggerFactory1)
                             .EnableSensitiveDataLogging();
                             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
