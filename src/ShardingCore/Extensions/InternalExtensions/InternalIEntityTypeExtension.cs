@@ -25,5 +25,15 @@ namespace ShardingCore.Extensions.InternalExtensions
 #endif
             return tableName;
         }
+        public static string GetEntityTypeSchema(this IEntityType entityType)
+        {
+#if !EFCORE2
+            var tableName = entityType.GetSchema();
+#endif
+#if EFCORE2
+            var tableName = entityType.Relational().Schema;
+#endif
+            return tableName;
+        }
     }
 }

@@ -87,7 +87,7 @@ namespace ShardingCore.EFCores
             var tableName = entityMetadata.LogicTableName;
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentNullException($"{shardingEntity}: not found logic table name。");
-            entity.ToTable($"{tableName}{tableSeparator}{tail}");
+            entity.ToTable($"{tableName}{tableSeparator}{tail}",entityMetadata.Schema);
         }
     }
 }

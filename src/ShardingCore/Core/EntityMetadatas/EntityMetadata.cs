@@ -81,6 +81,10 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 逻辑表名
         /// </summary>
         public string LogicTableName { get; private set; }
+        /**
+         * 对象表所属schema
+         */
+        public string Schema { get; private set; }
 
         /// <summary>
         /// 主键
@@ -105,6 +109,7 @@ namespace ShardingCore.Core.EntityMetadatas
             PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
                                    new List<PropertyInfo>();
             IsSingleKey = PrimaryKeyProperties.Count == 1;
+            Schema = dbEntityType.GetEntityTypeSchema();
         }
 
 
