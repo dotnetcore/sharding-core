@@ -44,7 +44,24 @@ namespace ShardingCore.Extensions.InternalExtensions
 #if EFCORE2 ||EFCORE3
             return false;
 #endif
-            
+        }
+        public static string GetEntityTypeViewName(this IEntityType entityType)
+        {
+#if !EFCORE2&&!EFCORE3
+            return entityType.GetViewName();
+#endif
+#if EFCORE2 ||EFCORE3
+            return null;
+#endif
+        }
+        public static string GetEntityTypeViewSchema(this IEntityType entityType)
+        {
+#if !EFCORE2&&!EFCORE3
+            return entityType.GetViewSchema();
+#endif
+#if EFCORE2 ||EFCORE3
+            return null;
+#endif
         }
     }
 }

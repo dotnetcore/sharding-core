@@ -21,12 +21,15 @@ namespace ShardingCore.Core.EntityMetadatas
     {
         private readonly ShardingConfigOptions _shardingConfigOptions;
         private readonly ConcurrentDictionary<Type, EntityMetadata> _caches = new();
-        private readonly ConcurrentDictionary<string/*logic table name*/, List<EntityMetadata>> _logicTableCaches = new();
+
+        private readonly ConcurrentDictionary<string /*logic table name*/, List<EntityMetadata>> _logicTableCaches =
+            new();
 
         public DefaultEntityMetadataManager(ShardingConfigOptions shardingConfigOptions)
         {
             _shardingConfigOptions = shardingConfigOptions;
         }
+
         public bool AddEntityMetadata(EntityMetadata entityMetadata)
         {
             return _caches.TryAdd(entityMetadata.EntityType, entityMetadata);
@@ -48,7 +51,7 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             if (!_caches.TryGetValue(entityType, out var entityMetadata))
                 return false;
-            return entityMetadata.IsMultiTableMapping&&!entityMetadata.IsMultiDataSourceMapping;
+            return entityMetadata.IsMultiTableMapping && !entityMetadata.IsMultiDataSourceMapping;
         }
 
         /// <summary>
@@ -67,7 +70,7 @@ namespace ShardingCore.Core.EntityMetadatas
         {
             if (!_caches.TryGetValue(entityType, out var entityMetadata))
                 return false;
-            return entityMetadata.IsMultiDataSourceMapping&&!entityMetadata.IsMultiTableMapping;
+            return entityMetadata.IsMultiDataSourceMapping && !entityMetadata.IsMultiTableMapping;
         }
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace ShardingCore.Core.EntityMetadatas
             {
                 return metadata;
             }
+
             return null;
         }
 
@@ -124,50 +128,54 @@ namespace ShardingCore.Core.EntityMetadatas
                         {
                             var propertyName = metadataProperty.Key;
                             var property = efEntityType.GetProperty(propertyName);
-                            if (property.ValueGenerated!=ValueGenerated.Never)
+                            if (property.ValueGenerated != ValueGenerated.Never)
                             {
-                                throw new ShardingCoreConfigException($"sharding data source key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                throw new ShardingCoreConfigException(
+                                    $"sharding data source key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
                             }
                         }
                     }
+
                     if (metadata.IsMultiTableMapping)
                     {
                         foreach (var metadataProperty in metadata.ShardingTableProperties)
                         {
                             var propertyName = metadataProperty.Key;
                             var property = efEntityType.GetProperty(propertyName);
-                            if (property.ValueGenerated!=ValueGenerated.Never)
+                            if (property.ValueGenerated != ValueGenerated.Never)
                             {
-                                throw new ShardingCoreConfigException($"sharding table key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                throw new ShardingCoreConfigException(
+                                    $"sharding table key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
                             }
                         }
                     }
                 }
-                metadata.SetEntityModel(efEntityType);
-                if (!metadata.IsView)
-                {
-                    if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
-                    {
-                        throw new ShardingCoreInvalidOperationException(
-                            $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}]");
-                    }
-                    if (!_logicTableCaches.TryGetValue(metadata.LogicTableName, out var metadatas))
-                    {
-                        metadatas = new List<EntityMetadata>();
-                        _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
-                    }
 
-                    if (metadatas.All(o => o.EntityType != efEntityType.ClrType))
-                    {
-                        metadatas.Add(metadata);
-                        return true;
-                    }
-                    //添加完成后检查逻辑表对应的对象不可以存在两个以上的分片
-                    if (metadatas.Count > 1 && metadatas.Any(o => o.IsShardingTable() || o.IsShardingDataSource()))
-                    {
-                        throw new ShardingCoreInvalidOperationException(
-                            $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
-                    }
+                metadata.SetEntityModel(efEntityType);
+
+                if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}],is view:[{metadata.IsView}]");
+                }
+
+                if (!_logicTableCaches.TryGetValue(metadata.LogicTableName, out var metadatas))
+                {
+                    metadatas = new List<EntityMetadata>();
+                    _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
+                }
+
+                if (metadatas.All(o => o.EntityType != efEntityType.ClrType))
+                {
+                    metadatas.Add(metadata);
+                    return true;
+                }
+
+                //添加完成后检查逻辑表对应的对象不可以存在两个以上的分片
+                if (metadatas.Count > 1 && metadatas.Any(o => o.IsShardingTable() || o.IsShardingDataSource()))
+                {
+                    throw new ShardingCoreInvalidOperationException(
+                        $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
                 }
             }
 

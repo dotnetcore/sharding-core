@@ -110,6 +110,11 @@ namespace ShardingCore.Core.EntityMetadatas
             if (string.IsNullOrWhiteSpace(LogicTableName))
             {
                 IsView = dbEntityType.GetEntityTypeIsView();
+                if (IsView)
+                {
+                    LogicTableName = dbEntityType.GetEntityTypeViewName();
+                    Schema = dbEntityType.GetEntityTypeViewSchema();
+                }
             }
             
             QueryFilterExpression =
