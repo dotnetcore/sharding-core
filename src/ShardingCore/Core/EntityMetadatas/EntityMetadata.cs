@@ -81,6 +81,8 @@ namespace ShardingCore.Core.EntityMetadatas
         /// 逻辑表名
         /// </summary>
         public string LogicTableName { get; private set; }
+
+        public bool IsView { get; private set; } = false;
         /**
          * 对象表所属schema
          */
@@ -104,12 +106,17 @@ namespace ShardingCore.Core.EntityMetadatas
         public void SetEntityModel(IEntityType dbEntityType)
         {
             LogicTableName = dbEntityType.GetEntityTypeTableName();
+            Schema = dbEntityType.GetEntityTypeSchema();
+            if (string.IsNullOrWhiteSpace(LogicTableName))
+            {
+                IsView = dbEntityType.GetEntityTypeIsView();
+            }
+            
             QueryFilterExpression =
                 dbEntityType.GetAnnotations().FirstOrDefault(o => o.Name == QueryFilter)?.Value as LambdaExpression;
             PrimaryKeyProperties = dbEntityType.FindPrimaryKey()?.Properties?.Select(o => o.PropertyInfo)?.ToList() ??
                                    new List<PropertyInfo>();
             IsSingleKey = PrimaryKeyProperties.Count == 1;
-            Schema = dbEntityType.GetEntityTypeSchema();
         }
 
 

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.Extensions.DependencyInjection;
 using Sample.SqlServer.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
 using ShardingCore.Sharding.EntityQueryConfigurations;
@@ -28,6 +30,7 @@ namespace Sample.SqlServer.Shardings
 
         public override List<string> GetTails()
         {
+            var shardingRuntimeContext = RouteShardingProvider.ApplicationServiceProvider.GetRequiredService<IShardingRuntimeContext>();
             var beginTime = new DateTime(2020, 1, 1);
             var endTime = new DateTime(2021, 12, 1);
             var list = new List<string>(24);

@@ -35,5 +35,16 @@ namespace ShardingCore.Extensions.InternalExtensions
 #endif
             return tableName;
         }
+
+        public static bool GetEntityTypeIsView(this IEntityType entityType)
+        {
+#if !EFCORE2&&!EFCORE3
+            return !string.IsNullOrWhiteSpace(entityType.GetViewName());
+#endif
+#if EFCORE2 ||EFCORE3
+            return false;
+#endif
+            
+        }
     }
 }

@@ -11,11 +11,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Extensions.ShardingPageExtensions;
+using ShardingCore.Helpers;
 using ShardingCore.Sharding.ReadWriteConfigurations.Abstractions;
 
 namespace Sample.SqlServer.Controllers
@@ -405,14 +407,13 @@ namespace Sample.SqlServer.Controllers
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(b => b.Age, b => b.Age + 1));
          
-
+            var xxx = await _defaultTableDbContext.Set<SysUserMod>().Where(o => o.Name == "name_3")
+                .ExecuteDeleteAsync();
             return Ok();
         }
         [HttpGet]
         public async Task<IActionResult> Get9()
-
         {
-
             var resultx112331tt2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select *from systest where id='3'").FirstOrDefaultAsync();
             
 

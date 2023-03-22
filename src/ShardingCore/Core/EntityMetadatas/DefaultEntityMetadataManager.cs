@@ -144,27 +144,30 @@ namespace ShardingCore.Core.EntityMetadatas
                     }
                 }
                 metadata.SetEntityModel(efEntityType);
-                if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
+                if (!metadata.IsView)
                 {
-                    throw new ShardingCoreInvalidOperationException(
-                        $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}]");
-                }
-                if (!_logicTableCaches.TryGetValue(metadata.LogicTableName, out var metadatas))
-                {
-                    metadatas = new List<EntityMetadata>();
-                    _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
-                }
+                    if (string.IsNullOrWhiteSpace(metadata.LogicTableName))
+                    {
+                        throw new ShardingCoreInvalidOperationException(
+                            $"init model error, cant get logic table name:[{metadata.LogicTableName}] from  entity:[{efEntityType.ClrType}]");
+                    }
+                    if (!_logicTableCaches.TryGetValue(metadata.LogicTableName, out var metadatas))
+                    {
+                        metadatas = new List<EntityMetadata>();
+                        _logicTableCaches.TryAdd(metadata.LogicTableName, metadatas);
+                    }
 
-                if (metadatas.All(o => o.EntityType != efEntityType.ClrType))
-                {
-                    metadatas.Add(metadata);
-                    return true;
-                }
-                //添加完成后检查逻辑表对应的对象不可以存在两个以上的分片
-                if (metadatas.Count > 1 && metadatas.Any(o => o.IsShardingTable() || o.IsShardingDataSource()))
-                {
-                    throw new ShardingCoreInvalidOperationException(
-                        $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
+                    if (metadatas.All(o => o.EntityType != efEntityType.ClrType))
+                    {
+                        metadatas.Add(metadata);
+                        return true;
+                    }
+                    //添加完成后检查逻辑表对应的对象不可以存在两个以上的分片
+                    if (metadatas.Count > 1 && metadatas.Any(o => o.IsShardingTable() || o.IsShardingDataSource()))
+                    {
+                        throw new ShardingCoreInvalidOperationException(
+                            $"cant add logic table name caches for metadata:[{metadata.LogicTableName}-{efEntityType.ClrType}]");
+                    }
                 }
             }
 

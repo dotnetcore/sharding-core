@@ -38,7 +38,7 @@ public class WeatherForecastController : ControllerBase
 
     public async Task<IActionResult> Query()
     {
-        var list =await _defaultDbContext.Set<OrderByHour>().ToListAsync();
+        var list =await _defaultDbContext.Set<OrderByHour>().AsNoTracking().ToListAsync();
         return Ok(list);
     }
     public async Task<IActionResult> Insert()
