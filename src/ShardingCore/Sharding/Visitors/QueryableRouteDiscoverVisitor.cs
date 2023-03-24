@@ -102,9 +102,9 @@ namespace ShardingCore.Core.Internal.Visitors
 
         private bool IsShardingKey(Expression expression, out ShardingPredicateResult shardingPredicateResult)
         {
+            MemberExpression realMember = null;
             if (expression is MemberExpression member)
             {
-                MemberExpression realMember = null;
                 if (member.Expression?.Type == _entityMetadata.EntityType)
                 {
                     realMember = member;
@@ -113,23 +113,34 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                 }
 
-                if (realMember != null)
+            } 
+            else if (expression is UnaryExpression unaryExpression&&
+                       unaryExpression.NodeType == ExpressionType.Convert
+                       )
+            {
+                
+                if (unaryExpression.Operand is MemberExpression m &&
+                    m.Expression?.Type == _entityMetadata.EntityType)
                 {
-                    var isShardingKey = false;
-                    if (_shardingTableRoute)
-                    {
-                        isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(realMember.Member.Name);
-                    }
-                    else
-                    {
-                        isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(realMember.Member.Name);
-                    }
+                    realMember = m;
+                }
+            }
+            if (realMember != null)
+            {
+                var isShardingKey = false;
+                if (_shardingTableRoute)
+                {
+                    isShardingKey = _entityMetadata.ShardingTableProperties.ContainsKey(realMember.Member.Name);
+                }
+                else
+                {
+                    isShardingKey = _entityMetadata.ShardingDataSourceProperties.ContainsKey(realMember.Member.Name);
+                }
 
-                    if (isShardingKey)
-                    {
-                        shardingPredicateResult = new ShardingPredicateResult(true, realMember.Member.Name);
-                        return true;
-                    }
+                if (isShardingKey)
+                {
+                    shardingPredicateResult = new ShardingPredicateResult(true, realMember.Member.Name);
+                    return true;
                 }
             }
             // else if (expression is BinaryExpression binaryExpression)

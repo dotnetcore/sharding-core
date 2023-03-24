@@ -94,8 +94,11 @@ namespace ShardingCore.CommonTest
             var times1 = new List<DateTime>(){queryTime};
             var times2 = new []{queryTime,queryTime2};
             var obj1 = new {time=new DateTime(2022, 1, 2)};
+            var dateTime = (DateTime?)new DateTime(2022, 1, 2);
             var queryables=new List<IQueryable<TestTimeEntity>>()
             {
+                new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time== dateTime),
+                new List<TestTimeEntity>().AsQueryable().Where(o=>dateTime==o.Time ),
                 new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time== new DateTime(2022, 1, 2)),
                 new List<TestTimeEntity>().AsQueryable().CheckBetween((DateTime?)queryTime,(DateTime?)queryTime3,o=>o.Time),
                 new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time==times2[0]),
