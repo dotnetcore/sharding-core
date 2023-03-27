@@ -71,7 +71,7 @@ namespace Sample.MySql
             
             
             services.AddShardingDbContext<DefaultShardingDbContext>()
-                .UseRouteConfig(o =>
+                .UseRouteConfig((sp,o) =>
                 {
                     o.AddShardingTableRoute<DynamicTableRoute>();
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>(); 

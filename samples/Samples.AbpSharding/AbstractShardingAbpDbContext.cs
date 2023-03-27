@@ -5,9 +5,11 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ShardingCore.EFCores;
 using ShardingCore.Sharding.ShardingDbContextExecutors;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Reflection;
 
@@ -100,6 +102,32 @@ namespace Samples.AbpSharding
                 AuditPropertySetter?.SetCreationProperties(entity);
             }
         }
+
+
+        // /// <summary>
+        // /// abp 5.x+ 如果存在并发字段那么需要添加这段代码
+        // /// </summary>
+        // protected override void HandlePropertiesBeforeSave()
+        // {
+        //     if (GetShardingExecutor() == null)
+        //     {
+        //         base.HandlePropertiesBeforeSave();
+        //     }
+        // }
+
+
+        // /// <summary>
+        // /// abp 4.x+ 如果存在并发字段那么需要添加这段代码
+        // /// </summary>
+        // /// <returns></returns>
+        //
+        // protected override void ApplyAbpConcepts(EntityEntry entry, EntityChangeReport changeReport)
+        // {
+        //     if (GetShardingExecutor() == null)
+        //     {
+        //         base.ApplyAbpConcepts(entry, changeReport);
+        //     }
+        // }
 
         public override void Dispose()
         {
