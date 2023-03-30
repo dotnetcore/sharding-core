@@ -59,5 +59,11 @@ namespace Sample.MySql.Shardings
             Console.WriteLine("AfterShardingRouteUnitFilter:"+shardingRouteUnits.Count);
             return base.AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
         }
+
+        public override Func<string, bool> GetRouteFilter(object shardingKey, ShardingOperatorEnum shardingOperator, string shardingPropertyName)
+        {
+            Console.WriteLine(1);
+            return base.GetRouteFilter(shardingKey, shardingOperator, shardingPropertyName);
+        }
     }
 }

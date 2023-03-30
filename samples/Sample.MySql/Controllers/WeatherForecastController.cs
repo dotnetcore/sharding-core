@@ -74,6 +74,12 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
+            // DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
+            //如果你已经添加好了的情况下并且没有生成对应的库和表想要生成表和库
+            var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
+            dataSourceInitializer.InitConfigure("ds9",true,true);
+            
+            
             var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
             var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
             //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
@@ -109,6 +115,16 @@ namespace Sample.MySql.Controllers
             // {
             //     
             // }
+            var dateTime = new DateTime(2021,1,1);
+            var x211 = await (from ut in _defaultTableDbContext.Set<SysTest>()
+                    join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()
+                        on ut.Id equals uu.Id
+                        where uu.Time > dateTime
+                    select new { a = ut, b = uu }).Select(o=>new {x=o}).Select(o=>new{x=o})
+                .Select(o => new
+                {
+                    o.x.x.a.Id
+                }).OrderBy(o => o.Id).ToListAsync();
 
             var x2 = await (from ut in _defaultTableDbContext.Set<SysTest>()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()

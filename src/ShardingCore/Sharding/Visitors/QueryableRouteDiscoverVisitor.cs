@@ -246,6 +246,12 @@ namespace ShardingCore.Core.Internal.Visitors
             return expression is MethodCallExpression;
         }
 
+        public override Expression Visit(Expression node)
+        {
+            Console.WriteLine(1);
+            return base.Visit(node);
+        }
+
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             switch (node.Method.Name)
@@ -280,6 +286,7 @@ namespace ShardingCore.Core.Internal.Visitors
                             _entityLambdaExpression = lambda;
                         }
                     }
+                    //todo
                 }
             }
         }

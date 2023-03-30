@@ -12,6 +12,7 @@ using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Core.ModelCacheLockerProviders;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.DynamicDataSources;
 using ShardingCore.EFCores;
 using ShardingCore.Extensions;
 using ShardingCore.Helpers;
@@ -68,13 +69,13 @@ namespace Sample.MySql
             //     optionsBuilder(sp, builder);
             // });
             //
-            
-            
+
+
             services.AddShardingDbContext<DefaultShardingDbContext>()
-                .UseRouteConfig((sp,o) =>
+                .UseRouteConfig((sp, o) =>
                 {
                     o.AddShardingTableRoute<DynamicTableRoute>();
-                    o.AddShardingTableRoute<SysUserLogByMonthRoute>(); 
+                    o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
                     o.AddShardingDataSourceRoute<SysUserModVirtualDataSourceRoute>();
                     o.AddShardingTableRoute<TestModRoute>();
@@ -85,7 +86,7 @@ namespace Sample.MySql
                         new ParallelTableComparerType(typeof(TestMod)),
                         new ParallelTableComparerType(typeof(TestModItem)),
                     }));
-                }).UseConfig((sp,o) =>
+                }).UseConfig((sp, o) =>
                 {
                     // var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();
                     // o.UseExecutorDbContextConfigure(b =>
@@ -97,17 +98,17 @@ namespace Sample.MySql
                     o.CacheEntrySize = 1;
                     o.CacheModelLockObjectSeconds = 10;
                     o.CheckShardingKeyValueGenerated = false;
-                    var loggerFactory1= sp.GetService<ILoggerFactory>();
+                    var loggerFactory1 = sp.GetService<ILoggerFactory>();
                     var loggerFactory2 = sp.ApplicationServiceProvider.GetService<ILoggerFactory>();
                     // o.UseEntityFrameworkCoreProxies = true;
-                    o.ThrowIfQueryRouteNotMatch = false; 
+                    o.ThrowIfQueryRouteNotMatch = false;
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
-                    
+
                     o.UseShardingQuery((conStr, builder) =>
                     {
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
                             .UseLoggerFactory(loggerFactory1)
-                        .EnableSensitiveDataLogging();
+                            .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
@@ -116,7 +117,7 @@ namespace Sample.MySql
                             .UseMySql(connection, new MySqlServerVersion(new Version()))
                             .UseLoggerFactory(loggerFactory1)
                             .EnableSensitiveDataLogging();
-                            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                        //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
                         "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
@@ -129,7 +130,8 @@ namespace Sample.MySql
                     {
                         b.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
                     });
-                }).ReplaceService<IModelCacheLockerProvider,DicModelCacheLockerProvider>()
+                }).ReplaceService<IModelCacheLockerProvider, DicModelCacheLockerProvider>()
+                .ReplaceService<IDataSourceInitializer, DataSourceInitializer>()
                 .AddShardingCore();
             // services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension
             //     .UseMutliDefaultSharding<DefaultShardingDbContext>);
@@ -178,19 +180,20 @@ namespace Sample.MySql
                 app.UseDeveloperExceptionPage();
             }
             // app.ApplicationServices.UseAutoTryCompensateTable();
-           
+
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
-                // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
-                {
-                        defaultShardingDbContext.Database.GenerateCreateScript();
-                }
-            }
-            app.ApplicationServices.UseAutoTryCompensateTable();
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
+            //     // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
+            //     {
+            //         defaultShardingDbContext.Database.GenerateCreateScript();
+            //     }
+            // }
+
+            // app.ApplicationServices.UseAutoTryCompensateTable();
             // using (var scope = app.ApplicationServices.CreateScope())
             // {
             //     var defaultShardingDbContext = scope.ServiceProvider.GetService<OtherDbContext>();
