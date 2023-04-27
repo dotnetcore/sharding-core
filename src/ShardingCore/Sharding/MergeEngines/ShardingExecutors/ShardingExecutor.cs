@@ -34,10 +34,10 @@ namespace ShardingCore.Sharding.MergeEngines.ShardingExecutors
             if (results.IsEmpty())
                 throw new ShardingCoreException("sharding execute result empty");
             //不需要merge
-            if (results.Count == 1)
-            {
-                return results[0];
-            }
+            //if (results.Count == 1)
+            //{
+            //    return results[0];
+            //}
             var streamMerge = executor.GetShardingMerger().StreamMerge(results);
             return streamMerge;
         }
