@@ -114,6 +114,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     var routeResults = routeMap.Select(o => o.Value).Cartesian()
                         .Select(o => new TableRouteResult(o.ToList())).Where(o => !o.IsEmpty).ToArray();
 
+                    //平行表
                     var tableRouteResults = GetTableRouteResults(tableRouteRuleContext, routeResults);
                     if (tableRouteResults.IsNotEmpty())
                     {

@@ -15,9 +15,7 @@ namespace ShardingCore.Core.VirtualRoutes
 
         public ShardingRouteResult(List<ISqlRouteUnit> routeUnits,bool isEmpty,bool isCrossDataSource,bool isCrossTable,bool existCrossTableTails)
         {
-            var routeUnitGroup = routeUnits.GroupBy(o=>o.DataSourceName);
             RouteUnits = routeUnits;
-            var count = routeUnitGroup.Count();
             IsEmpty =isEmpty;
             IsCrossDataSource = isCrossDataSource;
             IsCrossTable = isCrossTable;

@@ -93,6 +93,7 @@ namespace Sample.MySql
                     // {
                     //     b.UseMemoryCache(memoryCache);
                     // });
+                    o.IgnoreCreateTableError = false;
                     o.UseEntityFrameworkCoreProxies = true;
                     o.CacheModelLockConcurrencyLevel = 1024;
                     o.CacheEntrySize = 1;
@@ -213,7 +214,6 @@ namespace Sample.MySql
             // app.ApplicationServices.UseAutoTryCompensateTable(12);
 
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

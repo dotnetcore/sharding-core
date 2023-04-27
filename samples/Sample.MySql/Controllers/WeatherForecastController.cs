@@ -9,6 +9,7 @@ using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions;
+using ShardingCore.Extensions;
 using ShardingCore.Extensions.ShardingPageExtensions;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Helpers;
@@ -78,8 +79,9 @@ namespace Sample.MySql.Controllers
             //如果你已经添加好了的情况下并且没有生成对应的库和表想要生成表和库
             var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
             dataSourceInitializer.InitConfigure("ds9",true,true);
-            
-            
+
+            // _defaultTableDbContext.ReadWriteSeparationReadOnly();//读库
+            // _defaultTableDbContext.ReadWriteSeparationWriteOnly();//写库
             var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
             var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
             //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
