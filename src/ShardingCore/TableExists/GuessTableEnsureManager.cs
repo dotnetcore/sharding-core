@@ -12,6 +12,7 @@ namespace ShardingCore.TableExists
         private readonly SqliteTableEnsureManager _tem_sqlite;
         private readonly PostgreSqlTableEnsureManager _tem_pgsql;
         private readonly SqlServerTableEnsureManager _tem_mssql;
+        private readonly OracleTableEnsureManager _tem_oracle;
 
         public GuessTableEnsureManager(IRouteTailFactory routeTailFactory) : base(routeTailFactory)
         {
@@ -19,6 +20,7 @@ namespace ShardingCore.TableExists
             _tem_sqlite = new SqliteTableEnsureManager(routeTailFactory);
             _tem_pgsql = new PostgreSqlTableEnsureManager(routeTailFactory);
             _tem_mssql = new SqlServerTableEnsureManager(routeTailFactory);
+            _tem_oracle = new OracleTableEnsureManager(routeTailFactory);
         }
 
         public override ISet<string> DoGetExistTables(DbConnection connection, string dataSourceName)
@@ -44,6 +46,10 @@ namespace ShardingCore.TableExists
                 case "Microsoft.Data.SqlClient.SqlConnection":
                 case "System.Data.SqlClient.SqlConnection":
                     result = _tem_mssql.DoGetExistTables(connection, dataSourceName);
+                    break;
+
+                case "Oracle.ManagedDataAccess.Client.OracleConnection":
+                    result = _tem_oracle.DoGetExistTables(connection, dataSourceName);
                     break;
 
                 default:
