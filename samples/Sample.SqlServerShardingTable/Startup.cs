@@ -38,39 +38,7 @@ namespace Sample.SqlServerShardingTable
         {
 
             services.AddControllers();
-            //services.AddShardingDbContext<MyDbContext>((conStr, builder) =>
-            //    {
-            //        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
-            //    }).Begin(op =>
-            //    {
-            //        //如果您使用code-first建议选择false
-            //        op.CreateShardingTableOnStart = true;
-            //        //如果您使用code-first建议修改为fsle
-            //        op.EnsureCreatedWithOutShardingTable = true;
-            //        //当无法获取路由时会返回默认值而不是报错
-            //        op.ThrowIfQueryRouteNotMatch = true;
-            //    }).AddShardingTransaction((connection, builder) =>
-            //    {
-            //        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
-            //    }).AddDefaultDataSource("ds0",
-            //        "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;")
-            //    .AddShardingTableRoute(op =>
-            //    {
-            //        op.AddShardingTableRoute<SysUserVirtualTableRoute>();
-            //        op.AddShardingTableRoute<OrderVirtualTableRoute>();
-            //        op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-            //    }).AddReadWriteSeparation(sp =>
-            //    {
-            //        return new Dictionary<string, IEnumerable<string>>()
-            //        {
-            //            {
-            //                "ds0", new List<string>()
-            //                {
-            //                    "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
-            //                }
-            //            }
-            //        };
-            //    },ReadStrategyEnum.Loop,defaultEnable:true).End();
+
             services.AddShardingDbContext<MyDbContext>().UseRouteConfig(op =>
             {
                 op.AddShardingTableRoute<SysUserVirtualTableRoute>();
@@ -89,19 +57,7 @@ namespace Sample.SqlServerShardingTable
                     builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                 });
                 op.AddDefaultDataSource("ds0",
-                    "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;");
-                op.AddReadWriteSeparation(sp =>
-                {
-                    return new Dictionary<string, IEnumerable<string>>()
-                    {
-                        {
-                            "ds0", new List<string>()
-                            {
-                                "Data Source=localhost;Initial Catalog=EFCoreShardingTableDB;Integrated Security=True;"
-                            }
-                        }
-                    };
-                }, ReadStrategyEnum.Loop, defaultEnable: true);
+                    "server=njyk.3322.org,8026;database=EFCoreShardingTableDB;uid=sa;pwd=kf@123;");
             }).AddShardingCore();
         }
 
