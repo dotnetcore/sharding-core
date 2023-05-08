@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Metadata;
+using ShardingCore;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
 using ShardingCore.Extensions.ShardingQueryableExtensions;
 using ShardingCore.Core;
@@ -43,6 +44,7 @@ namespace Sample.SqlServer.Controllers
             _shardingRouteManager = shardingRuntimeContext.GetShardingRouteManager();
             _readWriteManager = shardingRuntimeContext.GetShardingReadWriteManager();
             _shardingRuntimeContext = shardingRuntimeContext;
+            
         }
 
         [HttpGet]

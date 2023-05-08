@@ -53,7 +53,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         {
             if (EntityMetadata.IsMainShardingTableKey(shardingPropertyName))
             {
-                return GetRouteToFilter((TKey)shardingKey, shardingOperator);
+                return GetRouteToFilter(CompareValueToKey(shardingKey), shardingOperator);
             }
             else
             {
@@ -61,6 +61,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             }
         }
 
+        public virtual TKey CompareValueToKey(object shardingKey)
+        {
+            return (TKey)shardingKey;
+        }
         public abstract Func<string, bool> GetRouteToFilter(TKey shardingKey,
             ShardingOperatorEnum shardingOperator);
 

@@ -75,7 +75,7 @@ namespace ShardingCore.Sharding.MergeEngines.Executors.ShardingMergers
             //聚合
             if (parallelResults is IEnumerable<IStreamMergeAsyncEnumerator<TEntity>> parallelStreamEnumeratorResults)
             {
-                var mergeAsyncEnumerators = new List<IStreamMergeAsyncEnumerator<TEntity>>(parallelResults.Count);
+                var mergeAsyncEnumerators = new List<IStreamMergeAsyncEnumerator<TEntity>>(parallelResults.Count+previewResultsCount);
                 if (previewResultsCount == 1)
                 {
                     mergeAsyncEnumerators.Add(beforeInMemoryResults.First());

@@ -168,7 +168,7 @@ namespace ShardingCore.Sharding.Enumerators
 
             if (aggregateValues.IsNotEmpty())
             {
-                var copyFields = string.Join(",", _mergeContext.SelectContext.SelectProperties.Select(o=>o.PropertyName));
+                // var copyFields = string.Join(",", _mergeContext.SelectContext.SelectProperties.Select(o=>o.PropertyName));
                 CurrentValue =  AggregateExtension.CopyTSource(aggregateValues.First());
 
                 if (aggregateValues.Count > 1)
