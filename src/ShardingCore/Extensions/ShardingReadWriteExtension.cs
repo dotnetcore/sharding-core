@@ -61,7 +61,7 @@ namespace ShardingCore.Extensions
                 }
             }
 
-            shardingDbContextExecutor.ReadWriteSeparationBehavior = ReadWriteDefaultEnableBehavior.DefaultEnable;
+            shardingDbContextExecutor.ReadWriteSeparationBehavior = readOnly?ReadWriteDefaultEnableBehavior.DefaultEnable:ReadWriteDefaultEnableBehavior.DefaultDisable;
         }
 
         public static void SetReadWriteSeparation(this ShardingReadWriteContext shardingReadWriteContext, int priority,
