@@ -17,5 +17,6 @@ namespace ShardingCore.Sharding.Abstractions
     {
         int ReadWriteSeparationPriority { get; set; }
         bool ReadWriteSeparation { get; set; }
+        ReadWriteDefaultEnableBehavior ReadWriteSeparationBehavior { get; set; }
     }
 }

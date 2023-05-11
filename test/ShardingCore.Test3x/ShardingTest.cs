@@ -55,7 +55,7 @@ namespace ShardingCore.Test3x
             _shardingRouteManager = shardingRuntimeContext.GetShardingRouteManager();
             _shardingReadWriteManager = shardingRuntimeContext.GetShardingReadWriteManager();
             _virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
-            _connectionStringManager = new ActualConnectionStringManager(_shardingReadWriteManager,_virtualDataSource);
+            _connectionStringManager = new ActualConnectionStringManager(_shardingReadWriteManager,_virtualDataSource,virtualDbContext);
             _configuration = configuration;
             _entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             _tableRouteManager = shardingRuntimeContext.GetTableRouteManager();

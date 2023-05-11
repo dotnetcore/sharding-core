@@ -19,23 +19,25 @@ namespace ShardingCore.Sharding
     */
     public class ActualConnectionStringManager
     {
+        public DbContext ShellDbContext { get; }
         private readonly bool _useReadWriteSeparation;
         private readonly IShardingReadWriteManager _shardingReadWriteManager;
         private readonly IVirtualDataSource _virtualDataSource;
         public int ReadWriteSeparationPriority { get; set; }
-        public bool ReadWriteSeparation { get; set; }
+        public ReadWriteDefaultEnableBehavior ReadWriteSeparation { get; set; }
         public ReadStrategyEnum ReadStrategy { get; set; }
         public ReadConnStringGetStrategyEnum ReadConnStringGetStrategy { get; set; }
         private string _cacheConnectionString;
-        public ActualConnectionStringManager(IShardingReadWriteManager shardingReadWriteManager,IVirtualDataSource virtualDataSource)
+        public ActualConnectionStringManager(IShardingReadWriteManager shardingReadWriteManager,IVirtualDataSource virtualDataSource,DbContext shellDbContext)
         {
+            ShellDbContext = shellDbContext;
             _shardingReadWriteManager = shardingReadWriteManager;
             _virtualDataSource=virtualDataSource;
             _useReadWriteSeparation = virtualDataSource.ConnectionStringManager is ReadWriteConnectionStringManager;
             if (_useReadWriteSeparation)
             {
                 ReadWriteSeparationPriority = virtualDataSource.ConfigurationParams.ReadWriteDefaultPriority.GetValueOrDefault();
-                ReadWriteSeparation = virtualDataSource.ConfigurationParams.ReadWriteDefaultEnable.GetValueOrDefault();
+                ReadWriteSeparation = virtualDataSource.ConfigurationParams.ReadWriteDefaultEnableBehavior.GetValueOrDefault(ReadWriteDefaultEnableBehavior.DefaultDisable);
                 ReadStrategy = virtualDataSource.ConfigurationParams.ReadStrategy.GetValueOrDefault();
                 ReadConnStringGetStrategy = virtualDataSource.ConfigurationParams.ReadConnStringGetStrategy.GetValueOrDefault();
             }
@@ -62,9 +64,25 @@ namespace ShardingCore.Sharding
             return _virtualDataSource.GetConnectionString(dataSourceName);
         }
 
+        private bool useReadWriteSeparation(ReadWriteDefaultEnableBehavior behavior,bool inTransaction)
+        {
+            if (behavior == ReadWriteDefaultEnableBehavior.DefaultEnable)
+            {
+                return true;
+            }
+
+            if (behavior == ReadWriteDefaultEnableBehavior.OutTransactionEnable)
+            {
+                return !inTransaction;
+            }
+
+            return false;
+        }
+
         private string GetReadWriteSeparationConnectString(string dataSourceName)
         {
-            var support = ReadWriteSeparation;
+            bool inTransaction=ShellDbContext.Database.CurrentTransaction != null;
+            var support = useReadWriteSeparation(ReadWriteSeparation,inTransaction);
             string readNodeName = null;
             var hasConfig = false;
             var shardingReadWriteContext = _shardingReadWriteManager.GetCurrent();
@@ -72,8 +90,8 @@ namespace ShardingCore.Sharding
             {
                 var dbFirst = ReadWriteSeparationPriority >= shardingReadWriteContext.DefaultPriority;
                 support = dbFirst
-                    ? ReadWriteSeparation
-                    : shardingReadWriteContext.DefaultReadEnable;
+                    ? useReadWriteSeparation(ReadWriteSeparation,inTransaction)
+                    : useReadWriteSeparation(shardingReadWriteContext.DefaultEnableBehavior,inTransaction);
                 if (!dbFirst&& support)
                 {
                     hasConfig = shardingReadWriteContext.TryGetDataSourceReadNode(dataSourceName, out readNodeName);

@@ -23,7 +23,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
         public override IDictionary<string, string> ExtraDataSources { get; }
         public override IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
         public override ReadStrategyEnum? ReadStrategy { get; }
-        public override bool? ReadWriteDefaultEnable { get; }
+        public override ReadWriteDefaultEnableBehavior? ReadWriteDefaultEnableBehavior { get; }
         public override int? ReadWriteDefaultPriority { get; }
         public override ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
 
@@ -57,7 +57,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
                     }
                 }
                 ReadStrategy = options.ShardingReadWriteSeparationOptions.ReadStrategy;
-                ReadWriteDefaultEnable = options.ShardingReadWriteSeparationOptions.DefaultEnable;
+                ReadWriteDefaultEnableBehavior = options.ShardingReadWriteSeparationOptions.DefaultEnableBehavior;
                 ReadWriteDefaultPriority = options.ShardingReadWriteSeparationOptions.DefaultPriority;
                 ReadConnStringGetStrategy = options.ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy;
             }

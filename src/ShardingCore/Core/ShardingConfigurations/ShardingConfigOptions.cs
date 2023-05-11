@@ -115,6 +115,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <param name="defaultPriority">默认优先级建议大于0</param>
         /// <param name="readConnStringGetStrategy">LatestFirstTime:DbContext缓存,LatestEveryTime:每次都是最新</param>
         /// <exception cref="ArgumentNullException"></exception>
+        [Obsolete("plz use AddReadWriteSeparation param use ReadWriteDefaultEnableBehavior")]
         public void AddReadWriteSeparation(
             Func<IShardingProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
@@ -125,7 +126,31 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions = new ShardingReadWriteSeparationOptions();
             ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure= readWriteSeparationConfigure ?? throw new ArgumentNullException(nameof(readWriteSeparationConfigure));
             ShardingReadWriteSeparationOptions.ReadStrategy = readStrategyEnum;
-            ShardingReadWriteSeparationOptions.DefaultEnable=defaultEnable;
+            ShardingReadWriteSeparationOptions.DefaultEnableBehavior=defaultEnable?ReadWriteDefaultEnableBehavior.DefaultEnable:ReadWriteDefaultEnableBehavior.DefaultDisable;
+            ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
+            ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
+        }
+        /// <summary>
+        /// 添加读写分离配置
+        /// </summary>
+        /// <param name="readWriteSeparationConfigure"></param>
+        /// <param name="readStrategyEnum">随机或者轮询</param>
+        /// <param name="defaultEnableBehavior"></param>
+        /// <param name="defaultEnable">DefaultDisable表示哪怕您添加了读写分离也不会进行读写分离查询,只有需要的时候自行开启,DefaultEnable表示默认查询就是走的读写分离,InTransactionEnable在事务中的查询使用读写分离,InTransactionDisbale在事务中不使用读写分离</param>
+        /// <param name="defaultPriority">默认优先级建议大于0</param>
+        /// <param name="readConnStringGetStrategy">LatestFirstTime:DbContext缓存,LatestEveryTime:每次都是最新</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void AddReadWriteSeparation(
+            Func<IShardingProvider, IDictionary<string, IEnumerable<string>>> readWriteSeparationConfigure,
+            ReadStrategyEnum readStrategyEnum,
+            ReadWriteDefaultEnableBehavior defaultEnableBehavior = ReadWriteDefaultEnableBehavior.DefaultDisable,
+            int defaultPriority = 10,
+            ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
+        {
+            ShardingReadWriteSeparationOptions = new ShardingReadWriteSeparationOptions();
+            ShardingReadWriteSeparationOptions.ReadWriteSeparationConfigure= readWriteSeparationConfigure ?? throw new ArgumentNullException(nameof(readWriteSeparationConfigure));
+            ShardingReadWriteSeparationOptions.ReadStrategy = readStrategyEnum;
+            ShardingReadWriteSeparationOptions.DefaultEnableBehavior=defaultEnableBehavior;
             ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }
@@ -148,6 +173,7 @@ namespace ShardingCore.Core.ShardingConfigurations
         /// <param name="defaultPriority"></param>
         /// <param name="readConnStringGetStrategy"></param>
         /// <exception cref="ArgumentNullException"></exception>
+        [Obsolete("plz use AddReadWriteNodeSeparation param use ReadWriteDefaultEnableBehavior")]
         public void AddReadWriteNodeSeparation(
             Func<IShardingProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
             ReadStrategyEnum readStrategyEnum,
@@ -158,7 +184,40 @@ namespace ShardingCore.Core.ShardingConfigurations
             ShardingReadWriteSeparationOptions = new ShardingReadWriteSeparationOptions();
             ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure= readWriteNodeSeparationConfigure ?? throw new ArgumentNullException(nameof(readWriteNodeSeparationConfigure));
             ShardingReadWriteSeparationOptions.ReadStrategy = readStrategyEnum;
-            ShardingReadWriteSeparationOptions.DefaultEnable=defaultEnable;
+            ShardingReadWriteSeparationOptions.DefaultEnableBehavior=defaultEnable?ReadWriteDefaultEnableBehavior.DefaultEnable:ReadWriteDefaultEnableBehavior.DefaultDisable;
+            ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
+            ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
+        }
+        /// <summary>
+        /// 读写分离配置 和 AddReadWriteSeparation不同的是
+        /// 当前配置支持自定义读链接节点命名,命名的好处在于当使用读库链接的时候由于服务器性能的差异
+        /// 可以将部分吃性能的查询通过节点名称切换到对应的性能相对较好或者较空闲的读库服务器
+        /// <code><![CDATA[
+        /// IShardingReadWriteManager _readWriteManager=...
+        ///   using (_readWriteManager.CreateScope())
+        ///     {
+        ///         _readWriteManager.GetCurrent().SetReadWriteSeparation(100,true);
+        ///         _readWriteManager.GetCurrent().AddDataSourceReadNode("A", readNodeName);
+        ///         var xxxaaa = await _defaultTableDbContext.Set<SysUserSalary>().FirstOrDefaultAsync();
+        ///   }]]></code>
+        /// </summary>
+        /// <param name="readWriteNodeSeparationConfigure"></param>
+        /// <param name="readStrategyEnum"></param>
+        /// <param name="defaultEnableBehavior"></param>
+        /// <param name="defaultPriority"></param>
+        /// <param name="readConnStringGetStrategy"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void AddReadWriteNodeSeparation(
+            Func<IShardingProvider, IDictionary<string, IEnumerable<ReadNode>>> readWriteNodeSeparationConfigure,
+            ReadStrategyEnum readStrategyEnum,
+            ReadWriteDefaultEnableBehavior defaultEnableBehavior = ReadWriteDefaultEnableBehavior.DefaultDisable,
+            int defaultPriority = 10,
+            ReadConnStringGetStrategyEnum readConnStringGetStrategy = ReadConnStringGetStrategyEnum.LatestFirstTime)
+        {
+            ShardingReadWriteSeparationOptions = new ShardingReadWriteSeparationOptions();
+            ShardingReadWriteSeparationOptions.ReadWriteNodeSeparationConfigure= readWriteNodeSeparationConfigure ?? throw new ArgumentNullException(nameof(readWriteNodeSeparationConfigure));
+            ShardingReadWriteSeparationOptions.ReadStrategy = readStrategyEnum;
+            ShardingReadWriteSeparationOptions.DefaultEnableBehavior=defaultEnableBehavior;
             ShardingReadWriteSeparationOptions.DefaultPriority= defaultPriority;
             ShardingReadWriteSeparationOptions.ReadConnStringGetStrategy= readConnStringGetStrategy;
         }

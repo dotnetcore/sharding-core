@@ -61,7 +61,7 @@ namespace ShardingCore.Extensions
                 }
             }
 
-            shardingDbContextExecutor.ReadWriteSeparation = readOnly;
+            shardingDbContextExecutor.ReadWriteSeparationBehavior = ReadWriteDefaultEnableBehavior.DefaultEnable;
         }
 
         public static void SetReadWriteSeparation(this ShardingReadWriteContext shardingReadWriteContext, int priority,
@@ -76,6 +76,7 @@ namespace ShardingCore.Extensions
         /// </summary>
         /// <param name="shardingDbContext"></param>
         /// <returns></returns>
+        [Obsolete(" plz use CurrentIsReadWriteSeparationBehavior")]
         public static bool CurrentIsReadWriteSeparation(this IShardingDbContext shardingDbContext)
         {
             if (shardingDbContext.IsUseReadWriteSeparation())
@@ -100,6 +101,31 @@ namespace ShardingCore.Extensions
             }
 
             return false;
+        }
+        public static ReadWriteDefaultEnableBehavior CurrentIsReadWriteSeparationBehavior(this IShardingDbContext shardingDbContext)
+        {
+            if (shardingDbContext.IsUseReadWriteSeparation())
+            {
+                var shardingRuntimeContext = ((DbContext)shardingDbContext).GetShardingRuntimeContext();
+                var shardingDbContextExecutor = shardingDbContext.GetShardingExecutor();
+                var shardingReadWriteManager = shardingRuntimeContext.GetService<IShardingReadWriteManager>();
+                var shardingReadWriteContext = shardingReadWriteManager.GetCurrent();
+                if (shardingReadWriteContext != null)
+                {
+                    if (shardingReadWriteContext.DefaultPriority > shardingDbContextExecutor.ReadWriteSeparationPriority)
+                    {
+                        return shardingReadWriteContext.DefaultEnableBehavior;
+                    }
+                    else
+                    {
+                        return shardingDbContextExecutor.ReadWriteSeparationBehavior;
+                    }
+                }
+
+                return shardingDbContextExecutor.ReadWriteSeparationBehavior;
+            }
+
+            return ReadWriteDefaultEnableBehavior.DefaultDisable;
         }
     }
 }

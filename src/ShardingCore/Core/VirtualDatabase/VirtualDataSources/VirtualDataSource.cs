@@ -77,9 +77,9 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources
             {
                 throw new ArgumentException(nameof(ConfigurationParams.ReadConnStringGetStrategy));
             }
-            if (!ConfigurationParams.ReadWriteDefaultEnable.HasValue)
+            if (!ConfigurationParams.ReadWriteDefaultEnableBehavior.HasValue)
             {
-                throw new ArgumentException(nameof(ConfigurationParams.ReadWriteDefaultEnable));
+                throw new ArgumentException(nameof(ConfigurationParams.ReadWriteDefaultEnableBehavior));
             }
             if (!ConfigurationParams.ReadWriteDefaultPriority.HasValue)
             {

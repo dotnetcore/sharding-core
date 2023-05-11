@@ -197,7 +197,7 @@ namespace Sample.MySql
             // app.ApplicationServices.UseAutoTryCompensateTable();
             // using (var scope = app.ApplicationServices.CreateScope())
             // {
-            //     var defaultShardingDbContext = scope.ServiceProvider.GetService<OtherDbContext>();
+            //     var defaultShardingDbContext = scope.ServiceProvider.GetService<DefaultShardingDbContext>();
             //     // if (defaultShardingDbContext.Database.GetPendingMigrations().Any())
             //     {
             //         try
@@ -209,6 +209,10 @@ namespace Sample.MySql
             //         {
             //         }
             //     }
+            //     // var shardingRuntimeContext = defaultShardingDbContext.GetShardingRuntimeContext();
+            //     // var tableRouteManager = shardingRuntimeContext.GetTableRouteManager();
+            //     // var virtualTableRoute = (SysUserLogByMonthRoute)tableRouteManager.GetRoute(typeof(SysUserLogByMonth));
+            //     // virtualTableRoute.Append("2021");
             // }
             //
             // app.ApplicationServices.UseAutoTryCompensateTable(12);

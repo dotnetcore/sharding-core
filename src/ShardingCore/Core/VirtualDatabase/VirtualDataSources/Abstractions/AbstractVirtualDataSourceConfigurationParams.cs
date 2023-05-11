@@ -21,7 +21,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         public virtual IDictionary<string, string> ExtraDataSources { get; }=new ConcurrentDictionary<string, string>();
         public virtual IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
         public virtual ReadStrategyEnum? ReadStrategy { get; }
-        public virtual bool? ReadWriteDefaultEnable { get; }
+        public virtual ReadWriteDefaultEnableBehavior? ReadWriteDefaultEnableBehavior { get; }
         public virtual int? ReadWriteDefaultPriority { get; }
         public virtual ReadConnStringGetStrategyEnum? ReadConnStringGetStrategy { get; }
 

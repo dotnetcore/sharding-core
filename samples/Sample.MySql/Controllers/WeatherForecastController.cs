@@ -318,5 +318,41 @@ namespace Sample.MySql.Controllers
             // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> Get9()
+        {
+            var sysUserMod = await _defaultTableDbContext.Set<SysUserMod>().Where(o=>o.Name=="11231").AllAsync(o=>o.Id=="1123");
+     
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get10()
+        {
+            var sysUserMod1 = await _defaultTableDbContext.Set<SysTest>().Where(o=>o.UserId=="11231").AllAsync(o=>o.Id=="1123"&&string.Compare(o.UserId,"123")>0);
+            var sysUserMod2 = await _defaultTableDbContext.Set<SysTest>().AllAsync(o=>o.Id=="1123");
+            var dateTime = new DateTime(2020,1,1);
+            var sysUserMod3 = await _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o => o.Time > dateTime)
+                .ToListAsync();
+     
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get11()
+        {
+            using(var tran = await _defaultTableDbContext.Database.BeginTransactionAsync())
+            {
+                var newGuid = Guid.NewGuid().ToString("n");
+                await _defaultTableDbContext.Set<SysTest>().Where(o => o.Id == "11")
+                    .ExecuteUpdateAsync(o => o.SetProperty(x => x.UserId, x => newGuid));
+                throw new Exception("123");
+                await tran.CommitAsync();
+            }
+
+            return Ok();
+        }
     }
 }

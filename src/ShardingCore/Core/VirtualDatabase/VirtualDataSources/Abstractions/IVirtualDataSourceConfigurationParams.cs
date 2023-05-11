@@ -36,7 +36,7 @@ namespace ShardingCore.Core.VirtualDatabase.VirtualDataSources.Abstractions
         IDictionary<string, ReadNode[]> ReadWriteNodeSeparationConfigs { get; }
 
         ReadStrategyEnum? ReadStrategy { get; }
-        bool? ReadWriteDefaultEnable { get; }
+        ReadWriteDefaultEnableBehavior? ReadWriteDefaultEnableBehavior { get; }
         int? ReadWriteDefaultPriority { get; }
         /// <summary>
         /// 读写分离链接字符串获取

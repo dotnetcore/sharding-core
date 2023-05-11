@@ -66,7 +66,14 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             set => _actualConnectionStringManager.ReadWriteSeparationPriority = value;
         }
 
+        [Obsolete("use ReadWriteSeparationBehavior")]
         public bool ReadWriteSeparation
+        {
+            get => _actualConnectionStringManager.ReadWriteSeparation==ReadWriteDefaultEnableBehavior.DefaultEnable;
+            set => _actualConnectionStringManager.ReadWriteSeparation = value?ReadWriteDefaultEnableBehavior.DefaultEnable:ReadWriteDefaultEnableBehavior.DefaultDisable;
+        }
+
+        public ReadWriteDefaultEnableBehavior ReadWriteSeparationBehavior
         {
             get => _actualConnectionStringManager.ReadWriteSeparation;
             set => _actualConnectionStringManager.ReadWriteSeparation = value;
@@ -92,7 +99,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var loggerFactory = shardingProvider.GetRequiredService<ILoggerFactory>();
             _logger = loggerFactory.CreateLogger<ShardingDbContextExecutor>();
             _actualConnectionStringManager =
-                new ActualConnectionStringManager(shardingReadWriteManager, _virtualDataSource);
+                new ActualConnectionStringManager(shardingReadWriteManager, _virtualDataSource,_shardingDbContext);
         }
 
         #region create db context
