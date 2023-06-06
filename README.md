@@ -450,16 +450,13 @@ or
 ## 分表
 
 我们以用户取模来做例子,配置entity 推荐 [fluent api](https://docs.microsoft.com/en-us/ef/core/modeling/) 
-`IShardingTable`数据库对象必须继承该接口
-`ShardingTableKey`分表字段需要使用该特性
 
 ```c#
-    public class SysUserMod : IShardingTable
+    public class SysUserMod
     {
         /// <summary>
         /// 用户Id用于分表
         /// </summary>
-        [ShardingTableKey]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称
@@ -485,6 +482,10 @@ or
         //3 hashcode % 3: [0,1,2]
         public SysUserModVirtualTableRoute() : base(2,3)
         {
+        }
+        public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
+        {
+            builder.ShardingProperty(o => o.Id);
         }
     }
 ```
@@ -607,12 +608,11 @@ or
 `ShardingDataSourceKey`分库字段需要使用该特性
 
 ```c#
-    public class SysUserMod : IShardingDataSource
+    public class SysUserMod
     {
         /// <summary>
         /// 用户Id用于分库
         /// </summary>
-        [ShardingDataSourceKey]
         public string Id { get; set; }
         /// <summary>
         /// 用户名称
@@ -663,6 +663,11 @@ or
         public override bool AddDataSourceName(string dataSourceName)
         {
             throw new NotImplementedException();
+        }
+
+        public override void Configure(EntityMetadataDataSourceBuilder<SysUserMod> builder)
+        {
+            builder.ShardingProperty(o => o.Name);
         }
 
         protected override Expression<Func<string, bool>> GetRouteToFilter(string shardingKey, ShardingOperatorEnum shardingOperator)
