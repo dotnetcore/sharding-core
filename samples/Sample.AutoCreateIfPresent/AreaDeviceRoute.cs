@@ -61,6 +61,7 @@ namespace Sample.AutoCreateIfPresent
 
         public override string ShardingKeyToTail(object shardingKey)
         {
+            InitOnce();
             return $"{shardingKey}";
         }
 
@@ -70,6 +71,12 @@ namespace Sample.AutoCreateIfPresent
         /// </summary>
         /// <returns></returns>
         public override List<string> GetTails()
+        {
+            InitOnce();
+            return _tails.Keys.ToList();
+        }
+
+        private void InitOnce()
         {
             if (!_inited)
             {
@@ -82,8 +89,7 @@ namespace Sample.AutoCreateIfPresent
                     }
                 }
             }
-
-            return _tails.Keys.ToList();
+            
         }
 
         public override void Configure(EntityMetadataTableBuilder<AreaDevice> builder)

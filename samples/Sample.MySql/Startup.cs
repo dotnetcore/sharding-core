@@ -74,6 +74,8 @@ namespace Sample.MySql
             services.AddShardingDbContext<DefaultShardingDbContext>()
                 .UseRouteConfig((sp, o) =>
                 {
+                    
+                    // AppDomain.CurrentDomain.GetAssemblies().
                     o.AddShardingTableRoute<DynamicTableRoute>();
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
@@ -93,6 +95,7 @@ namespace Sample.MySql
                     // {
                     //     b.UseMemoryCache(memoryCache);
                     // });
+                    o.CheckShardingKeyValueGenerated = false;
                     o.IgnoreCreateTableError = false;
                     o.UseEntityFrameworkCoreProxies = true;
                     o.CacheModelLockConcurrencyLevel = 1024;
@@ -107,6 +110,8 @@ namespace Sample.MySql
 
                     o.UseShardingQuery((conStr, builder) =>
                     {
+                        var logger = sp.ApplicationServiceProvider.GetService<ILogger<Startup>>();
+                        logger.LogInformation(conStr);
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
                             .UseLoggerFactory(loggerFactory1)
                             .EnableSensitiveDataLogging();
@@ -180,7 +185,7 @@ namespace Sample.MySql
             {
                 app.UseDeveloperExceptionPage();
             }
-            // app.ApplicationServices.UseAutoTryCompensateTable();
+            app.ApplicationServices.UseAutoTryCompensateTable();
 
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();

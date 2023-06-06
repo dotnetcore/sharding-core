@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -20,6 +21,24 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
     /// </summary>
     internal static class AggregateExtension
     {
+        
+        public static object ChangeType(this object value, Type targetType)
+        {
+            //targetType类型是否为泛型，因为nullable是泛型类,
+            if (targetType.IsGenericType &&
+                //判断targetType是否为nullable泛型类
+                targetType.IsNullableType())
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+
+                NullableConverter nullableConverter = new NullableConverter(targetType);
+                targetType = nullableConverter.UnderlyingType;
+            }
+            return Convert.ChangeType(value, targetType);
+        }
         public static TSource CopyTSource<TSource>(TSource source)
         {
             var anonType = source.GetType();
@@ -27,9 +46,20 @@ namespace ShardingCore.Sharding.Enumerators.AggregateExtensions
             var allPropertyTypes= allProperties.Select(o=>o.PropertyType).ToArray();
             if (anonType.IsAnonymousType())
             {
-                var constantExpressions = allProperties.Select(o => Expression.Constant(o.GetValue(source))).ToArray();
+                var constantExpressions = allProperties.Select(o =>
+                {
+                    var value = o.GetValue(source);
+                    if (value != null &&o.PropertyType.IsNullableType())
+                    {
+                        // var changeTypeValue = ChangeType(value,o.PropertyType);
+                        return Expression.Constant(value,o.PropertyType);
+                    }
+
+                    return Expression.Constant(value);
+                }).ToArray();
+                var constructorInfo = anonType.GetConstructor(allPropertyTypes);
                 var exp = Expression.New(
-                    anonType.GetConstructor(allPropertyTypes),
+                    constructorInfo,
                     constantExpressions);
                 var lambda = LambdaExpression.Lambda(exp);
                 TSource myObj = (TSource)lambda.Compile().DynamicInvoke();

@@ -85,7 +85,9 @@ namespace Sample.MySql.Controllers
             var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
             var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
             //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
-            var virtualTableRoute = (ITailAppendable)tableRouteManager.GetRoute(typeof(SysUserMod));
+            var tableRoute = tableRouteManager.GetRoute(typeof(SysUserMod));
+            var tails = tableRoute.GetTails();
+            var virtualTableRoute = (ITailAppendable)tableRoute;
             //一定要先在路由里面添加尾巴
             virtualTableRoute.Append("20220921");
             shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
@@ -330,6 +332,13 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get10()
         {
+            var shardingDbContextExecutor = _defaultTableDbContext.GetShardingExecutor();
+            var dataSourceDbContexts = shardingDbContextExecutor.GetCurrentDbContexts();
+            var sourceDbContexts = dataSourceDbContexts.Values;
+            var dataSourceDbContext = sourceDbContexts.FirstOrDefault();
+            var dbConnection = dataSourceDbContext.GetCurrentContexts().FirstOrDefault().Value.Database.GetDbConnection();
+
+
             var sysUserMod1 = await _defaultTableDbContext.Set<SysTest>().Where(o=>o.UserId=="11231").AllAsync(o=>o.Id=="1123"&&string.Compare(o.UserId,"123")>0);
             var sysUserMod2 = await _defaultTableDbContext.Set<SysTest>().AllAsync(o=>o.Id=="1123");
             var dateTime = new DateTime(2020,1,1);
@@ -352,6 +361,26 @@ namespace Sample.MySql.Controllers
                 await tran.CommitAsync();
             }
 
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get12()
+        {
+            var sysTests = from ut in _defaultTableDbContext.Set<SysTest>()
+                where _defaultTableDbContext.Set<SysUserLogByMonth>().Any(x => x.Id == ut.Id)
+                    select ut;
+            var tests = sysTests.ToList();
+            return Ok();
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get13()
+        {
+            var list =await _defaultTableDbContext.Set<SysUserLogByMonth>()
+                .GroupBy(o=>o.Time)
+                .Select(o=>new
+                {
+                    o.Key
+                }).ToListAsync();
             return Ok();
         }
     }
