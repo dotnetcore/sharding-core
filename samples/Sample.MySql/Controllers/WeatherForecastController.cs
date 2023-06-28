@@ -61,13 +61,14 @@ namespace Sample.MySql.Controllers
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
     {
-
+        private readonly UnShardingDbContext _unShardingDbContext;
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly ABC _abc;
 
-        public WeatherForecastController(DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
+        public WeatherForecastController(UnShardingDbContext unShardingDbContext,DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
+            _unShardingDbContext = unShardingDbContext;
             _defaultTableDbContext = defaultTableDbContext;
             _shardingRuntimeContext = shardingRuntimeContext;
             _abc=new ABC(_defaultTableDbContext);
@@ -381,6 +382,42 @@ namespace Sample.MySql.Controllers
                 {
                     o.Key
                 }).ToListAsync();
+            return Ok();
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Get14()
+        {
+            var sysUserLogByMonths = new List<SysUserLogByMonth>();
+            for (int i = 0; i < 100; i++)
+            {
+                var sysUserLogByMonth = new SysUserLogByMonth();
+                sysUserLogByMonth.Id = Guid.NewGuid().ToString("n");
+                sysUserLogByMonth.Time=DateTime.Now;
+                sysUserLogByMonths.Add(sysUserLogByMonth);
+            }
+
+            await _defaultTableDbContext.AddRangeAsync(sysUserLogByMonths);
+            await _defaultTableDbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Get15()
+        {
+            var sysUserLogByMonths = new List<SysUserLogByMonth>();
+            for (int i = 0; i < 100; i++)
+            {
+                var sysUserLogByMonth = new SysUserLogByMonth();
+                sysUserLogByMonth.Id = Guid.NewGuid().ToString("n");
+                sysUserLogByMonth.Time=DateTime.Now;
+                sysUserLogByMonths.Add(sysUserLogByMonth);
+            }
+
+            await _unShardingDbContext.AddRangeAsync(sysUserLogByMonths);
+            await _unShardingDbContext.SaveChangesAsync();
             return Ok();
         }
     }
