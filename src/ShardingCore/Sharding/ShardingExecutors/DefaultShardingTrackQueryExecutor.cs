@@ -62,8 +62,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    var mergeResult = _shardingQueryExecutor.Execute<TResult>(mergeQueryCompilerContext);
-                    return ResultTrackExecute(mergeResult, queryCompilerContext, TrackEnumerable, Track);
+                    return _shardingQueryExecutor.Execute<TResult>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
@@ -120,8 +119,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    var mergeResult = _shardingQueryExecutor.ExecuteAsync<TResult>(mergeQueryCompilerContext);
-                    return ResultTrackExecute(mergeResult, queryCompilerContext, TrackAsyncEnumerable, TrackAsync);
+                    return _shardingQueryExecutor.ExecuteAsync<TResult>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
@@ -143,8 +141,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    var mergeResult= _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(mergeQueryCompilerContext);
-                    return ResultTrackExecute(mergeResult, queryCompilerContext, TrackEnumerable, Track);
+                    return _shardingQueryExecutor.ExecuteAsync<IAsyncEnumerable<TResult>>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }
@@ -162,8 +159,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
             {
                 if (queryCompilerContext is IMergeQueryCompilerContext mergeQueryCompilerContext)
                 {
-                    var mergeResult= _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(mergeQueryCompilerContext);
-                    return ResultTrackExecute(mergeResult, queryCompilerContext, TrackEnumerable, TrackAsync);
+                    return _shardingQueryExecutor.ExecuteAsync<Task<TResult>>(mergeQueryCompilerContext);
                 }
                 throw new ShardingCoreNotFoundException(queryCompilerContext.GetQueryExpression().ShardingPrint());
             }

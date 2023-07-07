@@ -278,7 +278,13 @@ namespace ShardingCore.Sharding
         public bool IsUseShardingTrack(Type entityType)
         {
             if (!IsParallelQuery())
+            {
+                if (IsCrossDataSource)
+                {
+                    return true;
+                }
                 return false;
+            }
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);
         }
 
