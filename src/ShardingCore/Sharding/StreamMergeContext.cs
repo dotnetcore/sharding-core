@@ -134,23 +134,23 @@ namespace ShardingCore.Sharding
             return dbContext;
         }
 
-        /// <summary>
-        /// 因为并发查询情况下那么你是内存就是内存你是流式就是流式
-        /// 如果不是并发查询的情况下系统会将当前dbcontext进行利用起来所以只能是流式
-        /// </summary>
-        /// <param name="connectionMode"></param>
-        /// <returns></returns>
-        public ConnectionModeEnum RealConnectionMode(ConnectionModeEnum connectionMode)
-        {
-            if (IsParallelQuery())
-            {
-                return connectionMode;
-            }
-            else
-            {
-                return ConnectionModeEnum.MEMORY_STRICTLY;
-            }
-        }
+        // /// <summary>
+        // /// 因为并发查询情况下那么你是内存就是内存你是流式就是流式
+        // /// 如果不是并发查询的情况下系统会将当前dbcontext进行利用起来所以只能是流式
+        // /// </summary>
+        // /// <param name="connectionMode"></param>
+        // /// <returns></returns>
+        // public ConnectionModeEnum RealConnectionMode(ConnectionModeEnum connectionMode)
+        // {
+        //     if (IsParallelQuery())
+        //     {
+        //         return connectionMode;
+        //     }
+        //     else
+        //     {
+        //         return ConnectionModeEnum.MEMORY_STRICTLY;
+        //     }
+        // }
 
         //public IRouteTail Create(TableRouteResult tableRouteResult)
         //{
@@ -279,10 +279,6 @@ namespace ShardingCore.Sharding
         {
             if (!IsParallelQuery())
             {
-                if (IsCrossDataSource)
-                {
-                    return true;
-                }
                 return false;
             }
             return QueryTrack() && _trackerManager.EntityUseTrack(entityType);

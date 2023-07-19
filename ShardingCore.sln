@@ -73,6 +73,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore3", "src3\Shard
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore2", "src2\ShardingCore2\ShardingCore2.csproj", "{F0393C32-2285-4F47-AC61-C1BA1CAC269D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.MySQLDataSourceOnly", "samples\Sample.MySQLDataSourceOnly\Sample.MySQLDataSourceOnly.csproj", "{3B5A4B03-5190-41A8-8E4B-F95A79A5C018}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -187,6 +189,10 @@ Global
 		{F0393C32-2285-4F47-AC61-C1BA1CAC269D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0393C32-2285-4F47-AC61-C1BA1CAC269D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0393C32-2285-4F47-AC61-C1BA1CAC269D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,6 +225,7 @@ Global
 		{E5E48D52-CAD3-42F0-82CD-A2A6180F3C4D} = {53D07876-A791-46AE-8381-08557593693D}
 		{B59909AD-8885-40F3-9454-6C8433463BCC} = {51E1D067-3E81-4815-94F2-F8ABBE80881E}
 		{F0393C32-2285-4F47-AC61-C1BA1CAC269D} = {B11D7DF7-A907-407E-8BF1-35B430413557}
+		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

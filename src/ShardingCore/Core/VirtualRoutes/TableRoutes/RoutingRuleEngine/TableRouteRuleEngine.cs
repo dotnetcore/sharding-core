@@ -103,9 +103,9 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
             //如果笛卡尔积
 
             var sqlRouteUnits = new List<ISqlRouteUnit>(31);
-            int dataSourceCount = 0;
             bool isCrossTable = false;
             bool existCrossTableTails = false;
+            var dataSourceSet = new HashSet<string>();
             foreach (var dataSourceName in tableRouteRuleContext.DataSourceRouteResult.IntersectDataSources)
             {
                 if (routeMaps.ContainsKey(dataSourceName))
@@ -118,7 +118,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     var tableRouteResults = GetTableRouteResults(tableRouteRuleContext, routeResults);
                     if (tableRouteResults.IsNotEmpty())
                     {
-                        dataSourceCount++;
+                        dataSourceSet.Add(dataSourceName);
                         if (tableRouteResults.Length > 1)
                         {
                             isCrossTable = true;
@@ -140,12 +140,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.RoutingRuleEngine
                     }
                 }else if (onlyShardingDataSource)
                 {
+                    dataSourceSet.Add(dataSourceName);
                     var tableRouteResult = new TableRouteResult(queryEntities.Keys.Select(o=>new TableRouteUnit(dataSourceName,String.Empty,o )).ToList());
                     sqlRouteUnits.Add(new SqlRouteUnit(dataSourceName, tableRouteResult));
                 }
             }
 
-            return new ShardingRouteResult(sqlRouteUnits, sqlRouteUnits.Count == 0, dataSourceCount > 1, isCrossTable,
+            return new ShardingRouteResult(sqlRouteUnits, sqlRouteUnits.Count == 0, dataSourceSet.Count > 1, isCrossTable,
                 existCrossTableTails);
             //
             // var sqlRouteUnits = tableRouteRuleContext.DataSourceRouteResult.IntersectDataSources.SelectMany(

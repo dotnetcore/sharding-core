@@ -246,7 +246,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
         /// <returns></returns>
         public bool IsParallelQuery()
         {
-            return _isCrossTable || _existCrossTableTails || _queryCompilerContext.IsParallelQuery();
+            return _isCrossTable || _existCrossTableTails || _isCrossDataSource || _queryCompilerContext.IsParallelQuery();
         }
 
         public int? GetFixedTake()

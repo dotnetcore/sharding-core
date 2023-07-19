@@ -116,6 +116,7 @@ namespace Sample.MySql
                         var logger = sp.ApplicationServiceProvider.GetService<ILogger<Startup>>();
                         logger.LogInformation(conStr);
                         builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                            // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                             .UseLoggerFactory(loggerFactory1)
                             .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
@@ -124,6 +125,7 @@ namespace Sample.MySql
                     {
                         builder
                             .UseMySql(connection, new MySqlServerVersion(new Version()))
+                            // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                             .UseLoggerFactory(loggerFactory1)
                             .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
@@ -246,6 +248,12 @@ namespace Sample.MySql
             //     }
             // DynamicShardingHelper.DynamicAppendDataSource<DefaultShardingDbContext>($"c0",$"ds{i}",$"server=127.0.0.1;port=3306;database=dbdbd{i};userid=root;password=root;");
             //     
+            // }
+            // using (var scope = app.ApplicationServices.CreateScope())
+            // {
+            //     var defaultShardingDbContext = scope.ServiceProvider.GetRequiredService<DefaultShardingDbContext>();
+            //     var addMonths = DateTime.Now.AddMonths(-5);
+            //     defaultShardingDbContext.Set<SysUserLogByMonth>().Where(o => o.Time >= addMonths).Any();
             // }
             app.DbSeed();
         }
