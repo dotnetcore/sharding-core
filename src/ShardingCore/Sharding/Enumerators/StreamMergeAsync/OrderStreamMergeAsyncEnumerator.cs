@@ -106,6 +106,10 @@ namespace ShardingCore.Sharding.Enumerators
                 {
                     list.Add((IComparable)value);
                 }
+                else if (value == null) // Support Nullable<xx>
+                {
+                    list.Add(null);
+                }
                 else
                 {
                     throw new NotSupportedException($"order by value [{order}] must  implements IComparable");  
