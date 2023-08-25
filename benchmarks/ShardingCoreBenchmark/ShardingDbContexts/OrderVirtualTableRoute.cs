@@ -21,5 +21,9 @@ namespace ShardingCore6x.ShardingDbContexts
             builder.ShardingProperty(o => o.Id);
         }
 
+        public override string CompareValueToKey(object shardingKey)
+        {
+            return shardingKey.ToString();
+        }
     }
 }

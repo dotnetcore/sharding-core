@@ -76,6 +76,11 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
+            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            // dataSourceRouteManager.GetRoute()
+            var routeManager = _shardingRuntimeContext.GetTableRouteManager();
+            // routeManager.GetRoute()
+
             // DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
             //如果你已经添加好了的情况下并且没有生成对应的库和表想要生成表和库
             var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
@@ -84,7 +89,7 @@ namespace Sample.MySql.Controllers
             // _defaultTableDbContext.ReadWriteSeparationReadOnly();//读库
             // _defaultTableDbContext.ReadWriteSeparationWriteOnly();//写库
             var shardingTableCreator = _shardingRuntimeContext.GetShardingTableCreator();
-            var tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
+            var tableRouteManager = routeManager;
             //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
             var tableRoute = tableRouteManager.GetRoute(typeof(SysUserMod));
             var tails = tableRoute.GetTails();

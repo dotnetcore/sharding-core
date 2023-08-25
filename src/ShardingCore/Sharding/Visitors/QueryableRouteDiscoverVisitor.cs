@@ -287,6 +287,26 @@ namespace ShardingCore.Core.Internal.Visitors
                         }
                     }
                     //todo
+                    else if(lambdaExpression.Parameters[0].Type.IsGenericType&&lambdaExpression.Parameters[0].Type.IsAnonymousType())
+                    {
+                        var typeGenericTypeArguments = lambdaExpression.Parameters[0].Type.GenericTypeArguments;
+                        foreach (var typeGenericTypeArgument in typeGenericTypeArguments)
+                        {
+                            if (typeGenericTypeArgument == _entityMetadata.EntityType)
+                            {
+                                if (_entityLambdaExpression == null)
+                                {
+                                    _entityLambdaExpression = lambdaExpression;
+                                }
+                                else
+                                {
+                                    var body = Expression.AndAlso(_entityLambdaExpression.Body, lambdaExpression.Body);
+                                    var lambda = Expression.Lambda(body, _entityLambdaExpression.Parameters[0]);
+                                    _entityLambdaExpression = lambda;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

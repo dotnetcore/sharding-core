@@ -13,6 +13,7 @@ namespace Sample.MySql.Domain.Maps
             builder.Property(o => o.Id).IsRequired().HasMaxLength(128);
             builder.Property(o => o.UserId).IsRequired().HasMaxLength(128);
             builder.Property(o => o.UserId).IsConcurrencyToken();
+            builder.HasIndex(o => new { o.Id, o.UserId });
             builder.ToTable(nameof(SysTest),"dbdbd0");
         }
     }

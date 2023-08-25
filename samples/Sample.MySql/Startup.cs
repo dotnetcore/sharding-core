@@ -40,6 +40,25 @@ namespace Sample.MySql
     //         return Task.CompletedTask;
     //     }
     // }
+
+    // public interface ITenant
+    // {
+    //     string GetTenantId();
+    // }
+    //
+    // public class DefaultTenant :ITenant
+    // {
+    //     private readonly string _tenantId;
+    //
+    //     public DefaultTenant(string tenantId)
+    //     {
+    //         _tenantId = tenantId;
+    //     }
+    //     public string GetTenantId()
+    //     {
+    //         return _tenantId;
+    //     }
+    // }
     public class Startup
     {
         public static readonly ILoggerFactory efLogger = LoggerFactory.Create(builder =>
@@ -69,6 +88,7 @@ namespace Sample.MySql
             //     optionsBuilder(sp, builder);
             // });
             //
+            var type = typeof(MyUserRoute);
 
             services.AddDbContext<UnShardingDbContext>(o =>
                 o.UseMySql(
