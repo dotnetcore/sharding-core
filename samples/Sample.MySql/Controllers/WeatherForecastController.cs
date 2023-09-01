@@ -194,7 +194,15 @@ namespace Sample.MySql.Controllers
                     name = o.Key.Name,
                     count = o.Count()
                 }).ToListAsync();
-         var x=await   (from ut in _defaultTableDbContext.Set<SysTest>()
+
+            var asyncEnumerator = _defaultTableDbContext.Set<SysTest>().AsAsyncEnumerable();
+            await foreach (var sysTest in asyncEnumerator)
+            {
+                await Task.Delay(1000);
+                Console.WriteLine("1");
+            }
+
+            var x=await   (from ut in _defaultTableDbContext.Set<SysTest>()
              from uu in _defaultTableDbContext.Set<SysUserMod>()
              where ut.Id == uu.Id
                 select ut).FirstOrDefaultAsync();
