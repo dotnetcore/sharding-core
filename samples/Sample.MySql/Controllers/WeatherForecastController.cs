@@ -61,13 +61,15 @@ namespace Sample.MySql.Controllers
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly UnShardingDbContext _unShardingDbContext;
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly ABC _abc;
 
-        public WeatherForecastController(UnShardingDbContext unShardingDbContext,DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
+        public WeatherForecastController(IServiceProvider serviceProvider,UnShardingDbContext unShardingDbContext,DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
+            _serviceProvider = serviceProvider;
             _unShardingDbContext = unShardingDbContext;
             _defaultTableDbContext = defaultTableDbContext;
             _shardingRuntimeContext = shardingRuntimeContext;
@@ -126,7 +128,7 @@ namespace Sample.MySql.Controllers
             //     
             // }
             var dateTime = new DateTime(2021,1,1);
-            var x211 = await (from ut in _defaultTableDbContext.Set<SysTest>()
+            var x211 = await (from ut in _defaultTableDbContext.Set<SysTest>().UseUnionAllMerge()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()
                         on ut.Id equals uu.Id
                         where uu.Time > dateTime
@@ -218,6 +220,10 @@ namespace Sample.MySql.Controllers
                 .Select(o => new ssss(){ Id = o.Id, C = GetAll().Count(x => x.Id == o.Id) }).ToList();
             var sysTests = GetAll();
             var sysUserMods3 = _defaultTableDbContext.Set<SysTest>()
+                // .AsRoute(op=>
+                // {
+                //     op.TryCreateOrAddMustTail<SysTest>(new[] { "00" });
+                // })
                 .Select(o => new ssss(){ Id = o.Id, C = sysTests.Count(x => x.Id == o.Id) }).ToList();
             var resultX = await _defaultTableDbContext.Set<SysUserMod>()
                     .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
@@ -446,5 +452,22 @@ namespace Sample.MySql.Controllers
             // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
             return Ok();
         }
+
+
+        // public void batachSave()
+        // {
+        //     var objects = new List<List<object>>();
+        //     foreach (List<object> o in objects)
+        //     {
+        //         Task.Run(()=>
+        //         {
+        //             using (var serviceScope = _serviceProvider.CreateScope())
+        //             {
+        //                 var asyncBatchService = serviceScope.ServiceProvider.GetService<AsyncBatchService>();
+        //                 asyncBatchService.SaveInOtherThread(o);
+        //             }
+        //         });
+        //     }
+        // }
     }
 }

@@ -23,6 +23,15 @@ namespace Sample.MySql.DbContexts
 
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
+            var key = options.Extensions
+                .OrderBy(e => e.GetType().Name)
+                .Select(o =>
+                {
+                    Console.WriteLine(o.GetType().Name);
+                    return o;
+                })
+                .Aggregate(0L, (t, e) => (t * 397) ^ ((long)e.GetType().GetHashCode() * 397) ^ e.Info.GetServiceProviderHashCode());
+            Console.WriteLine("key:"+key);
             //切记不要在构造函数中使用会让模型提前创建的方法
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //Database.SetCommandTimeout(30000);

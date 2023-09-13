@@ -34,11 +34,12 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         private readonly ITableRouteManager _tableRouteManager;
         private readonly IEntityMetadataManager _entityMetadataManager;
         private readonly IDataSourceRouteManager _dataSourceRouteManager;
+
         private EnumeratorStreamMergeEngineFactory(StreamMergeContext streamMergeContext)
         {
             _streamMergeContext = streamMergeContext;
             _shardingPageManager = streamMergeContext.ShardingRuntimeContext.GetShardingPageManager();
-            _tableRouteManager =streamMergeContext.ShardingRuntimeContext.GetTableRouteManager();
+            _tableRouteManager = streamMergeContext.ShardingRuntimeContext.GetTableRouteManager();
             _entityMetadataManager = streamMergeContext.ShardingRuntimeContext.GetEntityMetadataManager();
             _dataSourceRouteManager = streamMergeContext.ShardingRuntimeContext.GetDataSourceRouteManager();
         }
@@ -52,6 +53,7 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
         {
             return _dataSourceRouteManager.GetRoute(entityType);
         }
+
         public IStreamEnumerable<TEntity> GetStreamEnumerable()
         {
             if (_streamMergeContext.IsRouteNotMatch())
@@ -84,7 +86,8 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
             //未开启系统分表或者本次查询涉及多张分表
-            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingEntityQuery() && _shardingPageManager.Current != null)
+            if (_streamMergeContext.IsPaginationQuery() && _streamMergeContext.IsSingleShardingEntityQuery() &&
+                _shardingPageManager.Current != null)
             {
                 //获取虚拟表判断是否启用了分页配置
                 var shardingEntityType = _streamMergeContext.GetSingleShardingEntityType();
@@ -114,7 +117,6 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         private IStreamEnumerable<TEntity> DoNoOrderAppendEnumeratorStreamMergeEngine(Type shardingEntityType)
         {
-
             var isShardingDataSource = _entityMetadataManager.IsShardingDataSource(shardingEntityType);
             var isShardingTable = _entityMetadataManager.IsShardingTable(shardingEntityType);
             PaginationSequenceConfig dataSourceSequenceOrderConfig = null;
@@ -124,28 +126,36 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 var virtualDataSourceRoute = GetRoute(shardingEntityType);
                 if (virtualDataSourceRoute.EnablePagination)
                 {
-                    dataSourceSequenceOrderConfig = virtualDataSourceRoute.PaginationMetadata.PaginationConfigs.OrderByDescending(o => o.AppendOrder)
-                        .FirstOrDefault(o => o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName));
+                    dataSourceSequenceOrderConfig = virtualDataSourceRoute.PaginationMetadata.PaginationConfigs
+                        .OrderByDescending(o => o.AppendOrder)
+                        .FirstOrDefault(o =>
+                            o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName));
                 }
-
             }
+
             if (isShardingTable)
             {
                 var tableRoute = _tableRouteManager.GetRoute(shardingEntityType);
                 if (tableRoute.EnablePagination)
                 {
-                    tableSequenceOrderConfig = tableRoute.PaginationMetadata.PaginationConfigs.OrderByDescending(o => o.AppendOrder)
-                        .FirstOrDefault(o => o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName));
+                    tableSequenceOrderConfig = tableRoute.PaginationMetadata.PaginationConfigs
+                        .OrderByDescending(o => o.AppendOrder)
+                        .FirstOrDefault(o =>
+                            o.AppendIfOrderNone && typeof(TEntity).ContainPropertyName(o.PropertyName));
                 }
             }
 
             var useSequenceEnumeratorMergeEngine = isShardingDataSource && (dataSourceSequenceOrderConfig != null ||
                                                                             (isShardingTable &&
-                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
+                                                                             !_streamMergeContext.IsCrossDataSource)) ||
+                                                   (!isShardingDataSource && isShardingTable &&
+                                                    tableSequenceOrderConfig != null);
 
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new AppendOrderSequenceShardingEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults);
+                return new AppendOrderSequenceShardingEnumerable<TEntity>(_streamMergeContext,
+                    dataSourceSequenceOrderConfig, tableSequenceOrderConfig,
+                    _shardingPageManager.Current.RouteQueryResults);
             }
 
 
@@ -154,7 +164,6 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
 
         private IStreamEnumerable<TEntity> DoOrderSequencePaginationEnumeratorStreamMergeEngine(Type shardingEntityType)
         {
-
             var orderCount = _streamMergeContext.Orders.Count();
             var primaryOrder = _streamMergeContext.Orders.First();
             var isShardingDataSource = _entityMetadataManager.IsShardingDataSource(shardingEntityType);
@@ -170,33 +179,44 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
                 virtualDataSourceRoute = GetRoute(shardingEntityType);
                 if (virtualDataSourceRoute.EnablePagination)
                 {
-                    dataSourceSequenceOrderConfig = orderCount == 1 ? GetPaginationFullMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs, primaryOrder) : GetPaginationPrimaryMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs, primaryOrder);
+                    dataSourceSequenceOrderConfig = orderCount == 1
+                        ? GetPaginationFullMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs,
+                            primaryOrder)
+                        : GetPaginationPrimaryMatch(virtualDataSourceRoute.PaginationMetadata.PaginationConfigs,
+                            primaryOrder);
                 }
-
             }
+
             if (isShardingTable)
             {
                 tableRoute = _tableRouteManager.GetRoute(shardingEntityType);
                 if (tableRoute.EnablePagination)
                 {
-                    tableSequenceOrderConfig = orderCount == 1 ? GetPaginationFullMatch(tableRoute.PaginationMetadata.PaginationConfigs, primaryOrder) : GetPaginationPrimaryMatch(tableRoute.PaginationMetadata.PaginationConfigs, primaryOrder);
+                    tableSequenceOrderConfig = orderCount == 1
+                        ? GetPaginationFullMatch(tableRoute.PaginationMetadata.PaginationConfigs, primaryOrder)
+                        : GetPaginationPrimaryMatch(tableRoute.PaginationMetadata.PaginationConfigs, primaryOrder);
                 }
             }
 
             var useSequenceEnumeratorMergeEngine = isShardingDataSource && (dataSourceSequenceOrderConfig != null ||
                                                                             (isShardingTable &&
-                                                                             !_streamMergeContext.IsCrossDataSource)) || (!isShardingDataSource && isShardingTable && tableSequenceOrderConfig != null);
+                                                                             !_streamMergeContext.IsCrossDataSource)) ||
+                                                   (!isShardingDataSource && isShardingTable &&
+                                                    tableSequenceOrderConfig != null);
             if (useSequenceEnumeratorMergeEngine)
             {
-                return new SequenceShardingEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig, tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
+                return new SequenceShardingEnumerable<TEntity>(_streamMergeContext, dataSourceSequenceOrderConfig,
+                    tableSequenceOrderConfig, _shardingPageManager.Current.RouteQueryResults, primaryOrder.IsAsc);
             }
 
             var total = _shardingPageManager.Current.RouteQueryResults.Sum(o => o.QueryResult);
             if (isShardingDataSource)
             {
                 dataSourceUseReverse =
-                    virtualDataSourceRoute.EnablePagination && EntityDataSourceUseReverseShardingPage(virtualDataSourceRoute, total);
+                    virtualDataSourceRoute.EnablePagination &&
+                    EntityDataSourceUseReverseShardingPage(virtualDataSourceRoute, total);
             }
+
             if (isShardingTable)
             {
                 tableUseReverse =
@@ -211,51 +231,65 @@ namespace ShardingCore.Sharding.MergeEngines.EnumeratorStreamMergeEngines
             }
 
 
-
-
-
             return null;
         }
 
         private bool EntityDataSourceUseReverseShardingPage(IVirtualDataSourceRoute virtualDataSourceRoute, long total)
         {
-            if (virtualDataSourceRoute.PaginationMetadata.EnableReverseShardingPage && _streamMergeContext.Take.GetValueOrDefault() > 0)
+            if (virtualDataSourceRoute.PaginationMetadata.EnableReverseShardingPage &&
+                _streamMergeContext.Take.GetValueOrDefault() > 0)
             {
-                if (virtualDataSourceRoute.PaginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(), total))
+                if (virtualDataSourceRoute.PaginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(),
+                        total))
                 {
                     return true;
                 }
             }
+
             return false;
         }
+
         private bool EntityTableReverseShardingPage(IVirtualTableRoute tableRoute, long total)
         {
-            if (tableRoute.PaginationMetadata.EnableReverseShardingPage && _streamMergeContext.Take.GetValueOrDefault() > 0)
+            if (tableRoute.PaginationMetadata.EnableReverseShardingPage &&
+                _streamMergeContext.Take.GetValueOrDefault() > 0)
             {
                 if (tableRoute.PaginationMetadata.IsUseReverse(_streamMergeContext.Skip.GetValueOrDefault(), total))
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
-        private PaginationSequenceConfig GetPaginationFullMatch(ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
+        private PaginationSequenceConfig GetPaginationFullMatch(
+            ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
         {
             return paginationSequenceConfigs.FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
         }
-        private PaginationSequenceConfig GetPaginationPrimaryMatch(ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
+
+        private PaginationSequenceConfig GetPaginationPrimaryMatch(
+            ISet<PaginationSequenceConfig> paginationSequenceConfigs, PropertyOrder primaryOrder)
         {
-            return paginationSequenceConfigs.Where(o => o.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch)).FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
+            return paginationSequenceConfigs.Where(o => o.PaginationMatchEnum.HasFlag(PaginationMatchEnum.PrimaryMatch))
+                .FirstOrDefault(o => PaginationPrimaryMatch(o, primaryOrder));
         }
 
-        private bool PaginationPrimaryMatch(PaginationSequenceConfig paginationSequenceConfig, PropertyOrder propertyOrder)
+        private bool PaginationPrimaryMatch(PaginationSequenceConfig paginationSequenceConfig,
+            PropertyOrder propertyOrder)
         {
             if (propertyOrder.PropertyExpression != paginationSequenceConfig.PropertyName)
                 return false;
-
             if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Owner))
-                return _streamMergeContext.GetSingleShardingEntityType() == paginationSequenceConfig.OrderPropertyInfo.DeclaringType;
+            {
+                var singleShardingEntityType = _streamMergeContext.GetSingleShardingEntityType();
+                return paginationSequenceConfig.OrderPropertyInfo.DeclaringType != null &&
+                       (paginationSequenceConfig.OrderPropertyInfo.DeclaringType == singleShardingEntityType ||
+                        paginationSequenceConfig.OrderPropertyInfo.DeclaringType.IsAssignableFrom(
+                            singleShardingEntityType));
+            }
+
             if (paginationSequenceConfig.PaginationMatchEnum.HasFlag(PaginationMatchEnum.Named))
                 return propertyOrder.PropertyExpression == paginationSequenceConfig.PropertyName;
             return false;

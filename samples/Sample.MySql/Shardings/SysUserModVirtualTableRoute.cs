@@ -1,5 +1,7 @@
 using Sample.MySql.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.VirtualRoutes;
+using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
 using ShardingCore.VirtualRoutes.Mods;
 
 namespace Sample.MySql.Shardings
@@ -16,10 +18,20 @@ namespace Sample.MySql.Shardings
         {
         }
 
+
         public override void Configure(EntityMetadataTableBuilder<SysUserMod> builder)
         {
             builder.ShardingProperty(o => o.Id);
         }
 
+        // protected override List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
+        // {
+        //     //拦截
+        //     if (shardingRouteUnits.Count > 10)
+        //     {
+        //         return shardingRouteUnits.Take(10).ToList();
+        //     }
+        //     return base.AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
+        // }
     }
 }

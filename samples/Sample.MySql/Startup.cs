@@ -130,24 +130,27 @@ namespace Sample.MySql
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false;
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
-
+                    o.UseExecutorDbContextConfigure(op =>
+                    {
+                        
+                    });
                     o.UseShardingQuery((conStr, builder) =>
                     {
-                        var logger = sp.ApplicationServiceProvider.GetService<ILogger<Startup>>();
-                        logger.LogInformation(conStr);
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                        // var logger = sp.ApplicationServiceProvider.GetService<ILogger<Startup>>();
+                        // logger.LogInformation(conStr);
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
                             // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                            .UseLoggerFactory(loggerFactory1)
-                            .EnableSensitiveDataLogging();
+                            // .UseLoggerFactory(loggerFactory1)
+                            // .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.UseShardingTransaction((connection, builder) =>
                     {
                         builder
-                            .UseMySql(connection, new MySqlServerVersion(new Version()))
-                            // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                            .UseLoggerFactory(loggerFactory1)
-                            .EnableSensitiveDataLogging();
+                            .UseMySql(connection, new MySqlServerVersion(new Version()));
+                        // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                        // .UseLoggerFactory(loggerFactory1)
+                        // .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
                     o.AddDefaultDataSource("ds0",
