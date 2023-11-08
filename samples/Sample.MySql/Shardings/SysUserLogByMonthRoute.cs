@@ -57,13 +57,11 @@ namespace Sample.MySql.Shardings
         protected override List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         {
             Console.WriteLine("AfterShardingRouteUnitFilter:"+shardingRouteUnits.Count);
+            if (shardingRouteUnits.Count > 10)//如果本次命中表过多
+            {
+                return shardingRouteUnits.Take(10).ToList();//自己排序截断选择最新的10张自己加orderBy
+            }
             return base.AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
-        }
-
-        public override Func<string, bool> GetRouteFilter(object shardingKey, ShardingOperatorEnum shardingOperator, string shardingPropertyName)
-        {
-            Console.WriteLine(1);
-            return base.GetRouteFilter(shardingKey, shardingOperator, shardingPropertyName);
         }
     }
 }

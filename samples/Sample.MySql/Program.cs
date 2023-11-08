@@ -13,6 +13,8 @@ namespace Sample.MySql
     {
         public static void Main(string[] args)
         {
+            var id = Guid.NewGuid().ToString("n");
+            Console.WriteLine(id);
             CreateHostBuilder(args).Build().Run();
         }
 

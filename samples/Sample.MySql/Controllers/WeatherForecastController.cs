@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using MySqlConnector;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
@@ -453,6 +455,34 @@ namespace Sample.MySql.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get17()
+        {
+            var sysUserMods = await _defaultTableDbContext.SysUserMod.AsNoTracking()
+                .Select(o => new SysUserMod()
+                {
+                    Name = o.Name,
+                    Age = o.Age
+                }).OrderBy(x => EF.Property<object>(x, "Name")).ToListAsync();
+
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok(sysUserMods);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get18()
+        {
+            var sysUserMods = await _defaultTableDbContext.SysUserMod.AsNoTracking().GroupBy(o => o.Age)
+                .Select(o=>new
+                {
+                    Age=o.Key
+                })
+                .CountAsync();
+     
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok(sysUserMods);
+        }
 
         // public void batachSave()
         // {
@@ -469,5 +499,25 @@ namespace Sample.MySql.Controllers
         //         });
         //     }
         // }
+
+        public void get11()
+        {
+            var mySqlConnection = new MySqlConnection("链接字符串");
+            var dbContextOptions1 = new DbContextOptionsBuilder<UnShardingDbContext>().UseMySql(mySqlConnection,new MySqlServerVersion(new Version()),b=>
+            {
+                b.EnableRetryOnFailure(10, TimeSpan.FromSeconds(10), null);
+            }).Options;
+            var dbContextOptions2 = new DbContextOptionsBuilder<UnShardingDbContext>().UseMySql(mySqlConnection,new MySqlServerVersion(new Version())).Options;
+            var unShardingDbContext1 = new UnShardingDbContext(dbContextOptions1);//映射到202301模型
+            var unShardingDbContext2 = new UnShardingDbContext(dbContextOptions2);//映射到202302模型
+            // unShardingDbContext2.Database.CreateExecutionStrategy()
+            var dbContextTransaction = unShardingDbContext1.Database.BeginTransaction();
+            unShardingDbContext2.Database.UseTransaction(dbContextTransaction.GetDbTransaction());
+            //unShardingDbContext1.add()
+            //unShardingDbContext2.add()
+            unShardingDbContext1.SaveChanges();
+            unShardingDbContext2.SaveChanges();
+            dbContextTransaction.Commit();
+        }
     }
 }

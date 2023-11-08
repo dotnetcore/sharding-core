@@ -86,15 +86,47 @@ namespace ShardingCore.Core.Internal.Visitors
                             expression = orderMemberConvertExpression;
                         }
                     }
-                    if (expression == null)
-                        throw new NotSupportedException("sharding order not support ");
+
+                    Type orderOwnerType = null;
                     List<string> properties = new List<string>();
-                    GetPropertyInfo(properties, expression);
+                    if (expression != null)
+                    {
+                        GetPropertyInfo(properties, expression);
+                        orderOwnerType = expression.Member.DeclaringType;
+                    }
+                    else
+                    {
+                        if(orderbody.NodeType == ExpressionType.Call && orderbody is MethodCallExpression methodCallExpression)
+                        {
+                            if (methodCallExpression.Method.DeclaringType == typeof(Microsoft.EntityFrameworkCore.EF))
+                            {
+                                if (methodCallExpression.Arguments.Count != 2)
+                                {
+                                    throw new NotSupportedException("sharding order EF.Property(o,property) not support,arguments count != 2"); 
+                                }
+                                orderOwnerType = methodCallExpression.Arguments[0].Type;
+                                if (methodCallExpression.Arguments[1] is ConstantExpression propertyConstantExpression)
+                                {
+                                    properties.Add(propertyConstantExpression.Value.ToString());
+                                }
+                                else
+                                {
+                                    throw new NotSupportedException("sharding order EF.Property(o,property) not support,arguments[1] is not ConstantExpression");  
+                                }
+                            }
+                        }
+
+                        if (properties.Count == 0)
+                        {
+                            throw new NotSupportedException("sharding order not support "); 
+                        }
+                    }
+
                     if (!properties.Any())
                         throw new NotSupportedException("sharding order only support property expression");
                     properties.Reverse();
-                    var propertyExpression = string.Join(".", properties);
-                    _orderByContext.PropertyOrders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy), expression.Member.DeclaringType));
+                    var propertyExpression =properties.Count==1?properties[0]: string.Join(".", properties);
+                    _orderByContext.PropertyOrders.AddFirst(new PropertyOrder(propertyExpression, method.Name == nameof(Queryable.OrderBy) || method.Name == nameof(Queryable.ThenBy), orderOwnerType));
 
                 }
             }

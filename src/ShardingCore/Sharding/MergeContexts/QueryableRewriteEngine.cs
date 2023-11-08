@@ -59,7 +59,7 @@ namespace ShardingCore.Sharding.MergeContexts
             var orders = orderByContext.PropertyOrders;
 
             var combineQueryable = mergeQueryCompilerContext.GetQueryCombineResult().GetCombineQueryable();
-            
+
             //去除分页,获取前Take+Skip数量
             var reWriteQueryable = combineQueryable;
             if (take.HasValue || skip.HasValue)
@@ -86,6 +86,7 @@ namespace ShardingCore.Sharding.MergeContexts
                 //group字段不可以为空
                 var selectGroupKeyProperties =
                     selectContext.SelectProperties.Where(o => !(o is SelectAggregateProperty)).ToArray();
+
                 if (selectGroupKeyProperties.IsEmpty())
                 {
                     throw new ShardingCoreInvalidOperationException(
