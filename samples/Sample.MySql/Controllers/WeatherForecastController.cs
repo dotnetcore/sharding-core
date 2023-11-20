@@ -447,6 +447,8 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get16()
         {
+            _defaultTableDbContext.ReadWriteSeparationWriteOnly();
+            
             var sysUserMod = await _defaultTableDbContext.Set<SysUserMod>().FirstOrDefaultAsync();
             sysUserMod.Age = new Random().Next(1,999);
             await _defaultTableDbContext.SaveChangesAsync();
@@ -478,6 +480,18 @@ namespace Sample.MySql.Controllers
                     Age=o.Key
                 })
                 .CountAsync();
+     
+            // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
+            // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();
+            return Ok(sysUserMods);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Get20()
+        {
+            var dateTime = new DateTime(2022,1,1);
+            var queryable = _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Time>dateTime).Select(o=>o.Id);
+            var sysUserMods = await _defaultTableDbContext.SysUserMod.AsNoTracking()
+                .Where(o => queryable.Contains(o.Id)).ToListAsync();
      
             // var sysUserMods1 = await _defaultTableDbContext.Set<SysUserMod>().FromSqlRaw("select * from SysUserMod where id='2'").ToListAsync();
             // var sysUserMods2 = await _defaultTableDbContext.Set<SysTest>().FromSqlRaw("select * from SysTest where id='2'").ToListAsync();

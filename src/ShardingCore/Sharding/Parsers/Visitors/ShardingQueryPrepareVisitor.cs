@@ -25,7 +25,6 @@ namespace ShardingCore.Sharding.Parsers.Visitors
     /// Email: 326308290@qq.com
     internal class ShardingQueryPrepareVisitor : ExpressionVisitor
     {
-        private readonly IShardingDbContext _shardingDbContext;
         private bool isNotSupport;
         private ShardingQueryableUseConnectionModeOptions shardingQueryableUseConnectionModeOptions;
         private ShardingQueryableAsRouteOptions shardingQueryableAsRouteOptions;
@@ -41,9 +40,12 @@ namespace ShardingCore.Sharding.Parsers.Visitors
 
         public ShardingQueryPrepareVisitor(IShardingDbContext shardingDbContext)
         {
-            _shardingDbContext = shardingDbContext;
             _trackerManager = ((DbContext)shardingDbContext).GetShardingRuntimeContext()
                 .GetTrackerManager();
+        }
+        public ShardingQueryPrepareVisitor(ITrackerManager trackerManager)
+        {
+            _trackerManager = trackerManager;
         }
         public ShardingPrepareResult GetShardingPrepareResult()
         {
@@ -108,7 +110,13 @@ namespace ShardingCore.Sharding.Parsers.Visitors
                     object value = fieldInfo.GetValue(container);
                     if (value is IQueryable queryable)
                     {
-                        TryAddShardingEntities(queryable.ElementType, queryable);
+                        var shardingQueryPrepareVisitor = new ShardingQueryPrepareVisitor(_trackerManager);
+                        shardingQueryPrepareVisitor.Visit(queryable.Expression);
+                        var shardingPrepareResult = shardingQueryPrepareVisitor.GetShardingPrepareResult();
+                        foreach (var keyValuePair in shardingPrepareResult.QueryEntities)
+                        {
+                            TryAddShardingEntities(keyValuePair.Key, keyValuePair.Value??queryable);
+                        }
                     }
                     //return Expression.Constant(value);
                 }
@@ -193,6 +201,17 @@ namespace ShardingCore.Sharding.Parsers.Visitors
                         .Select(o => (ShardingQueryableAsSequenceOptions)o.Value)
                         .Last();
                     return node.Arguments[0];
+                }
+                else
+                {
+                    for (var i = 0; i < node.Arguments.Count; i++)
+                    {
+                        var nodeArgument = node.Arguments[i];
+                        if (typeof(IQueryable).IsAssignableFrom(nodeArgument.Type))
+                        {
+                            Visit(nodeArgument);
+                        }
+                    }
                 }
             }
 
