@@ -121,7 +121,7 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ContainsAsyncInMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);
 
-#if EFCORE7
+#if EFCORE7|| EFCORE8
                 case nameof(RelationalQueryableExtensions.ExecuteUpdate):
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteUpdateAsyncMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);

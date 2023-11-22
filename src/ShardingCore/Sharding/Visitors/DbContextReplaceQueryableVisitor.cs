@@ -173,7 +173,7 @@ namespace ShardingCore.Core.Internal.Visitors
     }
 #endif
 
-#if EFCORE5 || EFCORE6 ||EFCORE7
+#if EFCORE5 || EFCORE6 ||EFCORE7 ||EFCORE8
     internal class DbContextReplaceQueryableVisitor : DbContextInnerMemberReferenceReplaceQueryableVisitor
     {
         private readonly DbContext _dbContext;
@@ -191,12 +191,12 @@ namespace ShardingCore.Core.Internal.Visitors
                 var dbContextDependencies =
                     typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as
                         IDbContextDependencies;
-#if !EFCORE7
+#if !EFCORE7&& !EFCORE8
                 var targetIQ =
                     (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource,
                         queryRootExpression.EntityType.ClrType);
 #endif
-#if EFCORE7
+#if EFCORE7|| EFCORE8
 
                 var targetIQ =
                     (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource,
@@ -209,12 +209,12 @@ namespace ShardingCore.Core.Internal.Visitors
                 RootIsVisit = true;
                 if (queryRootExpression is FromSqlQueryRootExpression fromSqlQueryRootExpression)
                 {
-#if !EFCORE7
+#if !EFCORE7 && !EFCORE8
                     var sqlQueryRootExpression = new FromSqlQueryRootExpression(newQueryable.Provider as IAsyncQueryProvider,
                         queryRootExpression.EntityType, fromSqlQueryRootExpression.Sql,
                         fromSqlQueryRootExpression.Argument);
 #endif
-#if EFCORE7
+#if EFCORE7 || EFCORE8
                     var sqlQueryRootExpression = new FromSqlQueryRootExpression(newQueryable.Provider as IAsyncQueryProvider,
                         fromSqlQueryRootExpression.EntityType, fromSqlQueryRootExpression.Sql,
                         fromSqlQueryRootExpression.Argument);

@@ -1,4 +1,4 @@
-#if EFCORE7
+#if EFCORE7 || EFCORE8
 using Microsoft.EntityFrameworkCore.Migrations;
 using ShardingCore.Core.RuntimeContexts;
 

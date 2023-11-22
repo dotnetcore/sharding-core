@@ -1,4 +1,4 @@
-#if EFCORE7
+#if EFCORE7 || EFCORE8
 using System;
 using System.Linq;
 using System.Linq.Expressions;
