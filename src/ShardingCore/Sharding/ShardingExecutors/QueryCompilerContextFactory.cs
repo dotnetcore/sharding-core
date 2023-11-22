@@ -119,7 +119,7 @@ namespace ShardingCore.Sharding.ShardingExecutors
                     case nameof(Queryable.LongCount):
                     case nameof(Queryable.Any):
                         return _whereQueryableCombine;
-#if EFCORE7
+#if EFCORE7|| EFCORE8
                     case nameof(RelationalQueryableExtensions.ExecuteUpdate):
                         return _executeUpdateQueryableCombine;
                     case nameof(RelationalQueryableExtensions.ExecuteDelete):

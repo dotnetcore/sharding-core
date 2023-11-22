@@ -1,5 +1,5 @@
 
-#if  EFCORE7
+#if  EFCORE7 || EFCORE8
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
