@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ShardingCore.Core.DbContextTypeAwares;
 using ShardingCore.Core.ServiceProviders;
 
@@ -15,15 +16,19 @@ namespace ShardingCore.Core.DbContextOptionBuilderCreator
             _shardingProvider = shardingProvider;
             _dbContextTypeAware = dbContextTypeAware;
         }
-        public DbContextOptionsBuilder CreateDbContextOptionBuilder()
+        public DbContextOptionsBuilder CreateDbContextOptionBuilder(DbContext shellDbContext)
         {
             var dbContextType = _dbContextTypeAware.GetContextType();
             Type type = typeof(DbContextOptionsBuilder<>);
             type = type.MakeGenericType(dbContextType);
             var dbContextOptionsBuilder = (DbContextOptionsBuilder)Activator.CreateInstance(type);
-            if (_shardingProvider.ApplicationServiceProvider != null)
+            if (dbContextOptionsBuilder!=null&&shellDbContext != null)
             {
-                dbContextOptionsBuilder.UseApplicationServiceProvider(_shardingProvider.ApplicationServiceProvider);
+                var applicationServiceProvider = shellDbContext.GetService<IDbContextOptions>()?.FindExtension<CoreOptionsExtension>()?.ApplicationServiceProvider;
+                if (applicationServiceProvider != null)
+                {
+                    dbContextOptionsBuilder.UseApplicationServiceProvider(applicationServiceProvider);
+                }
             }
             return dbContextOptionsBuilder;
         }

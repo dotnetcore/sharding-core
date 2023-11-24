@@ -53,6 +53,7 @@ namespace Sample.MySql.DbContexts
             // modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
             // modelBuilder.Entity<TestMod>().ToTable(nameof(TestMod));
             // modelBuilder.Entity<SysTest>().ToTable("xxx");
+            
         }
 
 

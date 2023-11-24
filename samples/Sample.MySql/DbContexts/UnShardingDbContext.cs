@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Sample.MySql.Domain.Maps;
 
 namespace Sample.MySql.DbContexts

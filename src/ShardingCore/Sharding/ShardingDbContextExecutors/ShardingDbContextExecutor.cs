@@ -149,7 +149,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             CreateDbContextStrategyEnum strategy)
         {
             var dbContextOptionBuilder = _shardingRuntimeContext.GetDbContextOptionBuilderCreator()
-                .CreateDbContextOptionBuilder();
+                .CreateDbContextOptionBuilder(_shardingDbContext);
             var connectionString = _actualConnectionStringManager.GetConnectionString(dataSourceName,
                 CreateDbContextStrategyEnum.IndependentConnectionWrite == strategy);
             _virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder)

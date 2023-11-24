@@ -150,7 +150,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 //先创建dbcontext option builder
                 var dbContextOptionBuilderCreator = _shardingRuntimeContext.GetDbContextOptionBuilderCreator();
-                var dbContextOptionsBuilder = dbContextOptionBuilderCreator.CreateDbContextOptionBuilder()
+                var dbContextOptionsBuilder = dbContextOptionBuilderCreator.CreateDbContextOptionBuilder(_shardingShellDbContext)
                     .UseShardingOptions(_shardingRuntimeContext);
 
                 if (IsDefault)

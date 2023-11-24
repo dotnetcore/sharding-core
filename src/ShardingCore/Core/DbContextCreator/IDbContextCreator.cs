@@ -26,6 +26,7 @@ namespace ShardingCore.Core.DbContextCreator
         /// <param name="shardingDbContextOptions">返回dbcontext的配置路由等信息</param>
         /// <returns></returns>
          DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions);
+         // DbContext CreateDbContext(DbContext shellDbContext, ShardingDbContextOptions shardingDbContextOptions);
 
         /// <summary>
         /// 返回shell db context 框架如何获取db context

@@ -4,6 +4,6 @@ namespace ShardingCore.Core.DbContextOptionBuilderCreator
 {
     public interface IDbContextOptionBuilderCreator
     {
-        DbContextOptionsBuilder CreateDbContextOptionBuilder();
+        DbContextOptionsBuilder CreateDbContextOptionBuilder(DbContext shellDbContext);
     }
 }

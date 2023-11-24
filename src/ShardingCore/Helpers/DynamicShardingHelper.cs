@@ -127,7 +127,7 @@ namespace ShardingCore.Helpers
         {
             var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
             var shardingConfigOptions = shardingRuntimeContext.GetShardingConfigOptions();
-            var dbContextOptionBuilder =shardingRuntimeContext.GetDbContextOptionBuilderCreator().CreateDbContextOptionBuilder();
+            var dbContextOptionBuilder =shardingRuntimeContext.GetDbContextOptionBuilderCreator().CreateDbContextOptionBuilder(null);
             var connectionString = virtualDataSource.GetConnectionString(dataSourceName);
             virtualDataSource.UseDbContextOptionsBuilder(connectionString, dbContextOptionBuilder);
             shardingConfigOptions.ShardingMigrationConfigure?.Invoke(dbContextOptionBuilder);

@@ -154,6 +154,11 @@ namespace Sample.MySql
                         // .EnableSensitiveDataLogging();
                         //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     });
+                    o.UseExecutorDbContextConfigure(builder =>
+                    {
+                        builder
+                            .AddInterceptors(new MySaveChangeInterceptor());
+                    });
                     o.AddDefaultDataSource("ds0",
                         "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     o.AddExtraDataSource(sp => new Dictionary<string, string>()
@@ -168,6 +173,7 @@ namespace Sample.MySql
                 }).ReplaceService<IModelCacheLockerProvider, DicModelCacheLockerProvider>()
                 .ReplaceService<IDataSourceInitializer, DataSourceInitializer>()
                 .AddShardingCore();
+            services.AddScoped<MyCurrentUser>();
             // services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension
             //     .UseMutliDefaultSharding<DefaultShardingDbContext>);
             // services.AddShardingDbContext<DefaultShardingDbContext>()
