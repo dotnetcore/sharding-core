@@ -79,7 +79,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore7", "src7\Shard
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src7", "src7", "{A5321A3E-8539-4E2A-889C-8E91989EECBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test7x", "src\ShardingCore.Test7x\ShardingCore.Test7x.csproj", "{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test7x", "test\ShardingCore.Test7x\ShardingCore.Test7x.csproj", "{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
