@@ -191,7 +191,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 var dbContextDependencies =
                     typeof(DbContext).GetTypePropertyValue(_dbContext, "DbContextDependencies") as
                         IDbContextDependencies;
-#if !EFCORE7&& !EFCORE8
+#if EFCORE5 || EFCORE6
                 var targetIQ =
                     (IQueryable)((IDbSetCache)_dbContext).GetOrAddSet(dbContextDependencies.SetSource,
                         queryRootExpression.EntityType.ClrType);
@@ -209,7 +209,7 @@ namespace ShardingCore.Core.Internal.Visitors
                 RootIsVisit = true;
                 if (queryRootExpression is FromSqlQueryRootExpression fromSqlQueryRootExpression)
                 {
-#if !EFCORE7 && !EFCORE8
+#if EFCORE5 || EFCORE6
                     var sqlQueryRootExpression = new FromSqlQueryRootExpression(newQueryable.Provider as IAsyncQueryProvider,
                         queryRootExpression.EntityType, fromSqlQueryRootExpression.Sql,
                         fromSqlQueryRootExpression.Argument);
