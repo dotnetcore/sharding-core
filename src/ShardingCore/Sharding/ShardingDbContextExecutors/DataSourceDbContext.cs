@@ -48,7 +48,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <summary>
         /// dbcontext 创建接口
         /// </summary>
-        private readonly IDbContextCreator _dbContextCreator;
+        private readonly IRouteTailDbContextCreator _routeTailDbContextCreator;
 
         /// <summary>
         /// 实际的链接字符串管理者 用来提供查询和插入dbcontext的创建链接的获取
@@ -110,12 +110,12 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         /// <param name="dataSourceName"></param>
         /// <param name="isDefault"></param>
         /// <param name="shardingShellDbContext"></param>
-        /// <param name="dbContextCreator"></param>
+        /// <param name="routeTailDbContextCreator"></param>
         /// <param name="actualConnectionStringManager"></param>
         public DataSourceDbContext(string dataSourceName,
             bool isDefault,
             DbContext shardingShellDbContext,
-            IDbContextCreator dbContextCreator,
+            IRouteTailDbContextCreator routeTailDbContextCreator,
             ActualConnectionStringManager actualConnectionStringManager)
         {
             DataSourceName = dataSourceName;
@@ -124,7 +124,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _shardingRuntimeContext = shardingShellDbContext.GetShardingRuntimeContext();
             DbContextType = shardingShellDbContext.GetType();
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
-            _dbContextCreator = dbContextCreator;
+            _routeTailDbContextCreator = routeTailDbContextCreator;
             _actualConnectionStringManager = actualConnectionStringManager;
         }
 
@@ -203,7 +203,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             var cacheKey = routeTail.GetRouteTailIdentity();
             if (!_dataSourceDbContexts.TryGetValue(cacheKey, out var dbContext))
             {
-                dbContext = _dbContextCreator.CreateDbContext(_shardingShellDbContext,
+                dbContext = _routeTailDbContextCreator.CreateDbContext(_shardingShellDbContext,
                     CreateShareDbContextOptionsBuilder(), routeTail);
                 _dataSourceDbContexts.Add(cacheKey, dbContext);
                 ShardingDbTransaction();

@@ -26,7 +26,7 @@
         <Compile Include="..\..\src\ShardingCore\**\*.cs" />
         <Compile Remove="..\..\src\ShardingCore\obj\**" />
         <Compile Remove="..\..\src\ShardingCore\bin\**" />
-        <Compile Update="..\..\src\ShardingCore\Core\DbContextCreator\IAsyncDbContextCreator.cs">
+        <Compile Update="..\..\src\ShardingCore\Core\DbContextCreator\IRouteTailDbContextCreator.cs">
           <Link>Core\DbContextCreator\IAsyncDbContextCreator.cs</Link>
         </Compile>
     </ItemGroup>

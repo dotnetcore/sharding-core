@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.Domain.Maps;
+using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.VirtualRoutes.TableRoutes.RouteTails.Abstractions;
 using ShardingCore.EFCores;
 using ShardingCore.Extensions;
@@ -23,6 +24,8 @@ namespace Sample.MySql.DbContexts
 
         public DefaultShardingDbContext(DbContextOptions<DefaultShardingDbContext> options) : base(options)
         {
+            RouteTail = RouteTailContextHelper.RouteTail;
+            Database.SetCommandTimeout(1000);
             var key = options.Extensions
                 .OrderBy(e => e.GetType().Name)
                 .Select(o =>
@@ -30,8 +33,10 @@ namespace Sample.MySql.DbContexts
                     Console.WriteLine(o.GetType().Name);
                     return o;
                 })
-                .Aggregate(0L, (t, e) => (t * 397) ^ ((long)e.GetType().GetHashCode() * 397) ^ e.Info.GetServiceProviderHashCode());
-            Console.WriteLine("key:"+key);
+                .Aggregate(0L,
+                    (t, e) => (t * 397) ^ ((long)e.GetType().GetHashCode() * 397) ^
+                              e.Info.GetServiceProviderHashCode());
+            Console.WriteLine("key:" + key);
             //切记不要在构造函数中使用会让模型提前创建的方法
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //Database.SetCommandTimeout(30000);
@@ -49,11 +54,10 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysTestMap());
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
 
-             modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
+            modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
             // modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
             // modelBuilder.Entity<TestMod>().ToTable(nameof(TestMod));
             // modelBuilder.Entity<SysTest>().ToTable("xxx");
-            
         }
 
 
@@ -80,7 +84,6 @@ namespace Sample.MySql.DbContexts
 
             return expression;
         }
-
         public IRouteTail RouteTail { get; set; }
     }
 }

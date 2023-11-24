@@ -69,7 +69,7 @@ namespace ShardingCore.EFCores
             List<MigrateUnit> migrateUnits)
         {
             var shardingMigrationManager = shardingRuntimeContext.GetShardingMigrationManager();
-            var dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
+            var routeTailDbContextCreator = shardingRuntimeContext.GetRouteTailDbContextCreator();
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
             var migrateTasks = migrateUnits.Select(migrateUnit =>
             {
@@ -82,7 +82,7 @@ namespace ShardingCore.EFCores
                         var dbContextOptions = DynamicShardingHelper.CreateShellDbContextOptions(shardingRuntimeContext,
                             migrateUnit.DataSourceName);
 
-                        using (var dbContext = dbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,
+                        using (var dbContext = routeTailDbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,
                                    new ShardingDbContextOptions(dbContextOptions,
                                        routeTailFactory.Create(string.Empty, false))))
                         {

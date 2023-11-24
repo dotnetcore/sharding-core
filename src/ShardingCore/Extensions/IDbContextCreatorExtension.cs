@@ -17,10 +17,10 @@ namespace ShardingCore.Extensions
     /// Email: 326308290@qq.com
     public static class IDbContextCreatorExtension
     {
-        public static DbContext CreateDbContext(this IDbContextCreator dbContextCreator,DbContext mainDbContext, DbContextOptions dbContextOptions,
+        public static DbContext CreateDbContext(this IRouteTailDbContextCreator routeTailDbContextCreator,DbContext mainDbContext, DbContextOptions dbContextOptions,
             IRouteTail routeTail)
         {
-            return dbContextCreator.CreateDbContext(mainDbContext,
+            return routeTailDbContextCreator.CreateDbContext(mainDbContext,
                 new ShardingDbContextOptions(dbContextOptions, routeTail));
         }
     }

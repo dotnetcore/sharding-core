@@ -91,7 +91,7 @@ namespace ShardingCore.Helpers
         private static async Task ExecuteMigrateUnitsAsync(IShardingRuntimeContext shardingRuntimeContext,List<MigrateUnit> migrateUnits,string targetMigration=null,CancellationToken cancellationToken = new CancellationToken())
         {
             var shardingMigrationManager = shardingRuntimeContext.GetShardingMigrationManager();
-            var dbContextCreator = shardingRuntimeContext.GetDbContextCreator();
+            var routeTailDbContextCreator = shardingRuntimeContext.GetRouteTailDbContextCreator();
             var routeTailFactory = shardingRuntimeContext.GetRouteTailFactory();
             var migrateTasks = migrateUnits.Select(migrateUnit =>
             {
@@ -104,7 +104,7 @@ namespace ShardingCore.Helpers
                         var dbContextOptions = CreateShellDbContextOptions(shardingRuntimeContext,
                             migrateUnit.DataSourceName);
 
-                        using (var dbContext = dbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,
+                        using (var dbContext = routeTailDbContextCreator.CreateDbContext(migrateUnit.ShellDbContext,
                                    new ShardingDbContextOptions(dbContextOptions,
                                        routeTailFactory.Create(string.Empty, false))))
                         {

@@ -171,6 +171,13 @@ namespace ShardingCore.Core.RuntimeContexts
             return _dbContextCreator ??= GetRequiredService<IDbContextCreator>();
         }
 
+
+        private IRouteTailDbContextCreator _routeTailDbContextCreator;
+        public IRouteTailDbContextCreator GetRouteTailDbContextCreator()
+        {
+            return _routeTailDbContextCreator ??= GetRequiredService<IRouteTailDbContextCreator>();
+        }
+
         private IEntityMetadataManager _entityMetadataManager;
 
         public IEntityMetadataManager GetEntityMetadataManager()
@@ -345,6 +352,7 @@ namespace ShardingCore.Core.RuntimeContexts
             GetTrackerManager();
             GetParallelTableManager();
             GetDbContextCreator();
+            GetRouteTailDbContextCreator();
             GetEntityMetadataManager();
             GetVirtualDataSource();
             GetDataSourceRouteManager();

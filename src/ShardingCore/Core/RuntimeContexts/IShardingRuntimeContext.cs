@@ -45,6 +45,7 @@ namespace ShardingCore.Core.RuntimeContexts
         ITrackerManager GetTrackerManager();
         IParallelTableManager GetParallelTableManager();
         IDbContextCreator GetDbContextCreator();
+        IRouteTailDbContextCreator GetRouteTailDbContextCreator();
         IEntityMetadataManager GetEntityMetadataManager();
         // IVirtualDataSourceManager GetVirtualDataSourceManager();
         IVirtualDataSource GetVirtualDataSource();

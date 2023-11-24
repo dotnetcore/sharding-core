@@ -54,7 +54,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         private readonly IVirtualDataSource _virtualDataSource;
         private readonly IDataSourceRouteManager _dataSourceRouteManager;
         private readonly ITableRouteManager _tableRouteManager;
-        private readonly IDbContextCreator _dbContextCreator;
+        private readonly IRouteTailDbContextCreator _routeTailDbContextCreator;
         private readonly IRouteTailFactory _routeTailFactory;
         private readonly ITrackerManager _trackerManager;
         private readonly ActualConnectionStringManager _actualConnectionStringManager;
@@ -90,7 +90,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             _virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             _dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
             _tableRouteManager = _shardingRuntimeContext.GetTableRouteManager();
-            _dbContextCreator = _shardingRuntimeContext.GetDbContextCreator();
+            _routeTailDbContextCreator = _shardingRuntimeContext.GetRouteTailDbContextCreator();
             _entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
             _routeTailFactory = _shardingRuntimeContext.GetRouteTailFactory();
             _trackerManager = _shardingRuntimeContext.GetTrackerManager();
@@ -108,7 +108,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
         {
             return _dbContextCaches.GetOrAdd(dataSourceName,
                 dsname => new DataSourceDbContext(dsname, _virtualDataSource.IsDefault(dsname), _shardingDbContext,
-                    _dbContextCreator, _actualConnectionStringManager));
+                    _routeTailDbContextCreator, _actualConnectionStringManager));
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace ShardingCore.Sharding.ShardingDbContextExecutors
             {
                 var parallelDbContextOptions = CreateParallelDbContextOptions(dataSourceName, strategy);
                  dbContext =
-                    _dbContextCreator.CreateDbContext(_shardingDbContext, parallelDbContextOptions, routeTail);
+                     _routeTailDbContextCreator.CreateDbContext(_shardingDbContext, parallelDbContextOptions, routeTail);
                 dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             }
             if (CreateDbContextAfter != null)

@@ -144,6 +144,7 @@ namespace ShardingCore
                 .TryAddSingleton<IVirtualDataSourceConfigurationParams, SimpleVirtualDataSourceConfigurationParams>();
             //分表dbcontext创建
             services.TryAddSingleton<IDbContextCreator, ActivatorDbContextCreator<TShardingDbContext>>();
+            services.TryAddSingleton<IRouteTailDbContextCreator, DefaultRouteTailDbContextCreator>();
             services.TryAddSingleton<IDbContextOptionBuilderCreator, ActivatorDbContextOptionBuilderCreator>();
 
 
