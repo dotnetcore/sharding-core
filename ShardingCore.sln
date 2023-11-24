@@ -79,6 +79,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShardingCore7", "src7\Shard
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src7", "src7", "{A5321A3E-8539-4E2A-889C-8E91989EECBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShardingCore.Test7x", "src\ShardingCore.Test7x\ShardingCore.Test7x.csproj", "{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +203,10 @@ Global
 		{A308D253-A072-40EC-AA97-15EE82BB8AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A308D253-A072-40EC-AA97-15EE82BB8AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A308D253-A072-40EC-AA97-15EE82BB8AAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC6C1017-69D5-44E0-8C4C-99B6F476FB55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -235,6 +241,7 @@ Global
 		{F0393C32-2285-4F47-AC61-C1BA1CAC269D} = {B11D7DF7-A907-407E-8BF1-35B430413557}
 		{3B5A4B03-5190-41A8-8E4B-F95A79A5C018} = {EDF8869A-C1E1-491B-BC9F-4A33F4DE1C73}
 		{A308D253-A072-40EC-AA97-15EE82BB8AAD} = {A5321A3E-8539-4E2A-889C-8E91989EECBD}
+		{FC6C1017-69D5-44E0-8C4C-99B6F476FB55} = {CC2C88C0-65F2-445D-BE78-973B840FE281}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C07A667-E8B4-43C7-8053-721584BAD291}

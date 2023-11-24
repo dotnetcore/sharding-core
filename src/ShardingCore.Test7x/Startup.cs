@@ -74,12 +74,12 @@ namespace ShardingCore.Test
                     //如何通过字符串查询创建DbContext
                     op.UseShardingQuery((conStr, builder) =>
                     {
-                        builder.UseSqlServer(conStr, o => o.UseCompatibilityLevel(120)).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(conStr).UseLoggerFactory(efLogger);
                     });
                     //如何通过事务创建DbContext
                     op.UseShardingTransaction((connection, builder) =>
                     {
-                        builder.UseSqlServer(connection, o => o.UseCompatibilityLevel(120)).UseLoggerFactory(efLogger);
+                        builder.UseSqlServer(connection).UseLoggerFactory(efLogger);
                     });
                     //添加默认数据源
                     op.AddDefaultDataSource("A",
