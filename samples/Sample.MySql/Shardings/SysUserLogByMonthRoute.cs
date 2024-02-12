@@ -7,6 +7,7 @@ using Sample.MySql.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.RouteRuleEngine;
+using ShardingCore.Helpers;
 using ShardingCore.VirtualRoutes.Months;
 
 namespace Sample.MySql.Shardings
@@ -41,27 +42,42 @@ namespace Sample.MySql.Shardings
             builder.ShardingProperty(o => o.Time);
         }
 
-        // protected override List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
-        // {
-        //     if (shardingRouteUnits.Count > 10)
-        //     {
-        //         _logger.LogInformation("截断前:"+string.Join(",",shardingRouteUnits.Select(o=>o.Tail)));
-        //         //这边你要自己做顺序处理阶段
-        //         var result= shardingRouteUnits.OrderByDescending(o=>o.Tail).Take(10).ToList();
-        //         _logger.LogInformation("截断后:"+string.Join(",",result.Select(o=>o.Tail)));
-        //         return result;
-        //     }
-        //     return base.AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
-        // }
-
-        protected override List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
+        protected override bool RouteIgnoreDataSource => false;
+        public override Func<string, bool> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
         {
-            Console.WriteLine("AfterShardingRouteUnitFilter:"+shardingRouteUnits.Count);
-            if (shardingRouteUnits.Count > 10)//如果本次命中表过多
+            var currentMonthFirstDay = ShardingCoreHelper.GetCurrentMonthFirstDay(DateTime.Now);
+            var matchDataSource = currentMonthFirstDay<shardingKey?"history":"current";
+            var t = TimeFormatToTail(shardingKey);
+            switch (shardingOperator)
             {
-                return shardingRouteUnits.Take(10).ToList();//自己排序截断选择最新的10张自己加orderBy
+                case ShardingOperatorEnum.GreaterThan:
+                case ShardingOperatorEnum.GreaterThanOrEqual:
+                    return tail =>
+                    {
+                        var strings = tail.Split(".");
+                        var ds = strings[0];
+                        var yyyyMM = strings[1];
+                        return matchDataSource==ds && String.Compare(yyyyMM, t, StringComparison.Ordinal) >= 0;
+                    };
+                case ShardingOperatorEnum.LessThan:
+                {
+                    var currentMonth = ShardingCoreHelper.GetCurrentMonthFirstDay(shardingKey);
+                    //处于临界值 o=>o.time < [2021-01-01 00:00:00] 尾巴20210101不应该被返回
+                    if (currentMonth == shardingKey)
+                        return tail => String.Compare(tail, t, StringComparison.Ordinal) < 0;
+                    return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
+                }
+                case ShardingOperatorEnum.LessThanOrEqual:
+                    return tail => String.Compare(tail, t, StringComparison.Ordinal) <= 0;
+                case ShardingOperatorEnum.Equal: return tail => tail == t;
+                default:
+                {
+#if DEBUG
+                    Console.WriteLine($"shardingOperator is not equal scan all table tail");
+#endif
+                    return tail => true;
+                }
             }
-            return base.AfterShardingRouteUnitFilter(dataSourceRouteResult, shardingRouteUnits);
         }
     }
 }

@@ -159,6 +159,12 @@ namespace Sample.MySql
                         builder
                             .AddInterceptors(new MySaveChangeInterceptor());
                     });
+                    o.AddDefaultDataSource("current",
+                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                    o.AddExtraDataSource(sp => new Dictionary<string, string>()
+                    {
+                        { "history", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;" }
+                    });
                     o.AddDefaultDataSource("ds0",
                         "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
                     o.AddExtraDataSource(sp => new Dictionary<string, string>()

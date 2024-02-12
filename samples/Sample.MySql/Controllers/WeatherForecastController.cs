@@ -1,12 +1,15 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
 using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
 using Sample.MySql.Shardings;
+using ShardingCore;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
@@ -63,14 +66,16 @@ namespace Sample.MySql.Controllers
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
     {
+        private readonly IShardingRuntimeContext<DefaultShardingDbContext> _defaultShardingRuntimeContext;
         private readonly IServiceProvider _serviceProvider;
         private readonly UnShardingDbContext _unShardingDbContext;
         private readonly DefaultShardingDbContext _defaultTableDbContext;
         private readonly IShardingRuntimeContext _shardingRuntimeContext;
         private readonly ABC _abc;
 
-        public WeatherForecastController(IServiceProvider serviceProvider,UnShardingDbContext unShardingDbContext,DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
+        public WeatherForecastController(IShardingRuntimeContext<DefaultShardingDbContext> defaultShardingRuntimeContext,IServiceProvider serviceProvider,UnShardingDbContext unShardingDbContext,DefaultShardingDbContext defaultTableDbContext,IShardingRuntimeContext shardingRuntimeContext)
         {
+            _defaultShardingRuntimeContext = defaultShardingRuntimeContext;
             _serviceProvider = serviceProvider;
             _unShardingDbContext = unShardingDbContext;
             _defaultTableDbContext = defaultTableDbContext;
@@ -80,6 +85,25 @@ namespace Sample.MySql.Controllers
 
         public IQueryable<SysTest> GetAll()
         {
+            var dbContextOptionsBuilder = new DbContextOptionsBuilder<DefaultShardingDbContext>();
+            var dbContextOptionBuilderCreator = _shardingRuntimeContext.GetDbContextOptionBuilderCreator();
+            dbContextOptionsBuilder.UseDefaultSharding<DefaultShardingDbContext>(_shardingRuntimeContext);
+            using (var dbContext = new DefaultShardingDbContext(dbContextOptionsBuilder.Options))
+            {
+                
+            }
+            
+
+
+            foreach (var dataSourceDbContext in _defaultTableDbContext.GetShardingExecutor().GetCurrentDbContexts())
+            {
+                foreach (var keyValuePair in dataSourceDbContext.Value.GetCurrentContexts())
+                {
+                    
+                }
+            }
+            ((IResettableService)_defaultTableDbContext).ResetState();
+            
             var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
             // dataSourceRouteManager.GetRoute()
             var routeManager = _shardingRuntimeContext.GetTableRouteManager();
@@ -96,8 +120,8 @@ namespace Sample.MySql.Controllers
             var tableRouteManager = routeManager;
             //系统的时间分片都会实现 ITailAppendable 如果不是系统的自定义的转成你自己的对象即可
             var tableRoute = tableRouteManager.GetRoute(typeof(SysUserMod));
-            var tails = tableRoute.GetTails();
             var virtualTableRoute = (ITailAppendable)tableRoute;
+            
             //一定要先在路由里面添加尾巴
             virtualTableRoute.Append("20220921");
             shardingTableCreator.CreateTable<SysUserMod>("ds0","20220921");
@@ -129,6 +153,7 @@ namespace Sample.MySql.Controllers
             // {
             //     
             // }
+            
             var dateTime = new DateTime(2021,1,1);
             var x211 = await (from ut in _defaultTableDbContext.Set<SysTest>().UseUnionAllMerge()
                     join uu in _defaultTableDbContext.Set<SysUserLogByMonth>()

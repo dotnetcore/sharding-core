@@ -16,6 +16,7 @@ namespace ShardingCore6x
         public string Payer { get; set; }
 
         public OrderStatusEnum OrderStatus { get; set; }
+        
     }
 
     public enum OrderStatusEnum

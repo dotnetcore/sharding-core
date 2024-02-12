@@ -106,6 +106,7 @@ namespace ShardingCore.Test
                         }
                     };
                     }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
+                   
                 })
                 .AddShardingCore();
         }

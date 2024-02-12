@@ -11,10 +11,15 @@ namespace Sample.MySql.Shardings
         {
             throw new NotImplementedException();
         }
-
-        public override List<string> GetAllDataSourceNames()
+            //只返回当前和历史
+        private  static readonly List<string> tails = new List<string>()
         {
-            throw new NotImplementedException();
+            "current",
+            "history"
+        };
+        public override List<string> GetAllDataSourceNames()
+        { 
+            return tails;
         }
 
         public override bool AddDataSourceName(string dataSourceName)
@@ -29,6 +34,7 @@ namespace Sample.MySql.Shardings
 
         public override Func<string, bool> GetRouteToFilter(DateTime shardingKey, ShardingOperatorEnum shardingOperator)
         {
+            //判断过滤查询历史还是现在
             throw new NotImplementedException();
         }
     }
