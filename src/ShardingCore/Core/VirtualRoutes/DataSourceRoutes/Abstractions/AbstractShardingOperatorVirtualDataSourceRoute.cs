@@ -35,6 +35,10 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
 
         public virtual object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
         {
+            if (EntityMetadata.IsMainShardingDataSourceKey(shardingPropertyName))
+            {
+                return ShardingKeyToDataSourceName(shardingKey);
+            }
             return shardingKey;
         }
 

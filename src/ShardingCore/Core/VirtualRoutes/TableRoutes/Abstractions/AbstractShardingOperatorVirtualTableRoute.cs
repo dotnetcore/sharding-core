@@ -40,8 +40,13 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             return sqlRouteUnits;
         }
 
+
         public virtual object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
         {
+            if (EntityMetadata.IsMainShardingTableKey(shardingPropertyName))
+            {
+                return ShardingKeyToTail(shardingKey);
+            }
             return shardingKey;
         }
 
