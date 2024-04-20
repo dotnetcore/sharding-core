@@ -30,6 +30,10 @@ builder.Services.AddShardingDbContext<DefaultDbContext>()
     })
     .UseConfig(o =>
     {
+        // o.CacheEntrySize;
+        // o.CacheModelLockConcurrencyLevel
+        //     o.CacheModelLockObjectSeconds
+        //         o.CacheItemPriority
         o.ThrowIfQueryRouteNotMatch = false;
         o.AddDefaultDataSource("ds0", "server=127.0.0.1;port=3306;database=shardingTest;userid=root;password=root;");
         o.UseShardingQuery((conn, b) =>

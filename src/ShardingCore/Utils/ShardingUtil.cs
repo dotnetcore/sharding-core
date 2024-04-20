@@ -34,10 +34,10 @@ namespace ShardingCore.Utils
         /// <param name="keyToTailExpression"></param>
         /// <param name="shardingTableRoute">sharding table or data source</param>
         /// <returns></returns>
-        public static RoutePredicateExpression GetRouteParseExpression(IQueryable queryable, EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum,string, Func<string, bool>> keyToTailExpression,bool shardingTableRoute)
+        public static RoutePredicateExpression GetRouteParseExpression(IQueryable queryable, EntityMetadata entityMetadata, Func<object, ShardingOperatorEnum,string, Func<string, bool>> keyToTailExpression,Func<object,string,object> compareValueByKey,bool shardingTableRoute)
         {
 
-            QueryableRouteShardingTableDiscoverVisitor visitor = new QueryableRouteShardingTableDiscoverVisitor(entityMetadata, keyToTailExpression, shardingTableRoute);
+            QueryableRouteShardingTableDiscoverVisitor visitor = new QueryableRouteShardingTableDiscoverVisitor(entityMetadata, keyToTailExpression,compareValueByKey, shardingTableRoute);
 
             visitor.Visit(queryable.Expression);
 

@@ -131,6 +131,7 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Getxx()
         {
+            
             var test = new Test();
             test.UtcTime=DateTime.Now;
           await  _defaultTableDbContext.AddAsync(test);
@@ -141,7 +142,7 @@ namespace Sample.MySql.Controllers
         public async Task<IActionResult> Get()
         {
             var s = Guid.NewGuid().ToString();
-            var page =await _defaultTableDbContext.Set<SysUserLogByMonth>().Where(o=>o.Id==s).OrderByDescending(o=>o.Time).ToShardingPageAsync(1,2);
+            // var page =await _defaultTableDbContext.Set<SysUserLogByMonth>().Include().ThenInclude().Where(o=>o.Id==s).OrderByDescending(o=>o.Time).ToShardingPageAsync(1,2);
             // var virtualDataSource = _shardingRuntimeContext.GetVirtualDataSource();
             // virtualDataSource.AddPhysicDataSource(new DefaultPhysicDataSource("2023", "xxxxxxxx", false));
             // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
@@ -570,6 +571,16 @@ namespace Sample.MySql.Controllers
             unShardingDbContext1.SaveChanges();
             unShardingDbContext2.SaveChanges();
             dbContextTransaction.Commit();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> get131()
+        {
+            var list = new List<string>();
+            var idList = Enumerable.Range(1,50000).Select(o=>o.ToString()).ToList();
+            var sysUserMods = _defaultTableDbContext.Set<SysUserMod>()
+                .Where(o=>idList.Contains(o.Id)).ToList();
+            return Ok();
         }
     }
 }

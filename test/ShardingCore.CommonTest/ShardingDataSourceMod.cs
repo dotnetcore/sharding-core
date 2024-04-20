@@ -24,6 +24,10 @@ namespace ShardingCore.CommonTest
             _allDataSources = Enumerable.Range(0, 10).Select(o => o.ToString()).ToList();
         }
 
+        public static  object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
+        {
+            return shardingKey;
+        }
         public static Func<string, bool> GetRouteFilter(object shardingValue, ShardingOperatorEnum shardingOperator,
             string propertyName)
         {
@@ -47,7 +51,7 @@ namespace ShardingCore.CommonTest
         private void TestId(IQueryable<TestEntity> queryable, string[] dataSourceNames)
         {
             var routePredicateExpression =
-                ShardingUtil.GetRouteParseExpression(queryable, _testEntityMetadata, GetRouteFilter, false);
+                ShardingUtil.GetRouteParseExpression(queryable, _testEntityMetadata, GetRouteFilter,GetCompareValueByShardingKey, false);
             Assert.NotNull(routePredicateExpression);
             var routePredicate = routePredicateExpression.GetRoutePredicate();
 

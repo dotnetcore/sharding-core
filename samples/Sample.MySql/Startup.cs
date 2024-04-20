@@ -226,7 +226,6 @@ namespace Sample.MySql
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.ApplicationServices.UseAutoTryCompensateTable();
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var unShardingDbContext = scope.ServiceProvider.GetService<UnShardingDbContext>();
@@ -236,6 +235,7 @@ namespace Sample.MySql
                 // var virtualTableRoute = (SysUserLogByMonthRoute)tableRouteManager.GetRoute(typeof(SysUserLogByMonth));
                 // virtualTableRoute.Append("2021");
             }
+            app.ApplicationServices.UseAutoTryCompensateTable();
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();

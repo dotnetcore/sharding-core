@@ -24,6 +24,15 @@ namespace Sample.MySql.Shardings
             builder.ShardingProperty(o => o.Id);
         }
 
+        public override object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
+        {
+            if ("Id".Equals(shardingPropertyName))
+            {
+                return ShardingKeyToTail(shardingKey);
+            }
+            return base.GetCompareValueByShardingKey(shardingKey, shardingPropertyName);
+        }
+
         // protected override List<TableRouteUnit> AfterShardingRouteUnitFilter(DataSourceRouteResult dataSourceRouteResult, List<TableRouteUnit> shardingRouteUnits)
         // {
         //     //拦截

@@ -51,6 +51,7 @@ namespace ShardingCore.Core.Internal.Visitors
 
         private readonly EntityMetadata _entityMetadata;
         private readonly Func<object, ShardingOperatorEnum, string, Func<string, bool>> _keyToTailWithFilter;
+        private readonly Func<object, string, object> _compareValueByKey;
 
         /// <summary>
         /// 是否是分表路由
@@ -63,10 +64,11 @@ namespace ShardingCore.Core.Internal.Visitors
         private RoutePredicateExpression _where = RoutePredicateExpression.Default;
 
         public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata,
-            Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter, bool shardingTableRoute)
+            Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter,Func<object,string,object> compareValueByKey, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _keyToTailWithFilter = keyToTailWithFilter;
+            _compareValueByKey = compareValueByKey;
             _shardingTableRoute = shardingTableRoute;
         }
 
@@ -378,8 +380,15 @@ namespace ShardingCore.Core.Internal.Visitors
 
                         if (arrayObject is IEnumerable enumerableObj)
                         {
+                            var compareSet = new HashSet<object>();
                             foreach (var shardingValue in enumerableObj)
                             {
+                                var compareValueByKey = _compareValueByKey(shardingValue,shardingPredicateResult.ShardingPropertyName);
+                                if (!compareSet.Add(compareValueByKey))
+                                {
+                                    continue;
+                                }
+
                                 var eq = _keyToTailWithFilter(shardingValue,
                                     @in ? ShardingOperatorEnum.Equal : ShardingOperatorEnum.NotEqual,
                                     shardingPredicateResult.ShardingPropertyName);

@@ -24,13 +24,18 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions
         protected override List<string> DoRouteWithPredicate(List<string> allDataSourceNames, IQueryable queryable)
         {
             //获取路由后缀表达式
-            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter, false);
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter,GetCompareValueByShardingKey, false);
             //表达式缓存编译
             // var filter = CachingCompile(routeParseExpression);
             var filter = routeParseExpression.GetRoutePredicate();
             //通过编译结果进行过滤
             var dataSources = allDataSourceNames.Where(o => filter(o)).ToList();
             return dataSources;
+        }
+
+        public virtual object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
+        {
+            return shardingKey;
         }
 
 

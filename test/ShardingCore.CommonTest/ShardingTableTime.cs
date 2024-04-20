@@ -25,6 +25,11 @@ namespace ShardingCore.CommonTest
             //[20220101....20220120]
             _allTables  = Enumerable.Range(0,20).Select(o=>dateTime.AddDays(o).ToString("yyyyMMdd")).ToList();
         }
+        
+        public static  object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
+        {
+            return shardingKey;
+        }
         public static Func<string, bool> GetRouteFilter(object shardingValue, ShardingOperatorEnum shardingOperator,
             string propertyName)
         {
@@ -60,7 +65,7 @@ namespace ShardingCore.CommonTest
         
         private void TestId(IQueryable<TestTimeEntity> queryable, string[] tables)
         {
-            var routePredicateExpression = ShardingUtil.GetRouteParseExpression(queryable,_testEntityMetadata,GetRouteFilter,true);
+            var routePredicateExpression = ShardingUtil.GetRouteParseExpression(queryable,_testEntityMetadata,GetRouteFilter,GetCompareValueByShardingKey,true);
             Assert.NotNull(routePredicateExpression);
             var routePredicate = routePredicateExpression.GetRoutePredicate();
         

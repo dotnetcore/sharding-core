@@ -27,7 +27,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
         protected override List<TableRouteUnit> DoRouteWithPredicate(DataSourceRouteResult dataSourceRouteResult, IQueryable queryable)
         {
             //获取路由后缀表达式
-            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter,true);
+            var routeParseExpression = ShardingUtil.GetRouteParseExpression(queryable, EntityMetadata, GetRouteFilter,GetCompareValueByShardingKey,true);
             //表达式缓存编译
             // var filter =CachingCompile(routeParseExpression);
             var filter =routeParseExpression.GetRoutePredicate();
@@ -40,6 +40,10 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes.Abstractions
             return sqlRouteUnits;
         }
 
+        public virtual object GetCompareValueByShardingKey(object shardingKey, string shardingPropertyName)
+        {
+            return shardingKey;
+        }
 
         /// <summary>
         /// 如何路由到具体表 shardingKeyValue:分表的值, 返回结果:如果返回true表示返回该表 第一个参数 tail 第二参数是否返回该物理表
