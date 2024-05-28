@@ -35,12 +35,20 @@ namespace ShardingCore.Sharding
             _queryableRewriteEngine = queryableRewriteEngine;
             _queryableOptimizeEngine = queryableOptimizeEngine;
         }
+        /// <summary>
+        /// 创建流式合并上下文
+        /// </summary>
+        /// <param name="mergeQueryCompilerContext"></param>
+        /// <returns></returns>
         public StreamMergeContext Create(IMergeQueryCompilerContext mergeQueryCompilerContext)
         {
+            //表达式解析结果
             var parseResult = _queryableParseEngine.Parse(mergeQueryCompilerContext);
-            
+            //表达式重写结果
             var rewriteResult = _queryableRewriteEngine.GetRewriteQueryable(mergeQueryCompilerContext, parseResult);
+            //表达式优化结果
             var optimizeResult = _queryableOptimizeEngine.Optimize(mergeQueryCompilerContext, parseResult, rewriteResult);
+            //合并上下文
             CheckMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult, optimizeResult);
             return new StreamMergeContext(mergeQueryCompilerContext, parseResult, rewriteResult,optimizeResult);
         }

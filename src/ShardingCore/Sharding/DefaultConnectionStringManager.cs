@@ -4,13 +4,9 @@ using ShardingCore.Sharding.Abstractions;
 
 namespace ShardingCore.Sharding
 {
-    /*
-    * @Author: xjm
-    * @Description:
-    * @Date: 2021/9/7 10:32:26
-    * @Ver: 1.0
-    * @Email: 326308290@qq.com
-    */
+    /// <summary>
+    /// 默认的链接字符串管理器
+    /// </summary>
     public class DefaultConnectionStringManager : IConnectionStringManager
     {
         private readonly IVirtualDataSource _virtualDataSource;
@@ -19,6 +15,11 @@ namespace ShardingCore.Sharding
         {
             _virtualDataSource = virtualDataSource;
         }
+        /// <summary>
+        /// 获取链接字符串根据数据源名称
+        /// </summary>
+        /// <param name="dataSourceName"></param>
+        /// <returns></returns>
         public string GetConnectionString(string dataSourceName)
         {
             if (_virtualDataSource.IsDefault(dataSourceName))

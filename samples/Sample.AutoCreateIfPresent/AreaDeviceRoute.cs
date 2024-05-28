@@ -21,6 +21,8 @@ namespace Sample.AutoCreateIfPresent
 
         private readonly ConcurrentDictionary<string, object?> _tails =
             new ConcurrentDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        // private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object?>> _tails =
+        //     new ConcurrentDictionary<string, ConcurrentDictionary<string, object?>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly object _lock = new object();
         private readonly object _initLock = new object();

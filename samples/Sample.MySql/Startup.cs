@@ -139,7 +139,8 @@ namespace Sample.MySql
                     {
                         // var logger = sp.ApplicationServiceProvider.GetService<ILogger<Startup>>();
                         // logger.LogInformation(conStr);
-                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()));
+                        builder.UseMySql(conStr, new MySqlServerVersion(new Version()))
+                            .UseLoggerFactory(efLogger);
                             // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                             // .UseLoggerFactory(loggerFactory1)
                             // .EnableSensitiveDataLogging();
@@ -148,7 +149,8 @@ namespace Sample.MySql
                     o.UseShardingTransaction((connection, builder) =>
                     {
                         builder
-                            .UseMySql(connection, new MySqlServerVersion(new Version()));
+                            .UseMySql(connection, new MySqlServerVersion(new Version()))
+                            .UseLoggerFactory(efLogger);
                         // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                         // .UseLoggerFactory(loggerFactory1)
                         // .EnableSensitiveDataLogging();
@@ -222,6 +224,7 @@ namespace Sample.MySql
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // DynamicShardingHelper.DynamicAppendDataSource();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -236,6 +239,14 @@ namespace Sample.MySql
                 // virtualTableRoute.Append("2021");
             }
             app.ApplicationServices.UseAutoTryCompensateTable();
+            
+            
+            // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext<DefaultShardingDbContext>>();
+            // var virtualDataSource = shardingRuntimeContext.GetVirtualDataSource();
+            // var connectionString = virtualDataSource.GetConnectionString("dataSourceName");
+            // var defaultConnectionString1 = virtualDataSource.GetDefaultDataSource().ConnectionString;
+            // var defaultConnectionString2 = virtualDataSource.GetPhysicDataSource("dataSourceName").ConnectionString;
+            // shardingRuntimeContext.UseAutoTryCompensateTable();
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext>();
             // var entityMetadataManager = shardingRuntimeContext.GetEntityMetadataManager();
             // var entityMetadata = entityMetadataManager.TryGet<SysUserMod>();

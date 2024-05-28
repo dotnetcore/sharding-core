@@ -1,12 +1,22 @@
+using Sample.MySql.DbContexts;
 using Sample.MySql.Domain.Entities;
 using ShardingCore.Core.EntityMetadatas;
+using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Core.ServiceProviders;
 using ShardingCore.Core.VirtualRoutes;
 using ShardingCore.Core.VirtualRoutes.DataSourceRoutes.Abstractions;
+using ShardingCore.Helpers;
 
 namespace Sample.MySql.Shardings
 {
     public class SysUserLogByMonthDSRoute:AbstractShardingOperatorVirtualDataSourceRoute<SysUserLogByMonth,DateTime>
     {
+        private readonly IShardingProvider _shardingProvider;
+
+        public SysUserLogByMonthDSRoute(IShardingProvider shardingProvider)
+        {
+            _shardingProvider = shardingProvider;
+        }
         public override string ShardingKeyToDataSourceName(object shardingKey)
         {
             throw new NotImplementedException();
@@ -37,5 +47,13 @@ namespace Sample.MySql.Shardings
             //判断过滤查询历史还是现在
             throw new NotImplementedException();
         }
+
+        // public override string RouteWithValue(object shardingKey)
+        // {
+        //     //计算出数据源名
+        //     var dataSourceName = ShardingKeyToDataSourceName(shardingKey);
+        //     var shardingRuntimeContext = _shardingProvider.ApplicationServiceProvider.GetRequiredService<IShardingRuntimeContext<DefaultShardingDbContext>>();
+        //     DynamicShardingHelper.DynamicAppendDataSource(shardingRuntimeContext,dataSourceName,$"server=127.0.0.1;port=3306;database=db_{dataSourceName};userid=root;password=root;",true,true);
+        // }
     }
 }
