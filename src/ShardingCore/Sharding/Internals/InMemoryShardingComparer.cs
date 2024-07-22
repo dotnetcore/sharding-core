@@ -6,6 +6,10 @@ using ShardingCore.Sharding.ShardingComparision.Abstractions;
 
 namespace ShardingCore.Sharding.Internals
 {
+    /// <summary>
+    /// 内存分片比较器
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class InMemoryShardingComparer<T> : IComparer<T>
     {
         private readonly IShardingComparer _shardingComparer;

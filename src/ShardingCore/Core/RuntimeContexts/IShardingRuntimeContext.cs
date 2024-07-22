@@ -30,7 +30,14 @@ namespace ShardingCore.Core.RuntimeContexts
     
     public interface IShardingRuntimeContext
     {
+        /// <summary>
+        /// 上下文类型
+        /// </summary>
         Type DbContextType { get; }
+        /// <summary>
+        /// 模型锁提供者
+        /// </summary>
+        /// <returns></returns>
         IModelCacheLockerProvider GetModelCacheLockerProvider();
         IDbContextTypeAware GetDbContextTypeAware();
         IShardingProvider GetShardingProvider();

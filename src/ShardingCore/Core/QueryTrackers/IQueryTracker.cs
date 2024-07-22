@@ -9,6 +9,12 @@ namespace ShardingCore.Core.QueryTrackers
 {
     public interface IQueryTracker
     {
+        /// <summary>
+        /// 追踪数据对象
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="shardingDbContext"></param>
+        /// <returns></returns>
         public object Track(object entity,IShardingDbContext shardingDbContext);
     }
 }

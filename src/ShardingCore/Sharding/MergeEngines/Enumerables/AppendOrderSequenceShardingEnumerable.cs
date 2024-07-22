@@ -74,6 +74,10 @@ namespace ShardingCore.Sharding.MergeEngines.Enumerables
             }
             else
             {
+                if (_tableSequenceOrderConfig == null)
+                {
+                    throw new ShardingCoreException("_tableSequenceOrderConfig is null,plz config IPaginationConfiguration.");
+                }
                 var appendAsc = _tableSequenceOrderConfig.AppendAsc;
 
                 if (appendAsc)
