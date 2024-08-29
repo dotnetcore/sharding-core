@@ -122,16 +122,19 @@ namespace ShardingCore.Core.EntityMetadatas
             {
                 if (_shardingConfigOptions.CheckShardingKeyValueGenerated)
                 {
+                    var propertiesMap = efEntityType.GetProperties().ToDictionary(o=>o.Name,o=>o);
                     if (metadata.IsMultiDataSourceMapping)
                     {
                         foreach (var metadataProperty in metadata.ShardingDataSourceProperties)
                         {
                             var propertyName = metadataProperty.Key;
-                            var property = efEntityType.GetProperty(propertyName);
-                            if (property.ValueGenerated != ValueGenerated.Never)
+                            if (propertiesMap.TryGetValue(propertyName, out var property))
                             {
-                                throw new ShardingCoreConfigException(
-                                    $"sharding data source key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                if (property.ValueGenerated != ValueGenerated.Never)
+                                {
+                                    throw new ShardingCoreConfigException(
+                                        $"sharding data source key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                }
                             }
                         }
                     }
@@ -141,11 +144,13 @@ namespace ShardingCore.Core.EntityMetadatas
                         foreach (var metadataProperty in metadata.ShardingTableProperties)
                         {
                             var propertyName = metadataProperty.Key;
-                            var property = efEntityType.GetProperty(propertyName);
-                            if (property.ValueGenerated != ValueGenerated.Never)
+                            if (propertiesMap.TryGetValue(propertyName, out var property))
                             {
-                                throw new ShardingCoreConfigException(
-                                    $"sharding table key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                if (property.ValueGenerated != ValueGenerated.Never)
+                                {
+                                    throw new ShardingCoreConfigException(
+                                        $"sharding table key:{propertyName} is not {nameof(ValueGenerated)}.{nameof(ValueGenerated.Never)}");
+                                }
                             }
                         }
                     }

@@ -151,6 +151,7 @@ namespace Sample.MySql
                         builder
                             .UseMySql(connection, new MySqlServerVersion(new Version()))
                             .UseLoggerFactory(efLogger);
+                        builder.AddInterceptors()
                         // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                         // .UseLoggerFactory(loggerFactory1)
                         // .EnableSensitiveDataLogging();
@@ -239,6 +240,7 @@ namespace Sample.MySql
                 // virtualTableRoute.Append("2021");
             }
             app.ApplicationServices.UseAutoTryCompensateTable();
+            
             
             
             // var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext<DefaultShardingDbContext>>();
