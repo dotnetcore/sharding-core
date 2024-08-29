@@ -138,7 +138,6 @@ namespace ShardingCore.Core.EntityMetadatas
                             }
                         }
                     }
-
                     if (metadata.IsMultiTableMapping)
                     {
                         foreach (var metadataProperty in metadata.ShardingTableProperties)
