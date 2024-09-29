@@ -178,10 +178,12 @@ namespace ShardingCore.Extensions
             var entityType = typeof(TEntity);
 
             var shardingKey = entity.GetPropertyValue(tableRoute.EntityMetadata.ShardingTableProperty.Name);
-            var tail = tableRoute.ShardingKeyToTail(shardingKey);
-            if (!allTails.Contains(tail))
-                throw new ShardingCoreException(
-                    $"sharding key route not match entity:{entityType.FullName},sharding key:{shardingKey},sharding tail:{tail}");
+            //var tail = tableRoute.ShardingKeyToTail(shardingKey);
+            var tableRouteUnit = tableRoute.RouteWithValue(new DataSourceRouteResult(dataSourceName),shardingKey);
+             var tail = tableRouteUnit.Tail;
+            // if (!allTails.Contains(tail))
+            //     throw new ShardingCoreException(
+            //         $"sharding key route not match entity:{entityType.FullName},sharding key:{shardingKey},sharding tail:{tail}");
 
             var routeTail = routeTailFactory.Create(tail);
             var routeTailIdentity = routeTail.GetRouteTailIdentity();

@@ -305,6 +305,7 @@ namespace Sample.MySql
             //     defaultShardingDbContext.Set<SysUserLogByMonth>().Where(o => o.Time >= addMonths).Any();
             // }
             app.DbSeed();
+            ThreadPool.SetMinThreads(1000, 10);
         }
     }
 }
