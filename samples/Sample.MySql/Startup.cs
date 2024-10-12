@@ -131,7 +131,7 @@ namespace Sample.MySql
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false;
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
-                    o.MaxQueryConnectionsLimit = 2;
+                    o.MaxQueryConnectionsLimit = 10;
                     o.UseExecutorDbContextConfigure(op =>
                     {
                         

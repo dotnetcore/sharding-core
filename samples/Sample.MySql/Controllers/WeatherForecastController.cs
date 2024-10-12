@@ -639,7 +639,7 @@ namespace Sample.MySql.Controllers
             var listAsync = await _defaultTableDbContext.Database.SqlQuery<MyClass>($"select * from groupentity_00").ToListAsync();
             var list1 = _defaultTableDbContext.Set<GroupEntity>()
                 .UseConnectionMode(1,ConnectionModeEnum.CONNECTION_STRICTLY)
-                .Where(o=>o.City=="郑州市")
+                // .Where(o=>o.City=="郑州市")
                 .GroupBy(o=>new
                 {
                     o.City,
