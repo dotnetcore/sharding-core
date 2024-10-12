@@ -175,7 +175,7 @@ namespace ShardingCore.Extensions
             where TShardingDbContext : DbContext, IShardingDbContext
             where TEntity : class
         {
-            var entityType = typeof(TEntity);
+            // var entityType = typeof(TEntity);
 
             var shardingKey = entity.GetPropertyValue(tableRoute.EntityMetadata.ShardingTableProperty.Name);
             //var tail = tableRoute.ShardingKeyToTail(shardingKey);

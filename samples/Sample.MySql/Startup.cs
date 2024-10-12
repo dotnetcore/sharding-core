@@ -99,6 +99,7 @@ namespace Sample.MySql
                 {
                     
                     // AppDomain.CurrentDomain.GetAssemblies().
+                    o.AddShardingTableRoute<GroupEntityRoute>();
                     o.AddShardingTableRoute<DynamicTableRoute>();
                     o.AddShardingTableRoute<SysUserLogByMonthRoute>();
                     o.AddShardingTableRoute<SysUserModVirtualTableRoute>();
@@ -130,7 +131,7 @@ namespace Sample.MySql
                     // o.UseEntityFrameworkCoreProxies = true;
                     o.ThrowIfQueryRouteNotMatch = false;
                     o.AutoUseWriteConnectionStringAfterWriteDb = true;
-                    o.MaxQueryConnectionsLimit = 10;
+                    o.MaxQueryConnectionsLimit = 2;
                     o.UseExecutorDbContextConfigure(op =>
                     {
                         
@@ -151,7 +152,7 @@ namespace Sample.MySql
                         builder
                             .UseMySql(connection, new MySqlServerVersion(new Version()))
                             .UseLoggerFactory(efLogger);
-                        builder.AddInterceptors()
+                        // builder.AddInterceptors()
                         // .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                         // .UseLoggerFactory(loggerFactory1)
                         // .EnableSensitiveDataLogging();
@@ -305,6 +306,7 @@ namespace Sample.MySql
             //     defaultShardingDbContext.Set<SysUserLogByMonth>().Where(o => o.Time >= addMonths).Any();
             // }
             app.DbSeed();
+            app.DbSeed1();
             ThreadPool.SetMinThreads(1000, 10);
         }
     }

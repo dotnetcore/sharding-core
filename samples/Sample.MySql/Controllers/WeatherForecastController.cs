@@ -11,6 +11,7 @@ using Sample.MySql.Domain.Entities;
 using Sample.MySql.multi;
 using Sample.MySql.Shardings;
 using ShardingCore;
+using ShardingCore.Core;
 using ShardingCore.Core.RuntimeContexts;
 using ShardingCore.Core.VirtualDatabase.VirtualDataSources.PhysicDataSources;
 using ShardingCore.Core.VirtualRoutes.TableRoutes;
@@ -87,16 +88,16 @@ namespace Sample.MySql.Controllers
             _abc = new ABC(_defaultTableDbContext);
         }
 
-        public (string id,string name___11) aaa()
-        {
-           var sql= from u in _defaultTableDbContext.Set<SysTest>()
-                where u.Id == "123"
-                select (id:u.Id,name___11:u.UserId);
-           return sql.FirstOrDefault();
-        }
+        // public (string id,string name___11) aaa()
+        // {
+        //    var sql= from u in _defaultTableDbContext.Set<SysTest>()
+        //         where u.Id == "123"
+        //         select (id:u.Id,name___11:u.UserId);
+        //    return sql.FirstOrDefault();
+        // }
         public IQueryable<SysTest> GetAll()
         {
-            var valueTuple = aaa();
+            // var valueTuple = aaa();
             // valueTuple.
 
 
@@ -630,6 +631,35 @@ namespace Sample.MySql.Controllers
             var sysUserMods = _defaultTableDbContext.Set<SysUserMod>()
                 .Where(o => idList.Contains(o.Id)).ToList();
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> get1312()
+        {
+            var listAsync = await _defaultTableDbContext.Database.SqlQuery<MyClass>($"select * from groupentity_00").ToListAsync();
+            var list1 = _defaultTableDbContext.Set<GroupEntity>()
+                .UseConnectionMode(1,ConnectionModeEnum.CONNECTION_STRICTLY)
+                .Where(o=>o.City=="郑州市")
+                .GroupBy(o=>new
+                {
+                    o.City,
+                    o.Area
+                })
+                .Select(o=>new
+                {
+                    o.Key.City,
+                    o.Key.Area,
+                    UserSum=o.Count()
+                }).ToList();
+           
+            return Ok(list1);
+        }
+        public class MyClass
+        {
+            
+            public string Id { get; set; }
+            public string City { get; set; }
+            public string Area { get; set; }
         }
     }
 }

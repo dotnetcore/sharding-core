@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using ShardingCore.Core.Internal.Visitors;
 using ShardingCore.Exceptions;
 using ShardingCore.Extensions;
+using ShardingCore.Utils;
 
 namespace ShardingCore.Core.Internal.Visitors
 {
@@ -186,6 +187,16 @@ namespace ShardingCore.Core.Internal.Visitors
 
         protected override Expression VisitExtension(Expression node)
         {
+#if EFCORE8
+            if (node is FromSqlQueryRootExpression fromSqlQueryRootExpression0)
+            {
+                var typeInModel = Sharding8Util.FromSqlQueryRootTypeInModel(fromSqlQueryRootExpression0.ElementType,_dbContext.Database);
+                if (!typeInModel)
+                {
+                    return base.VisitExtension(node);
+                }
+            }
+#endif
             if (node is QueryRootExpression queryRootExpression)
             {
                 var dbContextDependencies =

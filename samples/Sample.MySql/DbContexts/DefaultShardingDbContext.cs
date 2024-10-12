@@ -26,17 +26,17 @@ namespace Sample.MySql.DbContexts
         {
             RouteTail = RouteTailContextHelper.RouteTail;
             Database.SetCommandTimeout(1000);
-            var key = options.Extensions
-                .OrderBy(e => e.GetType().Name)
-                .Select(o =>
-                {
-                    Console.WriteLine(o.GetType().Name);
-                    return o;
-                })
-                .Aggregate(0L,
-                    (t, e) => (t * 397) ^ ((long)e.GetType().GetHashCode() * 397) ^
-                              e.Info.GetServiceProviderHashCode());
-            Console.WriteLine("key:" + key);
+            // var key = options.Extensions
+            //     .OrderBy(e => e.GetType().Name)
+            //     .Select(o =>
+            //     {
+            //         Console.WriteLine(o.GetType().Name);
+            //         return o;
+            //     })
+            //     .Aggregate(0L,
+            //         (t, e) => (t * 397) ^ ((long)e.GetType().GetHashCode() * 397) ^
+            //                   e.Info.GetServiceProviderHashCode());
+            // Console.WriteLine("key:" + key);
             //切记不要在构造函数中使用会让模型提前创建的方法
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //Database.SetCommandTimeout(30000);
@@ -55,6 +55,8 @@ namespace Sample.MySql.DbContexts
             modelBuilder.ApplyConfiguration(new SysUserLogByMonthMap());
 
             modelBuilder.Entity<SysUserLogByMonth>().HasData(new SysUserLogByMonth() { Id = "1", Time = DateTime.Now });
+            modelBuilder.Entity<GroupEntity>().ToTable(nameof(GroupEntity));
+            modelBuilder.Entity<GroupEntity>().HasKey(o => o.Id);
             // modelBuilder.Entity<SysTest>().HasData(new SysTest() { Id = "1", UserId = "123" });
             // modelBuilder.Entity<TestMod>().ToTable(nameof(TestMod));
             // modelBuilder.Entity<SysTest>().ToTable("xxx");
