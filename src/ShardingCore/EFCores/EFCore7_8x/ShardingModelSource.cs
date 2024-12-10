@@ -81,6 +81,9 @@ namespace ShardingCore.EFCores
                 var acquire = Monitor.TryEnter(cacheLockObject, TimeSpan.FromSeconds(waitSeconds));
                 if (!acquire)
                 {
+                    //如果排查后非循环注入等操作导致的确实是并发一瞬间导致的timeout比如上千上万个分片后缀那么可以将模型level设置高并且cacheEntrySize设置为1超时时间设置大一点即可
+                    //如果是abp那么请确认是否使用了AsyncExecutor
+                    //https://github.com/dotnetcore/sharding-core/issues/221
                     throw new ShardingCoreInvalidOperationException("cache model timeout");
                 }
 
