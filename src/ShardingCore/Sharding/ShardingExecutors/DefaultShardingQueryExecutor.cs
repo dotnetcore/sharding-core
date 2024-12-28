@@ -121,11 +121,19 @@ namespace ShardingCore.Sharding.ShardingQueryExecutors
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ContainsAsyncInMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);
 
-#if EFCORE7|| EFCORE8
+#if EFCORE7 || EFCORE8
                 case nameof(RelationalQueryableExtensions.ExecuteUpdate):
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteUpdateAsyncMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);
                 case nameof(RelationalQueryableExtensions.ExecuteDelete):
+                    return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteDeleteAsyncMemoryMergeEngine<>),
+                        mergeQueryCompilerContext, async, cancellationToken);
+#endif
+#if EFCORE9
+                case nameof(EntityFrameworkQueryableExtensions.ExecuteUpdate):
+                    return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteUpdateAsyncMemoryMergeEngine<>),
+                        mergeQueryCompilerContext, async, cancellationToken);
+                case nameof(EntityFrameworkQueryableExtensions.ExecuteDelete):
                     return EnsureResultTypeMergeExecute<TResult>(typeof(ExecuteDeleteAsyncMemoryMergeEngine<>),
                         mergeQueryCompilerContext, async, cancellationToken);
 #endif

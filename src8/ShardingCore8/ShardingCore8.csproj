@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Version>$(EFCORE8)</Version>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <DefineConstants>TRACE;DEBUG;EFCORE8;</DefineConstants>
+        <LangVersion>9.0</LangVersion>
+        <AssemblyName>ShardingCore</AssemblyName>
+        <RootNamespace>ShardingCore</RootNamespace>
+        <RepositoryUrl>https://github.com/xuejmnet/sharding-core</RepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\Release\ShardingCore7.xml</DocumentationFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\..\Logo\logo.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Compile Include="..\..\src\ShardingCore\**\*.cs" />
+        <Compile Remove="..\..\src\ShardingCore\obj\**" />
+        <Compile Remove="..\..\src\ShardingCore\bin\**" />
+
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>

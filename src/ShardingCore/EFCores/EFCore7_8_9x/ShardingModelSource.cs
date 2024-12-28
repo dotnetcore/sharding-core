@@ -1,4 +1,4 @@
-﻿#if EFCORE7 || EFCORE8
+﻿#if EFCORE7 || EFCORE8 || EFCORE9
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

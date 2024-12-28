@@ -67,12 +67,12 @@ namespace ShardingCore.Sharding.Parsers.Visitors
             return base.VisitConstant(node);
         }
 #endif
-#if EFCORE5 || EFCORE6 || EFCORE7 || EFCORE8
+#if EFCORE5 || EFCORE6 || EFCORE7 || EFCORE8 || EFCORE9
         protected override Expression VisitExtension(Expression node)
         {
             if (node is QueryRootExpression queryRootExpression)
             {
-#if EFCORE7 || EFCORE8
+#if EFCORE7 || EFCORE8 || EFCORE9
                 TryAddShardingEntities(queryRootExpression.ElementType, null);
 #else
                 TryAddShardingEntities(queryRootExpression.EntityType.ClrType, null);

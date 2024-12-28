@@ -1,11 +1,10 @@
-﻿#if EFCORE7 || EFCORE8
+﻿#if EFCORE7 || EFCORE8 || EFCORE9
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using ShardingCore.Core;
 
 namespace ShardingCore.EFCores
 {
@@ -16,12 +15,8 @@ namespace ShardingCore.EFCores
     * @Ver: 1.0
     * @Email: 326308290@qq.com
     */
-    public class ShardingWrapOptionsExtension : IDbContextOptionsExtension
+    public class UnionAllMergeOptionsExtension : IDbContextOptionsExtension
     {
-
-        public ShardingWrapOptionsExtension()
-        {
-        }
         public void ApplyServices(IServiceCollection services)
         {
         }
@@ -31,11 +26,11 @@ namespace ShardingCore.EFCores
         }
 
 
-        public DbContextOptionsExtensionInfo Info => new ShardingWrapDbContextOptionsExtensionInfo(this);
+        public DbContextOptionsExtensionInfo Info => new UnionAllMergeDbContextOptionsExtensionInfo(this);
 
-        private class ShardingWrapDbContextOptionsExtensionInfo : DbContextOptionsExtensionInfo
+        private class UnionAllMergeDbContextOptionsExtensionInfo : DbContextOptionsExtensionInfo
         {
-            public ShardingWrapDbContextOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
+            public UnionAllMergeDbContextOptionsExtensionInfo(IDbContextOptionsExtension extension) : base(extension)
             {
             }
 
@@ -48,7 +43,7 @@ namespace ShardingCore.EFCores
             }
 
             public override bool IsDatabaseProvider => false;
-            public override string LogFragment => "ShardingWrapOptionsExtension";
+            public override string LogFragment => "UnionAllMergeOptionsExtension";
         }
     }
 }
