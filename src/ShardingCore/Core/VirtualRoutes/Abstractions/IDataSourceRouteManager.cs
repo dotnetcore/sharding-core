@@ -26,6 +26,8 @@ namespace ShardingCore.Core.VirtualRoutes.Abstractions
         /// </summary>
         /// <returns></returns>
         IVirtualDataSourceRoute GetRoute(Type entityType);
+
+        List<IVirtualDataSourceRoute> GetRoutes();
         /// <summary>
         /// 添加分库路由
         /// </summary>

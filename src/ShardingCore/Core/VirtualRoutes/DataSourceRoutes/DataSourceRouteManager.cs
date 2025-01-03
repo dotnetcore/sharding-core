@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using ShardingCore.Core.EntityMetadatas;
 using ShardingCore.Core.ShardingEnumerableQueries;
 using ShardingCore.Core.TrackerManagers;
@@ -65,6 +66,12 @@ namespace ShardingCore.Core.VirtualRoutes.DataSourceRoutes
                     $"entity type :[{entityType.FullName}] not found virtual data source route");
             return dataSourceVirtualRoute;
         }
+
+        public List<IVirtualDataSourceRoute> GetRoutes()
+        {
+            return _dataSourceVirtualRoutes.Values.ToList();
+        }
+
         /// <summary>
         /// 添加分库路由
         /// </summary>
