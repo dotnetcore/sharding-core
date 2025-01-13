@@ -105,10 +105,10 @@ namespace Sample.MySql.Controllers
                 where u.Id == "123"
                 select new
                 {
-                    Id=u.Id,
-                    Name_____1111=u.UserId
+                    Id = u.Id,
+                    Name_____1111 = u.UserId
                 };
-            var sysTests = sql.Where(o=>o.Name_____1111=="456").ToList();
+            var sysTests = sql.Where(o => o.Name_____1111 == "456").ToList();
 
 
             var dbContextOptionsBuilder = new DbContextOptionsBuilder<DefaultShardingDbContext>();
@@ -128,12 +128,24 @@ namespace Sample.MySql.Controllers
 
             ((IResettableService)_defaultTableDbContext).ResetState();
 
-            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            // var entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
+            // var allShardingEntities = entityMetadataManager.GetAllShardingEntities();
+            // foreach (var allShardingEntity in allShardingEntities)
+            // {
+            //     var entityMetadata = entityMetadataManager.TryGet(allShardingEntity);
+            //     if (entityMetadata != null && entityMetadata.IsShardingDataSource())
+            //     {
+            //         var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
+            //         virtualDataSourceRoute.AddDataSourceName();
+            //     }
+            // }
+
             // dataSourceRouteManager.GetRoute()
             var routeManager = _shardingRuntimeContext.GetTableRouteManager();
             // routeManager.GetRoute()
 
-            // DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
+            DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
             //如果你已经添加好了的情况下并且没有生成对应的库和表想要生成表和库
             var dataSourceInitializer = _shardingRuntimeContext.GetDataSourceInitializer();
             dataSourceInitializer.InitConfigure("ds9", true, true);
@@ -317,7 +329,7 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> Get1()
         {
-            var resultX = await _defaultTableDbContext.Set<SysUserMod>()
+            var resultX = await _defaultTableDbContext.Set<SysUserMod>().UseConnectionMode(1)
                 .Where(o => o.Id == "2" || o.Id == "3").FirstOrDefaultAsync();
             Console.WriteLine(
                 "-----------------------------------------------------------------------------------------------------");
@@ -636,27 +648,28 @@ namespace Sample.MySql.Controllers
         [HttpGet]
         public async Task<IActionResult> get1312()
         {
-            var listAsync = await _defaultTableDbContext.Database.SqlQuery<MyClass>($"select * from groupentity_00").ToListAsync();
+            var listAsync = await _defaultTableDbContext.Database.SqlQuery<MyClass>($"select * from groupentity_00")
+                .ToListAsync();
             var list1 = _defaultTableDbContext.Set<GroupEntity>()
-                .UseConnectionMode(1,ConnectionModeEnum.CONNECTION_STRICTLY)
+                .UseConnectionMode(1, ConnectionModeEnum.CONNECTION_STRICTLY)
                 // .Where(o=>o.City=="郑州市")
-                .GroupBy(o=>new
+                .GroupBy(o => new
                 {
                     o.City,
                     o.Area
                 })
-                .Select(o=>new
+                .Select(o => new
                 {
                     o.Key.City,
                     o.Key.Area,
-                    UserSum=o.Count()
+                    UserSum = o.Count()
                 }).ToList();
-           
+
             return Ok(list1);
         }
+
         public class MyClass
         {
-            
             public string Id { get; set; }
             public string City { get; set; }
             public string Area { get; set; }
