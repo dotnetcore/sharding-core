@@ -34,7 +34,8 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - first version is shardingcore version
 - second version is efcore version 
 - other version use last version
-- 
+-
+- efcore9 use shardingcore7.9.x.x
 - efcore8 use shardingcore7.8.x.x
 
 - efcore7 use shardingcore7.7.x.x
@@ -77,7 +78,7 @@ Release  | EF Core | .NET (Core)
 ### Step 1: Install the package
 Choose data base driver for efcore
 ```shell
-# basic package
+# basic package[README-zh.md](README-zh.md)
 PM> Install-Package ShardingCore
 # sqlserver driver
 PM> Install-Package Microsoft.EntityFrameworkCore.SqlServer
