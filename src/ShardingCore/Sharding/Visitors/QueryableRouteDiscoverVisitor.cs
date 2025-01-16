@@ -462,15 +462,15 @@ namespace ShardingCore.Core.Internal.Visitors
                     shardingPredicateResult = IsShardingWrapConstant(methodCallExpression);
                     if (shardingPredicateResult.IsShardingKey)
                     {
-                        object shardingValue = default;
-                        if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
-                        {
-                            shardingValue = GetExpressionValue(member2Expression);
-                        }
-                        else if (methodCallExpression.Arguments[0] is ConstantExpression constantExpression)
-                        {
-                            shardingValue = GetExpressionValue(constantExpression);
-                        }
+                        object shardingValue = GetExpressionValue(methodCallExpression.Arguments[0]);
+                        // if (methodCallExpression.Arguments[0] is MemberExpression member2Expression)
+                        // {
+                        //     shardingValue = GetExpressionValue(member2Expression);
+                        // }
+                        // else if (methodCallExpression.Arguments[0] is ConstantExpression constantExpression)
+                        // {
+                        //     shardingValue = GetExpressionValue(constantExpression);
+                        // }
 
                         if (shardingValue != default)
                         {
