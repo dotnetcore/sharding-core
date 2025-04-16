@@ -128,18 +128,28 @@ namespace Sample.MySql.Controllers
 
             ((IResettableService)_defaultTableDbContext).ResetState();
 
-            // var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
-            // var entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
-            // var allShardingEntities = entityMetadataManager.GetAllShardingEntities();
-            // foreach (var allShardingEntity in allShardingEntities)
-            // {
-            //     var entityMetadata = entityMetadataManager.TryGet(allShardingEntity);
-            //     if (entityMetadata != null && entityMetadata.IsShardingDataSource())
-            //     {
-            //         var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
-            //         virtualDataSourceRoute.AddDataSourceName();
-            //     }
-            // }
+            var dataSourceRouteManager = _shardingRuntimeContext.GetDataSourceRouteManager();
+            var entityMetadataManager = _shardingRuntimeContext.GetEntityMetadataManager();
+            var allShardingEntities = entityMetadataManager.GetAllShardingEntities();
+            foreach (var allShardingEntity in allShardingEntities)
+            {
+                var entityMetadata = entityMetadataManager.TryGet(allShardingEntity);
+                if (entityMetadata != null && entityMetadata.IsShardingDataSource())
+                {
+                    var virtualDataSourceRoute = dataSourceRouteManager.GetRoute(entityMetadata.EntityType);
+                    virtualDataSourceRoute.AddDataSourceName("ds9");
+                }
+            }
+            DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
+            
+            
+            
+            
+            
+            
+            
+            
+            
 
             // dataSourceRouteManager.GetRoute()
             var routeManager = _shardingRuntimeContext.GetTableRouteManager();
