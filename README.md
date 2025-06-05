@@ -2,6 +2,19 @@
   <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+
+
+<p align="center">
+    <a target="_blank" href='https://gitee.com/xuejm/sharding-core'>
+		<img src='https://gitee.com/xuejm/sharding-core/badge/star.svg' alt='Gitee star'/>
+	</a>
+    <a target="_blank" href='https://github.com/dotnetcore/sharding-core'>
+		<img src="https://img.shields.io/github/stars/dotnetcore/sharding-core.svg?logo=github" alt="Github star"/>
+	</a>
+      <a href='https://gitcode.com/xuejmnet/sharding-core'><img src='https://gitcode.com/xuejmnet/sharding-core/star/badge.svg' alt='fork'></a>
+</p>
+
+
 # English | [中文](https://github.com/dotnetcore/sharding-core/blob/main/README-zh.md)
 
 # ShardingCore

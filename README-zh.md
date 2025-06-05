@@ -2,6 +2,18 @@
   <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+
+
+<p align="center">
+    <a target="_blank" href='https://gitee.com/xuejm/sharding-core'>
+		<img src='https://gitee.com/xuejm/sharding-core/badge/star.svg' alt='Gitee star'/>
+	</a>
+    <a target="_blank" href='https://github.com/dotnetcore/sharding-core'>
+		<img src="https://img.shields.io/github/stars/dotnetcore/sharding-core.svg?logo=github" alt="Github star"/>
+	</a>
+      <a href='https://gitcode.com/xuejmnet/sharding-core'><img src='https://gitcode.com/xuejmnet/sharding-core/star/badge.svg' alt='fork'></a>
+</p>
+
 # [English](https://github.com/dotnetcore/sharding-core/blob/main/README.md) | 中文
 # ShardingCore
 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案。
