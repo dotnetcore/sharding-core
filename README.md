@@ -24,6 +24,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - zero incursion
 
 ---
+- [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
 - [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
 
 - [捐赠](#捐赠)
@@ -36,10 +37,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
 ## 📚 Documentation
 
-[中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
-
-
-[中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
+[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
 
 ## How Choose Version
 - shardingcore lastversion.efcoreversion.x.x

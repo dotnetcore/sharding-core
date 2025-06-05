@@ -22,6 +22,7 @@
 - 零业务代码入侵
 
 ---
+- [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
 - [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
 
 - [捐赠](#捐赠)
@@ -34,10 +35,8 @@
 
 ## 📚 Documentation
 
-[中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
+[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
 
-
-[中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 
 ## 如何选择版本
 
