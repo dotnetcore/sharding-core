@@ -10,9 +10,12 @@
 - 零业务代码入侵
 
 ---
-- [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
+- [GitCode](https://gitee.com/xuejm/sharding-core) 国内地址
+- [Gitee](https://gitee.com/xuejm/sharding-core) 国内地址
 
 - [捐赠](#捐赠)
+
+  <img src="./imgs/g-star.jpg" title="JetBrains" width=330 />
 
 ## 社区合作伙伴和赞助商
 
