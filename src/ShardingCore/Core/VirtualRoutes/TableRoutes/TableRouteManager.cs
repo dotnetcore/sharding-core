@@ -60,7 +60,7 @@ namespace ShardingCore.Core.VirtualRoutes.TableRoutes
 
         public List<TableRouteUnit> RouteTo(Type entityType, string dataSourceName, ShardingTableRouteConfig shardingTableRouteConfig)
         {
-            var dataSourceRouteResult = new DataSourceRouteResult(_virtualDataSource.DefaultDataSourceName);
+            var dataSourceRouteResult = new DataSourceRouteResult(dataSourceName);
             return RouteTo(entityType, dataSourceRouteResult, shardingTableRouteConfig);
         }
 

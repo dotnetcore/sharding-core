@@ -2,6 +2,18 @@
   <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+
+
+<p align="center">
+    <a target="_blank" href='https://gitee.com/xuejm/sharding-core'>
+		<img src='https://gitee.com/xuejm/sharding-core/badge/star.svg' alt='Gitee star'/>
+	</a>
+    <a target="_blank" href='https://github.com/dotnetcore/sharding-core'>
+		<img src="https://img.shields.io/github/stars/dotnetcore/sharding-core.svg?logo=github" alt="Github star"/>
+	</a>
+      <a href='https://gitcode.com/xuejmnet/sharding-core'><img src='https://gitcode.com/xuejmnet/sharding-core/star/badge.svg' alt='fork'></a>
+</p>
+
 # [English](https://github.com/dotnetcore/sharding-core/blob/main/README.md) | 中文
 # ShardingCore
 一款`ef-core`下高性能、轻量级针对分表分库读写分离的解决方案。
@@ -10,12 +22,12 @@
 - 零业务代码入侵
 
 ---
-- [GitCode](https://gitee.com/xuejm/sharding-core) 国内地址
-- [Gitee](https://gitee.com/xuejm/sharding-core) 国内地址
+- [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
+- [Gitee](https://gitee.com/xuejm/sharding-core) 国内代码仓库
 
 - [捐赠](#捐赠)
 
-  <img src="./imgs/g-star.jpg" title="JetBrains" width=330 />
+  <img src="./imgs/g-star.jpg" title="git-code" width=330 />
 
 ## 社区合作伙伴和赞助商
 
@@ -25,10 +37,8 @@
 
 ## 📚 Documentation
 
-[中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
+[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
 
-
-[中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
 
 ## 如何选择版本
 

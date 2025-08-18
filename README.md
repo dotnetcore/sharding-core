@@ -2,6 +2,19 @@
   <img height="340" src="https://xuejmnet.github.io/sharding-core-doc/logo.svg">
 </p>
 
+
+
+<p align="center">
+    <a target="_blank" href='https://gitee.com/xuejm/sharding-core'>
+		<img src='https://gitee.com/xuejm/sharding-core/badge/star.svg' alt='Gitee star'/>
+	</a>
+    <a target="_blank" href='https://github.com/dotnetcore/sharding-core'>
+		<img src="https://img.shields.io/github/stars/dotnetcore/sharding-core.svg?logo=github" alt="Github star"/>
+	</a>
+      <a href='https://gitcode.com/xuejmnet/sharding-core'><img src='https://gitcode.com/xuejmnet/sharding-core/star/badge.svg' alt='fork'></a>
+</p>
+
+
 # English | [中文](https://github.com/dotnetcore/sharding-core/blob/main/README-zh.md)
 
 # ShardingCore
@@ -11,11 +24,12 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - zero incursion
 
 ---
-- [GitCode](https://gitee.com/xuejm/sharding-core) 国内地址
-- [Gitee](https://gitee.com/xuejm/sharding-core) 国内地址
+- [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
+- [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
+
 - [捐赠](#捐赠)
-- 
-  <img src="./imgs/g-star.jpg" title="JetBrains" width=330 />
+
+  <img src="./imgs/g-star.jpg" title="git-code" width=330 />
 
 ## Community Partners and Sponsors
 
@@ -25,10 +39,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
 ## 📚 Documentation
 
-[中文文档Github](https://xuejmnet.github.io/sharding-core-doc/) | [English Document Github](https://xuejmnet.github.io/sharding-core-doc/en/)
-
-
-[中文文档Gitee](https://xuejm.gitee.io/sharding-core-doc/) | [English Document Gitee](https://xuejm.gitee.io/sharding-core-doc/en/)
+[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
 
 ## How Choose Version
 - shardingcore lastversion.efcoreversion.x.x
