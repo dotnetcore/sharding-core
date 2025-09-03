@@ -31,6 +31,8 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
   <img src="./imgs/g-star.jpg" title="git-code" width=330 />
 
+  <img src="./imgs/gvp.jpg" title="gitee" width=330 />
+
 ## Community Partners and Sponsors
 
 <a href="https://www.jetbrains.com/?from=.NETCoreCommunity(NCC)" target="_blank">

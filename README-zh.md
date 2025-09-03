@@ -29,6 +29,8 @@
 
   <img src="./imgs/g-star.jpg" title="git-code" width=330 />
 
+  <img src="./imgs/gvp.jpg" title="gitee" width=330 />
+
 ## 社区合作伙伴和赞助商
 
 <a href="https://www.jetbrains.com/?from=.NETCoreCommunity(NCC)" target="_blank">

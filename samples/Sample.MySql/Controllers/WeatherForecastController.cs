@@ -153,6 +153,8 @@ namespace Sample.MySql.Controllers
 
             // dataSourceRouteManager.GetRoute()
             var routeManager = _shardingRuntimeContext.GetTableRouteManager();
+            var route = routeManager.GetRoute(typeof(SysTest));
+            var tails = route.GetTails();
             // routeManager.GetRoute()
 
             DynamicShardingHelper.DynamicAppendDataSource(_shardingRuntimeContext,"ds9","链接字符串",true,true);
