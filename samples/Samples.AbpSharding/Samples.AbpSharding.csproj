@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="6.6.2" />
-		<PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="4.4.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.*" />
+		<PackageReference Include="Volo.Abp.EntityFrameworkCore" Version="9.3.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.*" />
 	</ItemGroup>
 
 	<ItemGroup>
