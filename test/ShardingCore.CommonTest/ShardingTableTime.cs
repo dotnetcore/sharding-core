@@ -151,6 +151,30 @@ namespace ShardingCore.CommonTest
             TestFor(queryables,tables);
         }
         [Fact]
+        public void TestMultiTable1x()
+        {
+            var tables = new []{"20220101","20220102"};
+            var begin = new DateTime?(new DateTime(2022,01,03));
+            IQueryable<TestTimeEntity> queryable = new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time<begin);
+            TestId(queryable, tables);
+        }
+        [Fact]
+        public void TestMultiTable1x1()
+        {
+            var tables = new []{"20220101","20220102"};
+            var begin = new DateTime?(new DateTime(2022,01,03));
+            IQueryable<TestTimeEntity> queryable = new List<TestTimeEntity>().AsQueryable().Where(o=>o.Time<begin.Value);
+            TestId(queryable, tables);
+        }
+        [Fact]
+        public void TestMultiTable1x2()
+        {
+            var tables = new []{"20220101","20220102"};
+            var begin = new DateTime?(new DateTime(2022,01,03));
+            IQueryable<TestTimeEntity> queryable = new List<TestTimeEntity>().AsQueryable().Where(o=>begin==null||o.Time<begin.Value);
+            TestId(queryable, tables);
+        }
+        [Fact]
         public void TestMultiTable1()
         {
             var tables = new []{"20220105","20220106","20220107"};

@@ -125,26 +125,83 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     return GetExpressionValue(e.Operand);
                 }
+                // 支持一元取反 !x
+                case UnaryExpression e when e.NodeType == ExpressionType.Not:
+                {
+                    var v = GetExpressionValue(e.Operand);
+                    if (v is bool b)
+                        return !b;
+                    throw new ShardingCoreException("Unsupported NOT operand: " + v);
+                }
+
+                // 处理 Lambda：强制执行
+                case LambdaExpression e:
+                    return GetExpressionValue(e.Body);
+
+                // 处理三元表达式 a ? b : c
+                case ConditionalExpression e:
+                {
+                    var test = GetExpressionValue(e.Test);
+                    if (test is bool b && b)
+                        return GetExpressionValue(e.IfTrue);
+                    return GetExpressionValue(e.IfFalse);
+                }
+
+                // 处理各种比较表达式 == != > >= < <=
+                case BinaryExpression e when IsBinaryComparable(e.NodeType):
+                {
+                    var left = GetExpressionValue(e.Left);
+                    var right = GetExpressionValue(e.Right);
+                    return EvaluateBinary(e.NodeType, left, right);
+                }
+
+                // 处理数组访问： arr[x]
+                case BinaryExpression e when e.NodeType == ExpressionType.ArrayIndex:
+                {
+                    var arrayObj = GetExpressionValue(e.Left);
+                    var indexObj = GetExpressionValue(e.Right);
+
+                    if (arrayObj is IList list && indexObj is int i)
+                        return list[i];
+                    throw new ShardingCoreException($"Invalid array index: {expression}");
+                }
 
                 default:
                 {
-                    if (expression is BinaryExpression binaryExpression &&
-                        expression.NodeType == ExpressionType.ArrayIndex)
-                    {
-                        var index = GetExpressionValue(binaryExpression.Right);
-                        if (index is int i)
-                        {
-                            var arrayObject = GetExpressionValue(binaryExpression.Left);
-                            if (arrayObject is IList list)
-                            {
-                                return list[i];
-                            }
-                        }
-                    }
-
-                    //TODO: better messaging
                     throw new ShardingCoreException("cant get value " + expression);
                 }
+            }
+        }
+        private bool IsBinaryComparable(ExpressionType type)
+        {
+            return type == ExpressionType.Equal
+                   || type == ExpressionType.NotEqual
+                   || type == ExpressionType.GreaterThan
+                   || type == ExpressionType.GreaterThanOrEqual
+                   || type == ExpressionType.LessThan
+                   || type == ExpressionType.LessThanOrEqual;
+        }
+        private object EvaluateBinary(ExpressionType type, object left, object right)
+        {
+            IComparable cLeft = left as IComparable;
+            IComparable cRight = right as IComparable;
+        
+            switch (type)
+            {
+                case ExpressionType.Equal:
+                    return Equals(left, right);
+                case ExpressionType.NotEqual:
+                    return !Equals(left, right);
+                case ExpressionType.GreaterThan:
+                    return cLeft.CompareTo(cRight) > 0;
+                case ExpressionType.GreaterThanOrEqual:
+                    return cLeft.CompareTo(cRight) >= 0;
+                case ExpressionType.LessThan:
+                    return cLeft.CompareTo(cRight) < 0;
+                case ExpressionType.LessThanOrEqual:
+                    return cLeft.CompareTo(cRight) <= 0;
+                default:
+                    throw new ShardingCoreException($"Unsupported binary operator: {type}");
             }
         }
     }

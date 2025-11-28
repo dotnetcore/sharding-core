@@ -17,11 +17,11 @@ using ShardingCore.Test2x.Shardings;
 namespace ShardingCore.Test2x
 {
     /*
-    * @Author: xjm
-    * @Description:
-    * @Date: Friday, 15 January 2021 15:37:46
-    * @Email: 326308290@qq.com
-    */
+     * @Author: xjm
+     * @Description:
+     * @Date: Friday, 15 January 2021 15:37:46
+     * @Email: 326308290@qq.com
+     */
     public class Startup
     {
         // 支持的形式：
@@ -46,47 +46,48 @@ namespace ShardingCore.Test2x
                     op.AddShardingTableRoute<SysUserModIntVirtualRoute>();
                     op.AddShardingTableRoute<LogDayLongVirtualRoute>();
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
-
                 })
                 .UseConfig(op =>
                 {
-
-                    op.CacheModelLockConcurrencyLevel = Environment.ProcessorCount;
+                    op.CacheModelLockConcurrencyLevel = 100;
+                    op.CacheModelLockObjectSeconds = 60;
                     //当无法获取路由时会返回默认值而不是报错
                     op.ThrowIfQueryRouteNotMatch = false;
-                    op.UseShardingQuery((conStr, builder) =>
-                    {
-                        builder.UseSqlServer(conStr);
-                    });
-                    op.UseShardingTransaction((connection, builder) =>
-                    {
-                        builder.UseSqlServer(connection);
-                    });
+                    op.UseShardingQuery((conStr, builder) => { builder.UseSqlServer(conStr); });
+                    op.UseShardingTransaction((connection, builder) => { builder.UseSqlServer(connection); });
 
                     op.AddDefaultDataSource("A",
                         "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;");
                     op.AddExtraDataSource(sp =>
                     {
                         return new Dictionary<string, string>()
-                    {
-                        { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" },
-                        { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
-                    };
+                        {
+                            { "B", "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;" },
+                            { "C", "Data Source=localhost;Initial Catalog=ShardingCoreDBC;Integrated Security=True;" },
+                        };
                     });
                     op.AddReadWriteSeparation(sp =>
-                    {
-                        return new Dictionary<string, IEnumerable<string>>()
-                    {
                         {
-                            "A", new HashSet<string>()
+                            // var dictionary = new Dictionary<string, IEnumerable<string>>();
+                            // var connectionSet = new HashSet<string>();
+                            // connectionSet.Add(
+                            //     "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;");
+                            // dictionary.Add("A",connectionSet);
+                            // return dictionary;
+
+                            return new Dictionary<string, IEnumerable<string>>()
                             {
-                                "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;"
-                            }
-                        }
-                    };
-                    }, ReadStrategyEnum.Loop, defaultEnable: false, readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
+                                {
+                                    "A", new HashSet<string>()
+                                    {
+                                        "Data Source=localhost;Initial Catalog=ShardingCoreDBB;Integrated Security=True;"
+                                    }
+                                }
+                            };
+                        }, ReadStrategyEnum.Loop, defaultEnable: false,
+                        readConnStringGetStrategy: ReadConnStringGetStrategyEnum.LatestEveryTime);
                 })
-                .ReplaceService<ITableEnsureManager,SqlServerTableEnsureManager>(ServiceLifetime.Singleton)
+                .ReplaceService<ITableEnsureManager, SqlServerTableEnsureManager>(ServiceLifetime.Singleton)
                 .AddShardingCore();
             // services.AddShardingDbContext<ShardingDefaultDbContext, DefaultDbContext>(o => o.UseMySql(hostBuilderContext.Configuration.GetSection("MySql")["ConnectionString"],new MySqlServerVersion("5.7.15"))
             //     ,op =>
@@ -163,7 +164,7 @@ namespace ShardingCore.Test2x
                         }
                     }
 
-                    var areas = new List<string>(){"A","B","C"};
+                    var areas = new List<string>() { "A", "B", "C" };
                     List<Order> orders = new List<Order>(360);
                     var begin = new DateTime(2021, 1, 1);
                     for (int i = 0; i < 320; i++)
@@ -171,7 +172,7 @@ namespace ShardingCore.Test2x
                         orders.Add(new Order()
                         {
                             Id = Guid.NewGuid(),
-                            Area = areas[i%3],
+                            Area = areas[i % 3],
                             CreateTime = begin,
                             Money = i
                         });
@@ -181,7 +182,7 @@ namespace ShardingCore.Test2x
                     List<LogDay> logDays = new List<LogDay>(3600);
                     List<LogDayLong> logDayLongs = new List<LogDayLong>(3600);
 
-                    var levels = new List<string>(){"info","warning","error"};
+                    var levels = new List<string>() { "info", "warning", "error" };
                     var begin1 = new DateTime(2021, 1, 1);
                     for (int i = 0; i < 300; i++)
                     {
@@ -191,24 +192,25 @@ namespace ShardingCore.Test2x
                             logDays.Add(new LogDay()
                             {
                                 Id = Guid.NewGuid(),
-                                LogLevel = levels[j%3],
+                                LogLevel = levels[j % 3],
                                 LogBody = $"{i}_{j}",
                                 LogTime = ltime.AddHours(1)
                             });
                             logDayLongs.Add(new LogDayLong()
                             {
                                 Id = Guid.NewGuid(),
-                                LogLevel = levels[j%3],
+                                LogLevel = levels[j % 3],
                                 LogBody = $"{i}_{j}",
                                 LogTime = ShardingCoreHelper.ConvertDateTimeToLong(ltime.AddHours(1))
                             });
                             ltime = ltime.AddHours(1);
                         }
+
                         begin1 = begin1.AddDays(1);
                     }
 
                     List<LogWeekDateTime> logWeeks = new List<LogWeekDateTime>(300);
-                    var begin2 = new DateTime(2021,1,1);
+                    var begin2 = new DateTime(2021, 1, 1);
                     for (int i = 0; i < 300; i++)
                     {
                         logWeeks.Add(new LogWeekDateTime()
@@ -219,8 +221,9 @@ namespace ShardingCore.Test2x
                         });
                         begin2 = begin2.AddDays(1);
                     }
+
                     List<LogWeekTimeLong> logWeekLongs = new List<LogWeekTimeLong>(300);
-                    var begin3 = new DateTime(2021,1,1);
+                    var begin3 = new DateTime(2021, 1, 1);
                     for (int i = 0; i < 300; i++)
                     {
                         logWeekLongs.Add(new LogWeekTimeLong()
@@ -231,8 +234,9 @@ namespace ShardingCore.Test2x
                         });
                         begin3 = begin3.AddDays(1);
                     }
+
                     List<LogYearDateTime> logYears = new List<LogYearDateTime>(600);
-                    var begin4 = new DateTime(2020,1,1);
+                    var begin4 = new DateTime(2020, 1, 1);
                     for (int i = 0; i < 600; i++)
                     {
                         logYears.Add(new LogYearDateTime()
@@ -270,7 +274,9 @@ namespace ShardingCore.Test2x
                         });
                         begin6 = begin6.AddDays(1);
                     }
+
                     var multiShardingOrders = new List<MultiShardingOrder>(9);
+
                     #region 添加多字段分表
 
                     {
@@ -345,7 +351,9 @@ namespace ShardingCore.Test2x
                             CreateTime = now
                         });
                     }
+
                     #endregion
+
                     using (var tran = virtualDbContext.Database.BeginTransaction())
                     {
                         await virtualDbContext.AddRangeAsync(userMods);

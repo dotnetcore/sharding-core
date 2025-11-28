@@ -18,11 +18,11 @@ using ShardingCore.Sharding.Visitors;
 namespace ShardingCore.Core.Internal.Visitors
 {
     /*
-    * @Author: xjm
-    * @Description:
-    * @Date: Monday, 28 December 2020 22:09:39
-    * @Email: 326308290@qq.com
-    */
+     * @Author: xjm
+     * @Description:
+     * @Date: Monday, 28 December 2020 22:09:39
+     * @Email: 326308290@qq.com
+     */
     public class QueryableRouteShardingTableDiscoverVisitor : ShardingExpressionVisitor
     {
         private static readonly Func<bool, ExpressionType, ShardingOperatorEnum> _shardingOperatorFunc =
@@ -64,7 +64,8 @@ namespace ShardingCore.Core.Internal.Visitors
         private RoutePredicateExpression _where = RoutePredicateExpression.Default;
 
         public QueryableRouteShardingTableDiscoverVisitor(EntityMetadata entityMetadata,
-            Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter,Func<object,string,object> compareValueByKey, bool shardingTableRoute)
+            Func<object, ShardingOperatorEnum, string, Func<string, bool>> keyToTailWithFilter,
+            Func<object, string, object> compareValueByKey, bool shardingTableRoute)
         {
             _entityMetadata = entityMetadata;
             _keyToTailWithFilter = keyToTailWithFilter;
@@ -111,22 +112,21 @@ namespace ShardingCore.Core.Internal.Visitors
                 {
                     realMember = member;
                 }
-                else if (MemberExpressionIsConvertAndOriginalIsEntityType(member,out  realMember))
+                else if (MemberExpressionIsConvertAndOriginalIsEntityType(member, out realMember))
                 {
                 }
-
-            } 
-            else if (expression is UnaryExpression unaryExpression&&
-                       unaryExpression.NodeType == ExpressionType.Convert
-                       )
+            }
+            else if (expression is UnaryExpression unaryExpression &&
+                     unaryExpression.NodeType == ExpressionType.Convert
+                    )
             {
-                
                 if (unaryExpression.Operand is MemberExpression m &&
                     m.Expression?.Type == _entityMetadata.EntityType)
                 {
                     realMember = m;
                 }
             }
+
             if (realMember != null)
             {
                 var isShardingKey = false;
@@ -229,7 +229,7 @@ namespace ShardingCore.Core.Internal.Visitors
         /// <param name="expression"></param>
         /// <returns></returns>
         private bool ExpressionCanGetValue(Expression expression)
-        { 
+        {
             return expression is ConstantExpression
                    || expression is NewExpression
                    || expression is ListInitExpression
@@ -289,7 +289,8 @@ namespace ShardingCore.Core.Internal.Visitors
                         }
                     }
                     //todo
-                    else if(lambdaExpression.Parameters[0].Type.IsGenericType&&lambdaExpression.Parameters[0].Type.IsAnonymousType())
+                    else if (lambdaExpression.Parameters[0].Type.IsGenericType &&
+                             lambdaExpression.Parameters[0].Type.IsAnonymousType())
                     {
                         var typeGenericTypeArguments = lambdaExpression.Parameters[0].Type.GenericTypeArguments;
                         foreach (var typeGenericTypeArgument in typeGenericTypeArguments)
@@ -383,7 +384,8 @@ namespace ShardingCore.Core.Internal.Visitors
                             var compareSet = new HashSet<object>();
                             foreach (var shardingValue in enumerableObj)
                             {
-                                var compareValueByKey = _compareValueByKey(shardingValue,shardingPredicateResult.ShardingPropertyName);
+                                var compareValueByKey = _compareValueByKey(shardingValue,
+                                    shardingPredicateResult.ShardingPropertyName);
                                 if (!compareSet.Add(compareValueByKey))
                                 {
                                     continue;
@@ -687,6 +689,27 @@ namespace ShardingCore.Core.Internal.Visitors
                 }
                 else
                 {
+                    if (
+                        (binaryExpression.Left is MemberExpression { Expression: ConstantExpression } &&
+                         binaryExpression.Right is ConstantExpression)
+                        ||
+                        (binaryExpression.Left is ConstantExpression && binaryExpression.Right is MemberExpression { Expression: ConstantExpression })
+                    )
+                    {
+                        var value = GetExpressionValue(binaryExpression);
+                        if (value is bool boolValue)
+                        {
+                            if (boolValue)
+                            {
+                                return RoutePredicateExpression.Default;
+                            }
+                            else
+                            {
+                                return RoutePredicateExpression.DefaultFalse;
+                            }
+                        }
+                    }
+
                     return RoutePredicateExpression.Default;
                 }
             }
