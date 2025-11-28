@@ -114,7 +114,6 @@ namespace Sample.MySql
                     }));
                 }).UseConfig((sp, o) =>
                 {
-                    IServiceProvider ss = sp;
                     // var memoryCache = sp.ApplicationServiceProvider.GetRequiredService<IMemoryCache>();
                     // o.UseExecutorDbContextConfigure(b =>
                     // {

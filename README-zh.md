@@ -23,9 +23,13 @@
 
 ---
 - [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
-- [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
+- [Gitee](https://gitee.com/xuejm/sharding-core) 国内代码仓库
 
 - [捐赠](#捐赠)
+
+  <img src="./imgs/g-star.jpg" title="git-code" width=330 />
+
+  <img src="./imgs/gvp.jpg" title="gitee" width=330 />
 
 ## 社区合作伙伴和赞助商
 
