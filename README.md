@@ -50,6 +50,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - second version is efcore version 
 - other version use last version
 -
+- efcore10 use shardingcore7.10.x.x
 - efcore9 use shardingcore7.9.x.x
 - efcore8 use shardingcore7.8.x.x
 
