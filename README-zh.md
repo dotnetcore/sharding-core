@@ -26,13 +26,16 @@
 
 <p>
   <a href="https://yxai.chat" target="_blank">
-   <img alt="yixin-Logo" src="./imgs/adv/yixin.png" height="50px">
+   <img alt="yixin-Logo" src="./imgs/adv/yixin.jpg" height="50px">
   </a>
 </p>
 
----
-- [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
-- [Gitee](https://gitee.com/xuejm/sharding-core) 国内代码仓库
+全项目基于.Net专业团队自研，源头工厂，价格约是官方的二十分之一不到，获得全网数万用户好评，稳定安全，快速可靠！
+①支持 编程/对话/视频/图片/翻译/知识库/插件 直接使用 等等。
+②支持全球顶流模型，支持最强编程ClaudeCode/Codex/GeminiCli。
+③支持一个key通用claude、gpt、gemini等全站模型。
+④包售后，充值后提供1对1售后服务，手把手教玩ai 。
+用Ai就选择意心Ai，省心放心爽用！让你不再有Ai焦虑！
 
 - [捐赠](#捐赠)
 
