@@ -29,7 +29,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
 <p>
   <a href="https://yxai.chat/" target="_blank">
-   <img alt="yixin-Logo" src="./imgs/adv/yixin.jpg" height="50px">
+   <img alt="yixin-Logo" src="./imgs/adv/yixin.jpg" height="100px">
   </a>
 </p>
 全项目基于.Net专业团队自研，源头工厂，价格约是官方的二十分之一不到，获得全网数万用户好评，稳定安全，快速可靠！
