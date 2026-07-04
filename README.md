@@ -24,6 +24,15 @@ high performance lightweight solution for efcore sharding table and sharding dat
 - zero incursion
 
 ---
+
+## Special user
+
+<p>
+  <a href="https://yxai.chat/" target="_blank">
+   <img alt="yixin-Logo" src="./imgs/adv/yixin.png" height="50px">
+  </a>
+</p>
+
 - [GitCode](https://gitcode.com/xuejmnet/sharding-core) 国内代码仓库
 - [Gitee](https://gitee.com/xuejm/sharding-core) 国内镜像
 

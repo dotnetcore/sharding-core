@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sample.AutoCreateIfPresent;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core;
 using ShardingCore.Helpers;
@@ -54,7 +55,7 @@ namespace ShardingCore.Test
                     op.AddShardingTableRoute<MultiShardingOrderVirtualTableRoute>();
 
                 })
-                .UseConfig(op =>
+                .UseConfig((sp,op) =>
                 {
                     op.AutoUseWriteConnectionStringAfterWriteDb = true;
                     op.CacheModelLockConcurrencyLevel = Environment.ProcessorCount;
@@ -82,8 +83,13 @@ namespace ShardingCore.Test
                         builder.UseSqlServer(connection, o => o.UseCompatibilityLevel(120)).UseLoggerFactory(efLogger);
                     });
                     //添加默认数据源
+
+                    //IConnectionProvider可以是远程加载或者数据库获取，如果是数据库获取不可以是当前dbcontext
+                    var connectionProvider = sp.GetRequiredService<IConnectionProvider>();
                     op.AddDefaultDataSource("A",
-                        "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;TrustServerCertificate=True;");
+                        connectionProvider.GetConnectionString());
+                    // op.AddDefaultDataSource("A",
+                    //     "Data Source=localhost;Initial Catalog=ShardingCoreDBA;Integrated Security=True;TrustServerCertificate=True;");
                     //添加额外数据源
                     op.AddExtraDataSource(sp =>
                     {

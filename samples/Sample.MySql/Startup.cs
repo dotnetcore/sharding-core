@@ -90,6 +90,8 @@ namespace Sample.MySql
             //
             var type = typeof(MyUserRoute);
 
+            var defConnectionString = Configuration.GetSection("ConnectionString").ToString();
+
             services.AddDbContext<UnShardingDbContext>(o =>
                 o.UseMySql(
                     "server=127.0.0.1;port=3306;database=dbdbdxx;userid=root;password=root;",new MySqlServerVersion(
@@ -164,7 +166,7 @@ namespace Sample.MySql
                             .AddInterceptors(new MySaveChangeInterceptor());
                     });
                     o.AddDefaultDataSource("current",
-                        "server=127.0.0.1;port=3306;database=dbdbd0;userid=root;password=root;");
+                        defConnectionString);
                     o.AddExtraDataSource(sp => new Dictionary<string, string>()
                     {
                         { "history", "server=127.0.0.1;port=3306;database=dbdbd1;userid=root;password=root;" }
@@ -183,6 +185,8 @@ namespace Sample.MySql
                 }).ReplaceService<IModelCacheLockerProvider, DicModelCacheLockerProvider>()
                 .ReplaceService<IDataSourceInitializer, DataSourceInitializer>()
                 .AddShardingCore();
+            
+            
             services.AddScoped<MyCurrentUser>();
             // services.AddDbContext<DefaultShardingDbContext>(ShardingCoreExtension
             //     .UseMutliDefaultSharding<DefaultShardingDbContext>);
@@ -285,7 +289,9 @@ namespace Sample.MySql
             // }
             //
             // app.ApplicationServices.UseAutoTryCompensateTable(12);
-
+            var shardingRuntimeContext = app.ApplicationServices.GetRequiredService<IShardingRuntimeContext<DefaultShardingDbContext>>();
+            shardingRuntimeContext.UseAutoTryCompensateTable();
+            
             app.UseRouting();
             app.UseAuthorization();
 

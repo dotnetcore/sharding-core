@@ -4,6 +4,7 @@ using ShardingCore;
 using ShardingCore.Bootstrappers;
 using ShardingCore.Core.DbContextCreator;
 using ShardingCore.Core.RuntimeContexts;
+using ShardingCore.Helpers;
 using ShardingCore.TableExists;
 using ShardingCore.TableExists.Abstractions;
 
@@ -54,6 +55,9 @@ if (app.Environment.IsDevelopment())
     // app.UseSwagger();
     // app.UseSwaggerUI();
 }
+
+
+
 app.Services.UseAutoTryCompensateTable();
 
 
