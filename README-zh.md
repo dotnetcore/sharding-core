@@ -52,7 +52,7 @@
 
 ## 📚 Documentation
 
-[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
+[中文文档](https://www.easy-query.com:1443/)
 
 
 ## 如何选择版本

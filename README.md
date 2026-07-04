@@ -55,7 +55,7 @@ high performance lightweight solution for efcore sharding table and sharding dat
 
 ## 📚 Documentation
 
-[中文文档](https://xuejmnet.github.io/sharding-core-doc/)
+[中文文档](https://www.easy-query.com:1443/)
 
 ## How Choose Version
 - shardingcore lastversion.efcoreversion.x.x
