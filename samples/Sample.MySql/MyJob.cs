@@ -28,7 +28,6 @@ public class MyJob :IHostedService
         // {
         //     
         // }
-
         throw new NotImplementedException();
     }
 

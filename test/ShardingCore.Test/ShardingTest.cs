@@ -1788,5 +1788,88 @@ namespace ShardingCore.Test
                 }
             }
         }
+
+        [Fact]
+        public async Task ExecuteUpdate_Single_Route_Constant_Value_Test()
+        {
+            try
+            {
+                var affected = await _virtualDbContext.Set<SysUserModInt>()
+                    .Where(o => o.Id == 500)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(b => b.Name, "name_500_updated")
+                        .SetProperty(b => b.Age, 999));
+                Assert.Equal(1, affected);
+                var user = await _virtualDbContext.Set<SysUserModInt>().AsNoTracking()
+                    .Where(o => o.Id == 500).FirstAsync();
+                Assert.Equal("name_500_updated", user.Name);
+                Assert.Equal(999, user.Age);
+            }
+            finally
+            {
+                await _virtualDbContext.Set<SysUserModInt>()
+                    .Where(o => o.Id == 500)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(b => b.Name, "name_500")
+                        .SetProperty(b => b.Age, 500));
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteUpdate_Cross_Shard_Lambda_Value_Test()
+        {
+            try
+            {
+                var affected = await _virtualDbContext.Set<SysUserModInt>()
+                    .Where(o => o.Age > 995)
+                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.Age, b => b.Age + 1000));
+                Assert.Equal(5, affected);
+                var ages = await _virtualDbContext.Set<SysUserModInt>().AsNoTracking()
+                    .Where(o => o.Id > 995).OrderBy(o => o.Age).Select(o => o.Age).ToListAsync();
+                Assert.Equal(new[] { 1996, 1997, 1998, 1999, 2000 }, ages);
+            }
+            finally
+            {
+                await _virtualDbContext.Set<SysUserModInt>()
+                    .Where(o => o.Age > 1995)
+                    .ExecuteUpdateAsync(s => s.SetProperty(b => b.Age, b => b.Age - 1000));
+            }
+        }
+
+        [Fact]
+        public async Task Scalar_Select_OrderBy_Take_Cross_Shard_Test()
+        {
+            var ages = await _virtualDbContext.Set<SysUserModInt>()
+                .Where(o => o.Age > 0)
+                .OrderBy(o => o.Age)
+                .Select(o => o.Age)
+                .Take(3)
+                .ToListAsync();
+            Assert.Equal(new[] { 1, 2, 3 }, ages);
+
+            var descAges = await _virtualDbContext.Set<SysUserModInt>()
+                .Where(o => o.Age > 0)
+                .OrderByDescending(o => o.Age)
+                .Select(o => o.Age)
+                .Take(3)
+                .ToListAsync();
+            Assert.Equal(new[] { 1000, 999, 998 }, descAges);
+        }
+
+        [Fact]
+        public async Task ExecuteDelete_Cross_Shard_Test()
+        {
+            _virtualDbContext.Set<SysUserModInt>().Add(new SysUserModInt() { Id = 9001, Age = 9001, Name = "name_9001", AgeGroup = 1 });
+            _virtualDbContext.Set<SysUserModInt>().Add(new SysUserModInt() { Id = 9002, Age = 9002, Name = "name_9002", AgeGroup = 2 });
+            await _virtualDbContext.SaveChangesAsync();
+
+            var deleted = await _virtualDbContext.Set<SysUserModInt>()
+                .Where(o => o.Id >= 9001)
+                .ExecuteDeleteAsync();
+            Assert.Equal(2, deleted);
+            var exists = await _virtualDbContext.Set<SysUserModInt>().AsNoTracking()
+                .AnyAsync(o => o.Id >= 9001);
+            Assert.False(exists);
+        }
     }
 }

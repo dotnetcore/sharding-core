@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ShardingCore.Extensions;
+using ShardingCore.Sharding.MergeContexts;
 
 namespace ShardingCore.Sharding.Enumerators
 {
@@ -99,6 +100,12 @@ namespace ShardingCore.Sharding.Enumerators
             var list = new List<IComparable>(_mergeContext.Orders.Count());
             foreach (var order in _mergeContext.Orders)
             {
+                //标量投影查询(eg:OrderBy(x=>x.Id).Select(x=>x.Id))结果元素本身就是排序值
+                if (TryGetScalarSelectOrderValue(_enumerator.ReallyCurrent, order, out var scalarOrderValue))
+                {
+                    list.Add(scalarOrderValue);
+                    continue;
+                }
                 var (propertyType,value) = _enumerator.ReallyCurrent.GetValueByExpression(order.PropertyExpression);
                 if (value is IComparable comparable)
                     list.Add(comparable);
@@ -117,6 +124,33 @@ namespace ShardingCore.Sharding.Enumerators
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// 当前查询为标量投影(eg:Select(x=>x.Id))且投影属性与排序属性一致时,结果元素本身就是排序值
+        /// </summary>
+        private bool TryGetScalarSelectOrderValue(T reallyCurrent, PropertyOrder order, out IComparable orderValue)
+        {
+            orderValue = null;
+            var selectProperties = _mergeContext.SelectContext.SelectProperties;
+            if (selectProperties.Count != 1)
+                return false;
+            if (!string.Equals(selectProperties[0].PropertyName, order.PropertyExpression, StringComparison.OrdinalIgnoreCase))
+                return false;
+            //元素类型本身包含排序属性说明投影结果是实体或匿名类型,不能按标量处理
+            if (reallyCurrent != null && reallyCurrent.GetType().GetUltimateShadowingProperty(order.PropertyExpression) != null)
+                return false;
+            if (reallyCurrent == null)
+            {
+                orderValue = null;
+                return true;
+            }
+            if (reallyCurrent is IComparable comparable)
+            {
+                orderValue = comparable;
+                return true;
+            }
+            return false;
         }
 
         public int CompareTo(IOrderStreamMergeAsyncEnumerator<T> other)
