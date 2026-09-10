@@ -196,6 +196,11 @@ namespace ShardingCore.Core.Internal.Visitors
                     return base.VisitExtension(node);
                 }
             }
+
+            if (node is SqlQueryRootExpression)
+            {
+                return base.VisitExtension(node);
+            }
 #endif
             if (node is QueryRootExpression queryRootExpression)
             {
